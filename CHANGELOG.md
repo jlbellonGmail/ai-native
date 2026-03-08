@@ -1,12 +1,18 @@
-# Changelog
+# Registro de cambios
+
+Todos los cambios importantes en este repositorio se documentarán en este archivo.
+
+---
 
 ## 1.0.0
 
-Initial version of the AI Knowledge base.
+Versión inicial de la base de **Conocimiento de IA**.
 
-Includes:
+Incluye:
 
-* base skill architecture
-* development practices
-* prompt structure
-* AI collaboration guidelines
+* Conjunto inicial de habilidades reutilizables
+* Prácticas de desarrollo
+* Directrices de diseño de indicaciones
+* Prácticas de colaboración de IA
+* Estándares técnicos
+* Estructura de la organización del conocimiento

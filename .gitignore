@@ -1,0 +1,15 @@
+# Internal notes (not part of repository)
+
+_LEER!!!.md
+_tree.txt
+
+# OS files
+
+.DS_Store
+Thumbs.db
+
+# Editors / IDEs
+
+.vscode/
+.idea/
+*.swp
