@@ -1,0 +1,8 @@
+# tener en cuenta (recorda a la ia que debemos cumplir lo siugiente)
+
+💡 Y te adelanto algo interesante:
+cuando terminemos esta fase, te puedo mostrar un pequeño script que crea proyectos nuevos automáticamente usando tu template.
+
+Algo así:
+
+create-ai-project crm-system
