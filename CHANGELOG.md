@@ -1,10 +1,15 @@
-# Registro de cambios
+## [1.1.0] - 2026-03-10
 
-Todos los cambios importantes en este repositorio se documentarán en este archivo.
+### Added
+- AI_ECOSYSTEM.md to describe the relationship between ecosystem repositories
+- AI_ENTRYPOINT.md to provide a clear starting point for AI agents
+
+### Updated
+- knowledge-index.md improvements and structure adjustments
 
 ---
 
-## 1.0.0
+## [1.0.0] - 2026-03-08
 
 Versión inicial de la base de **Conocimiento de IA**.
 

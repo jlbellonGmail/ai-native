@@ -1,3 +1,10 @@
+# Knowledge sources
+
+Este proyecto utiliza dos niveles de conocimiento:
+
+1. knowledge/ (conocimiento del proyecto)
+2. ai-knowledge (conocimiento reutilizable)
+   
 # AI Knowledge Index
 
 Este archivo proporciona un mapa de navegación para la base de conocimiento utilizada por los proyectos que emplean AI Project Foundation.
