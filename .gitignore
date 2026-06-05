@@ -26,3 +26,9 @@ Thumbs.db
 *.bak
 *.tmp
 *.tsbuildinfo
+
+# Personal tooling (not part of product)
+
+.antigravitycli/
+.repomix/
+.repomixignore
