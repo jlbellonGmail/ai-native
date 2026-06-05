@@ -1,0 +1,24 @@
+{
+  "W1-T1": {
+    "title": "CodeQL",
+    "status": "completed",
+    "evidence": [
+      "pnpm install: OK",
+      "pnpm typecheck: OK",
+      "pnpm test: OK",
+      "pnpm build: OK",
+      "pnpm lint: OK con warnings no bloqueantes"
+    ],
+    "score_after": 9.3
+  },
+  "W1-T2": {
+    "title": "Trivy",
+    "status": "pending",
+    "evidence": []
+  },
+  "W1-T3": {
+    "title": "SBOM",
+    "status": "pending",
+    "evidence": []
+  }
+}
