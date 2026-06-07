@@ -115,13 +115,23 @@ Entregables:
 SBOM
 
 Estado:
-[ ]
+[x] COMPLETADO
+
+Fecha cierre:
+2026-06-07
 
 Entregables:
 
 * CycloneDX
 * generación automática
 * publicación de artefactos
+
+Evidencia:
+* workflow SBOM implementado con `pnpm sbom` como ruta principal.
+* artifact CI único definido.
+* validación real end-to-end completada.
+* reproducibilidad normalizada aprobada.
+* evidencia archivada en governance/execution/archive/ENTERPRISE-10-10-V1/W1-T3/
 
 ---
 

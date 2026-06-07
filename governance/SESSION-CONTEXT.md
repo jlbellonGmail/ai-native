@@ -1,6 +1,6 @@
 # CONTINUIDAD DE IMPLEMENTACIÓN
 
-Estado fecha: 2026-06-06
+Estado fecha: 2026-06-07
 
 ## Arquitectura
 
@@ -43,7 +43,7 @@ Workstream:
 W1
 
 Tarea:
-W1-T2
+W1-T3
 
 Estado:
 COMPLETADA
@@ -56,14 +56,14 @@ Versión:
 
 Validado:
 
-* workflow Trivy
-* filesystem scan
-* dependency scan
+* workflow SBOM implementado
+* validación real end-to-end completada
+* reproducibilidad normalizada aprobada
 * evidencia archivada
 
 Evidencia disponible:
 
-* governance/execution/archive/ENTERPRISE-10-10-V1/W1-T2/
+* governance/execution/archive/ENTERPRISE-10-10-V1/W1-T3/
 
 ---
 
@@ -75,16 +75,15 @@ Sin incidencias activas.
 
 ## Próximo paso
 
-W1-T3
+W1-T4
 
 Objetivo:
 
-SBOM
+Dependency Review
 
 Entregables:
 
-* CycloneDX
-* generación automática
-* publicación de artefactos
+* dependency-review workflow
+* policy enforcement
 
 No comenzar hasta nueva instrucción.
