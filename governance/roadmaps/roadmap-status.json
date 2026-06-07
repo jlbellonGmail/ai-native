@@ -13,8 +13,16 @@
   },
   "W1-T2": {
     "title": "Trivy",
-    "status": "pending",
-    "evidence": []
+    "status": "completed",
+    "evidence": [
+      "workflow Trivy agregado",
+      "validación real Trivy completada",
+      "filesystem scan real ejecutado",
+      "dependency scan real ejecutado",
+      "0 HIGH",
+      "0 CRITICAL",
+      "evidencia archivada en governance/execution/archive/ENTERPRISE-10-10-V1/W1-T2/"
+    ]
   },
   "W1-T3": {
     "title": "SBOM",
