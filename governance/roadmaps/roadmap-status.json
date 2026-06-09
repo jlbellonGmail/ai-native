@@ -34,5 +34,29 @@
       "reproducibilidad normalizada aprobada",
       "evidencia archivada en governance/execution/archive/ENTERPRISE-10-10-V1/W1-T3/"
     ]
+  },
+  "W1-T4": {
+    "title": "Dependency Review",
+    "status": "completed",
+    "evidence": [
+      "workflow Dependency Review implementado",
+      "policy enforcement configurado",
+      "validación local de configuración completada",
+      "evidencia archivada en governance/execution/archive/ENTERPRISE-10-10-V1/W1-T4/"
+    ]
+  },
+  "W1-T5": {
+    "title": "Dependabot",
+    "status": "completed",
+    "closed_at": "2026-06-08",
+    "evidence": [
+      "Dependabot configurado para npm dependencies y GitHub Actions",
+      "actualización automática semanal configurada",
+      "lockfile canónico definido como pnpm-lock.yaml",
+      "package-lock.json eliminado",
+      "evidencia archivada en governance/execution/archive/ENTERPRISE-10-10-V1/W1-T5/",
+      "Remote GitHub validation not executed",
+      "Risk accepted during governance closure"
+    ]
   }
 }

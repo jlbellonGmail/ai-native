@@ -1,5 +1,16 @@
 # Current Execution
 
-W1-T3 has been archived.
+Active task:
+None
 
-This directory is reserved for the next active task when approved.
+Status:
+READY FOR NEXT INSTRUCTION
+
+Next eligible task:
+W1-T6 - Supply Chain Security
+
+Notes:
+- W1-T5 archived after HITL-approved governance closure.
+- W1-T6 not started.
+- Version not changed.
+- No commit, push, release, or Engram executed.

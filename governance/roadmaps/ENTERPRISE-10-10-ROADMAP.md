@@ -140,12 +140,23 @@ Evidencia:
 Dependency Review
 
 Estado:
-[ ]
+[x] COMPLETADO
+
+Fecha cierre:
+2026-06-08
 
 Entregables:
 
 * dependency-review workflow
 * policy enforcement
+
+Evidencia:
+* workflow Dependency Review implementado.
+* policy enforcement configurado.
+* validación local de configuración completada.
+* evidencia archivada en governance/execution/archive/ENTERPRISE-10-10-V1/W1-T4/
+* Remote GitHub validation not executed.
+* Risk accepted during governance closure.
 
 ---
 
@@ -154,12 +165,24 @@ Entregables:
 Dependabot
 
 Estado:
-[ ]
+[x] COMPLETADO
+
+Fecha cierre:
+2026-06-08
 
 Entregables:
 
 * configuración
 * actualización automática
+
+Evidencia:
+* Dependabot configurado para npm dependencies y GitHub Actions.
+* Actualización automática semanal configurada.
+* lockfile canónico definido como `pnpm-lock.yaml`.
+* `package-lock.json` eliminado para resolver ambigüedad de package manager.
+* evidencia archivada en governance/execution/archive/ENTERPRISE-10-10-V1/W1-T5/
+* Remote GitHub validation not executed.
+* Risk accepted during governance closure.
 
 ---
 
