@@ -58,5 +58,22 @@
       "Remote GitHub validation not executed",
       "Risk accepted during governance closure"
     ]
+  },
+  "W1-T6": {
+    "title": "Supply Chain Security",
+    "status": "completed",
+    "closed_at": "2026-06-09",
+    "result": "completed_with_accepted_platform_limitation",
+    "evidence": [
+      "workflow Supply Chain Security implementado",
+      "Artifact Verification remoto: PASS",
+      "Artifact checksum verification remoto: PASS",
+      "supply-chain pipeline funcional",
+      "provenance configurado correctamente con actions/attest@v4",
+      "sharp aprobado explicitamente mediante allowBuilds en pnpm-workspace.yaml",
+      "evidencia archivada en governance/execution/archive/ENTERPRISE-10-10-V1/W1-T6/",
+      "artifact attestation persistence no disponible para repositorio privado user-owned bajo plan/configuracion actual",
+      "limitacion de plataforma aceptada por HITL sin convertir repositorio a publico"
+    ]
   }
 }

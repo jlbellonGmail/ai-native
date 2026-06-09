@@ -1,6 +1,6 @@
 # CONTINUIDAD DE IMPLEMENTACIÓN
 
-Estado fecha: 2026-06-08
+Estado fecha: 2026-06-09
 
 ## Arquitectura
 
@@ -43,10 +43,10 @@ Workstream:
 W1
 
 Tarea:
-W1-T5
+W1-T6
 
 Estado:
-COMPLETADA
+COMPLETADA CON LIMITACIÓN DE PLATAFORMA ACEPTADA
 
 Repositorio afectado:
 ai-foundation
@@ -56,17 +56,23 @@ Versión:
 
 Validado:
 
-* Dependabot configurado
-* actualización automática semanal configurada
-* lockfile canónico: pnpm-lock.yaml
-* package-lock.json eliminado
-* validación local de configuración completada
+* Supply Chain Security workflow implementado
+* Artifact Verification remoto: PASS
+* Artifact checksum verification remoto: PASS
+* supply-chain pipeline funcional
+* provenance configurado correctamente
+* `sharp` aprobado explicitamente para pnpm build scripts
 * evidencia archivada
-* riesgo remoto GitHub pendiente/aceptado
+* persistencia remota de artifact attestation no disponible por limitación de plataforma GitHub para repositorios privados user-owned
+* limitación aceptada por HITL sin convertir el repositorio a público
 
 Evidencia disponible:
 
-* governance/execution/archive/ENTERPRISE-10-10-V1/W1-T5/
+* governance/execution/archive/ENTERPRISE-10-10-V1/W1-T6/
+
+Memoria operativa:
+
+* No Engram ejecutado para W1-T6 por restricción HITL
 
 ---
 
@@ -78,16 +84,27 @@ Sin incidencias activas.
 
 ## Próximo paso
 
-W1-T6
+W1-T7
 
 Objetivo:
 
-Supply Chain Security
+Security Audit Final
 
-Entregables:
+Validar:
 
-* provenance
-* artifact verification
-* SLSA readiness
+* CodeQL
+* Trivy
+* SBOM
+* Dependency Review
+* Dependabot
+* Supply Chain
 
 No comenzar hasta nueva instrucción.
+
+Restricciones:
+
+* una tarea por sesión
+* Codex ejecuta
+* agente inspector revisa
+* usuario aprueba HITL
+* no commit, push, versionado ni Engram sin aprobación explícita

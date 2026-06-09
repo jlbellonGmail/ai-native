@@ -191,7 +191,21 @@ Evidencia:
 Supply Chain Security
 
 Estado:
-[ ]
+[x] COMPLETADO
+
+Fecha cierre:
+2026-06-09
+
+Evidencia:
+* workflow Supply Chain Security implementado.
+* Artifact Verification ejecutado remotamente: PASS.
+* Artifact checksum verification ejecutado remotamente: PASS.
+* Supply-chain pipeline funcional.
+* Provenance configurado correctamente con `actions/attest@v4`.
+* `sharp` aprobado explicitamente en `pnpm-workspace.yaml` mediante `allowBuilds`.
+* evidencia archivada en governance/execution/archive/ENTERPRISE-10-10-V1/W1-T6/
+* Persistencia remota de artifact attestation no disponible por limitacion de plataforma GitHub para repositorios privados user-owned bajo el plan/configuracion actual.
+* Limitacion aceptada por HITL sin convertir el repositorio a publico.
 
 Entregables:
 
