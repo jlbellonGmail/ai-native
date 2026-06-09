@@ -1,0 +1,96 @@
+{
+  "program": "ENTERPRISE-10-10-V1",
+  "task": "W1-T7",
+  "title": "Security Audit Final",
+  "date": "2026-06-09",
+  "repository": "ai-foundation",
+  "overallDecision": "APTA",
+  "controls": [
+    {
+      "id": "W1-T1",
+      "name": "CodeQL",
+      "status": "PASS",
+      "evidence": [
+        "roadmap_completed",
+        "ai-foundation/.github/workflows/codeql.yml",
+        "codeql-action/init@v3",
+        "codeql-action/analyze@v3",
+        "security-extended",
+        "security-and-quality"
+      ]
+    },
+    {
+      "id": "W1-T2",
+      "name": "Trivy",
+      "status": "PASS",
+      "evidence": [
+        "governance/execution/archive/ENTERPRISE-10-10-V1/W1-T2",
+        "ai-foundation/.github/workflows/trivy.yml",
+        "filesystem_scan_0_high_0_critical",
+        "dependency_scan_0_high_0_critical"
+      ],
+      "limitation": "Trivy was not re-executed during W1-T7 because trivy is not installed locally."
+    },
+    {
+      "id": "W1-T3",
+      "name": "SBOM",
+      "status": "PASS",
+      "evidence": [
+        "governance/execution/archive/ENTERPRISE-10-10-V1/W1-T3",
+        "ai-foundation/.github/workflows/sbom.yml",
+        "cyclonedx",
+        "normalized_reproducible_hash_validation",
+        "single_ci_artifact"
+      ]
+    },
+    {
+      "id": "W1-T4",
+      "name": "Dependency Review",
+      "status": "PASS_WITH_ACCEPTED_RISK",
+      "evidence": [
+        "governance/execution/archive/ENTERPRISE-10-10-V1/W1-T4",
+        "ai-foundation/.github/workflows/dependency-review.yml",
+        "ai-foundation/.github/dependency-review-config.yml",
+        "actions/dependency-review-action@v4",
+        "policy_enforcement"
+      ],
+      "acceptedRisk": "Remote runtime not executed during original closure; risk accepted."
+    },
+    {
+      "id": "W1-T5",
+      "name": "Dependabot",
+      "status": "PASS_WITH_ACCEPTED_RISK",
+      "evidence": [
+        "governance/execution/archive/ENTERPRISE-10-10-V1/W1-T5",
+        "ai-foundation/.github/dependabot.yml",
+        "npm_weekly_updates",
+        "github_actions_weekly_updates",
+        "pnpm-lock.yaml_canonical"
+      ],
+      "acceptedRisk": "Remote runtime not executed during original closure; risk accepted."
+    },
+    {
+      "id": "W1-T6",
+      "name": "Supply Chain Security",
+      "status": "PASS_WITH_ACCEPTED_PLATFORM_LIMITATION",
+      "evidence": [
+        "governance/execution/archive/ENTERPRISE-10-10-V1/W1-T6",
+        "ai-foundation/.github/workflows/supply-chain.yml",
+        "remote_artifact_verification_pass",
+        "remote_checksum_verification_pass",
+        "actions/attest@v4",
+        "pnpm-workspace.yaml_allowBuilds_sharp"
+      ],
+      "acceptedPlatformLimitation": "GitHub artifact attestation persistence unavailable for the current private user-owned repository plan/configuration."
+    }
+  ],
+  "localValidation": {
+    "pnpm typecheck": "PASS",
+    "pnpm test": "PASS",
+    "pnpm build": "PASS",
+    "pnpm lint": "PASS_WITH_WARNINGS_0_ERRORS_5_WARNINGS"
+  },
+  "remoteValidationRequiredForThisTask": false,
+  "productCodeChanged": false,
+  "versionChanged": false
+}
