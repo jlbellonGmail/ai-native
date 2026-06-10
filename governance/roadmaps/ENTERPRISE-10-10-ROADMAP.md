@@ -353,7 +353,28 @@ Notas:
 Metrics Catalog
 
 Estado:
-[ ]
+[x] COMPLETADO
+
+Fecha cierre:
+2026-06-10
+
+Evidencia:
+* Definicion gobernada de metrics catalog completada.
+* Inventario canonico de 10 metric records definido con vinculacion uno-a-uno al set gobernado SLI/SLO/Error Budget existente.
+* Contrato de metric record definido con identificador, vinculacion SLI, vinculacion SLO, vinculacion error budget, semantica de medicion, fuente esperada, estado de consulta, ownership, alertas, dashboards e implementacion.
+* Metricas gobernadas como bindings documentales sin redefinir SLI, SLO ni error budgets.
+* Artefacto machine-readable creado y alineado con la definicion markdown.
+* No se implementaron collectors, queries runtime, dashboards ni alerting.
+* No se configuro plataforma de observabilidad.
+* No se modifico codigo producto.
+* No se cambio version.
+* evidencia archivada en governance/execution/archive/ENTERPRISE-10-10-V1/W2-T4/
+
+Notas:
+* W2-T4 define el catalogo de metricas como contrato de governance.
+* Las fuentes fisicas, queries ejecutables y validacion runtime quedan pendientes para tareas explicitamente autorizadas.
+* W2-T5 queda como siguiente tarea elegible.
+* No se ejecuto commit, push ni Engram.
 
 ---
 

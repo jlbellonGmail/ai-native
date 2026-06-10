@@ -7,7 +7,7 @@ No active execution package is present.
 
 Next eligible task:
 
-* W2-T4 - Metrics Catalog
+* W2-T5 - Alerting
 
 Restrictions:
 

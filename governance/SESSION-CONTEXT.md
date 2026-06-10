@@ -43,7 +43,7 @@ Workstream:
 W2
 
 Tarea:
-W2-T3
+W2-T4
 
 Estado:
 COMPLETADA
@@ -56,17 +56,19 @@ No modificada
 
 Validado:
 
-* Error Budgets completada
-* Definicion gobernada de error budgets completada
-* 10 error budgets canonicos definidos con vinculacion uno-a-uno al set gobernado de SLOs de W2-T2
-* Contrato de error budget definido
-* Formulas simbolicas de presupuesto, consumo y remanente definidas
-* Estados de ciclo de vida definidos
+* Metrics Catalog completada
+* Definicion gobernada de metrics catalog completada
+* 10 metric records canonicos definidos con vinculacion uno-a-uno al set gobernado SLI/SLO/Error Budget existente
+* Contrato de metric record definido
+* Metricas gobernadas como bindings documentales
+* No se redefinieron SLIs
+* No se redefinieron SLOs
+* No se redefinieron error budgets
 * Markdown y JSON alineados
-* No valores numericos activados sin baseline, medicion y ownership aprobados
-* No alert thresholds definidos
+* No collectors implementados
+* No queries runtime implementadas
+* No alerting implementado
 * No dashboards implementados
-* No metrics catalog implementado
 * No plataforma de observabilidad configurada
 * No codigo producto modificado
 * No version modificada
@@ -74,11 +76,11 @@ Validado:
 
 Evidencia disponible:
 
-* governance/execution/archive/ENTERPRISE-10-10-V1/W2-T3/
+* governance/execution/archive/ENTERPRISE-10-10-V1/W2-T4/
 
 Memoria operativa:
 
-* Engram preparado para W2-T3, no ejecutado por restriccion HITL
+* Engram preparado para W2-T4, no ejecutado por restriccion HITL
 
 ---
 
@@ -90,15 +92,15 @@ Sin incidencias activas.
 
 ## Próximo paso
 
-W2-T4
+W2-T5
 
 Objetivo:
 
-Metrics Catalog
+Alerting
 
 Validar:
 
-* Definicion de metrics catalog
+* Definicion de alerting
 
 No comenzar hasta nueva instrucción.
 
