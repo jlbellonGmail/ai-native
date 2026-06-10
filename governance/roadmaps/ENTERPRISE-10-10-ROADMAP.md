@@ -262,7 +262,24 @@ Validar:
 SLI Definition
 
 Estado:
-[ ]
+[x] COMPLETADO
+
+Fecha cierre:
+2026-06-09
+
+Evidencia:
+* Definicion canonica de 10 SLIs enterprise completada.
+* Cada SLI define id, nombre, superficie, promesa, evento bueno, evento total, formula, fuentes esperadas y estado de implementacion.
+* Artefacto machine-readable creado y alineado con la definicion markdown.
+* No se definieron SLO targets, error budgets, alert thresholds ni dashboards.
+* No se modifico codigo producto.
+* No se cambio version.
+* evidencia archivada en governance/execution/archive/ENTERPRISE-10-10-V1/W2-T1/
+
+Notas:
+* W2-T1 define indicadores solamente.
+* W2-T2 queda como siguiente tarea elegible.
+* No se ejecuto commit, push ni Engram.
 
 ---
 

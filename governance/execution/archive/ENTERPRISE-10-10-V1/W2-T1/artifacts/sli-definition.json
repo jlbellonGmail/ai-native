@@ -1,0 +1,206 @@
+{
+  "program": "ENTERPRISE-10-10-V1",
+  "task": "W2-T1",
+  "title": "SLI Definition",
+  "status": "DEFINED",
+  "date": "2026-06-09",
+  "scope": [
+    "ai-native governance execution",
+    "ai-foundation runtime and observability surfaces",
+    "ai-template workflow, API, and request logging surfaces"
+  ],
+  "canonical_dimensions": [
+    "repository",
+    "service",
+    "environment",
+    "operation",
+    "request_id",
+    "session_id",
+    "workflow_id",
+    "provider",
+    "error_type",
+    "error_severity"
+  ],
+  "pii_policy": "PII and secrets must not be emitted as metric labels, span attributes, or log fields.",
+  "excluded": [
+    "SLO targets",
+    "error budgets",
+    "alert thresholds",
+    "dashboards",
+    "product instrumentation changes",
+    "version changes"
+  ],
+  "slis": [
+    {
+      "id": "SLI-001",
+      "name": "Governance Execution Completeness",
+      "type": "ratio",
+      "surface": "ai-native governance execution",
+      "user_promise": "Enterprise roadmap tasks can be audited from source documents and task evidence.",
+      "good_event": "A task execution has mandatory source review, scope, implementation notes, validation results, change list, and decision request recorded.",
+      "total_event": "Any active roadmap task execution.",
+      "formula": "complete_governance_executions / total_governance_executions",
+      "expected_sources": [
+        "governance/execution/current/",
+        "governance/execution/archive/ENTERPRISE-10-10-V1/",
+        "governance/roadmaps/ENTERPRISE-10-10-ROADMAP.md"
+      ],
+      "implementation_status": "Defined. Evidence is file-based until metrics catalog implementation."
+    },
+    {
+      "id": "SLI-002",
+      "name": "Runtime Operation Success Rate",
+      "type": "ratio",
+      "surface": "ai-foundation runtime operations",
+      "user_promise": "Runtime operations complete without controlled or uncontrolled failure.",
+      "good_event": "A runtime operation exits successfully and records success state.",
+      "total_event": "Any started runtime operation.",
+      "formula": "successful_runtime_operations / total_runtime_operations",
+      "expected_sources": [
+        "Runtime execution events.",
+        "Structured logs from runtime/core/runtime.ts.",
+        "Future trace spans for runtime operations."
+      ],
+      "implementation_status": "Defined. Product instrumentation is not changed in W2-T1."
+    },
+    {
+      "id": "SLI-003",
+      "name": "Workflow Completion Rate",
+      "type": "ratio",
+      "surface": "ai-template application workflows",
+      "user_promise": "Business workflows that start can reach a terminal successful state.",
+      "good_event": "A workflow execution completes successfully.",
+      "total_event": "Any workflow execution started.",
+      "formula": "successful_workflow_executions / total_workflow_executions",
+      "expected_sources": [
+        "Workflow engine events.",
+        "Structured logs from services/application/workflows/workflow-engine.ts.",
+        "Future trace spans for workflow execution."
+      ],
+      "implementation_status": "Defined. Product instrumentation is not changed in W2-T1."
+    },
+    {
+      "id": "SLI-004",
+      "name": "API Request Success Rate",
+      "type": "ratio",
+      "surface": "ai-template API routes and controllers",
+      "user_promise": "API requests receive successful, controlled responses.",
+      "good_event": "An API request returns a successful response class.",
+      "total_event": "Any API request received by the application surface.",
+      "formula": "successful_api_requests / total_api_requests",
+      "expected_sources": [
+        "API response helpers.",
+        "Route/controller structured logs.",
+        "Future HTTP server metrics."
+      ],
+      "implementation_status": "Defined. Product instrumentation is not changed in W2-T1."
+    },
+    {
+      "id": "SLI-005",
+      "name": "Request Latency Distribution",
+      "type": "distribution",
+      "surface": "ai-template API and workflow request handling",
+      "user_promise": "Requests complete within an observable latency distribution.",
+      "good_event": "Not applicable. This SLI is a distribution, not a pass/fail ratio.",
+      "total_event": "Any measured request, workflow, or orchestrator execution.",
+      "formula": "distribution(request_duration_ms)",
+      "expected_sources": [
+        "Request context.",
+        "API route timing.",
+        "Workflow and orchestrator timing.",
+        "Future OpenTelemetry spans."
+      ],
+      "implementation_status": "Defined. Product instrumentation is not changed in W2-T1."
+    },
+    {
+      "id": "SLI-006",
+      "name": "AI Provider Call Success Rate",
+      "type": "ratio",
+      "surface": "AI provider and external API integration paths",
+      "user_promise": "External AI/provider calls return usable responses or controlled failures.",
+      "good_event": "An external provider call returns a usable response without retry exhaustion.",
+      "total_event": "Any external provider call attempt.",
+      "formula": "successful_provider_calls / total_provider_calls",
+      "expected_sources": [
+        "Provider adapter events.",
+        "Error handling integration.",
+        "Future OpenTelemetry client spans."
+      ],
+      "implementation_status": "Defined. Product instrumentation is not changed in W2-T1."
+    },
+    {
+      "id": "SLI-007",
+      "name": "Retry Recovery Rate",
+      "type": "ratio",
+      "surface": "ai-foundation retry and error handling paths",
+      "user_promise": "Retryable failures are recovered when retry policy can safely recover them.",
+      "good_event": "A retryable failure succeeds after one or more retries.",
+      "total_event": "Any retryable failure handled by retry logic.",
+      "formula": "recovered_retryable_failures / total_retryable_failures",
+      "expected_sources": [
+        "observability/core/retry-engine.ts",
+        "Retry strategy execution events.",
+        "Error handler events."
+      ],
+      "implementation_status": "Defined. Product instrumentation is not changed in W2-T1."
+    },
+    {
+      "id": "SLI-008",
+      "name": "Incident Capture Rate",
+      "type": "ratio",
+      "surface": "ai-foundation and ai-template incident/error logging paths",
+      "user_promise": "High-severity failures produce durable diagnostic records.",
+      "good_event": "A high or critical failure creates a structured incident or diagnostic record.",
+      "total_event": "Any high or critical failure observed by error handling.",
+      "formula": "captured_high_severity_failures / total_high_severity_failures",
+      "expected_sources": [
+        "observability/logging/incident-writer.ts",
+        "services/infrastructure/observability/incident-logger.ts",
+        "Structured error logs."
+      ],
+      "implementation_status": "Defined. Product instrumentation is not changed in W2-T1."
+    },
+    {
+      "id": "SLI-009",
+      "name": "Observability Data Freshness",
+      "type": "ratio",
+      "surface": "metrics, logs, traces, and governance evidence",
+      "user_promise": "Operational data is recent enough to support diagnosis and audit.",
+      "good_event": "An observability stream or evidence source has data newer than its configured freshness window.",
+      "total_event": "Any required observability stream or evidence source.",
+      "formula": "fresh_observability_sources / total_required_observability_sources",
+      "expected_sources": [
+        "Metrics backend.",
+        "Log backend.",
+        "Trace backend.",
+        "Governance evidence files."
+      ],
+      "implementation_status": "Defined. Freshness windows are deferred to W2-T2."
+    },
+    {
+      "id": "SLI-010",
+      "name": "Trace Correlation Coverage",
+      "type": "ratio",
+      "surface": "runtime, workflow, API, and provider operations",
+      "user_promise": "Failures and slow paths can be correlated across request, workflow, runtime, and provider boundaries.",
+      "good_event": "An operation emits a correlation identifier and can be linked to logs or traces.",
+      "total_event": "Any operation requiring cross-surface diagnosis.",
+      "formula": "correlated_operations / total_operations_requiring_correlation",
+      "expected_sources": [
+        "Request context.",
+        "Structured logs.",
+        "Future OpenTelemetry traces."
+      ],
+      "implementation_status": "Defined. Product instrumentation is not changed in W2-T1."
+    }
+  ],
+  "validation": {
+    "unique_ids_required": true,
+    "ratio_slis_require_good_and_total_events": true,
+    "distribution_slis_must_mark_good_event_not_applicable": true,
+    "slo_targets_defined": false,
+    "error_budgets_defined": false,
+    "alert_thresholds_defined": false,
+    "product_code_changed": false
+  }
+}
