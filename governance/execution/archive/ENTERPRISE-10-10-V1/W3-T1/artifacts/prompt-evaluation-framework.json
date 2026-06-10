@@ -1,0 +1,241 @@
+{
+  "program_id": "ENTERPRISE-10-10-V1",
+  "task_id": "W3-T1",
+  "artifact_id": "prompt-evaluation-framework",
+  "artifact_type": "governance_contract",
+  "status": "GOVERNANCE_DEFINED",
+  "closure_date": "2026-06-10",
+  "purpose": "Define a governance contract for prompt evaluation before any future runtime evaluation is authorized.",
+  "non_goals": [
+    "Do not execute prompt evaluations.",
+    "Do not create datasets.",
+    "Do not create benchmark executions.",
+    "Do not produce real scores.",
+    "Do not implement pipelines, deployments, runtime configuration, or platform configuration.",
+    "Do not modify product code.",
+    "Do not modify VERSION files."
+  ],
+  "governance_model": {
+    "mode": "document_first_contract",
+    "definition_scope": [
+      "governance_metadata",
+      "evaluation_dimensions",
+      "input_contract",
+      "output_evidence_contract",
+      "lifecycle",
+      "scoring_semantics",
+      "ownership_placeholders",
+      "future_traceability"
+    ],
+    "execution_scope": "OUT_OF_SCOPE_FOR_W3_T1",
+    "reporting_scope": "DEFERRED_TO_W3_T6"
+  },
+  "lifecycle_states": [
+    {
+      "state": "DRAFT",
+      "definition": "Evaluation contract is being drafted."
+    },
+    {
+      "state": "GOVERNANCE_DEFINED",
+      "definition": "Contract structure and required fields are defined."
+    },
+    {
+      "state": "PENDING_REVIEW",
+      "definition": "Contract is ready for review but not approved."
+    },
+    {
+      "state": "APPROVED_FOR_FUTURE_USE",
+      "definition": "Contract may be used by a future authorized task."
+    },
+    {
+      "state": "EXECUTION_DEFERRED",
+      "definition": "Runtime execution is intentionally deferred."
+    },
+    {
+      "state": "SUPERSEDED",
+      "definition": "Contract was replaced by a later governed version."
+    },
+    {
+      "state": "RETIRED",
+      "definition": "Contract is no longer eligible for use."
+    }
+  ],
+  "closure_lifecycle_state": "GOVERNANCE_DEFINED",
+  "evaluation_dimensions": [
+    {
+      "id": "task_alignment",
+      "definition": "The prompt is aligned with the stated task and allowed scope."
+    },
+    {
+      "id": "instruction_following",
+      "definition": "The response is expected to follow system, developer, and user instructions."
+    },
+    {
+      "id": "factual_grounding",
+      "definition": "Claims should be grounded in authorized sources or explicitly marked as inference."
+    },
+    {
+      "id": "safety_and_policy",
+      "definition": "The prompt behavior should respect safety, security, privacy, and policy boundaries."
+    },
+    {
+      "id": "completeness",
+      "definition": "The expected response should cover required deliverables and evidence."
+    },
+    {
+      "id": "consistency",
+      "definition": "The prompt should produce outputs consistent with the governing contract and prior approved artifacts."
+    },
+    {
+      "id": "traceability",
+      "definition": "Inputs, outputs, assumptions, and evidence should be linkable to task and artifact identifiers."
+    },
+    {
+      "id": "reproducibility",
+      "definition": "The evaluation definition should be stable enough for future repeatable evaluation."
+    },
+    {
+      "id": "operational_boundaries",
+      "definition": "The prompt should avoid unauthorized runtime, product, platform, or version changes."
+    },
+    {
+      "id": "reviewability",
+      "definition": "The output should be reviewable by an inspector or HITL approver."
+    }
+  ],
+  "input_contract": {
+    "required_fields": [
+      "evaluation_id",
+      "program_id",
+      "task_id",
+      "prompt_reference",
+      "prompt_version_reference",
+      "evaluation_objective",
+      "authorized_sources",
+      "constraints",
+      "dimensions",
+      "lifecycle_state",
+      "approval_state",
+      "evidence_requirements",
+      "future_task_bindings"
+    ],
+    "excluded_for_w3_t1": [
+      "actual_prompt_body",
+      "dataset_payload",
+      "execution_input",
+      "runtime_request"
+    ]
+  },
+  "output_evidence_contract": {
+    "required_fields": [
+      "evaluation_id",
+      "lifecycle_state",
+      "dimension_results_placeholder",
+      "scoring_semantics_reference",
+      "evidence_paths",
+      "reviewer_notes_placeholder",
+      "approval_state",
+      "traceability_links",
+      "non_runtime_attestation"
+    ],
+    "excluded_for_w3_t1": [
+      "measured_scores",
+      "evaluator_comments",
+      "pass_fail_results",
+      "runtime_traces"
+    ]
+  },
+  "scoring_semantics": [
+    {
+      "state": "NOT_EVALUATED",
+      "definition": "No runtime evaluation has occurred."
+    },
+    {
+      "state": "DEFINED",
+      "definition": "The dimension is defined and eligible for future evaluation."
+    },
+    {
+      "state": "NOT_APPLICABLE",
+      "definition": "The dimension is intentionally excluded with rationale."
+    },
+    {
+      "state": "PENDING_BASELINE",
+      "definition": "Future scoring requires a baseline or benchmark contract."
+    },
+    {
+      "state": "PENDING_APPROVAL",
+      "definition": "Future scoring requires review or HITL approval."
+    }
+  ],
+  "scoring_boundaries": {
+    "numeric_scores_defined": false,
+    "weights_defined": false,
+    "aggregations_defined": false,
+    "thresholds_defined": false,
+    "ranks_defined": false,
+    "pass_fail_decisions_defined": false
+  },
+  "ownership_approval_placeholders": {
+    "owner_role_placeholder": "UNASSIGNED",
+    "reviewer_role_placeholder": "UNASSIGNED",
+    "approver_role_placeholder": "UNASSIGNED",
+    "approval_state": "NOT_APPROVED",
+    "approval_date_placeholder": null,
+    "decision_rationale_placeholder": null,
+    "real_owner_assigned": false,
+    "real_approver_assigned": false,
+    "iam_or_permissions_defined": false
+  },
+  "future_traceability": [
+    {
+      "task_id": "W3-T2",
+      "task_name": "Agent Evaluation Framework",
+      "relationship": "Future agent-level evaluation contract may bind to prompt evaluation definitions.",
+      "executed_by_w3_t1": false
+    },
+    {
+      "task_id": "W3-T3",
+      "task_name": "Benchmark Framework",
+      "relationship": "Future benchmark taxonomy may provide baselines and reproducibility rules.",
+      "executed_by_w3_t1": false
+    },
+    {
+      "task_id": "W3-T4",
+      "task_name": "Score Framework",
+      "relationship": "Future score definitions may define numeric weights and aggregation rules.",
+      "executed_by_w3_t1": false
+    },
+    {
+      "task_id": "W3-T5",
+      "task_name": "Datasets",
+      "relationship": "Future dataset governance may bind evaluation inputs to approved dataset records.",
+      "executed_by_w3_t1": false
+    },
+    {
+      "task_id": "W3-T6",
+      "task_name": "Evaluation Reports",
+      "relationship": "Future reporting schema may consume governed evaluation evidence.",
+      "executed_by_w3_t1": false
+    },
+    {
+      "task_id": "W3-T7",
+      "task_name": "Evaluation Audit Final",
+      "relationship": "Final audit may validate consistency across W3-T1 through W3-T6.",
+      "executed_by_w3_t1": false
+    }
+  ],
+  "boundary_attestation": {
+    "runtime_evaluation_executed": false,
+    "product_code_modified": false,
+    "version_files_modified": false,
+    "datasets_created": false,
+    "benchmark_executions_created": false,
+    "scoring_outputs_created": false,
+    "pipelines_created": false,
+    "deployments_created": false,
+    "runtime_config_created": false,
+    "platform_config_created": false,
+    "new_platform_introduced": false
+  },
+  "next_eligible_task": "W3-T2"
+}

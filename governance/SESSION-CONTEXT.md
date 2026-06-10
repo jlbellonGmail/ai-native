@@ -40,10 +40,10 @@ verificar
 ## Último cierre válido
 
 Workstream:
-W2
+W3
 
 Tarea:
-W2-T8
+W3-T1
 
 Estado:
 COMPLETADA
@@ -56,39 +56,36 @@ No modificada
 
 Validado:
 
-* Observability Audit Final completada
-* Auditoria final de Workstream 2 completada
-* W2-T1 SLI Definition validada
-* W2-T2 SLO Definition validada
-* W2-T3 Error Budgets validada
-* W2-T4 Metrics Catalog validada
-* W2-T5 Alerting validada
-* W2-T6 Dashboards validada
-* W2-T7 OpenTelemetry Validation validada
-* Completitud documental de Observability Engineering validada
-* Artefactos machine-readable W2-T1 a W2-T7 presentes y validos
-* 10 registros canonicos validados por cada artefacto JSON W2-T1 a W2-T7
-* Continuidad de bindings SLI/SLO/error budget/metric/alert/dashboard/OpenTelemetry validada
-* No se instalo OpenTelemetry
-* No se instrumento codigo producto
-* No collectors implementados
-* No exporters implementados
-* No dashboards runtime implementados
-* No alerting runtime implementado
+* Prompt Evaluation Framework completado
+* Evaluation governance model definido
+* Evaluation schema definido
+* Evaluation lifecycle definido
+* Dimensiones de evaluacion definidas
+* Contrato de input documentado
+* Contrato de output/evidence documentado
+* Scoring semantics definidos solo como governance
+* Ownership y approval placeholders definidos sin asignar owners reales
+* Trazabilidad futura W3-T2 a W3-T7 documentada sin ejecutar tareas futuras
+* Artefacto machine-readable creado y validado como JSON
+* No se ejecuto evaluacion runtime
+* No se crearon datasets
+* No benchmark executions creadas
+* No scoring outputs reales creados
+* No pipelines creados
+* No deployments creados
 * No runtime config creada
-* No plataforma de observabilidad configurada
-* No se creo governance/observability/
+* No plataforma nueva introducida
 * No codigo producto modificado
 * No version modificada
 * evidencia archivada
 
 Evidencia disponible:
 
-* governance/execution/archive/ENTERPRISE-10-10-V1/W2-T8/
+* governance/execution/archive/ENTERPRISE-10-10-V1/W3-T1/
 
 Memoria operativa:
 
-* Engram pendiente para W2-T8
+* Engram pendiente para W3-T1
 
 ---
 
@@ -100,15 +97,15 @@ Sin incidencias activas.
 
 ## Próximo paso
 
-W3-T1
+W3-T2
 
 Objetivo:
 
-Prompt Evaluation Framework
+Agent Evaluation Framework
 
 Validar:
 
-* Inicio de Workstream 3 Evaluation Framework
+* Continuidad de Workstream 3 Evaluation Framework
 
 No comenzar hasta nueva instrucción.
 
