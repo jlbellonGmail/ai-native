@@ -414,7 +414,29 @@ Notas:
 Dashboards
 
 Estado:
-[ ]
+[x] COMPLETADO
+
+Fecha cierre:
+2026-06-10
+
+Evidencia:
+* Definicion gobernada de dashboards completada.
+* Inventario canonico de 10 dashboard definition records definido con vinculacion uno-a-uno al set gobernado de metric records de W2-T4 y alert policy records de W2-T5.
+* Contrato de dashboard definition record definido con identificador, vinculacion a metric record, vinculacion a alert policy, modo de binding, estados de governance, layout, panel, query, data source, refresh, ownership y runtime, y non-goals.
+* Dashboards gobernados como bindings documentales sin redefinir SLI, SLO, error budgets, metrics catalog ni alerting.
+* Artefacto machine-readable creado y alineado con la definicion markdown.
+* No se implementaron dashboards runtime.
+* No se implementaron collectors ni queries runtime.
+* No se configuro plataforma de observabilidad.
+* No se ejecuto validacion OpenTelemetry.
+* No se modifico codigo producto.
+* No se cambio version.
+* evidencia archivada en governance/execution/archive/ENTERPRISE-10-10-V1/W2-T6/
+
+Notas:
+* W2-T6 define dashboards como contrato de governance.
+* La activacion runtime queda pendiente hasta contar con fuente de medicion aprobada, query ejecutable, configuracion de plataforma, layout/panel spec, refresh behavior, ownership y access policy aprobados.
+* W2-T7 queda como siguiente tarea elegible.
 
 ---
 
