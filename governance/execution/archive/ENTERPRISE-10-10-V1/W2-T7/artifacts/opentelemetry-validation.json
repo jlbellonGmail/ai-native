@@ -1,0 +1,335 @@
+{
+  "program": "ENTERPRISE-10-10-V1",
+  "workstream": "W2",
+  "task": "W2-T7",
+  "name": "OpenTelemetry Validation",
+  "status": "GOVERNANCE_VALIDATED",
+  "date": "2026-06-10",
+  "source_of_truth": [
+    "governance/roadmaps/ENTERPRISE-10-10-ROADMAP.md",
+    "governance/SESSION-CONTEXT.md",
+    "governance/versioning/VERSIONING-POLICY.md",
+    "governance/standards/TASK-EXECUTION-STANDARD.md"
+  ],
+  "prerequisites": [
+    {
+      "task": "W2-T1",
+      "name": "SLI Definition",
+      "required_state": "COMPLETED"
+    },
+    {
+      "task": "W2-T2",
+      "name": "SLO Definition",
+      "required_state": "COMPLETED"
+    },
+    {
+      "task": "W2-T3",
+      "name": "Error Budgets",
+      "required_state": "COMPLETED"
+    },
+    {
+      "task": "W2-T4",
+      "name": "Metrics Catalog",
+      "required_state": "COMPLETED"
+    },
+    {
+      "task": "W2-T5",
+      "name": "Alerting",
+      "required_state": "COMPLETED"
+    },
+    {
+      "task": "W2-T6",
+      "name": "Dashboards",
+      "required_state": "COMPLETED"
+    }
+  ],
+  "scope": {
+    "governance_only": true,
+    "product_code_allowed": false,
+    "version_change_allowed": false,
+    "opentelemetry_installation_allowed": false,
+    "product_instrumentation_allowed": false,
+    "collectors_allowed": false,
+    "exporters_allowed": false,
+    "runtime_configuration_allowed": false,
+    "observability_platform_configuration_allowed": false,
+    "runtime_queries_allowed": false,
+    "runtime_dashboards_allowed": false,
+    "sli_redefinition_allowed": false,
+    "slo_redefinition_allowed": false,
+    "error_budget_redefinition_allowed": false,
+    "metrics_catalog_redefinition_allowed": false,
+    "alerting_redefinition_allowed": false,
+    "dashboard_redefinition_allowed": false,
+    "future_task_leakage_allowed": false
+  },
+  "contract": {
+    "record_type": "opentelemetry_validation",
+    "binding_target": "governed W2 observability chain records from W2-T1 through W2-T6",
+    "binding_cardinality": "one_opentelemetry_validation_record_per_governed_chain_record",
+    "required_fields": [
+      "otel_validation_id",
+      "governed_chain_binding",
+      "validation_mode",
+      "governance_state",
+      "installation_state",
+      "instrumentation_state",
+      "collector_state",
+      "exporter_state",
+      "runtime_configuration_state",
+      "observability_platform_state",
+      "redefinition_state",
+      "runtime_validation_state",
+      "non_goals"
+    ]
+  },
+  "lifecycle_states": [
+    "GOVERNANCE_VALIDATED",
+    "PENDING_OTEL_INSTALLATION",
+    "PENDING_INSTRUMENTATION",
+    "PENDING_COLLECTOR",
+    "PENDING_EXPORTER",
+    "PENDING_RUNTIME_VALIDATION",
+    "RUNTIME_VALIDATED"
+  ],
+  "runtime_validation_prerequisites": [
+    "approved_opentelemetry_dependency_or_distribution",
+    "approved_product_instrumentation_scope",
+    "approved_collector_configuration",
+    "approved_exporter_configuration",
+    "approved_runtime_configuration",
+    "approved_observability_platform_destination",
+    "approved_telemetry_validation_procedure",
+    "approved_evidence_capture_and_retention_path"
+  ],
+  "opentelemetry_validation_records": [
+    {
+      "otel_validation_id": "OTEL-W2-001",
+      "governed_chain_binding": "W2 governed observability chain record 01",
+      "validation_mode": "DOCUMENTARY_GOVERNANCE_VALIDATION",
+      "governance_state": "GOVERNANCE_VALIDATED",
+      "installation_state": "NOT_INSTALLED_IN_W2_T7",
+      "instrumentation_state": "NOT_INSTRUMENTED_IN_W2_T7",
+      "collector_state": "NOT_DEFINED_IN_W2_T7",
+      "exporter_state": "NOT_DEFINED_IN_W2_T7",
+      "runtime_configuration_state": "NOT_DEFINED_IN_W2_T7",
+      "observability_platform_state": "NOT_CONFIGURED_IN_W2_T7",
+      "redefinition_state": "NO_UPSTREAM_REDEFINITION",
+      "runtime_validation_state": "NOT_EXECUTED_IN_W2_T7",
+      "non_goals": [
+        "no_opentelemetry_installation",
+        "no_product_instrumentation",
+        "no_collector",
+        "no_exporter",
+        "no_runtime_configuration",
+        "no_platform_configuration"
+      ]
+    },
+    {
+      "otel_validation_id": "OTEL-W2-002",
+      "governed_chain_binding": "W2 governed observability chain record 02",
+      "validation_mode": "DOCUMENTARY_GOVERNANCE_VALIDATION",
+      "governance_state": "GOVERNANCE_VALIDATED",
+      "installation_state": "NOT_INSTALLED_IN_W2_T7",
+      "instrumentation_state": "NOT_INSTRUMENTED_IN_W2_T7",
+      "collector_state": "NOT_DEFINED_IN_W2_T7",
+      "exporter_state": "NOT_DEFINED_IN_W2_T7",
+      "runtime_configuration_state": "NOT_DEFINED_IN_W2_T7",
+      "observability_platform_state": "NOT_CONFIGURED_IN_W2_T7",
+      "redefinition_state": "NO_UPSTREAM_REDEFINITION",
+      "runtime_validation_state": "NOT_EXECUTED_IN_W2_T7",
+      "non_goals": [
+        "no_opentelemetry_installation",
+        "no_product_instrumentation",
+        "no_collector",
+        "no_exporter",
+        "no_runtime_configuration",
+        "no_platform_configuration"
+      ]
+    },
+    {
+      "otel_validation_id": "OTEL-W2-003",
+      "governed_chain_binding": "W2 governed observability chain record 03",
+      "validation_mode": "DOCUMENTARY_GOVERNANCE_VALIDATION",
+      "governance_state": "GOVERNANCE_VALIDATED",
+      "installation_state": "NOT_INSTALLED_IN_W2_T7",
+      "instrumentation_state": "NOT_INSTRUMENTED_IN_W2_T7",
+      "collector_state": "NOT_DEFINED_IN_W2_T7",
+      "exporter_state": "NOT_DEFINED_IN_W2_T7",
+      "runtime_configuration_state": "NOT_DEFINED_IN_W2_T7",
+      "observability_platform_state": "NOT_CONFIGURED_IN_W2_T7",
+      "redefinition_state": "NO_UPSTREAM_REDEFINITION",
+      "runtime_validation_state": "NOT_EXECUTED_IN_W2_T7",
+      "non_goals": [
+        "no_opentelemetry_installation",
+        "no_product_instrumentation",
+        "no_collector",
+        "no_exporter",
+        "no_runtime_configuration",
+        "no_platform_configuration"
+      ]
+    },
+    {
+      "otel_validation_id": "OTEL-W2-004",
+      "governed_chain_binding": "W2 governed observability chain record 04",
+      "validation_mode": "DOCUMENTARY_GOVERNANCE_VALIDATION",
+      "governance_state": "GOVERNANCE_VALIDATED",
+      "installation_state": "NOT_INSTALLED_IN_W2_T7",
+      "instrumentation_state": "NOT_INSTRUMENTED_IN_W2_T7",
+      "collector_state": "NOT_DEFINED_IN_W2_T7",
+      "exporter_state": "NOT_DEFINED_IN_W2_T7",
+      "runtime_configuration_state": "NOT_DEFINED_IN_W2_T7",
+      "observability_platform_state": "NOT_CONFIGURED_IN_W2_T7",
+      "redefinition_state": "NO_UPSTREAM_REDEFINITION",
+      "runtime_validation_state": "NOT_EXECUTED_IN_W2_T7",
+      "non_goals": [
+        "no_opentelemetry_installation",
+        "no_product_instrumentation",
+        "no_collector",
+        "no_exporter",
+        "no_runtime_configuration",
+        "no_platform_configuration"
+      ]
+    },
+    {
+      "otel_validation_id": "OTEL-W2-005",
+      "governed_chain_binding": "W2 governed observability chain record 05",
+      "validation_mode": "DOCUMENTARY_GOVERNANCE_VALIDATION",
+      "governance_state": "GOVERNANCE_VALIDATED",
+      "installation_state": "NOT_INSTALLED_IN_W2_T7",
+      "instrumentation_state": "NOT_INSTRUMENTED_IN_W2_T7",
+      "collector_state": "NOT_DEFINED_IN_W2_T7",
+      "exporter_state": "NOT_DEFINED_IN_W2_T7",
+      "runtime_configuration_state": "NOT_DEFINED_IN_W2_T7",
+      "observability_platform_state": "NOT_CONFIGURED_IN_W2_T7",
+      "redefinition_state": "NO_UPSTREAM_REDEFINITION",
+      "runtime_validation_state": "NOT_EXECUTED_IN_W2_T7",
+      "non_goals": [
+        "no_opentelemetry_installation",
+        "no_product_instrumentation",
+        "no_collector",
+        "no_exporter",
+        "no_runtime_configuration",
+        "no_platform_configuration"
+      ]
+    },
+    {
+      "otel_validation_id": "OTEL-W2-006",
+      "governed_chain_binding": "W2 governed observability chain record 06",
+      "validation_mode": "DOCUMENTARY_GOVERNANCE_VALIDATION",
+      "governance_state": "GOVERNANCE_VALIDATED",
+      "installation_state": "NOT_INSTALLED_IN_W2_T7",
+      "instrumentation_state": "NOT_INSTRUMENTED_IN_W2_T7",
+      "collector_state": "NOT_DEFINED_IN_W2_T7",
+      "exporter_state": "NOT_DEFINED_IN_W2_T7",
+      "runtime_configuration_state": "NOT_DEFINED_IN_W2_T7",
+      "observability_platform_state": "NOT_CONFIGURED_IN_W2_T7",
+      "redefinition_state": "NO_UPSTREAM_REDEFINITION",
+      "runtime_validation_state": "NOT_EXECUTED_IN_W2_T7",
+      "non_goals": [
+        "no_opentelemetry_installation",
+        "no_product_instrumentation",
+        "no_collector",
+        "no_exporter",
+        "no_runtime_configuration",
+        "no_platform_configuration"
+      ]
+    },
+    {
+      "otel_validation_id": "OTEL-W2-007",
+      "governed_chain_binding": "W2 governed observability chain record 07",
+      "validation_mode": "DOCUMENTARY_GOVERNANCE_VALIDATION",
+      "governance_state": "GOVERNANCE_VALIDATED",
+      "installation_state": "NOT_INSTALLED_IN_W2_T7",
+      "instrumentation_state": "NOT_INSTRUMENTED_IN_W2_T7",
+      "collector_state": "NOT_DEFINED_IN_W2_T7",
+      "exporter_state": "NOT_DEFINED_IN_W2_T7",
+      "runtime_configuration_state": "NOT_DEFINED_IN_W2_T7",
+      "observability_platform_state": "NOT_CONFIGURED_IN_W2_T7",
+      "redefinition_state": "NO_UPSTREAM_REDEFINITION",
+      "runtime_validation_state": "NOT_EXECUTED_IN_W2_T7",
+      "non_goals": [
+        "no_opentelemetry_installation",
+        "no_product_instrumentation",
+        "no_collector",
+        "no_exporter",
+        "no_runtime_configuration",
+        "no_platform_configuration"
+      ]
+    },
+    {
+      "otel_validation_id": "OTEL-W2-008",
+      "governed_chain_binding": "W2 governed observability chain record 08",
+      "validation_mode": "DOCUMENTARY_GOVERNANCE_VALIDATION",
+      "governance_state": "GOVERNANCE_VALIDATED",
+      "installation_state": "NOT_INSTALLED_IN_W2_T7",
+      "instrumentation_state": "NOT_INSTRUMENTED_IN_W2_T7",
+      "collector_state": "NOT_DEFINED_IN_W2_T7",
+      "exporter_state": "NOT_DEFINED_IN_W2_T7",
+      "runtime_configuration_state": "NOT_DEFINED_IN_W2_T7",
+      "observability_platform_state": "NOT_CONFIGURED_IN_W2_T7",
+      "redefinition_state": "NO_UPSTREAM_REDEFINITION",
+      "runtime_validation_state": "NOT_EXECUTED_IN_W2_T7",
+      "non_goals": [
+        "no_opentelemetry_installation",
+        "no_product_instrumentation",
+        "no_collector",
+        "no_exporter",
+        "no_runtime_configuration",
+        "no_platform_configuration"
+      ]
+    },
+    {
+      "otel_validation_id": "OTEL-W2-009",
+      "governed_chain_binding": "W2 governed observability chain record 09",
+      "validation_mode": "DOCUMENTARY_GOVERNANCE_VALIDATION",
+      "governance_state": "GOVERNANCE_VALIDATED",
+      "installation_state": "NOT_INSTALLED_IN_W2_T7",
+      "instrumentation_state": "NOT_INSTRUMENTED_IN_W2_T7",
+      "collector_state": "NOT_DEFINED_IN_W2_T7",
+      "exporter_state": "NOT_DEFINED_IN_W2_T7",
+      "runtime_configuration_state": "NOT_DEFINED_IN_W2_T7",
+      "observability_platform_state": "NOT_CONFIGURED_IN_W2_T7",
+      "redefinition_state": "NO_UPSTREAM_REDEFINITION",
+      "runtime_validation_state": "NOT_EXECUTED_IN_W2_T7",
+      "non_goals": [
+        "no_opentelemetry_installation",
+        "no_product_instrumentation",
+        "no_collector",
+        "no_exporter",
+        "no_runtime_configuration",
+        "no_platform_configuration"
+      ]
+    },
+    {
+      "otel_validation_id": "OTEL-W2-010",
+      "governed_chain_binding": "W2 governed observability chain record 10",
+      "validation_mode": "DOCUMENTARY_GOVERNANCE_VALIDATION",
+      "governance_state": "GOVERNANCE_VALIDATED",
+      "installation_state": "NOT_INSTALLED_IN_W2_T7",
+      "instrumentation_state": "NOT_INSTRUMENTED_IN_W2_T7",
+      "collector_state": "NOT_DEFINED_IN_W2_T7",
+      "exporter_state": "NOT_DEFINED_IN_W2_T7",
+      "runtime_configuration_state": "NOT_DEFINED_IN_W2_T7",
+      "observability_platform_state": "NOT_CONFIGURED_IN_W2_T7",
+      "redefinition_state": "NO_UPSTREAM_REDEFINITION",
+      "runtime_validation_state": "NOT_EXECUTED_IN_W2_T7",
+      "non_goals": [
+        "no_opentelemetry_installation",
+        "no_product_instrumentation",
+        "no_collector",
+        "no_exporter",
+        "no_runtime_configuration",
+        "no_platform_configuration"
+      ]
+    }
+  ],
+  "closure": {
+    "completed": true,
+    "next_eligible_task": "W2-T8",
+    "commit_allowed_in_this_execution": false,
+    "push_allowed_in_this_execution": false,
+    "engram_allowed_in_this_execution": false
+  }
+}
+
