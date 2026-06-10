@@ -43,7 +43,7 @@ Workstream:
 W2
 
 Tarea:
-W2-T4
+W2-T5
 
 Estado:
 COMPLETADA
@@ -56,18 +56,19 @@ No modificada
 
 Validado:
 
-* Metrics Catalog completada
-* Definicion gobernada de metrics catalog completada
-* 10 metric records canonicos definidos con vinculacion uno-a-uno al set gobernado SLI/SLO/Error Budget existente
-* Contrato de metric record definido
-* Metricas gobernadas como bindings documentales
+* Alerting completada
+* Definicion gobernada de alerting completada
+* 10 alert policy records canonicos definidos con vinculacion uno-a-uno al set gobernado de metric records de W2-T4
+* Contrato de alert policy record definido
+* Alerting gobernado como bindings documentales
 * No se redefinieron SLIs
 * No se redefinieron SLOs
 * No se redefinieron error budgets
+* No se redefinio metrics catalog
 * Markdown y JSON alineados
+* No se activaron thresholds numericos ni reglas runtime
 * No collectors implementados
 * No queries runtime implementadas
-* No alerting implementado
 * No dashboards implementados
 * No plataforma de observabilidad configurada
 * No codigo producto modificado
@@ -76,11 +77,11 @@ Validado:
 
 Evidencia disponible:
 
-* governance/execution/archive/ENTERPRISE-10-10-V1/W2-T4/
+* governance/execution/archive/ENTERPRISE-10-10-V1/W2-T5/
 
 Memoria operativa:
 
-* Engram preparado para W2-T4, no ejecutado por restriccion HITL
+* Engram preparado para W2-T5, no ejecutado por restriccion HITL
 
 ---
 
@@ -92,15 +93,15 @@ Sin incidencias activas.
 
 ## Próximo paso
 
-W2-T5
+W2-T6
 
 Objetivo:
 
-Alerting
+Dashboards
 
 Validar:
 
-* Definicion de alerting
+* Definicion de dashboards
 
 No comenzar hasta nueva instrucción.
 

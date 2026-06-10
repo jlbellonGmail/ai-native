@@ -383,7 +383,29 @@ Notas:
 Alerting
 
 Estado:
-[ ]
+[x] COMPLETADO
+
+Fecha cierre:
+2026-06-10
+
+Evidencia:
+* Definicion gobernada de alerting completada.
+* Inventario canonico de 10 alert policy records definido con vinculacion uno-a-uno al set gobernado de metric records de W2-T4.
+* Contrato de alert policy record definido con identificador, vinculacion a metric record, modo de binding, estado de governance, estado de activacion, estado de thresholds, queries, dashboards, routing, ownership y non-goals.
+* Alerting gobernado como bindings documentales sin redefinir SLI, SLO, error budgets ni metrics catalog.
+* Artefacto machine-readable creado y alineado con la definicion markdown.
+* No se activaron thresholds numericos ni reglas runtime.
+* No se implementaron collectors ni queries runtime.
+* No se implementaron dashboards.
+* No se configuro plataforma de observabilidad.
+* No se modifico codigo producto.
+* No se cambio version.
+* evidencia archivada en governance/execution/archive/ENTERPRISE-10-10-V1/W2-T5/
+
+Notas:
+* W2-T5 define alerting como contrato de governance.
+* La activacion runtime queda pendiente hasta contar con baseline, medicion, query ejecutable, threshold o burn policy, ownership, routing y plataforma aprobados.
+* W2-T6 queda como siguiente tarea elegible.
 
 ---
 

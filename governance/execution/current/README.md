@@ -1,15 +1,7 @@
 # Current Execution
 
-Program: ENTERPRISE-10-10-V1
-Status: READY
+This directory is intentionally empty between task executions.
 
-No active execution package is present.
+Completed task evidence is archived under:
 
-Next eligible task:
-
-* W2-T5 - Alerting
-
-Restrictions:
-
-* Do not begin the next task without explicit instruction.
-* Do not commit, push, or execute Engram without HITL approval.
+`governance/execution/archive/ENTERPRISE-10-10-V1/`

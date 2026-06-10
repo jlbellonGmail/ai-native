@@ -1,0 +1,270 @@
+{
+  "program": "ENTERPRISE-10-10-V1",
+  "workstream": "W2",
+  "task": "W2-T5",
+  "name": "Alerting",
+  "status": "GOVERNANCE_DEFINED",
+  "date": "2026-06-10",
+  "source_of_truth": [
+    "governance/roadmaps/ENTERPRISE-10-10-ROADMAP.md",
+    "governance/SESSION-CONTEXT.md",
+    "governance/versioning/VERSIONING-POLICY.md",
+    "governance/standards/TASK-EXECUTION-STANDARD.md"
+  ],
+  "prerequisites": [
+    {
+      "task": "W2-T1",
+      "name": "SLI Definition",
+      "required_state": "COMPLETED"
+    },
+    {
+      "task": "W2-T2",
+      "name": "SLO Definition",
+      "required_state": "COMPLETED"
+    },
+    {
+      "task": "W2-T3",
+      "name": "Error Budgets",
+      "required_state": "COMPLETED"
+    },
+    {
+      "task": "W2-T4",
+      "name": "Metrics Catalog",
+      "required_state": "COMPLETED"
+    }
+  ],
+  "scope": {
+    "governance_only": true,
+    "product_code_allowed": false,
+    "version_change_allowed": false,
+    "collectors_allowed": false,
+    "runtime_queries_allowed": false,
+    "dashboards_allowed": false,
+    "observability_platform_configuration_allowed": false,
+    "alert_threshold_activation_allowed": false
+  },
+  "contract": {
+    "record_type": "alert_policy",
+    "binding_target": "W2-T4 canonical metric record",
+    "binding_cardinality": "one_alert_policy_per_metric_record",
+    "required_fields": [
+      "alert_policy_id",
+      "metric_record_binding",
+      "binding_mode",
+      "governance_state",
+      "activation_state",
+      "threshold_state",
+      "query_state",
+      "dashboard_state",
+      "routing_state",
+      "ownership_state",
+      "non_goals"
+    ]
+  },
+  "lifecycle_states": [
+    "GOVERNANCE_DEFINED",
+    "PENDING_APPROVED_BASELINE",
+    "PENDING_RUNTIME_QUERY",
+    "PENDING_OPERATIONAL_OWNERSHIP",
+    "ACTIVE",
+    "RETIRED"
+  ],
+  "activation_prerequisites": [
+    "approved_numeric_slo_target_or_equivalent_governed_objective_context",
+    "approved_measurement_source",
+    "approved_executable_query",
+    "approved_threshold_or_burn_policy",
+    "approved_operational_owner",
+    "approved_routing_policy",
+    "approved_platform_configuration"
+  ],
+  "alert_policies": [
+    {
+      "alert_policy_id": "AP-W2-001",
+      "metric_record_binding": "W2-T4 canonical metric record 01",
+      "binding_mode": "DOCUMENTARY_GOVERNANCE_BINDING",
+      "governance_state": "GOVERNANCE_DEFINED",
+      "activation_state": "NOT_ACTIVE",
+      "threshold_state": "NOT_DEFINED_IN_W2_T5",
+      "query_state": "NOT_DEFINED_IN_W2_T5",
+      "dashboard_state": "NOT_DEFINED_IN_W2_T5",
+      "routing_state": "NOT_DEFINED_IN_W2_T5",
+      "ownership_state": "INHERITANCE_PENDING_APPROVAL",
+      "non_goals": [
+        "no_runtime_alert_rule",
+        "no_executable_query",
+        "no_dashboard",
+        "no_platform_configuration"
+      ]
+    },
+    {
+      "alert_policy_id": "AP-W2-002",
+      "metric_record_binding": "W2-T4 canonical metric record 02",
+      "binding_mode": "DOCUMENTARY_GOVERNANCE_BINDING",
+      "governance_state": "GOVERNANCE_DEFINED",
+      "activation_state": "NOT_ACTIVE",
+      "threshold_state": "NOT_DEFINED_IN_W2_T5",
+      "query_state": "NOT_DEFINED_IN_W2_T5",
+      "dashboard_state": "NOT_DEFINED_IN_W2_T5",
+      "routing_state": "NOT_DEFINED_IN_W2_T5",
+      "ownership_state": "INHERITANCE_PENDING_APPROVAL",
+      "non_goals": [
+        "no_runtime_alert_rule",
+        "no_executable_query",
+        "no_dashboard",
+        "no_platform_configuration"
+      ]
+    },
+    {
+      "alert_policy_id": "AP-W2-003",
+      "metric_record_binding": "W2-T4 canonical metric record 03",
+      "binding_mode": "DOCUMENTARY_GOVERNANCE_BINDING",
+      "governance_state": "GOVERNANCE_DEFINED",
+      "activation_state": "NOT_ACTIVE",
+      "threshold_state": "NOT_DEFINED_IN_W2_T5",
+      "query_state": "NOT_DEFINED_IN_W2_T5",
+      "dashboard_state": "NOT_DEFINED_IN_W2_T5",
+      "routing_state": "NOT_DEFINED_IN_W2_T5",
+      "ownership_state": "INHERITANCE_PENDING_APPROVAL",
+      "non_goals": [
+        "no_runtime_alert_rule",
+        "no_executable_query",
+        "no_dashboard",
+        "no_platform_configuration"
+      ]
+    },
+    {
+      "alert_policy_id": "AP-W2-004",
+      "metric_record_binding": "W2-T4 canonical metric record 04",
+      "binding_mode": "DOCUMENTARY_GOVERNANCE_BINDING",
+      "governance_state": "GOVERNANCE_DEFINED",
+      "activation_state": "NOT_ACTIVE",
+      "threshold_state": "NOT_DEFINED_IN_W2_T5",
+      "query_state": "NOT_DEFINED_IN_W2_T5",
+      "dashboard_state": "NOT_DEFINED_IN_W2_T5",
+      "routing_state": "NOT_DEFINED_IN_W2_T5",
+      "ownership_state": "INHERITANCE_PENDING_APPROVAL",
+      "non_goals": [
+        "no_runtime_alert_rule",
+        "no_executable_query",
+        "no_dashboard",
+        "no_platform_configuration"
+      ]
+    },
+    {
+      "alert_policy_id": "AP-W2-005",
+      "metric_record_binding": "W2-T4 canonical metric record 05",
+      "binding_mode": "DOCUMENTARY_GOVERNANCE_BINDING",
+      "governance_state": "GOVERNANCE_DEFINED",
+      "activation_state": "NOT_ACTIVE",
+      "threshold_state": "NOT_DEFINED_IN_W2_T5",
+      "query_state": "NOT_DEFINED_IN_W2_T5",
+      "dashboard_state": "NOT_DEFINED_IN_W2_T5",
+      "routing_state": "NOT_DEFINED_IN_W2_T5",
+      "ownership_state": "INHERITANCE_PENDING_APPROVAL",
+      "non_goals": [
+        "no_runtime_alert_rule",
+        "no_executable_query",
+        "no_dashboard",
+        "no_platform_configuration"
+      ]
+    },
+    {
+      "alert_policy_id": "AP-W2-006",
+      "metric_record_binding": "W2-T4 canonical metric record 06",
+      "binding_mode": "DOCUMENTARY_GOVERNANCE_BINDING",
+      "governance_state": "GOVERNANCE_DEFINED",
+      "activation_state": "NOT_ACTIVE",
+      "threshold_state": "NOT_DEFINED_IN_W2_T5",
+      "query_state": "NOT_DEFINED_IN_W2_T5",
+      "dashboard_state": "NOT_DEFINED_IN_W2_T5",
+      "routing_state": "NOT_DEFINED_IN_W2_T5",
+      "ownership_state": "INHERITANCE_PENDING_APPROVAL",
+      "non_goals": [
+        "no_runtime_alert_rule",
+        "no_executable_query",
+        "no_dashboard",
+        "no_platform_configuration"
+      ]
+    },
+    {
+      "alert_policy_id": "AP-W2-007",
+      "metric_record_binding": "W2-T4 canonical metric record 07",
+      "binding_mode": "DOCUMENTARY_GOVERNANCE_BINDING",
+      "governance_state": "GOVERNANCE_DEFINED",
+      "activation_state": "NOT_ACTIVE",
+      "threshold_state": "NOT_DEFINED_IN_W2_T5",
+      "query_state": "NOT_DEFINED_IN_W2_T5",
+      "dashboard_state": "NOT_DEFINED_IN_W2_T5",
+      "routing_state": "NOT_DEFINED_IN_W2_T5",
+      "ownership_state": "INHERITANCE_PENDING_APPROVAL",
+      "non_goals": [
+        "no_runtime_alert_rule",
+        "no_executable_query",
+        "no_dashboard",
+        "no_platform_configuration"
+      ]
+    },
+    {
+      "alert_policy_id": "AP-W2-008",
+      "metric_record_binding": "W2-T4 canonical metric record 08",
+      "binding_mode": "DOCUMENTARY_GOVERNANCE_BINDING",
+      "governance_state": "GOVERNANCE_DEFINED",
+      "activation_state": "NOT_ACTIVE",
+      "threshold_state": "NOT_DEFINED_IN_W2_T5",
+      "query_state": "NOT_DEFINED_IN_W2_T5",
+      "dashboard_state": "NOT_DEFINED_IN_W2_T5",
+      "routing_state": "NOT_DEFINED_IN_W2_T5",
+      "ownership_state": "INHERITANCE_PENDING_APPROVAL",
+      "non_goals": [
+        "no_runtime_alert_rule",
+        "no_executable_query",
+        "no_dashboard",
+        "no_platform_configuration"
+      ]
+    },
+    {
+      "alert_policy_id": "AP-W2-009",
+      "metric_record_binding": "W2-T4 canonical metric record 09",
+      "binding_mode": "DOCUMENTARY_GOVERNANCE_BINDING",
+      "governance_state": "GOVERNANCE_DEFINED",
+      "activation_state": "NOT_ACTIVE",
+      "threshold_state": "NOT_DEFINED_IN_W2_T5",
+      "query_state": "NOT_DEFINED_IN_W2_T5",
+      "dashboard_state": "NOT_DEFINED_IN_W2_T5",
+      "routing_state": "NOT_DEFINED_IN_W2_T5",
+      "ownership_state": "INHERITANCE_PENDING_APPROVAL",
+      "non_goals": [
+        "no_runtime_alert_rule",
+        "no_executable_query",
+        "no_dashboard",
+        "no_platform_configuration"
+      ]
+    },
+    {
+      "alert_policy_id": "AP-W2-010",
+      "metric_record_binding": "W2-T4 canonical metric record 10",
+      "binding_mode": "DOCUMENTARY_GOVERNANCE_BINDING",
+      "governance_state": "GOVERNANCE_DEFINED",
+      "activation_state": "NOT_ACTIVE",
+      "threshold_state": "NOT_DEFINED_IN_W2_T5",
+      "query_state": "NOT_DEFINED_IN_W2_T5",
+      "dashboard_state": "NOT_DEFINED_IN_W2_T5",
+      "routing_state": "NOT_DEFINED_IN_W2_T5",
+      "ownership_state": "INHERITANCE_PENDING_APPROVAL",
+      "non_goals": [
+        "no_runtime_alert_rule",
+        "no_executable_query",
+        "no_dashboard",
+        "no_platform_configuration"
+      ]
+    }
+  ],
+  "closure": {
+    "completed": true,
+    "next_eligible_task": "W2-T6",
+    "commit_allowed_in_this_execution": false,
+    "push_allowed_in_this_execution": false,
+    "engram_allowed_in_this_execution": false
+  }
+}
