@@ -319,7 +319,32 @@ Notas:
 Error Budgets
 
 Estado:
-[ ]
+[x] COMPLETADO
+
+Fecha cierre:
+2026-06-10
+
+Evidencia:
+* Definicion gobernada de error budgets completada.
+* Inventario canonico de 10 error budgets definido con vinculacion uno-a-uno al set gobernado de SLOs de W2-T2.
+* Contrato de error budget definido con identificador, vinculacion SLO, formula de presupuesto, formula de consumo, ventana de evaluacion, estados de activacion, medicion, politica, alertas, dashboards e implementacion.
+* Formulas simbolicas de presupuesto, consumo y remanente definidas.
+* Estados de ciclo de vida definidos: GOVERNANCE_DEFINED, PENDING_APPROVED_BASELINE, ACTIVE, FROZEN, EXHAUSTED, RESET_PENDING.
+* Artefacto machine-readable creado y alineado con la definicion markdown.
+* No se activaron valores numericos sin baseline, medicion y ownership aprobados.
+* No se definieron alert thresholds.
+* No se definieron dashboards.
+* No se implemento metrics catalog.
+* No se configuro plataforma de observabilidad.
+* No se modifico codigo producto.
+* No se cambio version.
+* evidencia archivada en governance/execution/archive/ENTERPRISE-10-10-V1/W2-T3/
+
+Notas:
+* W2-T3 define error budgets como contrato de governance.
+* La activacion numerica queda pendiente hasta contar con targets SLO, eventos elegibles, eventos malos, ventana de evaluacion y fuente de medicion aprobados.
+* W2-T4 queda como siguiente tarea elegible.
+* No se ejecuto commit, push ni Engram.
 
 ---
 

@@ -43,7 +43,7 @@ Workstream:
 W2
 
 Tarea:
-W2-T2
+W2-T3
 
 Estado:
 COMPLETADA
@@ -56,15 +56,17 @@ No modificada
 
 Validado:
 
-* SLO Definition completada
-* Definicion gobernada de SLO completada
-* 10 SLOs canonicos definidos con vinculacion uno-a-uno al set canonico de SLIs de W2-T1
-* Contrato de SLO definido
+* Error Budgets completada
+* Definicion gobernada de error budgets completada
+* 10 error budgets canonicos definidos con vinculacion uno-a-uno al set gobernado de SLOs de W2-T2
+* Contrato de error budget definido
+* Formulas simbolicas de presupuesto, consumo y remanente definidas
+* Estados de ciclo de vida definidos
 * Markdown y JSON alineados
-* No valores objetivo numericos inventados sin baseline, medicion y ownership aprobados
-* No error budgets definidos
+* No valores numericos activados sin baseline, medicion y ownership aprobados
 * No alert thresholds definidos
 * No dashboards implementados
+* No metrics catalog implementado
 * No plataforma de observabilidad configurada
 * No codigo producto modificado
 * No version modificada
@@ -72,11 +74,11 @@ Validado:
 
 Evidencia disponible:
 
-* governance/execution/archive/ENTERPRISE-10-10-V1/W2-T2/
+* governance/execution/archive/ENTERPRISE-10-10-V1/W2-T3/
 
 Memoria operativa:
 
-* Engram preparado para W2-T2, no ejecutado por restriccion HITL
+* Engram preparado para W2-T3, no ejecutado por restriccion HITL
 
 ---
 
@@ -88,15 +90,15 @@ Sin incidencias activas.
 
 ## Próximo paso
 
-W2-T3
+W2-T4
 
 Objetivo:
 
-Error Budgets
+Metrics Catalog
 
 Validar:
 
-* Definicion de error budgets
+* Definicion de metrics catalog
 
 No comenzar hasta nueva instrucción.
 
