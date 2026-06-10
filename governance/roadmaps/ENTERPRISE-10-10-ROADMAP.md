@@ -288,7 +288,29 @@ Notas:
 SLO Definition
 
 Estado:
-[ ]
+[x] COMPLETADO
+
+Fecha cierre:
+2026-06-10
+
+Evidencia:
+* Definicion gobernada de SLO completada.
+* Inventario canonico de 10 SLOs definido con vinculacion uno-a-uno al set canonico de SLIs de W2-T1.
+* Contrato de SLO definido con identificador, vinculacion SLI, objetivo, ventana de evaluacion, politica objetivo, estados de medicion, presupuesto, alertas, dashboards, ownership e implementacion.
+* Artefacto machine-readable creado y alineado con la definicion markdown.
+* No se definieron error budgets.
+* No se definieron alert thresholds.
+* No se definieron dashboards.
+* No se configuro plataforma de observabilidad.
+* No se modifico codigo producto.
+* No se cambio version.
+* evidencia archivada en governance/execution/archive/ENTERPRISE-10-10-V1/W2-T2/
+
+Notas:
+* W2-T2 define SLOs como contrato de governance.
+* Valores objetivo numericos no fueron inventados sin baseline, medicion y ownership aprobados.
+* W2-T3 queda como siguiente tarea elegible.
+* No se ejecuto commit, push ni Engram.
 
 ---
 
