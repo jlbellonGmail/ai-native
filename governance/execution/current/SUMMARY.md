@@ -4,8 +4,8 @@ No active task is in execution.
 
 Last archived task:
 
-W3-T1 - Prompt Evaluation Framework
+W3-T2 - Agent Evaluation Framework
 
 Next eligible task:
 
-W3-T2 - Agent Evaluation Framework
+W3-T3 - Benchmark Framework

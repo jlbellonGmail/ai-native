@@ -558,7 +558,10 @@ Notas:
 Agent Evaluation Framework
 
 Estado:
-[ ]
+[x] COMPLETADO
+
+Fecha cierre:
+2026-06-11
 
 Entregables:
 
@@ -572,11 +575,16 @@ Evidencia:
 * inputs/outputs normalizados.
 * estados de evaluación definidos.
 * artefacto machine-readable generado.
+* evidencia archivada en governance/execution/archive/ENTERPRISE-10-10-V1/W3-T2/
 
 Notas:
 
+* evaluación de agentes definida como contrato de governance.
 * no ejecutar agentes reales.
 * no instrumentar runtime.
+* no modificar producto.
+* no cambiar VERSION.
+* no se crearon datasets, benchmark executions, scoring outputs, pipelines, deployments, runtime config ni platform config.
 * W3-T3 queda como siguiente tarea elegible.
 * no se ejecuto commit, push ni Engram.
 

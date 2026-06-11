@@ -1,0 +1,312 @@
+{
+  "program_id": "ENTERPRISE-10-10-V1",
+  "task_id": "W3-T2",
+  "artifact_id": "agent-evaluation-framework",
+  "artifact_type": "governance_contract",
+  "status": "GOVERNANCE_DEFINED",
+  "closure_date": "2026-06-11",
+  "purpose": "Define a governance contract for agent evaluation before any future real agent execution is authorized.",
+  "non_goals": [
+    "Do not execute real agents.",
+    "Do not instrument runtime.",
+    "Do not create datasets.",
+    "Do not create benchmark executions.",
+    "Do not produce real scores.",
+    "Do not implement pipelines, deployments, runtime configuration, or platform configuration.",
+    "Do not modify product code.",
+    "Do not modify VERSION files."
+  ],
+  "agent_evaluation_model": {
+    "mode": "document_first_contract",
+    "definition_scope": [
+      "governance_metadata",
+      "agent_identity",
+      "capability_boundaries",
+      "tool_use_boundaries",
+      "context_policy",
+      "memory_policy",
+      "normalized_input_contract",
+      "normalized_output_contract",
+      "evaluation_dimensions",
+      "scoring_structure",
+      "lifecycle",
+      "ownership_placeholders",
+      "future_traceability"
+    ],
+    "execution_scope": "OUT_OF_SCOPE_FOR_W3_T2",
+    "reporting_scope": "DEFERRED_TO_W3_T6"
+  },
+  "evaluation_contract": {
+    "required_fields": [
+      "evaluation_id",
+      "program_id",
+      "task_id",
+      "agent_reference",
+      "agent_version_reference",
+      "agent_role",
+      "evaluation_objective",
+      "authorized_capabilities",
+      "prohibited_capabilities",
+      "tool_use_policy_reference",
+      "prompt_evaluation_binding",
+      "context_policy",
+      "memory_policy",
+      "normalized_input_contract",
+      "normalized_output_contract",
+      "evaluation_dimensions",
+      "scoring_structure_reference",
+      "lifecycle_state",
+      "approval_state",
+      "evidence_requirements",
+      "future_task_bindings"
+    ],
+    "excluded_for_w3_t2": [
+      "actual_agent_invocation",
+      "tool_call_execution",
+      "runtime_trace",
+      "model_response_payload",
+      "production_context_payload",
+      "secrets_or_credentials"
+    ]
+  },
+  "normalized_input_contract": {
+    "required_fields": [
+      "input_id",
+      "evaluation_id",
+      "agent_reference",
+      "task_intent",
+      "user_request_shape",
+      "authorized_context_references",
+      "prompt_contract_references",
+      "tool_permissions_declared",
+      "execution_constraints",
+      "expected_deliverables",
+      "evidence_capture_requirements",
+      "non_runtime_attestation"
+    ],
+    "excluded_for_w3_t2": [
+      "real_user_prompt",
+      "production_context",
+      "dataset_payload",
+      "secret_value",
+      "credential_value",
+      "runtime_payload",
+      "tool_execution_request"
+    ]
+  },
+  "normalized_output_contract": {
+    "required_fields": [
+      "output_id",
+      "evaluation_id",
+      "lifecycle_state",
+      "agent_response_placeholder",
+      "tool_use_observation_placeholder",
+      "capability_adherence_result_placeholder",
+      "dimension_results_placeholder",
+      "scoring_structure_reference",
+      "evidence_paths",
+      "reviewer_notes_placeholder",
+      "approval_state",
+      "traceability_links",
+      "non_runtime_attestation"
+    ],
+    "excluded_for_w3_t2": [
+      "real_agent_response",
+      "runtime_trace",
+      "tool_call_log",
+      "measured_score",
+      "pass_fail_result",
+      "evaluator_comment"
+    ]
+  },
+  "evaluation_dimensions": [
+    {
+      "id": "objective_alignment",
+      "definition": "Agent behavior should align with the stated task objective."
+    },
+    {
+      "id": "instruction_adherence",
+      "definition": "Agent behavior should follow governing instructions and constraints."
+    },
+    {
+      "id": "capability_boundary_control",
+      "definition": "Agent behavior should stay inside authorized capability boundaries."
+    },
+    {
+      "id": "tool_use_governance",
+      "definition": "Tool selection, tool arguments, and tool abstention should comply with the declared tool-use policy."
+    },
+    {
+      "id": "context_handling",
+      "definition": "Agent behavior should use authorized context and avoid unsupported assumptions."
+    },
+    {
+      "id": "memory_handling",
+      "definition": "Agent behavior should respect declared memory availability, persistence, and exclusion rules."
+    },
+    {
+      "id": "output_quality",
+      "definition": "Agent output should satisfy required structure, completeness, and clarity."
+    },
+    {
+      "id": "safety_and_policy",
+      "definition": "Agent behavior should respect safety, security, privacy, and policy boundaries."
+    },
+    {
+      "id": "traceability",
+      "definition": "Inputs, outputs, capability decisions, evidence, and assumptions should be linkable to governed identifiers."
+    },
+    {
+      "id": "reviewability",
+      "definition": "The evaluation output should be inspectable by an inspector or HITL approver."
+    }
+  ],
+  "scoring_structure": {
+    "fields": [
+      "dimension_id",
+      "score_state",
+      "qualitative_result_placeholder",
+      "numeric_score_placeholder",
+      "weight_placeholder",
+      "evidence_reference",
+      "rationale_placeholder"
+    ],
+    "score_states": [
+      {
+        "state": "NOT_EVALUATED",
+        "definition": "No real agent evaluation has occurred."
+      },
+      {
+        "state": "DEFINED",
+        "definition": "The dimension is defined and eligible for future evaluation."
+      },
+      {
+        "state": "NOT_APPLICABLE",
+        "definition": "The dimension is intentionally excluded with rationale."
+      },
+      {
+        "state": "PENDING_BASELINE",
+        "definition": "Future scoring requires a benchmark or baseline contract."
+      },
+      {
+        "state": "PENDING_SCORE_MODEL",
+        "definition": "Future scoring requires W3-T4 score framework definitions."
+      },
+      {
+        "state": "PENDING_APPROVAL",
+        "definition": "Future scoring requires review or HITL approval."
+      }
+    ],
+    "boundaries": {
+      "numeric_scores_defined": false,
+      "weights_defined": false,
+      "aggregations_defined": false,
+      "thresholds_defined": false,
+      "ranks_defined": false,
+      "pass_fail_decisions_defined": false
+    }
+  },
+  "evaluation_states": [
+    {
+      "state": "DRAFT",
+      "definition": "Evaluation contract is being drafted."
+    },
+    {
+      "state": "GOVERNANCE_DEFINED",
+      "definition": "Contract structure and required fields are defined."
+    },
+    {
+      "state": "PENDING_REVIEW",
+      "definition": "Contract is ready for review but not approved."
+    },
+    {
+      "state": "APPROVED_FOR_FUTURE_USE",
+      "definition": "Contract may be used by a future authorized task."
+    },
+    {
+      "state": "EXECUTION_DEFERRED",
+      "definition": "Real agent execution is intentionally deferred."
+    },
+    {
+      "state": "BLOCKED_BY_MISSING_BASELINE",
+      "definition": "Future evaluation requires benchmark or baseline governance."
+    },
+    {
+      "state": "BLOCKED_BY_MISSING_SCORE_MODEL",
+      "definition": "Future evaluation requires score framework governance."
+    },
+    {
+      "state": "SUPERSEDED",
+      "definition": "Contract was replaced by a later governed version."
+    },
+    {
+      "state": "RETIRED",
+      "definition": "Contract is no longer eligible for use."
+    }
+  ],
+  "closure_lifecycle_state": "GOVERNANCE_DEFINED",
+  "ownership_approval_placeholders": {
+    "owner_role_placeholder": "UNASSIGNED",
+    "reviewer_role_placeholder": "UNASSIGNED",
+    "approver_role_placeholder": "UNASSIGNED",
+    "approval_state": "NOT_APPROVED",
+    "approval_date_placeholder": null,
+    "decision_rationale_placeholder": null,
+    "real_owner_assigned": false,
+    "real_approver_assigned": false,
+    "iam_or_permissions_defined": false
+  },
+  "traceability": [
+    {
+      "task_id": "W3-T1",
+      "task_name": "Prompt Evaluation Framework",
+      "relationship": "Prompt-level evaluation definitions may be referenced by future agent evaluation records.",
+      "executed_by_w3_t2": false
+    },
+    {
+      "task_id": "W3-T3",
+      "task_name": "Benchmark Framework",
+      "relationship": "Future benchmark taxonomy may provide baselines and reproducibility rules.",
+      "executed_by_w3_t2": false
+    },
+    {
+      "task_id": "W3-T4",
+      "task_name": "Score Framework",
+      "relationship": "Future score definitions may define numeric weights, aggregation, thresholds, and scoring lifecycle.",
+      "executed_by_w3_t2": false
+    },
+    {
+      "task_id": "W3-T5",
+      "task_name": "Datasets",
+      "relationship": "Future dataset governance may bind evaluation inputs to approved dataset records.",
+      "executed_by_w3_t2": false
+    },
+    {
+      "task_id": "W3-T6",
+      "task_name": "Evaluation Reports",
+      "relationship": "Future reporting schema may consume governed agent evaluation evidence.",
+      "executed_by_w3_t2": false
+    },
+    {
+      "task_id": "W3-T7",
+      "task_name": "Evaluation Audit Final",
+      "relationship": "Final audit may validate consistency across W3-T1 through W3-T6.",
+      "executed_by_w3_t2": false
+    }
+  ],
+  "boundary_attestation": {
+    "real_agents_executed": false,
+    "runtime_instrumentation_implemented": false,
+    "product_code_modified": false,
+    "version_files_modified": false,
+    "datasets_created": false,
+    "benchmark_executions_created": false,
+    "scoring_outputs_created": false,
+    "pipelines_created": false,
+    "deployments_created": false,
+    "runtime_config_created": false,
+    "platform_config_created": false,
+    "new_platform_introduced": false
+  },
+  "next_eligible_task": "W3-T3"
+}
