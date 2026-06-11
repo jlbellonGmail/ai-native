@@ -1,0 +1,112 @@
+{
+  "program_id": "ENTERPRISE-10-10-V1",
+  "task_id": "W3-T5",
+  "artifact_id": "datasets",
+  "artifact_type": "governance_contract",
+  "status": "GOVERNANCE_DEFINED",
+  "closure_date": "2026-06-11",
+  "purpose": "Define dataset governance before any future evaluation dataset is created, loaded, stored, or used.",
+  "non_goals": [
+    "Do not create real datasets.",
+    "Do not load real datasets.",
+    "Do not store data payloads.",
+    "Do not access production data.",
+    "Do not introduce dataset storage runtime.",
+    "Do not execute evaluations.",
+    "Do not modify product code.",
+    "Do not modify VERSION files."
+  ],
+  "dataset_contract": {
+    "required_fields": [
+      "dataset_id",
+      "program_id",
+      "task_id",
+      "dataset_name",
+      "evaluation_binding",
+      "benchmark_binding",
+      "score_binding",
+      "data_classification",
+      "source_reference",
+      "schema_reference",
+      "allowed_usage",
+      "prohibited_usage",
+      "retention_rule",
+      "privacy_security_attestation",
+      "owner_role_placeholder",
+      "reviewer_role_placeholder",
+      "approver_role_placeholder",
+      "lifecycle_state",
+      "approval_state",
+      "evidence_requirements"
+    ],
+    "real_payload_required": false
+  },
+  "catalog_schema": {
+    "required_sections": [
+      "catalog_id",
+      "dataset_records",
+      "classification_index",
+      "benchmark_bindings",
+      "evaluation_bindings",
+      "score_bindings",
+      "retention_index",
+      "evidence_paths",
+      "approval_index",
+      "audit_traceability"
+    ]
+  },
+  "lifecycle_states": [
+    "DRAFT",
+    "GOVERNANCE_DEFINED",
+    "PENDING_REVIEW",
+    "APPROVED_FOR_FUTURE_USE",
+    "DATA_UNAVAILABLE",
+    "BLOCKED_BY_CLASSIFICATION",
+    "RETENTION_PENDING",
+    "SUPERSEDED",
+    "RETIRED"
+  ],
+  "traceability": [
+    {
+      "task_id": "W3-T1",
+      "relationship": "Prompt evaluation inputs may bind to approved future dataset records.",
+      "executed_by_w3_t5": false
+    },
+    {
+      "task_id": "W3-T2",
+      "relationship": "Agent evaluation inputs may bind to approved future dataset records.",
+      "executed_by_w3_t5": false
+    },
+    {
+      "task_id": "W3-T3",
+      "relationship": "Benchmark records may require dataset bindings.",
+      "executed_by_w3_t5": false
+    },
+    {
+      "task_id": "W3-T4",
+      "relationship": "Numeric scoring may require dataset governance.",
+      "executed_by_w3_t5": false
+    },
+    {
+      "task_id": "W3-T6",
+      "relationship": "Reports may reference dataset evidence and approval state.",
+      "executed_by_w3_t5": false
+    },
+    {
+      "task_id": "W3-T7",
+      "relationship": "Final audit may validate dataset governance consistency.",
+      "executed_by_w3_t5": false
+    }
+  ],
+  "boundary_attestation": {
+    "real_datasets_created": false,
+    "real_datasets_loaded": false,
+    "data_payloads_stored": false,
+    "production_data_accessed": false,
+    "dataset_storage_runtime_introduced": false,
+    "evaluations_executed": false,
+    "product_code_modified": false,
+    "version_files_modified": false
+  },
+  "next_eligible_task": "W3-T6"
+}

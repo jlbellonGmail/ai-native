@@ -43,7 +43,7 @@ Workstream:
 W3
 
 Tarea:
-W3-T4
+W3-T5
 
 Estado:
 COMPLETADA
@@ -56,19 +56,21 @@ No modificada
 
 Validado:
 
-* Score Framework completado
-* Score definitions documentadas
-* Weighting model documentado
-* Scoring lifecycle documentado
-* Reglas de agregacion documentadas
-* Thresholds y pass/fail decisions diferidos
+* Datasets completado
+* Dataset governance documentado
+* Dataset contract documentado
+* Catalog schema documentado
+* Ownership placeholders documentados
+* Data classification states documentados
+* Retention y evidence requirements documentados
 * Ownership y approval placeholders definidos sin asignar owners reales
-* Trazabilidad W3-T1 a W3-T3 hacia W3-T5 a W3-T7 documentada sin ejecutar tareas futuras
+* Trazabilidad W3-T1 a W3-T4 hacia W3-T6 y W3-T7 documentada sin ejecutar tareas futuras
 * Artefacto machine-readable creado y validado como JSON
-* No se produjeron scores reales
-* No se activaron pesos numericos
-* No se activaron thresholds
-* No se crearon scoring pipelines
+* No se crearon datasets reales
+* No se cargaron datasets reales
+* No se almacenaron payloads de datos
+* No se accedio a datos productivos
+* No se introdujo dataset storage runtime
 * No pipelines creados
 * No deployments creados
 * No runtime config creada
@@ -79,11 +81,11 @@ Validado:
 
 Evidencia disponible:
 
-* governance/execution/archive/ENTERPRISE-10-10-V1/W3-T4/
+* governance/execution/archive/ENTERPRISE-10-10-V1/W3-T5/
 
 Memoria operativa:
 
-* Engram opcional para W3-T4 solo si se registra una leccion reusable de comportamiento
+* Engram opcional para W3-T5 solo si se registra una leccion reusable de comportamiento
 
 ---
 
@@ -95,11 +97,11 @@ Sin incidencias activas.
 
 ## Próximo paso
 
-W3-T5
+W3-T6
 
 Objetivo:
 
-Datasets
+Evaluation Reports
 
 Validar:
 
@@ -110,6 +112,5 @@ No comenzar hasta nueva instrucción.
 Restricciones:
 
 * una tarea por ejecución
-* no iniciar W3-T4 hasta nueva instrucción
 * no modificar VERSION sin autorización explícita
 * Engram solo memoria de comportamiento, no estado

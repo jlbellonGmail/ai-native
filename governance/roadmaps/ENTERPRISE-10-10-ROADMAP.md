@@ -683,7 +683,10 @@ Notas:
 Datasets
 
 Estado:
-[ ]
+[x] COMPLETADO
+
+Fecha cierre:
+2026-06-11
 
 Entregables:
 
@@ -693,16 +696,27 @@ Entregables:
 
 Evidencia:
 
-* datasets gobernados definidos.
-* ownership definido.
-* artefacto machine-readable generado.
+* Dataset governance definido como contrato de governance.
+* Dataset contract documentado.
+* Catalog schema documentado.
+* Ownership placeholders documentados.
+* Data classification states documentados.
+* Retention y evidence requirements documentados.
+* Artefacto machine-readable generado y validado como JSON.
+* No se crearon datasets reales.
+* No se cargaron datasets reales.
+* No se almacenaron payloads de datos.
+* No se accedio a datos productivos.
+* No se introdujo dataset storage runtime.
+* No se modifico codigo producto.
+* No se modifico VERSION.
+* evidencia archivada en governance/execution/archive/ENTERPRISE-10-10-V1/W3-T5/
 
 Notas:
 
 * no cargar datasets reales.
 * no almacenar datos nuevos.
 * W3-T6 queda como siguiente tarea elegible.
-* no se ejecuto commit, push ni Engram.
 
 ---
 
