@@ -1,0 +1,118 @@
+{
+  "program_id": "ENTERPRISE-10-10-V1",
+  "task_id": "W3-T4",
+  "artifact_id": "score-framework",
+  "artifact_type": "governance_contract",
+  "status": "GOVERNANCE_DEFINED",
+  "closure_date": "2026-06-11",
+  "purpose": "Define score governance before any future evaluation score is produced.",
+  "non_goals": [
+    "Do not produce real scores.",
+    "Do not activate numeric weights.",
+    "Do not activate score thresholds.",
+    "Do not produce pass/fail decisions.",
+    "Do not execute benchmarks.",
+    "Do not create datasets.",
+    "Do not implement scoring pipelines, deployments, runtime configuration, or platform configuration.",
+    "Do not modify product code.",
+    "Do not modify VERSION files."
+  ],
+  "score_states": [
+    "NOT_EVALUATED",
+    "DEFINED",
+    "QUALITATIVE_ONLY",
+    "NUMERIC_PENDING_BASELINE",
+    "NUMERIC_PENDING_DATASET",
+    "NUMERIC_READY_FOR_FUTURE_USE",
+    "NOT_APPLICABLE",
+    "BLOCKED"
+  ],
+  "weighting_model": {
+    "required_fields": [
+      "weight_id",
+      "dimension_id",
+      "evaluation_surface",
+      "weight_state",
+      "numeric_weight_placeholder",
+      "normalization_rule",
+      "rationale_placeholder",
+      "evidence_reference",
+      "approval_state"
+    ],
+    "numeric_weights_activated": false
+  },
+  "aggregation_rules": {
+    "required_fields": [
+      "aggregation_id",
+      "input_score_references",
+      "weight_references",
+      "normalization_rule",
+      "missing_score_policy",
+      "qualitative_result_policy",
+      "threshold_dependency",
+      "evidence_reference",
+      "approval_state"
+    ],
+    "aggregate_scores_produced": false,
+    "thresholds_activated": false,
+    "pass_fail_outputs_produced": false
+  },
+  "lifecycle_states": [
+    "DRAFT",
+    "GOVERNANCE_DEFINED",
+    "PENDING_REVIEW",
+    "APPROVED_FOR_FUTURE_USE",
+    "EXECUTION_DEFERRED",
+    "BLOCKED_BY_MISSING_BENCHMARK",
+    "BLOCKED_BY_MISSING_DATASET",
+    "SUPERSEDED",
+    "RETIRED"
+  ],
+  "traceability": [
+    {
+      "task_id": "W3-T1",
+      "relationship": "Prompt evaluation dimensions may bind to score definitions.",
+      "executed_by_w3_t4": false
+    },
+    {
+      "task_id": "W3-T2",
+      "relationship": "Agent evaluation dimensions may bind to score definitions.",
+      "executed_by_w3_t4": false
+    },
+    {
+      "task_id": "W3-T3",
+      "relationship": "Benchmark families may provide future baselines.",
+      "executed_by_w3_t4": false
+    },
+    {
+      "task_id": "W3-T5",
+      "relationship": "Future dataset governance may enable numeric score interpretation.",
+      "executed_by_w3_t4": false
+    },
+    {
+      "task_id": "W3-T6",
+      "relationship": "Future reports may consume score records and aggregation evidence.",
+      "executed_by_w3_t4": false
+    },
+    {
+      "task_id": "W3-T7",
+      "relationship": "Final audit may validate consistency across W3-T1 through W3-T6.",
+      "executed_by_w3_t4": false
+    }
+  ],
+  "boundary_attestation": {
+    "real_scores_produced": false,
+    "numeric_weights_activated": false,
+    "thresholds_activated": false,
+    "pass_fail_decisions_produced": false,
+    "benchmarks_executed": false,
+    "datasets_created": false,
+    "pipelines_created": false,
+    "deployments_created": false,
+    "runtime_config_created": false,
+    "platform_config_created": false,
+    "product_code_modified": false,
+    "version_files_modified": false
+  },
+  "next_eligible_task": "W3-T5"
+}

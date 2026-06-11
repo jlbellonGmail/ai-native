@@ -43,7 +43,7 @@ Workstream:
 W3
 
 Tarea:
-W3-T3
+W3-T4
 
 Estado:
 COMPLETADA
@@ -56,19 +56,19 @@ No modificada
 
 Validado:
 
-* Benchmark Framework completado
-* Benchmark taxonomy documentada
-* Benchmark schema documentado
-* Benchmark contract documentado
-* Criterios reproducibles documentados
-* Estados de ciclo de vida definidos
+* Score Framework completado
+* Score definitions documentadas
+* Weighting model documentado
+* Scoring lifecycle documentado
+* Reglas de agregacion documentadas
+* Thresholds y pass/fail decisions diferidos
 * Ownership y approval placeholders definidos sin asignar owners reales
-* Trazabilidad W3-T1 y W3-T2 hacia W3-T4 a W3-T7 documentada sin ejecutar tareas futuras
+* Trazabilidad W3-T1 a W3-T3 hacia W3-T5 a W3-T7 documentada sin ejecutar tareas futuras
 * Artefacto machine-readable creado y validado como JSON
-* No se ejecutaron benchmarks reales
-* No se crearon benchmark runs
-* No se cargaron ni crearon datasets
-* No scoring outputs reales creados
+* No se produjeron scores reales
+* No se activaron pesos numericos
+* No se activaron thresholds
+* No se crearon scoring pipelines
 * No pipelines creados
 * No deployments creados
 * No runtime config creada
@@ -79,11 +79,11 @@ Validado:
 
 Evidencia disponible:
 
-* governance/execution/archive/ENTERPRISE-10-10-V1/W3-T3/
+* governance/execution/archive/ENTERPRISE-10-10-V1/W3-T4/
 
 Memoria operativa:
 
-* Engram opcional para W3-T3 solo si se registra una leccion reusable de comportamiento
+* Engram opcional para W3-T4 solo si se registra una leccion reusable de comportamiento
 
 ---
 
@@ -95,11 +95,11 @@ Sin incidencias activas.
 
 ## Próximo paso
 
-W3-T4
+W3-T5
 
 Objetivo:
 
-Score Framework
+Datasets
 
 Validar:
 

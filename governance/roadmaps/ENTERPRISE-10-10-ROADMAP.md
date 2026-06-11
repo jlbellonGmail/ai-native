@@ -641,7 +641,10 @@ Notas:
 Score Framework
 
 Estado:
-[ ]
+[x] COMPLETADO
+
+Fecha cierre:
+2026-06-11
 
 Entregables:
 
@@ -651,16 +654,27 @@ Entregables:
 
 Evidencia:
 
-* score framework definido.
-* reglas de agregación documentadas.
-* artefacto machine-readable generado.
+* Score framework definido como contrato de governance.
+* Score definitions documentadas.
+* Weighting model documentado.
+* Scoring lifecycle documentado.
+* Reglas de agregacion documentadas.
+* Thresholds y pass/fail decisions diferidos.
+* Trazabilidad W3-T1 a W3-T3 hacia W3-T5 a W3-T7 documentada sin ejecutar tareas futuras.
+* Artefacto machine-readable generado y validado como JSON.
+* No se produjeron scores reales.
+* No se activaron pesos numericos.
+* No se activaron thresholds.
+* No se crearon scoring pipelines.
+* No se modifico codigo producto.
+* No se modifico VERSION.
+* evidencia archivada en governance/execution/archive/ENTERPRISE-10-10-V1/W3-T4/
 
 Notas:
 
 * sin score real.
 * sin modificar pipelines.
 * W3-T5 queda como siguiente tarea elegible.
-* no se ejecuto commit, push ni Engram.
 
 ---
 
