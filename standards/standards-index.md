@@ -8,12 +8,14 @@ Su objetivo es garantizar consistencia entre proyectos y facilitar que los agent
 
 # Catálogo de Estándares
 
-| Estándar                   | Ubicación                               | Descripción                                          |
-| -------------------------- | --------------------------------------- | ---------------------------------------------------- |
-| Repository Structure       | standards/repository-structure.md       | Define la estructura recomendada de proyectos        |
-| Documentation Standards    | standards/documentation-standards.md    | Define cómo debe escribirse la documentación técnica |
-| Naming Conventions         | standards/naming-conventions.md         | Define convenciones de nombres                       |
-| AI Collaboration Standards | standards/ai-collaboration-standards.md | Define prácticas para trabajar con agentes de IA     |
+Descripción                                                                                                                            
+| -------------------------- | --------------------------------------- | ----------------------------------------------------------------|
+| Repository Structure       | standards/repository-structure.md       | Define la estructura recomendada de proyectos                   |
+| Documentation Standards    | standards/documentation-standards.md    | Define cómo debe escribirse la documentación técnica            |
+| Naming Conventions         | standards/naming-conventions.md         | Define convenciones de nombres                                  |
+| AI Collaboration Standards | standards/ai-collaboration-standards.md | Define prácticas para trabajar con agentes de IA                |
+| Testing por Analogía       | standards/testing-analogy.md            | Define el uso de tests de infraestructura como guías para la IA |
+| Integración MCP            | standards/mcp-integration.md            | Marco de trabajo para herramientas externas                     |
 
 ---
 
@@ -56,6 +58,25 @@ Define buenas prácticas para trabajar con agentes de IA en proyectos.
 Ubicación:
 
 standards/ai-collaboration-standards.md
+
+---
+
+## Testing por Analogía
+
+Define el uso de tests de infraestructura como guías para la IA.
+
+Ubicación:
+
+standards/testing-analogy.md
+
+---
+## Integración MCP
+
+Marco de trabajo para herramientas externas
+
+Ubicación:
+
+standards/mcp-integration.md
 
 ---
 
