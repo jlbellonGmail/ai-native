@@ -1,4 +1,4 @@
-import { runValidators } from "../services/infrastructure/validators/validator-runner";
+import { runValidators } from "../examples/reference-app/services/infrastructure/validators/validator-runner";
 
 async function main() {
 
@@ -7,11 +7,11 @@ async function main() {
     const hasErrors = results.some(r => !r.success);
 
     if (hasErrors) {
-        console.error("❌ Validation failed");
+        console.error("Validation failed");
         process.exit(1);
     }
 
-    console.log("✅ All validations passed");
+    console.log("All validations passed");
 }
 
 main();

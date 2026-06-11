@@ -1,0 +1,16 @@
+{
+  "repo": "ai-template",
+  "requiredDirectories": ["docs", "scripts", "config", "validation", "scaffolds", "templates", "manifests", "examples", "generators"],
+  "scaffolds": [
+    {
+      "id": "ai-native-app",
+      "readme": "scaffolds/ai-native-app/README.md",
+      "reference": "examples/reference-app"
+    }
+  ],
+  "validation": [
+    "scripts/validate-enterprise-template.mjs",
+    "scripts/validate-structure.mjs",
+    "validation/roadmap-coverage.json"
+  ]
+}

@@ -1,5 +1,4 @@
 import { describe, it, expect } from 'vitest';
-import { PromptSnapshot } from '../../services/infrastructure/validators/validator-runner';
 
 describe('Prompt Snapshots Validation', () => {
     it('should match baseline prompt snapshot', () => {

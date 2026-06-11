@@ -1,4 +1,4 @@
-import { ImprovementEngine } from "../services/infrastructure/learning/improvement-engine";
+import { ImprovementEngine } from "../examples/reference-app/services/infrastructure/learning/improvement-engine";
 
 async function main() {
 
@@ -9,7 +9,7 @@ async function main() {
         return;
     }
 
-    console.log("📊 Sugerencias del sistema:\n");
+    console.log("Sugerencias del sistema:\n");
 
     suggestions.forEach(s => console.log("- " + s));
 }
