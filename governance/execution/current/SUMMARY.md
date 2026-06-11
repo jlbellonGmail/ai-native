@@ -4,8 +4,8 @@ No active task is in execution.
 
 Last archived task:
 
-W3-T5 - Datasets
+W3-T6 - Evaluation Reports
 
 Next eligible task:
 
-W3-T6 - Evaluation Reports
+W3-T7 - Evaluation Audit Final

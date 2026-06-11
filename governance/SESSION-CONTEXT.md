@@ -43,7 +43,7 @@ Workstream:
 W3
 
 Tarea:
-W3-T5
+W3-T6
 
 Estado:
 COMPLETADA
@@ -56,21 +56,19 @@ No modificada
 
 Validado:
 
-* Datasets completado
-* Dataset governance documentado
-* Dataset contract documentado
-* Catalog schema documentado
-* Ownership placeholders documentados
-* Data classification states documentados
-* Retention y evidence requirements documentados
+* Evaluation Reports completado
+* Report template documentado
+* Evaluation evidence model documentado
+* Reporting schema documentado
+* Report lifecycle documentado
+* Review y approval placeholders documentados
 * Ownership y approval placeholders definidos sin asignar owners reales
-* Trazabilidad W3-T1 a W3-T4 hacia W3-T6 y W3-T7 documentada sin ejecutar tareas futuras
+* Trazabilidad W3-T1 a W3-T5 hacia W3-T7 documentada sin ejecutar tareas futuras
 * Artefacto machine-readable creado y validado como JSON
-* No se crearon datasets reales
-* No se cargaron datasets reales
-* No se almacenaron payloads de datos
-* No se accedio a datos productivos
-* No se introdujo dataset storage runtime
+* No se ejecutaron evaluaciones reales
+* No se produjeron reportes runtime
+* No se generaron scoring outputs
+* No se crearon reporting pipelines
 * No pipelines creados
 * No deployments creados
 * No runtime config creada
@@ -81,11 +79,11 @@ Validado:
 
 Evidencia disponible:
 
-* governance/execution/archive/ENTERPRISE-10-10-V1/W3-T5/
+* governance/execution/archive/ENTERPRISE-10-10-V1/W3-T6/
 
 Memoria operativa:
 
-* Engram opcional para W3-T5 solo si se registra una leccion reusable de comportamiento
+* Engram opcional para W3-T6 solo si se registra una leccion reusable de comportamiento
 
 ---
 
@@ -97,11 +95,11 @@ Sin incidencias activas.
 
 ## Próximo paso
 
-W3-T6
+W3-T7
 
 Objetivo:
 
-Evaluation Reports
+Evaluation Audit Final
 
 Validar:
 

@@ -1,0 +1,119 @@
+{
+  "program_id": "ENTERPRISE-10-10-V1",
+  "task_id": "W3-T6",
+  "artifact_id": "evaluation-reports",
+  "artifact_type": "governance_contract",
+  "status": "GOVERNANCE_DEFINED",
+  "closure_date": "2026-06-11",
+  "purpose": "Define evaluation reporting governance before any future evaluation report is produced from runtime results.",
+  "non_goals": [
+    "Do not execute evaluations.",
+    "Do not produce real evaluation reports from runtime results.",
+    "Do not generate scoring outputs.",
+    "Do not create reporting pipelines.",
+    "Do not create dashboards or platform configuration.",
+    "Do not modify product code.",
+    "Do not modify VERSION files."
+  ],
+  "report_template": {
+    "required_fields": [
+      "report_id",
+      "program_id",
+      "task_id",
+      "report_type",
+      "evaluation_binding",
+      "benchmark_binding",
+      "dataset_binding",
+      "score_binding",
+      "executive_summary",
+      "evidence_summary",
+      "result_placeholders",
+      "limitations",
+      "approval_state",
+      "reviewer_role_placeholder",
+      "approver_role_placeholder",
+      "evidence_paths",
+      "traceability_links"
+    ]
+  },
+  "evidence_model": {
+    "required_references": [
+      "source_evaluation_record",
+      "benchmark_reference",
+      "dataset_reference",
+      "score_reference",
+      "raw_evidence_reference",
+      "summary_evidence_reference",
+      "reviewer_notes_placeholder",
+      "approval_decision_placeholder",
+      "retention_rule",
+      "audit_trail_reference"
+    ],
+    "measured_results_required": false
+  },
+  "reporting_schema": [
+    "report_metadata",
+    "scope",
+    "inputs",
+    "outputs",
+    "score_summary_placeholder",
+    "benchmark_summary_placeholder",
+    "dataset_summary_placeholder",
+    "findings_placeholder",
+    "limitations",
+    "approvals",
+    "audit_traceability"
+  ],
+  "lifecycle_states": [
+    "DRAFT",
+    "GOVERNANCE_DEFINED",
+    "PENDING_EVIDENCE",
+    "PENDING_REVIEW",
+    "APPROVED_FOR_FUTURE_USE",
+    "SUPERSEDED",
+    "RETIRED"
+  ],
+  "traceability": [
+    {
+      "task_id": "W3-T1",
+      "relationship": "Future reports may summarize prompt evaluation evidence.",
+      "executed_by_w3_t6": false
+    },
+    {
+      "task_id": "W3-T2",
+      "relationship": "Future reports may summarize agent evaluation evidence.",
+      "executed_by_w3_t6": false
+    },
+    {
+      "task_id": "W3-T3",
+      "relationship": "Future reports may summarize benchmark evidence.",
+      "executed_by_w3_t6": false
+    },
+    {
+      "task_id": "W3-T4",
+      "relationship": "Future reports may summarize score records.",
+      "executed_by_w3_t6": false
+    },
+    {
+      "task_id": "W3-T5",
+      "relationship": "Future reports may summarize dataset bindings and limitations.",
+      "executed_by_w3_t6": false
+    },
+    {
+      "task_id": "W3-T7",
+      "relationship": "Final audit may validate report governance consistency.",
+      "executed_by_w3_t6": false
+    }
+  ],
+  "boundary_attestation": {
+    "evaluations_executed": false,
+    "runtime_reports_produced": false,
+    "scoring_outputs_generated": false,
+    "reporting_pipelines_created": false,
+    "dashboards_created": false,
+    "platform_config_created": false,
+    "product_code_modified": false,
+    "version_files_modified": false
+  },
+  "next_eligible_task": "W3-T7"
+}
