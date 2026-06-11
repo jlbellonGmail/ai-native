@@ -43,7 +43,7 @@ Workstream:
 W3
 
 Tarea:
-W3-T2
+W3-T3
 
 Estado:
 COMPLETADA
@@ -56,22 +56,18 @@ No modificada
 
 Validado:
 
-* Agent Evaluation Framework completado
-* Agent evaluation model definido
-* Evaluation contract documentado
-* Scoring structure definido solo como governance
-* Inputs normalizados documentados
-* Outputs normalizados documentados
-* Estados de evaluacion definidos
-* Dimensiones de evaluacion de agentes definidas
-* Tool-use, context y memory policies definidos como contratos gobernados
+* Benchmark Framework completado
+* Benchmark taxonomy documentada
+* Benchmark schema documentado
+* Benchmark contract documentado
+* Criterios reproducibles documentados
+* Estados de ciclo de vida definidos
 * Ownership y approval placeholders definidos sin asignar owners reales
-* Trazabilidad W3-T1 y futura W3-T3 a W3-T7 documentada sin ejecutar tareas futuras
+* Trazabilidad W3-T1 y W3-T2 hacia W3-T4 a W3-T7 documentada sin ejecutar tareas futuras
 * Artefacto machine-readable creado y validado como JSON
-* No se ejecutaron agentes reales
-* No se instrumento runtime
-* No se crearon datasets
-* No benchmark executions creadas
+* No se ejecutaron benchmarks reales
+* No se crearon benchmark runs
+* No se cargaron ni crearon datasets
 * No scoring outputs reales creados
 * No pipelines creados
 * No deployments creados
@@ -83,11 +79,11 @@ Validado:
 
 Evidencia disponible:
 
-* governance/execution/archive/ENTERPRISE-10-10-V1/W3-T2/
+* governance/execution/archive/ENTERPRISE-10-10-V1/W3-T3/
 
 Memoria operativa:
 
-* Engram pendiente para W3-T2
+* Engram opcional para W3-T3 solo si se registra una leccion reusable de comportamiento
 
 ---
 
@@ -99,11 +95,11 @@ Sin incidencias activas.
 
 ## Próximo paso
 
-W3-T3
+W3-T4
 
 Objetivo:
 
-Benchmark Framework
+Score Framework
 
 Validar:
 
@@ -113,8 +109,7 @@ No comenzar hasta nueva instrucción.
 
 Restricciones:
 
-* una tarea por sesión
-* Codex ejecuta
-* agente inspector revisa
-* usuario aprueba HITL
-* no commit, push, versionado ni Engram sin aprobación explícita
+* una tarea por ejecución
+* no iniciar W3-T4 hasta nueva instrucción
+* no modificar VERSION sin autorización explícita
+* Engram solo memoria de comportamiento, no estado

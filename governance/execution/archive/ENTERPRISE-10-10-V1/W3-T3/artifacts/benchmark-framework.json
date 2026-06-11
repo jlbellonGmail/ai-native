@@ -1,0 +1,253 @@
+{
+  "program_id": "ENTERPRISE-10-10-V1",
+  "task_id": "W3-T3",
+  "artifact_id": "benchmark-framework",
+  "artifact_type": "governance_contract",
+  "status": "GOVERNANCE_DEFINED",
+  "closure_date": "2026-06-11",
+  "purpose": "Define a governance contract for benchmark definitions before any future benchmark execution is authorized.",
+  "non_goals": [
+    "Do not execute benchmarks.",
+    "Do not create benchmark runs.",
+    "Do not create or load datasets.",
+    "Do not produce real scores.",
+    "Do not define score weights, thresholds, ranks, or pass/fail decisions.",
+    "Do not implement pipelines, deployments, runtime configuration, or platform configuration.",
+    "Do not modify product code.",
+    "Do not modify VERSION files."
+  ],
+  "benchmark_governance_model": {
+    "mode": "document_first_contract",
+    "definition_scope": [
+      "governance_metadata",
+      "benchmark_taxonomy",
+      "benchmark_schema",
+      "benchmark_contract",
+      "reproducibility_criteria",
+      "lifecycle",
+      "ownership_placeholders",
+      "future_traceability"
+    ],
+    "execution_scope": "OUT_OF_SCOPE_FOR_W3_T3",
+    "scoring_scope": "DEFERRED_TO_W3_T4",
+    "dataset_scope": "DEFERRED_TO_W3_T5",
+    "reporting_scope": "DEFERRED_TO_W3_T6"
+  },
+  "benchmark_taxonomy": [
+    {
+      "id": "prompt_contract_benchmark",
+      "definition": "Validates prompt-level behavior against governed prompt evaluation contracts."
+    },
+    {
+      "id": "agent_contract_benchmark",
+      "definition": "Validates agent-level behavior against governed agent evaluation contracts."
+    },
+    {
+      "id": "task_completion_benchmark",
+      "definition": "Defines task-completion expectations without executing the task in W3-T3."
+    },
+    {
+      "id": "tool_use_benchmark",
+      "definition": "Defines tool-use governance expectations, allowed tool boundaries, and abstention criteria."
+    },
+    {
+      "id": "context_handling_benchmark",
+      "definition": "Defines expectations for use of authorized context and handling of missing context."
+    },
+    {
+      "id": "memory_handling_benchmark",
+      "definition": "Defines expectations for memory availability, persistence, exclusion, and non-use."
+    },
+    {
+      "id": "safety_policy_benchmark",
+      "definition": "Defines safety, privacy, security, and policy adherence expectations."
+    },
+    {
+      "id": "reproducibility_benchmark",
+      "definition": "Defines conditions required for repeatable future benchmark execution."
+    },
+    {
+      "id": "regression_benchmark",
+      "definition": "Defines future comparison against prior approved behavior without executing regressions in W3-T3."
+    },
+    {
+      "id": "robustness_benchmark",
+      "definition": "Defines expected behavior under governed variation, ambiguity, incomplete input, and recoverable errors."
+    }
+  ],
+  "benchmark_schema": {
+    "required_fields": [
+      "benchmark_id",
+      "program_id",
+      "task_id",
+      "benchmark_name",
+      "benchmark_family",
+      "evaluation_surface",
+      "benchmark_objective",
+      "prompt_evaluation_binding",
+      "agent_evaluation_binding",
+      "dataset_binding_placeholder",
+      "input_contract_reference",
+      "output_contract_reference",
+      "reproducibility_criteria",
+      "baseline_requirement",
+      "scoring_framework_dependency",
+      "evidence_requirements",
+      "lifecycle_state",
+      "approval_state",
+      "ownership_placeholders",
+      "future_task_bindings",
+      "boundary_attestation"
+    ],
+    "excluded_for_w3_t3": [
+      "actual_benchmark_payload",
+      "dataset_row",
+      "model_response",
+      "agent_trace",
+      "runtime_measurement",
+      "score_result",
+      "pass_fail_decision"
+    ]
+  },
+  "benchmark_contract": {
+    "contract_sections": [
+      "scope",
+      "objective",
+      "inputs",
+      "outputs",
+      "reproducibility",
+      "baseline",
+      "scoring_dependency",
+      "dataset_dependency",
+      "evidence",
+      "lifecycle",
+      "approval"
+    ],
+    "requires_runtime_execution": false,
+    "requires_dataset_payload": false,
+    "requires_scoring_output": false
+  },
+  "reproducibility_criteria": [
+    "stable_benchmark_identifier",
+    "versioned_benchmark_contract",
+    "fixed_evaluation_objective",
+    "explicit_input_contract_reference",
+    "explicit_output_contract_reference",
+    "declared_model_or_agent_version_reference",
+    "declared_tool_permission_envelope",
+    "declared_context_source_references",
+    "declared_dataset_binding_when_applicable",
+    "deterministic_setup_notes_where_possible",
+    "allowed_nondeterminism_notes",
+    "evidence_capture_requirements",
+    "rerun_comparison_rules",
+    "future_evidence_retention_requirements"
+  ],
+  "lifecycle_states": [
+    {
+      "state": "DRAFT",
+      "definition": "Benchmark contract is being drafted."
+    },
+    {
+      "state": "GOVERNANCE_DEFINED",
+      "definition": "Contract structure and required fields are defined."
+    },
+    {
+      "state": "PENDING_REVIEW",
+      "definition": "Contract is ready for review but not approved."
+    },
+    {
+      "state": "APPROVED_FOR_FUTURE_USE",
+      "definition": "Contract may be used by a future authorized task."
+    },
+    {
+      "state": "EXECUTION_DEFERRED",
+      "definition": "Real benchmark execution is intentionally deferred."
+    },
+    {
+      "state": "BLOCKED_BY_MISSING_DATASET",
+      "definition": "Future benchmark execution requires W3-T5 dataset governance."
+    },
+    {
+      "state": "BLOCKED_BY_MISSING_SCORE_MODEL",
+      "definition": "Future score interpretation requires W3-T4 score framework governance."
+    },
+    {
+      "state": "BASELINE_PENDING",
+      "definition": "Future baseline must be established before comparison."
+    },
+    {
+      "state": "SUPERSEDED",
+      "definition": "Contract was replaced by a later governed version."
+    },
+    {
+      "state": "RETIRED",
+      "definition": "Contract is no longer eligible for use."
+    }
+  ],
+  "closure_lifecycle_state": "GOVERNANCE_DEFINED",
+  "ownership_approval_placeholders": {
+    "owner_role_placeholder": "UNASSIGNED",
+    "reviewer_role_placeholder": "UNASSIGNED",
+    "approver_role_placeholder": "UNASSIGNED",
+    "approval_state": "NOT_APPROVED",
+    "approval_date_placeholder": null,
+    "decision_rationale_placeholder": null,
+    "real_owner_assigned": false,
+    "real_approver_assigned": false,
+    "iam_or_permissions_defined": false
+  },
+  "traceability": [
+    {
+      "task_id": "W3-T1",
+      "task_name": "Prompt Evaluation Framework",
+      "relationship": "Prompt-level evaluation definitions may bind to benchmark families.",
+      "executed_by_w3_t3": false
+    },
+    {
+      "task_id": "W3-T2",
+      "task_name": "Agent Evaluation Framework",
+      "relationship": "Agent-level evaluation definitions may bind to benchmark families.",
+      "executed_by_w3_t3": false
+    },
+    {
+      "task_id": "W3-T4",
+      "task_name": "Score Framework",
+      "relationship": "Future score definitions may define weights, aggregation, thresholds, and scoring lifecycle for benchmark outputs.",
+      "executed_by_w3_t3": false
+    },
+    {
+      "task_id": "W3-T5",
+      "task_name": "Datasets",
+      "relationship": "Future dataset governance may bind benchmark inputs to approved dataset records.",
+      "executed_by_w3_t3": false
+    },
+    {
+      "task_id": "W3-T6",
+      "task_name": "Evaluation Reports",
+      "relationship": "Future reporting schema may consume benchmark evidence.",
+      "executed_by_w3_t3": false
+    },
+    {
+      "task_id": "W3-T7",
+      "task_name": "Evaluation Audit Final",
+      "relationship": "Final audit may validate consistency across W3-T1 through W3-T6.",
+      "executed_by_w3_t3": false
+    }
+  ],
+  "boundary_attestation": {
+    "benchmarks_executed": false,
+    "benchmark_runs_created": false,
+    "datasets_created_or_loaded": false,
+    "scoring_outputs_created": false,
+    "runtime_instrumentation_implemented": false,
+    "product_code_modified": false,
+    "version_files_modified": false,
+    "pipelines_created": false,
+    "deployments_created": false,
+    "runtime_config_created": false,
+    "platform_config_created": false,
+    "new_platform_introduced": false
+  },
+  "next_eligible_task": "W3-T4"
+}

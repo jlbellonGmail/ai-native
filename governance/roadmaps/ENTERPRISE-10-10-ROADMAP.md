@@ -595,7 +595,10 @@ Notas:
 Benchmark Framework
 
 Estado:
-[ ]
+[x] COMPLETADO
+
+Fecha cierre:
+2026-06-11
 
 Entregables:
 
@@ -605,16 +608,31 @@ Entregables:
 
 Evidencia:
 
-* benchmark framework definido.
-* criterios reproducibles documentados.
-* artefacto machine-readable generado.
+* Benchmark framework definido como contrato de governance.
+* Taxonomia canonica de benchmarks definida.
+* Benchmark schema documentado.
+* Benchmark contract documentado.
+* Criterios reproducibles documentados.
+* Estados de ciclo de vida definidos.
+* Trazabilidad W3-T1 y W3-T2 hacia W3-T4 a W3-T7 documentada sin ejecutar tareas futuras.
+* Artefacto machine-readable generado y validado como JSON.
+* No se ejecutaron benchmarks reales.
+* No se crearon benchmark runs.
+* No se cargaron ni crearon datasets.
+* No se produjeron scoring outputs.
+* No se crearon pipelines.
+* No se crearon deployments.
+* No se creo runtime config.
+* No se creo platform config.
+* No se modifico codigo producto.
+* No se modifico VERSION.
+* evidencia archivada en governance/execution/archive/ENTERPRISE-10-10-V1/W3-T3/
 
 Notas:
 
 * benchmark definido como governance.
 * sin ejecución real.
 * W3-T4 queda como siguiente tarea elegible.
-* no se ejecuto commit, push ni Engram.
 
 ---
 
