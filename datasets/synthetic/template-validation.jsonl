@@ -1,0 +1,1 @@
+{"id":"template-001","input":"Validate a scaffold has README, manifest and local validation.","expected":"PASS only when all three exist and map to roadmap coverage."}

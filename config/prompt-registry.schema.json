@@ -1,0 +1,6 @@
+{
+  "schema": "prompt-registry-v1",
+  "requiredFields": ["id", "owner", "purpose", "version", "evaluationSuite", "status"],
+  "statuses": ["draft", "active", "deprecated"],
+  "versioning": "semantic-with-compatibility-notes"
+}

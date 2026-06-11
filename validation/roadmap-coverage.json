@@ -1,0 +1,33 @@
+{
+  "repo": "ai-knowledge",
+  "roadmap": "ENTERPRISE-10-10",
+  "tasks": {
+    "W3-T1": ["evaluation/enterprise-10-10/evaluation-program.json", "config/evaluation-policy.json"],
+    "W3-T2": ["evaluation/enterprise-10-10/evaluation-program.json", "registries/agents/skills-index.md"],
+    "W3-T3": ["benchmarks/catalog.json"],
+    "W3-T4": ["scoring/rubric.json"],
+    "W3-T5": ["datasets/registry.json", "datasets/synthetic/grounded-qa.jsonl", "datasets/synthetic/repair-tasks.jsonl", "datasets/synthetic/template-validation.jsonl"],
+    "W3-T6": ["evaluation/enterprise-10-10/evaluation-program.json"],
+    "W3-T7": ["scripts/validate-enterprise-evaluation.mjs", "docs/ENTERPRISE-10-10/ROADMAP_TO_FILES.md"],
+    "W4-T1": ["config/prompt-registry.schema.json"],
+    "W4-T2": ["registries/prompts/code-generator/v1/system-prompt.md"],
+    "W4-T3": ["config/prompt-registry.schema.json"],
+    "W4-T4": ["config/prompt-registry.schema.json"],
+    "W4-T5": ["config/evaluation-policy.json", "evaluation/enterprise-10-10/evaluation-program.json"],
+    "W4-T6": ["scripts/validate-structure.mjs"],
+    "W5-T1": ["config/agent-registry.schema.json"],
+    "W5-T2": ["registries/agents/skills-index.md"],
+    "W5-T3": ["registries/agents/skills-index.md"],
+    "W5-T4": ["config/agent-registry.schema.json"],
+    "W5-T5": ["config/evaluation-policy.json"],
+    "W5-T6": ["scripts/validate-structure.mjs"],
+    "W7-T1": ["README.md"],
+    "W7-T2": ["CONTRIBUTING.md"],
+    "W7-T3": ["docs/architecture/architecture-principles.md"],
+    "W7-T4": ["docs/onboarding/developer-onboarding.md"],
+    "W7-T5": ["docs/onboarding/developer-onboarding.md"],
+    "W7-T6": ["docs/runbooks/ops-runbook.md", "docs/playbooks/working-with-ai-agents.md"],
+    "W8-T1": ["_deprecated/2026-06-11/README.md"],
+    "W8-T5": ["scripts/validate-structure.mjs"]
+  }
+}

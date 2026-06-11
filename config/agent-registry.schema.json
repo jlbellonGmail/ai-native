@@ -1,0 +1,6 @@
+{
+  "schema": "agent-registry-v1",
+  "requiredFields": ["id", "owner", "capabilities", "tools", "evaluationSuite", "status"],
+  "statuses": ["draft", "active", "restricted", "deprecated"],
+  "capabilityModel": "declared-capabilities-with-dependency-map"
+}
