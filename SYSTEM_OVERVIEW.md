@@ -1,65 +1,26 @@
-# System Overview
+# DESCRIPCIÓN GENERAL DEL SISTEMA
 
-Este documento describe el sistema de forma resumida.
+Este proyecto forma parte de un ecosistema de desarrollo nativo de IA.
 
----
+👉 Lea la descripción general completa del sistema aquí:
 
-# Tipo de sistema
-
-Aplicación basada en Clean Architecture.
-
-Capas:
-
-- domain
-- application
-- infrastructure
+[ai-project-foundation/SYSTEM_OVERVIEW.md]
 
 ---
 
-# Flujo principal
+## Estándares de Desarrollo
+Este proyecto es una instancia del ecosistema y está sujeto a su gobernanza técnica.
 
-1. El usuario realiza una acción.
-2. La acción ejecuta un caso de uso.
-3. El caso de uso utiliza servicios del dominio.
-4. El dominio ejecuta la lógica de negocio.
-5. La infraestructura implementa adaptadores externos.
+👉 **Reglas de Nomenclatura, Estilo y Documentación:**
+Consulte y aplique estrictamente: [ai-knowledge/standards/naming-conventions.md]
 
----
-
-# Tecnologías principales
-
-Base de datos:
-
-Supabase
-
-Lenguaje principal:
-
-TypeScript
-
-Arquitectura:
-
-Clean Architecture
+**Nota para el Agente:**
+Antes de generar código o documentación, lea el archivo referenciado arriba. Su cumplimiento es el único criterio de aceptación para el estilo de este repositorio.
 
 ---
 
-# Reglas principales
+## Arquitectura local
 
-- El dominio no depende de infraestructura.
-- Los casos de uso coordinan la lógica.
-- La infraestructura implementa adaptadores.
+Para obtener información sobre la arquitectura específica del proyecto, consulte:
 
----
-
-# Ubicación de los componentes
-
-Dominio:
-
-src/domain
-
-Casos de uso:
-
-src/application/use-cases
-
-Infraestructura:
-
-src/infrastructure
+👉 /PROJECT_ARCHITECTURE.md

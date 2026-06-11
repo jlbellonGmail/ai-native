@@ -1,28 +1,53 @@
 # Internal notes
 _LEER!!!.md
+_leer.txt
 _tree.txt
 
-# dependencies
-node_modules
+# Dependencies
+node_modules/
+.pnpm-store/
 
-# environment
+# Ignorar todos los worktrees locales si se crean dentro del repo
+.trees/
+
+# Variables de entorno (environment)
 .env
 .env.local
-.env.*.local
+.env.production
+.env*.local
 
 # logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# build
-dist
-build
+# Builds y temporales
+.next/
+out/
+dist/
+build/
+.cache/
 
-# coverage
+.ai-runtime-data/
+logs/
+
+# Coverage
 coverage
 
-# editor
+# Editor / Sistema
 .vscode
 .idea
 .DS_Store
+Thumbs.db
+
+# Repomix
+.repomixignore
+repomix-output.xml
+ai-project-template-output.xml
+repomix-output.txt
+ai-project-template-output.txt
+_repomix-output.txt
+_ai-project-template-output.txt
+repomix.config.json
+
+

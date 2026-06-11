@@ -1,0 +1,15 @@
+{
+    "mcpServers": {
+        "gcp": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-gcloud"
+            ],
+            "env": {
+                "GOOGLE_APPLICATION_CREDENTIALS": "./.ai/secrets/gcp-key.json"
+            },
+            "description": "Permite al agente inspeccionar logs y estado de servicios en Google Cloud"
+        }
+    }
+}

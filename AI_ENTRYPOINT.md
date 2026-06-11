@@ -1,4 +1,6 @@
-# AI Entrypoint
+# Proyecto: {{PROJECT_NAME}}
+
+## AI Entrypoint
 
 Si eres un agente de IA, comienza aquí.
 
@@ -6,7 +8,7 @@ Este repositorio forma parte de un ecosistema de desarrollo asistido por IA.
 
 ---
 
-# Primeros pasos
+## Primeros pasos
 
 1. Leer:
 
@@ -28,7 +30,7 @@ para conocer las reglas de comportamiento del agente.
 
 ---
 
-# Navegación rápida
+## Navegación rápida
 
 Contexto del proyecto:
 
@@ -46,9 +48,23 @@ Código fuente:
 
 src/
 
+Tests de Referencia por Analogía:
+
+infraestructure/
+
 ---
 
-# Objetivo
+## Navegación rápida de Ingeniería
+
+Recursos para el desarrollo acelerado de funcionalidades.
+
+- **Tests de Referencia por Analogía:** `src/infrastructure/persistence/supabase/`
+  
+- **Gobernanza de Datos:** `supabase/migrations/AGENTS.md` (Reglas de RLS e inmutabilidad)
+
+---
+
+## Objetivo
 
 Permitir que agentes de IA comprendan rápidamente:
 
