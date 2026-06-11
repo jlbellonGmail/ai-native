@@ -1,11 +1,11 @@
 # SUMMARY
 
-No active task is in execution.
+No roadmap task is active.
 
-Last archived task:
+Latest archived execution:
 
-W3-T7 - Evaluation Audit Final
+REPAIR-REAL-IMPACT - Product impact repair for closed ENTERPRISE-10-10 tasks.
 
 Next eligible task:
 
-W4-T1 - Prompt Schema
+Blocked until the repair commit strategy for independent repos is confirmed.

@@ -1,4 +1,4 @@
-# CONTINUIDAD DE IMPLEMENTACIÓN
+# CONTINUIDAD DE IMPLEMENTACION
 
 Estado fecha: 2026-06-11
 
@@ -9,7 +9,7 @@ ai-native
 * contenedor
 * governance
 * scripts
-* NO contiene código producto
+* NO contiene codigo producto
 
 Repos Git independientes:
 
@@ -17,7 +17,7 @@ Repos Git independientes:
 * ai-knowledge
 * ai-template
 
-Roadmap único:
+Roadmap unico:
 
 governance/roadmaps/ENTERPRISE-10-10-ROADMAP.md
 
@@ -27,88 +27,77 @@ ai-foundation/VERSION
 ai-knowledge/VERSION
 ai-template/VERSION
 
-Regla:
+Regla vigente:
 
-verificar
-→ cerrar roadmap
-→ versionar
-→ commit
-→ push
+verificar impacto real en repos objetivo
+-> documentar evidencia
+-> cerrar roadmap solo si hay diff producto verificable
+-> versionar solo con autorizacion explicita
+-> commit/push segun modelo Git real
 
 ---
 
-## Último cierre válido
+## Ultima ejecucion valida
 
-Workstream:
-W3
-
-Tarea:
-W3-T7
+Tipo:
+REPAIR-REAL-IMPACT
 
 Estado:
-COMPLETADA
+PRODUCT REPAIR APPLIED
 
 Repositorio afectado:
-ai-native governance
 
-Versión:
+* ai-foundation
+* ai-knowledge
+* ai-template
+* ai-native governance
+
+Version:
 No modificada
 
 Validado:
 
-* Evaluation Audit Final completado
-* W3-T1 Prompt Evaluation Framework PASS
-* W3-T2 Agent Evaluation Framework PASS
-* W3-T3 Benchmark Framework PASS
-* W3-T4 Score Framework PASS
-* W3-T5 Datasets PASS
-* W3-T6 Evaluation Reports PASS
-* Consistencia de contratos validada
-* Trazabilidad completa confirmada
-* Artefactos machine-readable validados
-* No se ejecutaron evaluaciones runtime
-* No se produjeron scores reales
-* No se cargaron datasets
-* No pipelines creados
-* No deployments creados
-* No runtime config creada
-* No plataforma nueva introducida
-* No codigo producto modificado
-* No version modificada
-* evidencia archivada
+* W1-T1 a W1-T6 tenian impacto real previo en ai-foundation.
+* W1-T7 fue reparada con manifest producto en ai-foundation.
+* W2-T1 a W2-T8 fueron reparadas con programa observability producto en ai-foundation.
+* W3-T1 a W3-T7 fueron reparadas con programa evaluation producto en ai-knowledge.
+* ai-template recibio scaffold reusable de reparacion.
+* Validacion local PASS en los tres repos objetivo.
+* Commits producto creados: ai-foundation `01dc70a`, ai-knowledge `b5fadbd`, ai-template `1f8ceab`.
+* No se avanzo roadmap a W4.
+* Push a GitHub bloqueado por politica del entorno antes de transferencia: CONTEXTUAL_NON_BLOCKING.
 
 Evidencia disponible:
 
-* governance/execution/archive/ENTERPRISE-10-10-V1/W3-T7/
-
-Memoria operativa:
-
-* Engram opcional para W3-T7 solo si se registra una leccion reusable de comportamiento
+* governance/execution/archive/ENTERPRISE-10-10-V1/REPAIR-REAL-IMPACT/
+* ai-foundation/observability/enterprise-10-10/
+* ai-foundation/security/enterprise-10-10/
+* ai-knowledge/evaluations/enterprise-10-10/
+* ai-template/templates/enterprise-10-10/
 
 ---
 
 ## Incidencias detectadas
 
-Sin incidencias activas.
+* Los repos objetivo son Git independientes e ignorados por el Git raiz.
+* El commit unico solicitado desde el Git raiz no puede capturar cambios producto dentro de los repos anidados sin cambiar el modelo de repositorio.
+* ai-knowledge y ai-template tienen cambios preexistentes no atribuibles a esta reparacion; no se revirtieron ni stagearon.
+* Se detectaron temporales/generados preexistentes y carpetas vacias; no se borraron por falta de evidencia de descarte seguro.
 
 ---
 
-## Próximo paso
+## Proximo paso
 
-W4-T1
+No avanzar W4.
 
-Objetivo:
+Antes de cualquier nueva tarea:
 
-Prompt Schema
-
-Validar:
-
-* Continuidad de Workstream 3 Evaluation Framework
-
-No comenzar hasta nueva instrucción.
+* revisar REPAIR-REAL-IMPACT
+* confirmar estrategia de commit para repos Git independientes
+* cerrar solo tareas con diff real en ai-foundation, ai-knowledge o ai-template
 
 Restricciones:
 
-* una tarea por ejecución
-* no modificar VERSION sin autorización explícita
-* Engram solo memoria de comportamiento, no estado
+* no cerrar tareas governance-only
+* no modificar VERSION sin autorizacion explicita
+* no borrar contenido preexistente sin evidencia y justificacion
