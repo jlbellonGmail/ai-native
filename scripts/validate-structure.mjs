@@ -9,6 +9,8 @@ const requiredFiles = [
   "docs/README.md",
   "docs/ENTERPRISE-10-10/ROADMAP_TO_FILES.md",
   "config/README.md",
+  "config/prompt-registry/README.md",
+  "config/prompt-registry.schema.json",
   "validation/README.md",
   "validation/roadmap-coverage.json",
   "benchmarks/catalog.json",
@@ -16,7 +18,9 @@ const requiredFiles = [
   "scoring/rubric.json",
   "quality-gates/enterprise-10-10-gates.json",
   "evaluation/README.md",
-  "registries/README.md"
+  "registries/README.md",
+  "examples/prompt-registry-entry.valid.json",
+  "scripts/validate-prompt-registry-schema.mjs"
 ];
 
 function assert(condition, message) {
@@ -47,6 +51,14 @@ const coverage = JSON.parse(await readFile(join(root, "validation/roadmap-covera
 for (const [task, files] of Object.entries(coverage.tasks)) {
   assert(files.length > 0, `${task} has no mapped files`);
   for (const file of files) assert(exists(file), `${task} maps missing file ${file}`);
+}
+
+assert(coverage.taskStates["W4-T1"] === "IMPLEMENTED", "W4-T1 must be implemented");
+for (const task of ["W4-T2", "W4-T3", "W4-T4", "W4-T5", "W4-T6"]) {
+  assert(
+    ["PREPARED_NOT_CLOSED", "BASELINE_PRESENT", "READY_FOR_FUTURE_TASK"].includes(coverage.taskStates[task]),
+    `${task} must remain prepared but not closed`
+  );
 }
 
 const emptyDirs = walkDirs(root).filter((dir) => !dir.includes("_deprecated"));

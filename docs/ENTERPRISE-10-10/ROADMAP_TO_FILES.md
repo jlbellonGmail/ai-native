@@ -12,18 +12,18 @@ agent registry and knowledge quality gates.
 | W3-T5 | Datasets | `datasets/registry.json`, `datasets/synthetic/*.jsonl` | `validate-structure.mjs` | IMPLEMENTED_BY_REPAIR | Synthetic datasets are registered and present. |
 | W3-T6 | Evaluation Reports | `evaluation/enterprise-10-10/evaluation-program.json` | `validate-enterprise-evaluation.mjs` | IMPLEMENTED_BY_REPAIR | Required report sections are defined. |
 | W3-T7 | Evaluation Audit Final | `scripts/validate-enterprise-evaluation.mjs`, this file | Local validation PASS required | IMPLEMENTED_BY_REPAIR | Evaluation workstream is product-validatable. |
-| W4-T1 | Prompt Schema | `config/prompt-registry.schema.json` | `validate-structure.mjs` | IMPLEMENTED_BY_REPAIR | Schema exists without closing W4. |
-| W4-T2 | Prompt Registry Storage | `registries/prompts/` | `validate-structure.mjs` | IMPLEMENTED_BY_EXISTING_FILES | Versioned prompt files are stored in registry. |
-| W4-T3 | Versioning | `config/prompt-registry.schema.json` | `validate-structure.mjs` | IMPLEMENTED_BY_REPAIR | Versioning policy is machine-readable. |
-| W4-T4 | Ownership | `config/prompt-registry.schema.json` | `validate-structure.mjs` | IMPLEMENTED_BY_REPAIR | Owner is a required registry field. |
-| W4-T5 | Evaluation Linkage | `config/evaluation-policy.json` | `validate-structure.mjs` | IMPLEMENTED_BY_REPAIR | Registry requires evaluation suite linkage. |
-| W4-T6 | Prompt Registry Audit | `scripts/validate-structure.mjs` | Local validation PASS required | IMPLEMENTED_BY_REPAIR | Registry structure is validated. |
-| W5-T1 | Agent Schema | `config/agent-registry.schema.json` | `validate-structure.mjs` | IMPLEMENTED_BY_REPAIR | Agent schema is machine-readable. |
-| W5-T2 | Agent Registry Storage | `registries/agents/` | `validate-structure.mjs` | IMPLEMENTED_BY_EXISTING_FILES | Agent material is stored in registry. |
-| W5-T3 | Capabilities Catalog | `registries/agents/skills-index.md` | `validate-structure.mjs` | IMPLEMENTED_BY_EXISTING_FILES | Skills index acts as capability catalog. |
-| W5-T4 | Ownership | `config/agent-registry.schema.json` | `validate-structure.mjs` | IMPLEMENTED_BY_REPAIR | Owner is required for agents. |
-| W5-T5 | Evaluation Linkage | `config/evaluation-policy.json` | `validate-structure.mjs` | IMPLEMENTED_BY_REPAIR | Agents require evaluation suite linkage. |
-| W5-T6 | Agent Registry Audit | `scripts/validate-structure.mjs` | Local validation PASS required | IMPLEMENTED_BY_REPAIR | Agent registry is checked locally. |
+| W4-T1 | Prompt Schema | `config/prompt-registry.schema.json`, `config/prompt-registry/README.md`, `examples/prompt-registry-entry.valid.json`, `scripts/validate-prompt-registry-schema.mjs` | `validate-prompt-registry-schema.mjs`, `validate-structure.mjs` | IMPLEMENTED | Prompt schema, validation contract and schema governance are product-validatable. |
+| W4-T2 | Prompt Registry Storage | `registries/prompts/` | Future W4-T2 validation | PREPARED_NOT_CLOSED | Existing prompt files are baseline material only; storage contract is not closed. |
+| W4-T3 | Versioning | `config/prompt-registry.schema.json` | Future W4-T3 validation | BASELINE_PRESENT | W4-T1 requires a semantic version field, but compatibility policy is not closed. |
+| W4-T4 | Ownership | `config/prompt-registry.schema.json` | Future W4-T4 validation | BASELINE_PRESENT | W4-T1 requires owner fields, but approval/accountability rules are not closed. |
+| W4-T5 | Evaluation Linkage | `config/evaluation-policy.json`, `evaluation/enterprise-10-10/evaluation-program.json` | Future W4-T5 validation | BASELINE_PRESENT | Evaluation assets exist, but prompt linkage task is not closed. |
+| W4-T6 | Prompt Registry Audit | `scripts/validate-structure.mjs` | Future W4-T6 validation | READY_FOR_FUTURE_TASK | Audit remains open until W4-T2 through W4-T5 are implemented. |
+| W5-T1 | Agent Schema | `config/agent-registry.schema.json` | Future W5 validation | PREPARED_NOT_CLOSED | Agent schema is baseline material only; W5 is not opened. |
+| W5-T2 | Agent Registry Storage | `registries/agents/` | Future W5 validation | PREPARED_NOT_CLOSED | Agent registry files are baseline material only; W5 is not opened. |
+| W5-T3 | Capabilities Catalog | `registries/agents/skills-index.md` | Future W5 validation | BASELINE_PRESENT | Capability catalog baseline exists; W5 is not opened. |
+| W5-T4 | Ownership | `config/agent-registry.schema.json` | Future W5 validation | BASELINE_PRESENT | Agent owner fields are baseline only; W5 is not opened. |
+| W5-T5 | Evaluation Linkage | `config/evaluation-policy.json` | Future W5 validation | BASELINE_PRESENT | Evaluation policy is baseline only; W5 is not opened. |
+| W5-T6 | Agent Registry Audit | `scripts/validate-structure.mjs` | Future W5 validation | READY_FOR_FUTURE_TASK | Agent registry audit remains unopened. |
 | W7-T1 | README Review | `README.md`, folder READMEs | `validate-structure.mjs` | IMPLEMENTED_BY_REPAIR | Repo is navigable from README. |
 | W7-T2 | CONTRIBUTING Review | `CONTRIBUTING.md` | File presence | IMPLEMENTED_BY_EXISTING_FILES | Contribution rules exist. |
 | W7-T3 | Architecture Documentation | `docs/architecture/architecture-principles.md` | File presence | IMPLEMENTED_BY_EXISTING_FILES | Architecture docs exist. |
