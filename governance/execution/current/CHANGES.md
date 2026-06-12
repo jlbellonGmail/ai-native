@@ -1,7 +1,15 @@
 # CHANGES
 
-No active roadmap task changes are pending in current execution.
+W4-T1 product implementation:
 
-The latest product repair changes are archived in:
+* `ai-knowledge/config/prompt-registry.schema.json`
+* `ai-knowledge/config/prompt-registry/README.md`
+* `ai-knowledge/examples/prompt-registry-entry.valid.json`
+* `ai-knowledge/scripts/validate-prompt-registry-schema.mjs`
 
-`governance/execution/archive/ENTERPRISE-10-10-V1/REPAIR-REAL-IMPACT/`
+Supporting product alignment:
+
+* `ai-foundation` active checks ignore `_deprecated/`.
+* `ai-template` validates as a template repository instead of a root Next app.
+
+W4-T2 remains open.

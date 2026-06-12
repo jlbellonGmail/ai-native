@@ -1,11 +1,11 @@
 # SUMMARY
 
-No roadmap task is active.
-
 Latest archived execution:
 
-REPAIR-REAL-IMPACT - Product impact repair for closed ENTERPRISE-10-10 tasks.
+W4-T1 Prompt Schema.
 
-Next eligible task:
+Result:
 
-Blocked until the repair commit strategy for independent repos is confirmed.
+* W4-T1 closed with product validation in `ai-knowledge`.
+* W4-T2 is the next eligible task.
+* W4-T2 and later tasks are not closed.

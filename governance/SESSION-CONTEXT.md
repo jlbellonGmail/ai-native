@@ -86,18 +86,47 @@ Evidencia disponible:
 
 ---
 
+## Ultima ejecucion valida
+
+Tipo:
+W4-T1-PRODUCT-SCHEMA
+
+Estado:
+PRODUCT IMPLEMENTED AND GOVERNANCE CLOSED
+
+Repositorio producto impactado:
+
+* ai-knowledge
+
+Commits producto:
+
+* ai-foundation realignment final: `3944cf6`
+* ai-knowledge realignment final: `779522c`
+* ai-template realignment final: `9a6a2d0`
+* ai-foundation alignment through W4-T1: `5345c5e`
+* ai-knowledge W4-T1 product commit: `4ea42cf`
+* ai-template alignment through W4-T1: `d233c95`
+
+Validado:
+
+* W4-T1 Prompt Schema tiene schema, contrato de validacion, README de governance y ejemplo real en ai-knowledge.
+* W4-T2+ quedan como `PREPARED_NOT_CLOSED`, `BASELINE_PRESENT` o `READY_FOR_FUTURE_TASK`.
+* No se cerro W4-T2.
+
+Evidencia disponible:
+
+* governance/execution/archive/ENTERPRISE-10-10-V1/REPO-REALIGNMENT-FINAL/
+* governance/execution/archive/ENTERPRISE-10-10-V1/W4-T1/
+
+---
+
 ## Proximo paso
 
-No avanzar W4.
-
-Antes de cualquier nueva tarea:
-
-* revisar REPAIR-REAL-IMPACT
-* confirmar estrategia de commit para repos Git independientes
-* cerrar solo tareas con diff real en ai-foundation, ai-knowledge o ai-template
+W4-T2.
 
 Restricciones:
 
 * no cerrar tareas governance-only
 * no modificar VERSION sin autorizacion explicita
 * no borrar contenido preexistente sin evidencia y justificacion
+* no avanzar W4-T2 sin diff producto real

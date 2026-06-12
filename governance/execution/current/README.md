@@ -1,7 +1,17 @@
 # Current Execution
 
-This directory is intentionally empty between task executions.
+Latest execution:
 
-Latest repair evidence is archived under:
+`ENTERPRISE-10-10 W4-T1 Prompt Schema`
 
-`governance/execution/archive/ENTERPRISE-10-10-V1/REPAIR-REAL-IMPACT/`
+Archive:
+
+`governance/execution/archive/ENTERPRISE-10-10-V1/W4-T1/`
+
+Final realignment archive:
+
+`governance/execution/archive/ENTERPRISE-10-10-V1/REPO-REALIGNMENT-FINAL/`
+
+Next eligible task:
+
+`W4-T2`

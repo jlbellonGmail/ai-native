@@ -1,7 +1,11 @@
 # VALIDATION
 
-No active roadmap task validation is pending in current execution.
+Latest validation archive:
 
-Latest repair validation:
+`governance/execution/archive/ENTERPRISE-10-10-V1/W4-T1/VALIDATION.md`
 
-`governance/execution/archive/ENTERPRISE-10-10-V1/REPAIR-REAL-IMPACT/REPAIR_VALIDATION.md`
+Status:
+
+* Product validators PASS.
+* Package scripts PASS where applicable.
+* CRLF warnings are non-blocking.
