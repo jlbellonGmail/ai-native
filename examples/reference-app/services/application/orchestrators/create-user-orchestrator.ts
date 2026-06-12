@@ -5,8 +5,8 @@ import { createUserWorkflow } from "../workflows/create-user-workflow";
 import { AppError } from "@/domain/errors/app-error";
 
 // 🔥 desde foundation 
-import { withRuntime } from "../../../../ai-foundation/runtime/core/integration/with-runtime";
-import { withErrorHandling } from "../../../../ai-foundation/observability/integration/with-error-handling";
+import { withRuntime } from "@/infrastructure/runtime/with-runtime";
+import { withErrorHandling } from "@/infrastructure/observability/with-error-handling";
 
 export async function createUserOrchestrator(
     input: { email: string },

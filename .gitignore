@@ -27,6 +27,7 @@ out/
 dist/
 build/
 .cache/
+tsconfig.tsbuildinfo
 
 .ai-runtime-data/
 logs/
