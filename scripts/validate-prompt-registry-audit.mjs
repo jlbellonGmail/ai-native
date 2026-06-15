@@ -41,7 +41,11 @@ for (const task of ["W4-T1", "W4-T2", "W4-T3", "W4-T4", "W4-T5"]) {
 assert(audit.scope.closedByThisTask.includes("W4-T6"), "W4-T6 must be closed only by the audit task");
 assert(coverage.taskStates["W4-T6"] === "IMPLEMENTED", "W4-T6 must be marked IMPLEMENTED");
 
-for (const task of ["W5-T1", "W5-T2", "W5-T3", "W5-T4", "W5-T5", "W5-T6"]) {
+assert(
+  ["IMPLEMENTED", "PREPARED_NOT_CLOSED"].includes(coverage.taskStates["W5-T1"]),
+  "W5-T1 may be implemented only after W4-T6 closure"
+);
+for (const task of ["W5-T2", "W5-T3", "W5-T4", "W5-T5", "W5-T6"]) {
   assert(audit.scope.doesNotClose.includes(task), `${task} must remain outside W4-T6 closure`);
   assert(
     ["PREPARED_NOT_CLOSED", "BASELINE_PRESENT", "READY_FOR_FUTURE_TASK"].includes(coverage.taskStates[task]),

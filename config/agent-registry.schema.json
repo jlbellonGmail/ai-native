@@ -1,6 +1,161 @@
 {
-  "schema": "agent-registry-v1",
-  "requiredFields": ["id", "owner", "capabilities", "tools", "evaluationSuite", "status"],
-  "statuses": ["draft", "active", "restricted", "deprecated"],
-  "capabilityModel": "declared-capabilities-with-dependency-map"
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-native.local/schemas/agent-registry-entry.v1.schema.json",
+  "title": "Agent Registry Entry",
+  "description": "Machine-readable contract for ENTERPRISE-10-10 W5-T1 Agent Schema. This schema defines one agent registry entry; it does not create registry storage, runtime orchestration, capability catalog records, ownership approval chains or evaluation linkage. W5-T2 through W5-T6 remain outside this task.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "id",
+    "owner",
+    "purpose",
+    "version",
+    "status",
+    "capabilities",
+    "tools",
+    "evaluationSuite",
+    "runtimeControls",
+    "governance"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "agent-registry-entry.v1"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*(\\.[a-z][a-z0-9-]*)*$",
+      "description": "Stable agent identifier. Storage layout is intentionally deferred to W5-T2."
+    },
+    "owner": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Agent owner identity required for governance accountability. This is not IAM and does not close W5-T4 ownership.",
+      "required": ["team", "contact"],
+      "properties": {
+        "team": {
+          "type": "string",
+          "minLength": 2
+        },
+        "contact": {
+          "type": "string",
+          "minLength": 3
+        }
+      }
+    },
+    "purpose": {
+      "type": "string",
+      "minLength": 30
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Per-agent semantic version. This is not the repository VERSION file."
+    },
+    "status": {
+      "enum": ["draft", "active", "restricted", "deprecated"]
+    },
+    "capabilities": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Declared capability references only. W5-T3 defines the future catalog and dependency model.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "description"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*$"
+          },
+          "description": {
+            "type": "string",
+            "minLength": 20
+          }
+        }
+      }
+    },
+    "tools": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Declared tool references only; no runtime tool permission is granted by W5-T1.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "permission", "required"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*$"
+          },
+          "permission": {
+            "enum": ["read-only", "write-proposed", "external-call-proposed"]
+          },
+          "required": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "evaluationSuite": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Evaluation suite reference only. W5-T5 defines evaluation linkage.",
+      "required": ["id", "minimumScore", "requiredBeforeActivation"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 3
+        },
+        "minimumScore": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "requiredBeforeActivation": {
+          "type": "boolean",
+          "const": true
+        }
+      }
+    },
+    "runtimeControls": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["toolUse", "dataBoundary", "humanApproval"],
+      "properties": {
+        "toolUse": {
+          "enum": ["declared-only", "disabled"]
+        },
+        "dataBoundary": {
+          "enum": ["public", "internal", "confidential"]
+        },
+        "humanApproval": {
+          "enum": ["required-before-active", "required-on-tool-change"]
+        }
+      }
+    },
+    "governance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["roadmapTask", "approvalState", "changePolicy", "doesNotClose"],
+      "properties": {
+        "roadmapTask": {
+          "const": "W5-T1"
+        },
+        "approvalState": {
+          "enum": ["proposed", "approved", "deprecated"]
+        },
+        "changePolicy": {
+          "enum": ["schema-review-required"]
+        },
+        "doesNotClose": {
+          "type": "array",
+          "items": {
+            "enum": ["W5-T2", "W5-T3", "W5-T4", "W5-T5", "W5-T6"]
+          },
+          "uniqueItems": true
+        }
+      }
+    }
+  }
 }
