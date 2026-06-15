@@ -53,5 +53,25 @@
     "task": "W3-T7",
     "checks": ["schemas_present", "datasets_registered", "benchmarks_linked", "scores_thresholded", "reports_templated"],
     "status": "PRODUCT_REPAIRED"
+  },
+  "promptRegistryLinkage": {
+    "task": "W4-T5",
+    "contract": "config/prompt-registry/evaluation-linkage.json",
+    "policy": "config/evaluation-policy.json",
+    "runtimeStatus": "not-executed",
+    "pipelineStatus": "not-created",
+    "resultStatus": "not-produced",
+    "bindings": [
+      {
+        "promptId": "code-generator.system",
+        "promptVersion": "1.0.0",
+        "evaluationSuite": "enterprise-10-10-prompt-evaluation",
+        "benchmarkId": "bench-prompt-grounding",
+        "datasetId": "ds-grounded-qa",
+        "scoringModel": "weighted-rubric-v1",
+        "minimumScore": 0.85
+      }
+    ],
+    "doesNotClose": ["W4-T6"]
   }
 }

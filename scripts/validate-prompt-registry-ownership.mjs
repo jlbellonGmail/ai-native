@@ -46,7 +46,7 @@ for (const role of ["prompt_owner", "prompt_reviewer", "risk_accountable", "regi
 
 assert(ownership.approvalRules.states.includes(ownership.approvalRules.defaultState), "default approval state must be a governed state");
 assert(ownership.approvalRules.activationRule === "human-review-required-before-active", "activation must require human review");
-assert(ownership.approvalRules.nonGoals.includes("No W4-T5 evaluation linkage is closed."), "W4-T5 must remain outside ownership closure");
+assert(ownership.approvalRules.nonGoals.includes("No W4-T5 evaluation linkage is closed by W4-T4."), "W4-T5 must remain outside ownership closure");
 
 const storageIds = new Set(storage.entries.map((entry) => entry.id));
 const versionsByPrompt = new Map();
@@ -84,16 +84,11 @@ assert(coverage.taskStates["W4-T1"] === "IMPLEMENTED", "W4-T1 must remain implem
 assert(coverage.taskStates["W4-T2"] === "IMPLEMENTED", "W4-T2 must remain implemented");
 assert(coverage.taskStates["W4-T3"] === "IMPLEMENTED", "W4-T3 must remain implemented");
 assert(coverage.taskStates["W4-T4"] === "IMPLEMENTED", "W4-T4 must be marked IMPLEMENTED after product validation");
-for (const task of ["W4-T5", "W4-T6"]) {
-  assert(
-    ["BASELINE_PRESENT", "READY_FOR_FUTURE_TASK"].includes(coverage.taskStates[task]),
-    `${task} must remain open after W4-T4`
-  );
-}
+assert(coverage.taskStates["W4-T5"] === "IMPLEMENTED", "W4-T5 must be marked IMPLEMENTED after product validation");
+assert(coverage.taskStates["W4-T6"] === "READY_FOR_FUTURE_TASK", "W4-T6 must remain next task");
 
 for (const file of coverage.tasks["W4-T4"]) {
   await readFile(new URL(`../${file}`, import.meta.url), "utf8");
 }
 
 console.log("ENTERPRISE-10-10 W4-T4 prompt registry ownership validation PASS");
-

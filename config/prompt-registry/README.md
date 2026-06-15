@@ -5,7 +5,9 @@ This folder documents the W4-T1 prompt schema contract for `ai-knowledge`.
 W4-T1 defines the shape and governance rules for a single prompt registry entry.
 W4-T2 defines repository-backed storage. W4-T3 defines per-prompt versioning and
 compatibility policy. W4-T4 defines ownership, approval rules and accountability.
-Runtime loading, IAM permissions and migrations remain out of scope.
+W4-T5 defines evaluation linkage between registered prompts and evaluation
+assets. Runtime loading, IAM permissions, migrations and evaluation execution
+remain out of scope.
 
 ## Contract Files
 
@@ -16,10 +18,13 @@ Runtime loading, IAM permissions and migrations remain out of scope.
 | `VERSIONING.md` | Human-readable W4-T3 versioning usage guide. |
 | `ownership.policy.json` | Machine-readable W4-T4 ownership and approval contract. |
 | `OWNERSHIP.md` | Human-readable W4-T4 ownership usage guide. |
+| `evaluation-linkage.json` | Machine-readable W4-T5 evaluation linkage contract. |
+| `EVALUATION-LINKAGE.md` | Human-readable W4-T5 evaluation linkage usage guide. |
 | `../../examples/prompt-registry-entry.valid.json` | Minimal valid example used by local validation. |
 | `../../scripts/validate-prompt-registry-schema.mjs` | Local validation contract for schema integrity and example conformance. |
 | `../../scripts/validate-prompt-registry-versioning.mjs` | Local validation contract for W4-T3 versioning. |
 | `../../scripts/validate-prompt-registry-ownership.mjs` | Local validation contract for W4-T4 ownership. |
+| `../../scripts/validate-prompt-registry-evaluation-linkage.mjs` | Local validation contract for W4-T5 evaluation linkage. |
 
 ## Governance Rules
 
@@ -45,3 +50,9 @@ Changes to prompt version semantics require review of `VERSIONING.md`,
 Changes to prompt ownership require review of `OWNERSHIP.md`,
 `ownership.policy.json` and
 `scripts/validate-prompt-registry-ownership.mjs`.
+
+Changes to prompt evaluation linkage require review of
+`EVALUATION-LINKAGE.md`, `evaluation-linkage.json`,
+`../evaluation-policy.json`,
+`../../evaluation/enterprise-10-10/evaluation-program.json` and
+`scripts/validate-prompt-registry-evaluation-linkage.mjs`.

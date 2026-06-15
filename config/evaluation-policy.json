@@ -3,5 +3,13 @@
   "minimumPassScore": 0.8,
   "reviewBand": { "min": 0.65, "max": 0.799 },
   "requiredEvidence": ["dataset", "benchmark", "rubric", "decision", "owner"],
-  "forbiddenAsSoleEvidence": ["governance_archive", "summary_markdown", "unchecked_json"]
+  "forbiddenAsSoleEvidence": ["governance_archive", "summary_markdown", "unchecked_json"],
+  "promptRegistryLinkage": {
+    "roadmapTask": "W4-T5",
+    "contract": "config/prompt-registry/evaluation-linkage.json",
+    "requiredBeforeActivation": true,
+    "requiredEvidence": ["dataset", "benchmark", "rubric", "decision", "owner"],
+    "runtimeEvaluation": "not-created-by-w4-t5",
+    "doesNotClose": ["W4-T6"]
+  }
 }

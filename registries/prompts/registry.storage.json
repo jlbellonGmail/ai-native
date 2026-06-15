@@ -23,7 +23,7 @@
       "No runtime persistence is introduced.",
       "No database table, migration or service API is created.",
       "No W4-T4 ownership or approval workflow is closed.",
-      "No W4-T5 evaluation linkage is closed."
+      "No W4-T5 evaluation linkage is closed by W4-T2."
     ]
   },
   "integrity": {

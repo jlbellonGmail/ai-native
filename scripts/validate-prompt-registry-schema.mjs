@@ -95,11 +95,7 @@ assert(coverage.taskStates["W4-T1"] === "IMPLEMENTED", "W4-T1 must be marked IMP
 assert(coverage.taskStates["W4-T2"] === "IMPLEMENTED", "W4-T2 must be marked IMPLEMENTED after product validation");
 assert(coverage.taskStates["W4-T3"] === "IMPLEMENTED", "W4-T3 must be marked IMPLEMENTED after product validation");
 assert(coverage.taskStates["W4-T4"] === "IMPLEMENTED", "W4-T4 must be marked IMPLEMENTED after product validation");
-for (const task of ["W4-T5", "W4-T6"]) {
-  assert(
-    ["BASELINE_PRESENT", "READY_FOR_FUTURE_TASK"].includes(coverage.taskStates[task]),
-    `${task} must not be marked closed`
-  );
-}
+assert(coverage.taskStates["W4-T5"] === "IMPLEMENTED", "W4-T5 must be marked IMPLEMENTED after product validation");
+assert(coverage.taskStates["W4-T6"] === "READY_FOR_FUTURE_TASK", "W4-T6 must remain next task");
 
 console.log("ENTERPRISE-10-10 W4-T1 prompt schema validation PASS");

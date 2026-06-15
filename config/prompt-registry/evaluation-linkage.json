@@ -1,0 +1,67 @@
+{
+  "schemaVersion": "prompt-registry-evaluation-linkage.v1",
+  "roadmapTask": "W4-T5",
+  "description": "Prompt registry evaluation linkage contract for ENTERPRISE-10-10 W4-T5. This contract links prompt registry records to evaluation assets without executing evaluations, creating pipelines or producing score reports.",
+  "appliesTo": {
+    "entrySchema": "config/prompt-registry.schema.json",
+    "storageContract": "registries/prompts/registry.storage.json",
+    "versioningContract": "config/prompt-registry/versioning.compatibility.json",
+    "ownershipContract": "config/prompt-registry/ownership.policy.json",
+    "evaluationPolicy": "config/evaluation-policy.json",
+    "evaluationProgram": "evaluation/enterprise-10-10/evaluation-program.json"
+  },
+  "linkageContract": {
+    "requiredBindingFields": [
+      "promptId",
+      "promptVersion",
+      "storageSlot",
+      "evaluationSuite",
+      "benchmarkId",
+      "datasetId",
+      "scoringModel",
+      "minimumScore",
+      "ownerTeam",
+      "traceability"
+    ],
+    "evidenceRequired": ["dataset", "benchmark", "rubric", "decision", "owner"],
+    "activationRule": "evaluation-binding-required-before-active",
+    "runtimeRule": "no-evaluation-run-created-by-w4-t5"
+  },
+  "bindings": [
+    {
+      "promptId": "code-generator.system",
+      "promptVersion": "1.0.0",
+      "storageSlot": "v1",
+      "evaluationSuite": "enterprise-10-10-prompt-evaluation",
+      "benchmarkId": "bench-prompt-grounding",
+      "datasetId": "ds-grounded-qa",
+      "scoringModel": "weighted-rubric-v1",
+      "minimumScore": 0.85,
+      "ownerTeam": "ai-knowledge",
+      "traceability": [
+        "config/prompt-registry.schema.json",
+        "registries/prompts/registry.storage.json",
+        "config/prompt-registry/versioning.compatibility.json",
+        "config/prompt-registry/ownership.policy.json",
+        "config/evaluation-policy.json",
+        "evaluation/enterprise-10-10/evaluation-program.json",
+        "benchmarks/catalog.json",
+        "datasets/registry.json",
+        "scoring/rubric.json"
+      ],
+      "runtimeStatus": "not-executed",
+      "pipelineStatus": "not-created",
+      "resultStatus": "not-produced"
+    }
+  ],
+  "governance": {
+    "roadmapTask": "W4-T5",
+    "closes": [
+      "linkage contract",
+      "evaluation binding",
+      "traceability model"
+    ],
+    "doesNotClose": ["W4-T6"],
+    "validation": "scripts/validate-prompt-registry-evaluation-linkage.mjs"
+  }
+}

@@ -10,8 +10,10 @@ const requiredFiles = [
   "docs/ENTERPRISE-10-10/ROADMAP_TO_FILES.md",
   "config/README.md",
   "config/prompt-registry/README.md",
+  "config/prompt-registry/EVALUATION-LINKAGE.md",
   "config/prompt-registry/OWNERSHIP.md",
   "config/prompt-registry/VERSIONING.md",
+  "config/prompt-registry/evaluation-linkage.json",
   "config/prompt-registry/ownership.policy.json",
   "config/prompt-registry/versioning.compatibility.json",
   "config/prompt-registry.schema.json",
@@ -26,6 +28,7 @@ const requiredFiles = [
   "registries/prompts/README.md",
   "registries/prompts/registry.storage.json",
   "examples/prompt-registry-entry.valid.json",
+  "scripts/validate-prompt-registry-evaluation-linkage.mjs",
   "scripts/validate-prompt-registry-ownership.mjs",
   "scripts/validate-prompt-registry-schema.mjs",
   "scripts/validate-prompt-registry-storage.mjs",
@@ -66,12 +69,8 @@ assert(coverage.taskStates["W4-T1"] === "IMPLEMENTED", "W4-T1 must be implemente
 assert(coverage.taskStates["W4-T2"] === "IMPLEMENTED", "W4-T2 must be implemented");
 assert(coverage.taskStates["W4-T3"] === "IMPLEMENTED", "W4-T3 must be implemented");
 assert(coverage.taskStates["W4-T4"] === "IMPLEMENTED", "W4-T4 must be implemented");
-for (const task of ["W4-T5", "W4-T6"]) {
-  assert(
-    ["BASELINE_PRESENT", "READY_FOR_FUTURE_TASK"].includes(coverage.taskStates[task]),
-    `${task} must remain prepared but not closed`
-  );
-}
+assert(coverage.taskStates["W4-T5"] === "IMPLEMENTED", "W4-T5 must be implemented");
+assert(coverage.taskStates["W4-T6"] === "READY_FOR_FUTURE_TASK", "W4-T6 must remain next task");
 
 const emptyDirs = walkDirs(root).filter((dir) => !dir.includes("_deprecated"));
 assert(emptyDirs.length === 0, `empty active directories found: ${emptyDirs.join(", ")}`);

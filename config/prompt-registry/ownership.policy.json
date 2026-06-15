@@ -38,7 +38,7 @@
       "No IAM role is created.",
       "No runtime permission is granted.",
       "No prompt is approved for execution by this task.",
-      "No W4-T5 evaluation linkage is closed."
+      "No W4-T5 evaluation linkage is closed by W4-T4."
     ]
   },
   "accountability": {
@@ -81,4 +81,3 @@
     "validation": "scripts/validate-prompt-registry-ownership.mjs"
   }
 }
-
