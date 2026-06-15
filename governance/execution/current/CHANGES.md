@@ -1,15 +1,13 @@
 # CHANGES
 
-W4-T1 product implementation:
+W4-T2 product implementation:
 
-* `ai-knowledge/config/prompt-registry.schema.json`
-* `ai-knowledge/config/prompt-registry/README.md`
-* `ai-knowledge/examples/prompt-registry-entry.valid.json`
+* `ai-knowledge/registries/prompts/README.md`
+* `ai-knowledge/registries/prompts/registry.storage.json`
+* `ai-knowledge/scripts/validate-prompt-registry-storage.mjs`
+* `ai-knowledge/scripts/validate-structure.mjs`
 * `ai-knowledge/scripts/validate-prompt-registry-schema.mjs`
+* `ai-knowledge/validation/roadmap-coverage.json`
+* `ai-knowledge/docs/ENTERPRISE-10-10/ROADMAP_TO_FILES.md`
 
-Supporting product alignment:
-
-* `ai-foundation` active checks ignore `_deprecated/`.
-* `ai-template` validates as a template repository instead of a root Next app.
-
-W4-T2 remains open.
+W4-T3 remains open.

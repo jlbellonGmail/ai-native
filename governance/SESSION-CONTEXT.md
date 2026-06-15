@@ -1,6 +1,6 @@
 # CONTINUIDAD DE IMPLEMENTACION
 
-Estado fecha: 2026-06-11
+Estado fecha: 2026-06-15
 
 ## Arquitectura
 
@@ -120,13 +120,61 @@ Evidencia disponible:
 
 ---
 
-## Proximo paso
+## Contexto historico posterior a W4-T1
 
-W4-T2.
+W4-T2 fue el siguiente paso elegible despues de W4-T1.
 
-Restricciones:
+Estado actual:
+
+* Superseded by W4-T2-PROMPT-REGISTRY-STORAGE.
+* Proximo paso vigente: W4-T3.
+
+Restricciones historicas:
 
 * no cerrar tareas governance-only
 * no modificar VERSION sin autorizacion explicita
 * no borrar contenido preexistente sin evidencia y justificacion
 * no avanzar W4-T2 sin diff producto real
+
+---
+
+## Ultima ejecucion valida
+
+Tipo:
+W4-T2-PROMPT-REGISTRY-STORAGE
+
+Estado:
+PRODUCT IMPLEMENTED AND GOVERNANCE CLOSED
+
+Repositorio producto impactado:
+
+* ai-knowledge
+
+Commits producto:
+
+* ai-knowledge W4-T2 product commit: `e3b322f`
+
+Validado:
+
+* W4-T2 Prompt Registry Storage tiene estructura de registry, contrato de storage, lifecycle documentado, checksums SHA-256 y validacion real en ai-knowledge.
+* `registries/prompts/registry.storage.json` indexa prompts existentes bajo `registries/prompts/code-generator/v1-v3/`.
+* `scripts/validate-prompt-registry-storage.mjs` valida rutas, existencia de archivos, integridad SHA-256, lifecycle y que W4-T3+ permanecen abiertos.
+* W4-T3+ quedan como `BASELINE_PRESENT` o `READY_FOR_FUTURE_TASK`.
+* No se cerro W4-T3.
+
+Evidencia disponible:
+
+* governance/execution/archive/ENTERPRISE-10-10-V1/W4-T2/
+
+---
+
+## Proximo paso
+
+W4-T3.
+
+Restricciones:
+
+* no abrir W4-T3 sin instruccion explicita
+* no modificar VERSION sin autorizacion explicita
+* no cerrar W4-T3+ por arrastre
+* push bloqueado por politica/credenciales externas debe registrarse como CONTEXTUAL_NON_BLOCKING

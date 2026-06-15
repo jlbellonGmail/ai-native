@@ -2,10 +2,10 @@
 
 Latest validation archive:
 
-`governance/execution/archive/ENTERPRISE-10-10-V1/W4-T1/VALIDATION.md`
+`governance/execution/archive/ENTERPRISE-10-10-V1/W4-T2/VALIDATION.md`
 
 Status:
 
 * Product validators PASS.
-* Package scripts PASS where applicable.
+* No package scripts were available in `ai-knowledge`.
 * CRLF warnings are non-blocking.

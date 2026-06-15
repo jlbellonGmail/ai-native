@@ -881,7 +881,10 @@ Notas:
 Prompt Registry Storage
 
 Estado:
-[ ]
+[x]
+
+Fecha cierre:
+2026-06-15
 
 Entregables:
 
@@ -891,16 +894,24 @@ Entregables:
 
 Evidencia:
 
-* almacenamiento definido.
-* reglas documentadas.
-* artefacto machine-readable generado.
+* almacenamiento definido en `ai-knowledge/registries/prompts/`.
+* estructura de registry documentada en `ai-knowledge/registries/prompts/README.md`.
+* contrato de storage machine-readable generado en `ai-knowledge/registries/prompts/registry.storage.json`.
+* ciclo de vida de storage definido: `stored`, `candidate`, `active`, `retired`.
+* integridad SHA-256 validada para prompts almacenados.
+* validacion local implementada en `ai-knowledge/scripts/validate-prompt-registry-storage.mjs`.
+* matriz roadmap -> archivos actualizada en `ai-knowledge/docs/ENTERPRISE-10-10/ROADMAP_TO_FILES.md`.
+* `ai-knowledge/validation/roadmap-coverage.json` actualizado con W4-T2 `IMPLEMENTED`.
+* Producto implementado en ai-knowledge commit `e3b322f`.
+* Evidencia governance: `governance/execution/archive/ENTERPRISE-10-10-V1/W4-T2/`.
 
 Notas:
 
 * sin base real.
 * sin persistencia runtime.
 * W4-T3 queda como siguiente tarea elegible.
-* no se ejecuto commit, push ni Engram.
+* W4-T3+ no fueron cerradas.
+* Push remoto queda sujeto a politica/credenciales externas.
 
 ---
 
