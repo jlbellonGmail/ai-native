@@ -1,7 +1,7 @@
 {
   "schemaVersion": "prompt-registry-versioning.v1",
   "roadmapTask": "W4-T3",
-  "description": "Prompt registry versioning model and compatibility policy for ENTERPRISE-10-10 W4-T3. This contract governs per-prompt semantic versions and compatibility only; it does not modify the global repository VERSION file and does not close ownership, approval or evaluation linkage tasks.",
+  "description": "Prompt registry versioning model and compatibility policy for ENTERPRISE-10-10 W4-T3. This contract governs per-prompt semantic versions and compatibility only; it does not modify the global repository VERSION file and does not close evaluation linkage tasks. W4-T4 ownership is defined in config/prompt-registry/ownership.policy.json.",
   "appliesTo": {
     "entrySchema": "config/prompt-registry.schema.json",
     "storageContract": "registries/prompts/registry.storage.json"
@@ -98,8 +98,7 @@
       "compatibility policy",
       "governance rules"
     ],
-    "doesNotClose": ["W4-T4", "W4-T5", "W4-T6"],
+    "doesNotClose": ["W4-T5", "W4-T6"],
     "validation": "scripts/validate-prompt-registry-versioning.mjs"
   }
 }
-

@@ -10,7 +10,9 @@ const requiredFiles = [
   "docs/ENTERPRISE-10-10/ROADMAP_TO_FILES.md",
   "config/README.md",
   "config/prompt-registry/README.md",
+  "config/prompt-registry/OWNERSHIP.md",
   "config/prompt-registry/VERSIONING.md",
+  "config/prompt-registry/ownership.policy.json",
   "config/prompt-registry/versioning.compatibility.json",
   "config/prompt-registry.schema.json",
   "validation/README.md",
@@ -24,6 +26,7 @@ const requiredFiles = [
   "registries/prompts/README.md",
   "registries/prompts/registry.storage.json",
   "examples/prompt-registry-entry.valid.json",
+  "scripts/validate-prompt-registry-ownership.mjs",
   "scripts/validate-prompt-registry-schema.mjs",
   "scripts/validate-prompt-registry-storage.mjs",
   "scripts/validate-prompt-registry-versioning.mjs"
@@ -62,7 +65,8 @@ for (const [task, files] of Object.entries(coverage.tasks)) {
 assert(coverage.taskStates["W4-T1"] === "IMPLEMENTED", "W4-T1 must be implemented");
 assert(coverage.taskStates["W4-T2"] === "IMPLEMENTED", "W4-T2 must be implemented");
 assert(coverage.taskStates["W4-T3"] === "IMPLEMENTED", "W4-T3 must be implemented");
-for (const task of ["W4-T4", "W4-T5", "W4-T6"]) {
+assert(coverage.taskStates["W4-T4"] === "IMPLEMENTED", "W4-T4 must be implemented");
+for (const task of ["W4-T5", "W4-T6"]) {
   assert(
     ["BASELINE_PRESENT", "READY_FOR_FUTURE_TASK"].includes(coverage.taskStates[task]),
     `${task} must remain prepared but not closed`

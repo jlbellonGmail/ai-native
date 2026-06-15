@@ -31,7 +31,7 @@ assert(versioning.versionFields.storageSlotPattern === "^v\\d+$", "storage slot 
 assert(versioning.model.globalVersionPolicy === "do-not-modify-repository-VERSION-for-prompt-version-changes", "global VERSION must remain outside prompt versioning");
 assert(versioning.compatibilityPolicy.requiresExplicitMajorDecision === true, "major compatibility decisions must be explicit");
 assert(versioning.governance.roadmapTask === "W4-T3", "governance block must bind to W4-T3");
-for (const task of ["W4-T4", "W4-T5", "W4-T6"]) {
+for (const task of ["W4-T5", "W4-T6"]) {
   assert(versioning.governance.doesNotClose.includes(task), `${task} must remain outside W4-T3 closure`);
 }
 
@@ -67,7 +67,8 @@ for (const promptVersion of versioning.promptVersions) {
 assert(coverage.taskStates["W4-T1"] === "IMPLEMENTED", "W4-T1 must remain implemented");
 assert(coverage.taskStates["W4-T2"] === "IMPLEMENTED", "W4-T2 must remain implemented");
 assert(coverage.taskStates["W4-T3"] === "IMPLEMENTED", "W4-T3 must be marked IMPLEMENTED after product validation");
-for (const task of ["W4-T4", "W4-T5", "W4-T6"]) {
+assert(coverage.taskStates["W4-T4"] === "IMPLEMENTED", "W4-T4 must be marked IMPLEMENTED after product validation");
+for (const task of ["W4-T5", "W4-T6"]) {
   assert(
     ["BASELINE_PRESENT", "READY_FOR_FUTURE_TASK"].includes(coverage.taskStates[task]),
     `${task} must remain open after W4-T3`
@@ -79,4 +80,3 @@ for (const file of coverage.tasks["W4-T3"]) {
 }
 
 console.log("ENTERPRISE-10-10 W4-T3 prompt registry versioning validation PASS");
-

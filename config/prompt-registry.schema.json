@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://ai-native.local/schemas/prompt-registry-entry.v1.schema.json",
   "title": "Prompt Registry Entry",
-  "description": "Machine-readable contract for ENTERPRISE-10-10 W4-T1 Prompt Schema. This schema defines one prompt registry entry; it does not create registry storage, runtime persistence or migrations. W4-T3 defines the per-prompt versioning policy for the version field in config/prompt-registry/versioning.compatibility.json.",
+  "description": "Machine-readable contract for ENTERPRISE-10-10 W4-T1 Prompt Schema. This schema defines one prompt registry entry; it does not create registry storage, runtime persistence or migrations. W4-T3 defines the per-prompt versioning policy for the version field in config/prompt-registry/versioning.compatibility.json. W4-T4 defines owner accountability in config/prompt-registry/ownership.policy.json.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -29,6 +29,7 @@
     "owner": {
       "type": "object",
       "additionalProperties": false,
+      "description": "Prompt owner identity required by W4-T4 ownership policy. This is governance accountability, not IAM.",
       "required": ["team", "contact"],
       "properties": {
         "team": {
