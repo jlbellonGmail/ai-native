@@ -958,7 +958,10 @@ Notas:
 Ownership
 
 Estado:
-[ ]
+[x]
+
+Fecha cierre:
+2026-06-15
 
 Entregables:
 
@@ -968,16 +971,23 @@ Entregables:
 
 Evidencia:
 
-* ownership definido.
-* reglas aprobatorias documentadas.
-* artefacto machine-readable generado.
+* ownership de prompts definido en `ai-knowledge/config/prompt-registry/OWNERSHIP.md`.
+* reglas aprobatorias documentadas y machine-readable en `ai-knowledge/config/prompt-registry/ownership.policy.json`.
+* contrato de accountability documentado para owner, reviewer, risk accountable y registry steward.
+* `ai-knowledge/config/prompt-registry.schema.json` vincula owner con politica W4-T4 sin crear IAM.
+* validacion local implementada en `ai-knowledge/scripts/validate-prompt-registry-ownership.mjs`.
+* matriz roadmap -> archivos actualizada en `ai-knowledge/docs/ENTERPRISE-10-10/ROADMAP_TO_FILES.md`.
+* `ai-knowledge/validation/roadmap-coverage.json` actualizado con W4-T4 `IMPLEMENTED`.
+* Producto implementado en ai-knowledge commit `db6cc58`.
+* Evidencia governance: `governance/execution/archive/ENTERPRISE-10-10-V1/W4-T4/`.
 
 Notas:
 
 * sin IAM.
 * sin permisos runtime.
 * W4-T5 queda como siguiente tarea elegible.
-* no se ejecuto commit, push ni Engram.
+* W4-T5+ no fueron cerradas.
+* Push remoto queda sujeto a politica/credenciales externas.
 
 ---
 

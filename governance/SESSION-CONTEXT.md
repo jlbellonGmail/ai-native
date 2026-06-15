@@ -128,7 +128,8 @@ Estado actual:
 
 * Superseded by W4-T2-PROMPT-REGISTRY-STORAGE.
 * Superseded again by W4-T3-PROMPT-REGISTRY-VERSIONING.
-* Proximo paso vigente: W4-T4.
+* Superseded again by W4-T4-PROMPT-REGISTRY-OWNERSHIP.
+* Proximo paso vigente: W4-T5.
 
 Restricciones historicas:
 
@@ -176,7 +177,8 @@ W4-T3 fue el siguiente paso elegible despues de W4-T2.
 Estado actual:
 
 * Superseded by W4-T3-PROMPT-REGISTRY-VERSIONING.
-* Proximo paso vigente: W4-T4.
+* Superseded again by W4-T4-PROMPT-REGISTRY-OWNERSHIP.
+* Proximo paso vigente: W4-T5.
 
 Restricciones historicas:
 
@@ -218,13 +220,62 @@ Evidencia disponible:
 
 ---
 
-## Proximo paso
+## Contexto historico posterior a W4-T3
 
-W4-T4.
+W4-T4 fue el siguiente paso elegible despues de W4-T3.
 
-Restricciones:
+Estado actual:
+
+* Superseded by W4-T4-PROMPT-REGISTRY-OWNERSHIP.
+* Proximo paso vigente: W4-T5.
+
+Restricciones historicas:
 
 * no abrir W4-T4 sin instruccion explicita
 * no modificar VERSION sin autorizacion explicita
 * no cerrar W4-T4+ por arrastre
+* push bloqueado por politica/credenciales externas debe registrarse como CONTEXTUAL_NON_BLOCKING
+
+---
+
+## Ultima ejecucion valida
+
+Tipo:
+W4-T4-PROMPT-REGISTRY-OWNERSHIP
+
+Estado:
+PRODUCT IMPLEMENTED AND GOVERNANCE CLOSED
+
+Repositorio producto impactado:
+
+* ai-knowledge
+
+Commits producto:
+
+* ai-knowledge W4-T4 product commit: `db6cc58`
+
+Validado:
+
+* W4-T4 Ownership tiene modelo de ownership, reglas aprobatorias y contrato de accountability en ai-knowledge.
+* `config/prompt-registry/ownership.policy.json` define roles `prompt_owner`, `prompt_reviewer`, `risk_accountable` y `registry_steward`.
+* `scripts/validate-prompt-registry-ownership.mjs` valida schema, storage, versioning, ownership records y que W4-T5+ permanecen abiertos.
+* No se creo IAM ni permisos runtime.
+* W4-T5+ quedan como `BASELINE_PRESENT` o `READY_FOR_FUTURE_TASK`.
+* No se cerro W4-T5.
+
+Evidencia disponible:
+
+* governance/execution/archive/ENTERPRISE-10-10-V1/W4-T4/
+
+---
+
+## Proximo paso
+
+W4-T5.
+
+Restricciones:
+
+* no abrir W4-T5 sin instruccion explicita
+* no modificar VERSION sin autorizacion explicita
+* no cerrar W4-T5+ por arrastre
 * push bloqueado por politica/credenciales externas debe registrarse como CONTEXTUAL_NON_BLOCKING
