@@ -69,7 +69,7 @@ assert(coverage.taskStates["W4-T2"] === "IMPLEMENTED", "W4-T2 must remain implem
 assert(coverage.taskStates["W4-T3"] === "IMPLEMENTED", "W4-T3 must be marked IMPLEMENTED after product validation");
 assert(coverage.taskStates["W4-T4"] === "IMPLEMENTED", "W4-T4 must be marked IMPLEMENTED after product validation");
 assert(coverage.taskStates["W4-T5"] === "IMPLEMENTED", "W4-T5 must be marked IMPLEMENTED after product validation");
-assert(coverage.taskStates["W4-T6"] === "READY_FOR_FUTURE_TASK", "W4-T6 must remain next task");
+assert(coverage.taskStates["W4-T6"] === "IMPLEMENTED", "W4-T6 must be marked IMPLEMENTED after product validation");
 
 for (const file of coverage.tasks["W4-T3"]) {
   await readFile(new URL(`../${file}`, import.meta.url), "utf8");
