@@ -269,13 +269,63 @@ Evidencia disponible:
 
 ---
 
-## Proximo paso
+## Contexto historico posterior a W4-T4
 
-W4-T5.
+W4-T5 fue el siguiente paso elegible despues de W4-T4.
 
-Restricciones:
+Estado actual:
+
+* Superseded by W4-T5-PROMPT-REGISTRY-EVALUATION-LINKAGE.
+* Proximo paso vigente: W4-T6.
+
+Restricciones historicas:
 
 * no abrir W4-T5 sin instruccion explicita
 * no modificar VERSION sin autorizacion explicita
 * no cerrar W4-T5+ por arrastre
+* push bloqueado por politica/credenciales externas debe registrarse como CONTEXTUAL_NON_BLOCKING
+
+---
+
+## Ultima ejecucion valida
+
+Tipo:
+W4-T5-PROMPT-REGISTRY-EVALUATION-LINKAGE
+
+Estado:
+PRODUCT IMPLEMENTED AND GOVERNANCE CLOSED
+
+Repositorio producto impactado:
+
+* ai-knowledge
+
+Commits producto:
+
+* ai-knowledge W4-T5 product commit: `9c1d84b`
+
+Validado:
+
+* W4-T5 Evaluation Linkage tiene contrato de linkage, binding de evaluacion y modelo de trazabilidad en ai-knowledge.
+* `config/prompt-registry/evaluation-linkage.json` vincula `code-generator.system@1.0.0` con `bench-prompt-grounding`, `ds-grounded-qa` y `weighted-rubric-v1`.
+* `evaluation/enterprise-10-10/evaluation-program.json` y `config/evaluation-policy.json` exponen el binding W4-T5 sin ejecutar evaluaciones ni crear pipelines.
+* `scripts/validate-prompt-registry-evaluation-linkage.mjs` valida schema, storage, versioning, ownership, benchmark, dataset, rubric, policy y coverage.
+* No se creo evaluacion real, pipeline, reporte de score ni aprobacion de activacion.
+* W4-T6 queda como `READY_FOR_FUTURE_TASK`.
+* No se cerro W4-T6.
+
+Evidencia disponible:
+
+* governance/execution/archive/ENTERPRISE-10-10-V1/W4-T5/
+
+---
+
+## Proximo paso
+
+W4-T6.
+
+Restricciones:
+
+* no abrir W4-T6 sin instruccion explicita
+* no modificar VERSION sin autorizacion explicita
+* no cerrar W4-T6+ por arrastre
 * push bloqueado por politica/credenciales externas debe registrarse como CONTEXTUAL_NON_BLOCKING

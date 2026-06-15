@@ -996,7 +996,7 @@ Notas:
 Evaluation Linkage
 
 Estado:
-[ ]
+[x]
 
 Entregables:
 
@@ -1006,16 +1006,24 @@ Entregables:
 
 Evidencia:
 
-* vinculaciones definidas.
-* trazabilidad documentada.
-* artefacto machine-readable generado.
+* vinculaciones definidas en `ai-knowledge/config/prompt-registry/evaluation-linkage.json`.
+* trazabilidad documentada en `ai-knowledge/config/prompt-registry/EVALUATION-LINKAGE.md`.
+* artefacto machine-readable generado y validado.
+* binding de evaluacion registrado en `ai-knowledge/evaluation/enterprise-10-10/evaluation-program.json`.
+* politica actualizada en `ai-knowledge/config/evaluation-policy.json`.
+* validacion local implementada en `ai-knowledge/scripts/validate-prompt-registry-evaluation-linkage.mjs`.
+* `ai-knowledge/validation/roadmap-coverage.json` actualizado con W4-T5 `IMPLEMENTED`.
+* matriz roadmap -> archivos actualizada en `ai-knowledge/docs/ENTERPRISE-10-10/ROADMAP_TO_FILES.md`.
+* commit producto: `9c1d84b`.
+* archive governance: `governance/execution/archive/ENTERPRISE-10-10-V1/W4-T5/`.
 
 Notas:
 
 * sin evaluación real.
 * sin pipelines.
 * W4-T6 queda como siguiente tarea elegible.
-* no se ejecuto commit, push ni Engram.
+* W4-T6+ no fueron cerradas.
+* Push remoto queda sujeto a politica/credenciales externas.
 
 ---
 

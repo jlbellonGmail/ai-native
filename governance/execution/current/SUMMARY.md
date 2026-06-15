@@ -2,10 +2,10 @@
 
 Latest archived execution:
 
-W4-T4 Ownership.
+W4-T5 Evaluation Linkage.
 
 Result:
 
-* W4-T4 closed with product validation in `ai-knowledge`.
-* W4-T5 is the next eligible task.
-* W4-T5 and later tasks are not closed.
+* W4-T5 closed with product validation in `ai-knowledge`.
+* W4-T6 is the next eligible task.
+* W4-T6 and later tasks are not closed.
