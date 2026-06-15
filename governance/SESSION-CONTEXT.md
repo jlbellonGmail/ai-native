@@ -127,7 +127,8 @@ W4-T2 fue el siguiente paso elegible despues de W4-T1.
 Estado actual:
 
 * Superseded by W4-T2-PROMPT-REGISTRY-STORAGE.
-* Proximo paso vigente: W4-T3.
+* Superseded again by W4-T3-PROMPT-REGISTRY-VERSIONING.
+* Proximo paso vigente: W4-T4.
 
 Restricciones historicas:
 
@@ -168,13 +169,62 @@ Evidencia disponible:
 
 ---
 
-## Proximo paso
+## Contexto historico posterior a W4-T2
 
-W4-T3.
+W4-T3 fue el siguiente paso elegible despues de W4-T2.
 
-Restricciones:
+Estado actual:
+
+* Superseded by W4-T3-PROMPT-REGISTRY-VERSIONING.
+* Proximo paso vigente: W4-T4.
+
+Restricciones historicas:
 
 * no abrir W4-T3 sin instruccion explicita
 * no modificar VERSION sin autorizacion explicita
 * no cerrar W4-T3+ por arrastre
+* push bloqueado por politica/credenciales externas debe registrarse como CONTEXTUAL_NON_BLOCKING
+
+---
+
+## Ultima ejecucion valida
+
+Tipo:
+W4-T3-PROMPT-REGISTRY-VERSIONING
+
+Estado:
+PRODUCT IMPLEMENTED AND GOVERNANCE CLOSED
+
+Repositorio producto impactado:
+
+* ai-knowledge
+
+Commits producto:
+
+* ai-knowledge W4-T3 product commit: `785f0d8`
+
+Validado:
+
+* W4-T3 Versioning tiene modelo de versionado por prompt, politica de compatibilidad y reglas governance en ai-knowledge.
+* `config/prompt-registry/versioning.compatibility.json` mapea versiones semanticas `1.0.0`, `2.0.0`, `3.0.0` a slots `v1`, `v2`, `v3`.
+* `scripts/validate-prompt-registry-versioning.mjs` valida schema, storage, compatibilidad, mapping de versiones y que W4-T4+ permanecen abiertos.
+* `VERSION` global no fue modificado.
+* W4-T4+ quedan como `BASELINE_PRESENT` o `READY_FOR_FUTURE_TASK`.
+* No se cerro W4-T4.
+
+Evidencia disponible:
+
+* governance/execution/archive/ENTERPRISE-10-10-V1/W4-T3/
+
+---
+
+## Proximo paso
+
+W4-T4.
+
+Restricciones:
+
+* no abrir W4-T4 sin instruccion explicita
+* no modificar VERSION sin autorizacion explicita
+* no cerrar W4-T4+ por arrastre
 * push bloqueado por politica/credenciales externas debe registrarse como CONTEXTUAL_NON_BLOCKING

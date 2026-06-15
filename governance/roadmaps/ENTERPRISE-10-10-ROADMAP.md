@@ -920,7 +920,10 @@ Notas:
 Versioning
 
 Estado:
-[ ]
+[x]
+
+Fecha cierre:
+2026-06-15
 
 Entregables:
 
@@ -930,15 +933,23 @@ Entregables:
 
 Evidencia:
 
-* versionado definido.
-* compatibilidad documentada.
-* artefacto machine-readable generado.
+* versionado de prompts definido en `ai-knowledge/config/prompt-registry/VERSIONING.md`.
+* politica de compatibilidad documentada y machine-readable en `ai-knowledge/config/prompt-registry/versioning.compatibility.json`.
+* reglas governance documentadas: versionado por prompt, no modificar `VERSION` global, no cerrar ownership ni evaluation linkage.
+* `ai-knowledge/config/prompt-registry.schema.json` distingue version semantica de prompt del `VERSION` de repositorio.
+* `ai-knowledge/registries/prompts/registry.storage.json` actualizado para vincular slots de storage con lineas mayores de prompt.
+* validacion local implementada en `ai-knowledge/scripts/validate-prompt-registry-versioning.mjs`.
+* matriz roadmap -> archivos actualizada en `ai-knowledge/docs/ENTERPRISE-10-10/ROADMAP_TO_FILES.md`.
+* `ai-knowledge/validation/roadmap-coverage.json` actualizado con W4-T3 `IMPLEMENTED`.
+* Producto implementado en ai-knowledge commit `785f0d8`.
+* Evidencia governance: `governance/execution/archive/ENTERPRISE-10-10-V1/W4-T3/`.
 
 Notas:
 
 * no modificar VERSION global.
 * W4-T4 queda como siguiente tarea elegible.
-* no se ejecuto commit, push ni Engram.
+* W4-T4+ no fueron cerradas.
+* Push remoto queda sujeto a politica/credenciales externas.
 
 ---
 

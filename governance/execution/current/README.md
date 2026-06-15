@@ -2,11 +2,11 @@
 
 Latest execution:
 
-`ENTERPRISE-10-10 W4-T2 Prompt Registry Storage`
+`ENTERPRISE-10-10 W4-T3 Versioning`
 
 Archive:
 
-`governance/execution/archive/ENTERPRISE-10-10-V1/W4-T2/`
+`governance/execution/archive/ENTERPRISE-10-10-V1/W4-T3/`
 
 Final realignment archive:
 
@@ -14,4 +14,4 @@ Final realignment archive:
 
 Next eligible task:
 
-`W4-T3`
+`W4-T4`
