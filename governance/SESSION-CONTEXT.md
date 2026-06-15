@@ -319,13 +319,63 @@ Evidencia disponible:
 
 ---
 
-## Proximo paso
+## Contexto historico posterior a W4-T5
 
-W4-T6.
+W4-T6 fue el siguiente paso elegible despues de W4-T5.
 
-Restricciones:
+Estado actual:
+
+* Superseded by W4-T6-PROMPT-REGISTRY-AUDIT.
+* Proximo paso vigente: W5-T1.
+
+Restricciones historicas:
 
 * no abrir W4-T6 sin instruccion explicita
 * no modificar VERSION sin autorizacion explicita
 * no cerrar W4-T6+ por arrastre
+* push bloqueado por politica/credenciales externas debe registrarse como CONTEXTUAL_NON_BLOCKING
+
+---
+
+## Ultima ejecucion valida
+
+Tipo:
+W4-T6-PROMPT-REGISTRY-AUDIT
+
+Estado:
+PRODUCT IMPLEMENTED AND GOVERNANCE CLOSED
+
+Repositorio producto impactado:
+
+* ai-knowledge
+
+Commits producto:
+
+* ai-knowledge W4-T6 product commit: `ee7ee88`
+
+Validado:
+
+* W4-T6 Prompt Registry Audit tiene guia humana, contrato audit machine-readable y validador final en ai-knowledge.
+* `config/prompt-registry/prompt-registry.audit.json` audita W4-T1 a W4-T5 y declara W5 fuera del cierre.
+* `scripts/validate-prompt-registry-audit.mjs` valida consistencia entre schema, storage, versioning, ownership y evaluation linkage.
+* `validation/roadmap-coverage.json` marca W4-T1 a W4-T6 como `IMPLEMENTED`.
+* W5-T1 a W5-T6 permanecen `PREPARED_NOT_CLOSED`, `BASELINE_PRESENT` o `READY_FOR_FUTURE_TASK`.
+* No se abrio W5.
+* No se cerro W5.
+
+Evidencia disponible:
+
+* governance/execution/archive/ENTERPRISE-10-10-V1/W4-T6/
+
+---
+
+## Proximo paso
+
+W5-T1.
+
+Restricciones:
+
+* no abrir W5-T1 sin instruccion explicita
+* no modificar VERSION sin autorizacion explicita
+* no cerrar W5+ por arrastre
 * push bloqueado por politica/credenciales externas debe registrarse como CONTEXTUAL_NON_BLOCKING

@@ -2,11 +2,11 @@
 
 Latest execution:
 
-`ENTERPRISE-10-10 W4-T5 Evaluation Linkage`
+`ENTERPRISE-10-10 W4-T6 Prompt Registry Audit`
 
 Archive:
 
-`governance/execution/archive/ENTERPRISE-10-10-V1/W4-T5/`
+`governance/execution/archive/ENTERPRISE-10-10-V1/W4-T6/`
 
 Final realignment archive:
 
@@ -14,4 +14,4 @@ Final realignment archive:
 
 Next eligible task:
 
-`W4-T6`
+`W5-T1`
