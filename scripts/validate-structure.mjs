@@ -19,8 +19,11 @@ const requiredFiles = [
   "quality-gates/enterprise-10-10-gates.json",
   "evaluation/README.md",
   "registries/README.md",
+  "registries/prompts/README.md",
+  "registries/prompts/registry.storage.json",
   "examples/prompt-registry-entry.valid.json",
-  "scripts/validate-prompt-registry-schema.mjs"
+  "scripts/validate-prompt-registry-schema.mjs",
+  "scripts/validate-prompt-registry-storage.mjs"
 ];
 
 function assert(condition, message) {
@@ -54,9 +57,10 @@ for (const [task, files] of Object.entries(coverage.tasks)) {
 }
 
 assert(coverage.taskStates["W4-T1"] === "IMPLEMENTED", "W4-T1 must be implemented");
-for (const task of ["W4-T2", "W4-T3", "W4-T4", "W4-T5", "W4-T6"]) {
+assert(coverage.taskStates["W4-T2"] === "IMPLEMENTED", "W4-T2 must be implemented");
+for (const task of ["W4-T3", "W4-T4", "W4-T5", "W4-T6"]) {
   assert(
-    ["PREPARED_NOT_CLOSED", "BASELINE_PRESENT", "READY_FOR_FUTURE_TASK"].includes(coverage.taskStates[task]),
+    ["BASELINE_PRESENT", "READY_FOR_FUTURE_TASK"].includes(coverage.taskStates[task]),
     `${task} must remain prepared but not closed`
   );
 }

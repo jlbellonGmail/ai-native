@@ -90,9 +90,10 @@ for (const field of [
 validateValue(schema, example, "example");
 
 assert(coverage.taskStates["W4-T1"] === "IMPLEMENTED", "W4-T1 must be marked IMPLEMENTED after product validation");
-for (const task of ["W4-T2", "W4-T3", "W4-T4", "W4-T5", "W4-T6"]) {
+assert(coverage.taskStates["W4-T2"] === "IMPLEMENTED", "W4-T2 must be marked IMPLEMENTED after product validation");
+for (const task of ["W4-T3", "W4-T4", "W4-T5", "W4-T6"]) {
   assert(
-    ["PREPARED_NOT_CLOSED", "BASELINE_PRESENT", "READY_FOR_FUTURE_TASK"].includes(coverage.taskStates[task]),
+    ["BASELINE_PRESENT", "READY_FOR_FUTURE_TASK"].includes(coverage.taskStates[task]),
     `${task} must not be marked closed`
   );
 }

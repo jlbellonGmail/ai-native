@@ -1,0 +1,77 @@
+{
+  "schemaVersion": "prompt-registry-storage.v1",
+  "roadmapTask": "W4-T2",
+  "storageRoot": "registries/prompts",
+  "storageMode": "repository-filesystem",
+  "description": "Repository-backed prompt registry storage contract for ENTERPRISE-10-10 W4-T2. This contract governs stored prompt file locations and integrity only; runtime databases, migrations and compatibility policy are outside this task.",
+  "layout": {
+    "promptFamilyDirectory": "<prompt-family>",
+    "storageSlotDirectory": "<storage-slot>",
+    "promptFileName": "system-prompt.md",
+    "pathTemplate": "registries/prompts/<prompt-family>/<storage-slot>/system-prompt.md",
+    "storageSlotMeaning": "Filesystem coordinate only. Compatibility and versioning semantics are deferred to W4-T3."
+  },
+  "lifecycle": {
+    "states": ["stored", "candidate", "active", "retired"],
+    "initialState": "stored",
+    "allowedTransitions": [
+      { "from": "stored", "to": "candidate", "requires": "schema-valid-entry" },
+      { "from": "candidate", "to": "active", "requires": "future-governance-approval" },
+      { "from": "active", "to": "retired", "requires": "future-retirement-record" }
+    ],
+    "nonGoals": [
+      "No runtime persistence is introduced.",
+      "No database table, migration or service API is created.",
+      "No W4-T3 compatibility policy is defined.",
+      "No W4-T4 ownership or approval workflow is closed.",
+      "No W4-T5 evaluation linkage is closed."
+    ]
+  },
+  "integrity": {
+    "algorithm": "sha256",
+    "requiredForEveryEntry": true
+  },
+  "entries": [
+    {
+      "id": "code-generator.system",
+      "family": "code-generator",
+      "storageSlot": "v1",
+      "role": "system",
+      "lifecycleState": "stored",
+      "storagePath": "registries/prompts/code-generator/v1/system-prompt.md",
+      "contentType": "text/markdown",
+      "sha256": "13e830b5e1a2648af369e7f622fd7b22896152af4f73cf8bd010889c41404a8e"
+    },
+    {
+      "id": "code-generator.system",
+      "family": "code-generator",
+      "storageSlot": "v2",
+      "role": "system",
+      "lifecycleState": "stored",
+      "storagePath": "registries/prompts/code-generator/v2/system-prompt.md",
+      "contentType": "text/markdown",
+      "sha256": "9e628149ff80812f94d5554f7659ac17eda3f656e9c0b4c6a85d12c66975e140"
+    },
+    {
+      "id": "code-generator.system",
+      "family": "code-generator",
+      "storageSlot": "v3",
+      "role": "system",
+      "lifecycleState": "stored",
+      "storagePath": "registries/prompts/code-generator/v3/system-prompt.md",
+      "contentType": "text/markdown",
+      "sha256": "39ba9e9f23a78affc0fe5450a896fbc9a25613bf61d06dd37e51df58e6c42766"
+    }
+  ],
+  "governance": {
+    "roadmapTask": "W4-T2",
+    "closes": [
+      "registry structure",
+      "storage contract",
+      "storage lifecycle"
+    ],
+    "doesNotClose": ["W4-T3", "W4-T4", "W4-T5", "W4-T6"],
+    "validation": "scripts/validate-prompt-registry-storage.mjs"
+  }
+}
+
