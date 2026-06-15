@@ -23,8 +23,9 @@ Prompt bodies are stored under:
 registries/prompts/<prompt-family>/<storage-slot>/system-prompt.md
 ```
 
-The storage slot, such as `v1`, is a filesystem coordinate only. Compatibility
-and versioning policy remain deferred to W4-T3.
+The storage slot, such as `v1`, is a filesystem coordinate for a major prompt
+version line. Compatibility and versioning policy are defined in
+`config/prompt-registry/versioning.compatibility.json`.
 
 ## Usage
 
@@ -40,4 +41,3 @@ node scripts/validate-prompt-registry-storage.mjs
 
 The validator confirms that indexed prompt files exist, paths stay inside this
 registry, checksums match current file contents and W4-T3+ remain open.
-

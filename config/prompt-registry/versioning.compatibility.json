@@ -1,0 +1,105 @@
+{
+  "schemaVersion": "prompt-registry-versioning.v1",
+  "roadmapTask": "W4-T3",
+  "description": "Prompt registry versioning model and compatibility policy for ENTERPRISE-10-10 W4-T3. This contract governs per-prompt semantic versions and compatibility only; it does not modify the global repository VERSION file and does not close ownership, approval or evaluation linkage tasks.",
+  "appliesTo": {
+    "entrySchema": "config/prompt-registry.schema.json",
+    "storageContract": "registries/prompts/registry.storage.json"
+  },
+  "versionFields": {
+    "promptVersionField": "version",
+    "promptVersionPattern": "^\\d+\\.\\d+\\.\\d+$",
+    "storageSlotPattern": "^v\\d+$",
+    "schemaVersionField": "schemaVersion"
+  },
+  "model": {
+    "identifierPolicy": "prompt-id-stable-across-compatible-versions",
+    "storagePolicy": "storage-slot-tracks-major-version-line",
+    "globalVersionPolicy": "do-not-modify-repository-VERSION-for-prompt-version-changes",
+    "components": [
+      {
+        "component": "MAJOR",
+        "compatible": false,
+        "rule": "Increment when prompt behavior, output contract, role, required variables or safety boundary changes incompatibly."
+      },
+      {
+        "component": "MINOR",
+        "compatible": true,
+        "rule": "Increment for backward-compatible capabilities, guidance or optional variable additions."
+      },
+      {
+        "component": "PATCH",
+        "compatible": true,
+        "rule": "Increment for editorial changes, formatting or typo fixes that preserve behavior."
+      }
+    ]
+  },
+  "compatibilityPolicy": {
+    "defaultSameMajorCompatibility": "compatible",
+    "defaultDifferentMajorCompatibility": "incompatible",
+    "requiresExplicitMajorDecision": true,
+    "changeClasses": [
+      {
+        "id": "editorial_patch",
+        "versionComponent": "PATCH",
+        "compatible": true,
+        "requiresNewStorageSlot": false
+      },
+      {
+        "id": "backward_compatible_guidance",
+        "versionComponent": "MINOR",
+        "compatible": true,
+        "requiresNewStorageSlot": false
+      },
+      {
+        "id": "behavior_contract_break",
+        "versionComponent": "MAJOR",
+        "compatible": false,
+        "requiresNewStorageSlot": true
+      }
+    ]
+  },
+  "promptVersions": [
+    {
+      "id": "code-generator.system",
+      "version": "1.0.0",
+      "major": 1,
+      "storageSlot": "v1",
+      "storagePath": "registries/prompts/code-generator/v1/system-prompt.md",
+      "compatibilityLine": "code-generator.system@1",
+      "changeClass": "behavior_contract_break",
+      "status": "stored"
+    },
+    {
+      "id": "code-generator.system",
+      "version": "2.0.0",
+      "major": 2,
+      "storageSlot": "v2",
+      "storagePath": "registries/prompts/code-generator/v2/system-prompt.md",
+      "compatibilityLine": "code-generator.system@2",
+      "changeClass": "behavior_contract_break",
+      "status": "stored"
+    },
+    {
+      "id": "code-generator.system",
+      "version": "3.0.0",
+      "major": 3,
+      "storageSlot": "v3",
+      "storagePath": "registries/prompts/code-generator/v3/system-prompt.md",
+      "compatibilityLine": "code-generator.system@3",
+      "changeClass": "behavior_contract_break",
+      "status": "stored"
+    }
+  ],
+  "governance": {
+    "roadmapTask": "W4-T3",
+    "closes": [
+      "prompt versioning model",
+      "compatibility policy",
+      "governance rules"
+    ],
+    "doesNotClose": ["W4-T4", "W4-T5", "W4-T6"],
+    "validation": "scripts/validate-prompt-registry-versioning.mjs"
+  }
+}
+

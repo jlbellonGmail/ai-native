@@ -3,13 +3,13 @@
   "roadmapTask": "W4-T2",
   "storageRoot": "registries/prompts",
   "storageMode": "repository-filesystem",
-  "description": "Repository-backed prompt registry storage contract for ENTERPRISE-10-10 W4-T2. This contract governs stored prompt file locations and integrity only; runtime databases, migrations and compatibility policy are outside this task.",
+  "description": "Repository-backed prompt registry storage contract for ENTERPRISE-10-10 W4-T2. This contract governs stored prompt file locations and integrity only; runtime databases and migrations are outside this task. W4-T3 compatibility policy is defined in config/prompt-registry/versioning.compatibility.json.",
   "layout": {
     "promptFamilyDirectory": "<prompt-family>",
     "storageSlotDirectory": "<storage-slot>",
     "promptFileName": "system-prompt.md",
     "pathTemplate": "registries/prompts/<prompt-family>/<storage-slot>/system-prompt.md",
-    "storageSlotMeaning": "Filesystem coordinate only. Compatibility and versioning semantics are deferred to W4-T3."
+    "storageSlotMeaning": "Filesystem coordinate for a major prompt version line. W4-T3 defines compatibility semantics."
   },
   "lifecycle": {
     "states": ["stored", "candidate", "active", "retired"],
@@ -22,7 +22,6 @@
     "nonGoals": [
       "No runtime persistence is introduced.",
       "No database table, migration or service API is created.",
-      "No W4-T3 compatibility policy is defined.",
       "No W4-T4 ownership or approval workflow is closed.",
       "No W4-T5 evaluation linkage is closed."
     ]
@@ -70,8 +69,7 @@
       "storage contract",
       "storage lifecycle"
     ],
-    "doesNotClose": ["W4-T3", "W4-T4", "W4-T5", "W4-T6"],
+    "doesNotClose": ["W4-T4", "W4-T5", "W4-T6"],
     "validation": "scripts/validate-prompt-registry-storage.mjs"
   }
 }
-

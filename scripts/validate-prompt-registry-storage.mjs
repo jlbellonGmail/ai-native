@@ -31,7 +31,7 @@ assert(storage.lifecycle?.initialState === "stored", "storage lifecycle must sta
 assert(storage.integrity?.algorithm === "sha256", "storage integrity must use sha256");
 assert(storage.integrity?.requiredForEveryEntry === true, "sha256 must be required for every entry");
 assert(storage.governance?.roadmapTask === "W4-T2", "governance block must bind to W4-T2");
-for (const task of ["W4-T3", "W4-T4", "W4-T5", "W4-T6"]) {
+for (const task of ["W4-T4", "W4-T5", "W4-T6"]) {
   assert(storage.governance.doesNotClose.includes(task), `${task} must remain outside W4-T2 closure`);
 }
 
@@ -62,7 +62,8 @@ for (const entry of storage.entries) {
 
 assert(coverage.taskStates["W4-T1"] === "IMPLEMENTED", "W4-T1 must remain implemented");
 assert(coverage.taskStates["W4-T2"] === "IMPLEMENTED", "W4-T2 must be marked IMPLEMENTED after product validation");
-for (const task of ["W4-T3", "W4-T4", "W4-T5", "W4-T6"]) {
+assert(coverage.taskStates["W4-T3"] === "IMPLEMENTED", "W4-T3 must be marked IMPLEMENTED after product validation");
+for (const task of ["W4-T4", "W4-T5", "W4-T6"]) {
   assert(
     ["BASELINE_PRESENT", "READY_FOR_FUTURE_TASK"].includes(coverage.taskStates[task]),
     `${task} must remain open after W4-T2`
@@ -75,4 +76,3 @@ for (const file of coverage.tasks["W4-T2"]) {
 }
 
 console.log("ENTERPRISE-10-10 W4-T2 prompt registry storage validation PASS");
-

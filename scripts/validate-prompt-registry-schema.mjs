@@ -71,6 +71,7 @@ assert(schema.title === "Prompt Registry Entry", "schema title must be Prompt Re
 assert(schema.type === "object", "schema root must be an object");
 assert(schema.additionalProperties === false, "schema must reject unknown root properties");
 assert(schema.properties.governance.properties.roadmapTask.const === "W4-T1", "schema governance must bind to W4-T1");
+assert(schema.properties.version.description?.includes("not the repository VERSION"), "version field must distinguish prompt version from repository VERSION");
 
 for (const field of [
   "schemaVersion",
@@ -91,7 +92,8 @@ validateValue(schema, example, "example");
 
 assert(coverage.taskStates["W4-T1"] === "IMPLEMENTED", "W4-T1 must be marked IMPLEMENTED after product validation");
 assert(coverage.taskStates["W4-T2"] === "IMPLEMENTED", "W4-T2 must be marked IMPLEMENTED after product validation");
-for (const task of ["W4-T3", "W4-T4", "W4-T5", "W4-T6"]) {
+assert(coverage.taskStates["W4-T3"] === "IMPLEMENTED", "W4-T3 must be marked IMPLEMENTED after product validation");
+for (const task of ["W4-T4", "W4-T5", "W4-T6"]) {
   assert(
     ["BASELINE_PRESENT", "READY_FOR_FUTURE_TASK"].includes(coverage.taskStates[task]),
     `${task} must not be marked closed`
