@@ -1184,7 +1184,10 @@ Notas:
 Ownership
 
 Estado:
-[ ]
+[x]
+
+Fecha cierre:
+2026-06-16
 
 Entregables:
 
@@ -1194,16 +1197,23 @@ Entregables:
 
 Evidencia:
 
-* ownership definido.
-* accountability documentada.
-* artefacto machine-readable generado.
+* ownership de agentes definido en `ai-knowledge/config/agent-registry/OWNERSHIP.md`.
+* governance ownership y approval chain documentados y machine-readable en `ai-knowledge/config/agent-registry/ownership.policy.json`.
+* accountability documentada para agent owner, approval reviewer, capability steward, risk accountable y registry steward.
+* `ai-knowledge/config/agent-registry.schema.json` vincula owner con politica W5-T4 sin crear IAM.
+* validacion local implementada en `ai-knowledge/scripts/validate-agent-registry-ownership.mjs`.
+* `ai-knowledge/validation/roadmap-coverage.json` actualizado con W5-T4 `IMPLEMENTED`.
+* matriz roadmap -> archivos actualizada en `ai-knowledge/docs/ENTERPRISE-10-10/ROADMAP_TO_FILES.md`.
+* commit producto: `86c229a`.
+* archive governance: `governance/execution/archive/ENTERPRISE-10-10-V1/W5-T4/`.
 
 Notas:
 
 * sin permisos runtime.
 * sin IAM.
 * W5-T5 queda como siguiente tarea elegible.
-* no se ejecuto commit, push ni Engram.
+* W5-T5+ no fueron cerradas.
+* Push remoto queda sujeto a politica/credenciales externas.
 
 ---
 

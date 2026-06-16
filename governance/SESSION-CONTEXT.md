@@ -469,13 +469,13 @@ Evidencia disponible:
 
 ## Proximo paso
 
-W5-T4.
+W5-T5.
 
 Restricciones:
 
-* no abrir W5-T4 sin instruccion explicita
+* no abrir W5-T5 sin instruccion explicita
 * no modificar VERSION sin autorizacion explicita
-* no cerrar W5-T4+ por arrastre
+* no cerrar W5-T5+ por arrastre
 * push bloqueado por politica/credenciales externas debe registrarse como CONTEXTUAL_NON_BLOCKING
 
 ---
@@ -526,4 +526,54 @@ Restricciones historicas:
 * no abrir W5-T4 sin instruccion explicita
 * no modificar VERSION sin autorizacion explicita
 * no cerrar W5-T4+ por arrastre
+* push bloqueado por politica/credenciales externas debe registrarse como CONTEXTUAL_NON_BLOCKING
+
+---
+
+## Ultima ejecucion valida
+
+Tipo:
+W5-T4-AGENT-REGISTRY-OWNERSHIP
+
+Estado:
+PRODUCT IMPLEMENTED AND GOVERNANCE CLOSED
+
+Repositorio producto impactado:
+
+* ai-knowledge
+
+Commits producto:
+
+* ai-knowledge W5-T4 product commit: `86c229a`
+
+Validado:
+
+* W5-T4 Ownership tiene ownership model, governance ownership y approval chain en ai-knowledge.
+* `config/agent-registry/OWNERSHIP.md` documenta modelo de ownership, approval chain y non-goals.
+* `config/agent-registry/ownership.policy.json` define roles `agent_owner`, `approval_reviewer`, `capability_steward`, `risk_accountable` y `registry_steward`.
+* `config/agent-registry.schema.json` vincula `owner` con la politica W5-T4 sin crear IAM ni permisos runtime.
+* `scripts/validate-agent-registry-ownership.mjs` valida schema, storage, capability catalog, ownership records, approval chain, coverage y que W5-T5+ permanecen abiertas o baseline-only.
+* No se creo IAM, no se concedieron permisos runtime, no se activaron agentes y no se cerro evaluation linkage.
+* W5-T5 queda como siguiente tarea elegible.
+* No se cerro W5-T5.
+
+Evidencia disponible:
+
+* governance/execution/archive/ENTERPRISE-10-10-V1/W5-T4/
+
+---
+
+## Contexto historico posterior a W5-T4
+
+W5-T5 fue el siguiente paso elegible despues de W5-T4.
+
+Estado actual:
+
+* Proximo paso vigente: W5-T5.
+
+Restricciones historicas:
+
+* no abrir W5-T5 sin instruccion explicita
+* no modificar VERSION sin autorizacion explicita
+* no cerrar W5-T5+ por arrastre
 * push bloqueado por politica/credenciales externas debe registrarse como CONTEXTUAL_NON_BLOCKING
