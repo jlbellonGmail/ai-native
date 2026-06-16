@@ -3,17 +3,20 @@
 This folder documents the W5-T1 agent schema contract for `ai-knowledge`.
 
 W5-T1 defines the canonical shape and governance rules for one agent registry
-entry. It does not create agent registry storage, capability catalog records,
-ownership approval chains, evaluation linkage, runtime orchestration or
-execution.
+entry. W5-T2 adds repository-backed storage. W5-T3 adds a governed capability
+catalog and dependency model. These contracts do not create ownership approval
+chains, evaluation linkage, runtime orchestration or execution.
 
 ## Contract Files
 
 | File | Purpose |
 |---|---|
 | `../agent-registry.schema.json` | Machine-readable JSON Schema for one agent registry entry. |
+| `../agent-registry.capability.schema.json` | Machine-readable JSON Schema for one W5-T3 capability record. |
 | `../../examples/agent-registry-entry.valid.json` | Minimal valid example used by local validation. |
 | `../../scripts/validate-agent-registry-schema.mjs` | Local validation contract for schema integrity and example conformance. |
+| `capabilities.catalog.json` | W5-T3 catalog of governed capabilities and dependencies. |
+| `CAPABILITIES.md` | Human-readable W5-T3 catalog rules and non-goals. |
 
 ## Governance Rules
 
@@ -35,3 +38,7 @@ Every agent registry entry must include:
 
 Changes to `agent-registry.schema.json` require review of this README, the
 valid example and `scripts/validate-agent-registry-schema.mjs`.
+
+Changes to `capabilities.catalog.json` require review of `CAPABILITIES.md`,
+`agent-registry.capability.schema.json` and
+`scripts/validate-agent-registry-capabilities.mjs`.

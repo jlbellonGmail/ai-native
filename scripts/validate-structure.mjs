@@ -10,6 +10,9 @@ const requiredFiles = [
   "docs/ENTERPRISE-10-10/ROADMAP_TO_FILES.md",
   "config/README.md",
   "config/agent-registry/README.md",
+  "config/agent-registry/CAPABILITIES.md",
+  "config/agent-registry/capabilities.catalog.json",
+  "config/agent-registry.capability.schema.json",
   "config/agent-registry.schema.json",
   "config/prompt-registry/README.md",
   "config/prompt-registry/AUDIT.md",
@@ -36,6 +39,7 @@ const requiredFiles = [
   "examples/agent-registry-entry.valid.json",
   "examples/prompt-registry-entry.valid.json",
   "scripts/validate-agent-registry-schema.mjs",
+  "scripts/validate-agent-registry-capabilities.mjs",
   "scripts/validate-agent-registry-storage.mjs",
   "scripts/validate-prompt-registry-audit.mjs",
   "scripts/validate-prompt-registry-evaluation-linkage.mjs",
@@ -83,7 +87,8 @@ assert(coverage.taskStates["W4-T5"] === "IMPLEMENTED", "W4-T5 must be implemente
 assert(coverage.taskStates["W4-T6"] === "IMPLEMENTED", "W4-T6 must be implemented");
 assert(coverage.taskStates["W5-T1"] === "IMPLEMENTED", "W5-T1 must be implemented");
 assert(coverage.taskStates["W5-T2"] === "IMPLEMENTED", "W5-T2 must be implemented");
-for (const task of ["W5-T3", "W5-T4", "W5-T5", "W5-T6"]) {
+assert(coverage.taskStates["W5-T3"] === "IMPLEMENTED", "W5-T3 must be implemented");
+for (const task of ["W5-T4", "W5-T5", "W5-T6"]) {
   assert(
     ["BASELINE_PRESENT", "READY_FOR_FUTURE_TASK"].includes(coverage.taskStates[task]),
     `${task} must remain unopened or baseline-only`
