@@ -1222,7 +1222,10 @@ Notas:
 Evaluation Linkage
 
 Estado:
-[ ]
+[x]
+
+Fecha cierre:
+2026-06-16
 
 Entregables:
 
@@ -1235,13 +1238,22 @@ Evidencia:
 * vinculacion con Evaluation Framework definida.
 * trazabilidad documentada.
 * artefacto machine-readable generado.
+* contrato documental creado en `ai-knowledge/config/agent-registry/EVALUATION-LINKAGE.md`.
+* contrato machine-readable creado en `ai-knowledge/config/agent-registry/evaluation-linkage.json`.
+* binding expuesto en `ai-knowledge/config/evaluation-policy.json` y `ai-knowledge/evaluation/enterprise-10-10/evaluation-program.json`.
+* validacion local implementada en `ai-knowledge/scripts/validate-agent-registry-evaluation-linkage.mjs`.
+* `ai-knowledge/validation/roadmap-coverage.json` actualizado con W5-T5 `IMPLEMENTED`.
+* matriz roadmap -> archivos actualizada en `ai-knowledge/docs/ENTERPRISE-10-10/ROADMAP_TO_FILES.md`.
+* commit producto: `4da39fe`.
+* archive governance: `governance/execution/archive/ENTERPRISE-10-10-V1/W5-T5/`.
 
 Notas:
 
 * sin evaluacion runtime.
 * sin ejecución de agentes.
 * W5-T6 queda como siguiente tarea elegible.
-* no se ejecuto commit, push ni Engram.
+* W5-T6 no fue cerrada.
+* Push remoto queda sujeto a politica/credenciales externas.
 
 ---
 

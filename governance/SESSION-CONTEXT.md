@@ -569,13 +569,63 @@ W5-T5 fue el siguiente paso elegible despues de W5-T4.
 
 Estado actual:
 
-* Proximo paso vigente: W5-T5.
+* Superseded by W5-T5-AGENT-REGISTRY-EVALUATION-LINKAGE.
+* Proximo paso vigente: W5-T6.
 
 Restricciones historicas:
 
 * no abrir W5-T5 sin instruccion explicita
 * no modificar VERSION sin autorizacion explicita
 * no cerrar W5-T5+ por arrastre
+* push bloqueado por politica/credenciales externas debe registrarse como CONTEXTUAL_NON_BLOCKING
+
+---
+
+## Ultima ejecucion valida
+
+Tipo:
+W5-T5-AGENT-REGISTRY-EVALUATION-LINKAGE
+
+Estado:
+PRODUCT IMPLEMENTED AND GOVERNANCE CLOSED
+
+Repositorio producto impactado:
+
+* ai-knowledge
+
+Commits producto:
+
+* ai-knowledge W5-T5 product commit: `4da39fe`
+
+Validado:
+
+* W5-T5 Evaluation Linkage tiene binding de agente a Evaluation Framework en ai-knowledge.
+* `config/agent-registry/evaluation-linkage.json` vincula `knowledge.reviewer@1.0.0` con `bench-agent-repair`, `ds-repair-tasks` y `weighted-rubric-v1`.
+* `config/evaluation-policy.json` y `evaluation/enterprise-10-10/evaluation-program.json` exponen el binding W5-T5 sin ejecutar agentes ni crear evaluaciones runtime.
+* `scripts/validate-agent-registry-evaluation-linkage.mjs` valida schema, storage, capability catalog, ownership, benchmark, dataset, rubric, policy, program y coverage.
+* No se creo evaluacion real, pipeline, reporte de score, runtime permission ni aprobacion de activacion.
+* W5-T6 queda como `READY_FOR_FUTURE_TASK`.
+* No se cerro W5-T6.
+
+Evidencia disponible:
+
+* governance/execution/archive/ENTERPRISE-10-10-V1/W5-T5/
+
+---
+
+## Contexto historico posterior a W5-T5
+
+W5-T6 fue el siguiente paso elegible despues de W5-T5.
+
+Estado actual:
+
+* Proximo paso vigente: W5-T6.
+
+Restricciones historicas:
+
+* no abrir W5-T6 sin instruccion explicita
+* no modificar VERSION sin autorizacion explicita
+* no cerrar W5-T6+ por arrastre
 * push bloqueado por politica/credenciales externas debe registrarse como CONTEXTUAL_NON_BLOCKING
 
 ---

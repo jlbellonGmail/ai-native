@@ -2,11 +2,11 @@
 
 Latest execution:
 
-`ENTERPRISE-10-10 W5-T4 Ownership`
+`ENTERPRISE-10-10 W5-T5 Evaluation Linkage`
 
 Archive:
 
-`governance/execution/archive/ENTERPRISE-10-10-V1/W5-T4/`
+`governance/execution/archive/ENTERPRISE-10-10-V1/W5-T5/`
 
 Final realignment archive:
 
@@ -14,4 +14,4 @@ Final realignment archive:
 
 Next eligible task:
 
-`W5-T5`
+`W5-T6`
