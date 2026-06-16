@@ -99,10 +99,11 @@ assert(example.evaluationSuite.requiredBeforeActivation === true, "agent evaluat
 
 assert(coverage.taskStates["W4-T6"] === "IMPLEMENTED", "W4 must remain complete before W5-T1");
 assert(coverage.taskStates["W5-T1"] === "IMPLEMENTED", "W5-T1 must be marked IMPLEMENTED");
-for (const task of ["W5-T2", "W5-T3", "W5-T4", "W5-T5", "W5-T6"]) {
+assert(coverage.taskStates["W5-T2"] === "IMPLEMENTED", "W5-T2 must be marked IMPLEMENTED after product validation");
+for (const task of ["W5-T3", "W5-T4", "W5-T5", "W5-T6"]) {
   assert(
-    ["PREPARED_NOT_CLOSED", "BASELINE_PRESENT", "READY_FOR_FUTURE_TASK"].includes(coverage.taskStates[task]),
-    `${task} must remain open after W5-T1`
+    ["BASELINE_PRESENT", "READY_FOR_FUTURE_TASK"].includes(coverage.taskStates[task]),
+    `${task} must remain open after W5-T2`
   );
 }
 
