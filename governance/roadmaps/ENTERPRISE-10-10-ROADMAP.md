@@ -1108,7 +1108,7 @@ Notas:
 Agent Registry Storage
 
 Estado:
-[ ]
+[x]
 
 Entregables:
 
@@ -1118,16 +1118,25 @@ Entregables:
 
 Evidencia:
 
-* almacenamiento gobernado definido.
-* reglas de persistencia documentadas.
-* artefacto machine-readable generado.
+* almacenamiento gobernado definido en `ai-knowledge/registries/agents/`.
+* reglas de persistencia documentadas en `ai-knowledge/registries/agents/README.md`.
+* artefacto machine-readable generado en `ai-knowledge/registries/agents/registry.storage.json`.
+* lifecycle definido: `stored`, `candidate`, `active`, `retired`.
+* retention policy definida como `git-retained-stable-paths`.
+* integridad SHA-256 validada para archivos existentes del registry de agentes.
+* validacion local implementada en `ai-knowledge/scripts/validate-agent-registry-storage.mjs`.
+* `ai-knowledge/validation/roadmap-coverage.json` actualizado con W5-T2 `IMPLEMENTED`.
+* matriz roadmap -> archivos actualizada en `ai-knowledge/docs/ENTERPRISE-10-10/ROADMAP_TO_FILES.md`.
+* commit producto: `f168138`.
+* archive governance: `governance/execution/archive/ENTERPRISE-10-10-V1/W5-T2/`.
 
 Notas:
 
 * sin almacenamiento productivo.
 * sin persistencia runtime.
 * W5-T3 queda como siguiente tarea elegible.
-* no se ejecuto commit, push ni Engram.
+* W5-T3+ no fueron cerradas.
+* Push remoto queda sujeto a politica/credenciales externas.
 
 ---
 

@@ -418,13 +418,62 @@ Evidencia disponible:
 
 ---
 
-## Proximo paso
+## Contexto historico posterior a W5-T1
 
-W5-T2.
+W5-T2 fue el siguiente paso elegible despues de W5-T1.
 
-Restricciones:
+Estado actual:
+
+* Superseded by W5-T2-AGENT-REGISTRY-STORAGE.
+* Proximo paso vigente: W5-T3.
+
+Restricciones historicas:
 
 * no abrir W5-T2 sin instruccion explicita
 * no modificar VERSION sin autorizacion explicita
 * no cerrar W5-T2+ por arrastre
+* push bloqueado por politica/credenciales externas debe registrarse como CONTEXTUAL_NON_BLOCKING
+
+---
+
+## Ultima ejecucion valida
+
+Tipo:
+W5-T2-AGENT-REGISTRY-STORAGE
+
+Estado:
+PRODUCT IMPLEMENTED AND GOVERNANCE CLOSED
+
+Repositorio producto impactado:
+
+* ai-knowledge
+
+Commits producto:
+
+* ai-knowledge W5-T2 product commit: `f168138`
+
+Validado:
+
+* W5-T2 Agent Registry Storage tiene storage model, lifecycle contract y retention rules en ai-knowledge.
+* `registries/agents/registry.storage.json` indexa archivos existentes del agent registry y valida SHA-256.
+* `scripts/validate-agent-registry-storage.mjs` valida paths, lifecycle, retention, integrity y que W5-T3+ permanecen abiertas o baseline-only.
+* No se creo runtime persistence, database migration, service API, capability catalog, ownership chain ni evaluation linkage.
+* W5-T3 queda como siguiente tarea elegible.
+* No se cerro W5-T3.
+
+Evidencia disponible:
+
+* governance/execution/archive/ENTERPRISE-10-10-V1/W5-T2/
+
+---
+
+## Proximo paso
+
+W5-T3.
+
+Restricciones:
+
+* no abrir W5-T3 sin instruccion explicita
+* no modificar VERSION sin autorizacion explicita
+* no cerrar W5-T3+ por arrastre
 * push bloqueado por politica/credenciales externas debe registrarse como CONTEXTUAL_NON_BLOCKING

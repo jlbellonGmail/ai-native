@@ -2,7 +2,7 @@
 
 Latest validation archive:
 
-`governance/execution/archive/ENTERPRISE-10-10-V1/W5-T1/VALIDATION.md`
+`governance/execution/archive/ENTERPRISE-10-10-V1/W5-T2/VALIDATION.md`
 
 Status:
 
