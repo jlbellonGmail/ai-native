@@ -577,3 +577,29 @@ Restricciones historicas:
 * no modificar VERSION sin autorizacion explicita
 * no cerrar W5-T5+ por arrastre
 * push bloqueado por politica/credenciales externas debe registrarse como CONTEXTUAL_NON_BLOCKING
+
+---
+
+## Nota operativa Engram
+
+Fecha:
+2026-06-16
+
+Estado:
+ENGRAM OPERATIONALIZATION AUDITED
+
+Resultado:
+
+* Engram CLI instalado y accesible.
+* Base local verificada en `D:\tools-ai\engram_db\engram.db`.
+* Proyectos existentes: `ai-native`, `enterprise-10-10`.
+* Engram MCP respondio a `initialize` por stdio.
+* Checkpoint W5-T4 guardado y recuperado como observacion `#31` en proyecto `ai-native`.
+* Estandar operativo creado en `governance/standards/ENGRAM-OPERATING-STANDARD.md`.
+
+Regla:
+
+* Engram es memoria auxiliar.
+* Si Engram contradice git/governance, git/governance gana.
+* Si Engram falla, registrar `CONTEXTUAL_NON_BLOCKING` y continuar con git local, roadmap, SESSION-CONTEXT y archive.
+* Proximo paso vigente no cambia: W5-T5.
