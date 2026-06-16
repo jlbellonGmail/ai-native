@@ -1072,7 +1072,7 @@ Notas:
 Agent Schema
 
 Estado:
-[ ]
+[x]
 
 Entregables:
 
@@ -1082,9 +1082,15 @@ Entregables:
 
 Evidencia:
 
-* esquema canonico de agentes definido.
-* contrato documental creado.
-* artefacto machine-readable generado.
+* esquema canonico de agentes definido en `ai-knowledge/config/agent-registry.schema.json`.
+* contrato documental creado en `ai-knowledge/config/agent-registry/README.md`.
+* artefacto machine-readable generado y validado.
+* ejemplo valido creado en `ai-knowledge/examples/agent-registry-entry.valid.json`.
+* validacion local implementada en `ai-knowledge/scripts/validate-agent-registry-schema.mjs`.
+* `ai-knowledge/validation/roadmap-coverage.json` actualizado con W5-T1 `IMPLEMENTED`.
+* matriz roadmap -> archivos actualizada en `ai-knowledge/docs/ENTERPRISE-10-10/ROADMAP_TO_FILES.md`.
+* commit producto: `bcd8da9`.
+* archive governance: `governance/execution/archive/ENTERPRISE-10-10-V1/W5-T1/`.
 
 Notas:
 
@@ -1092,7 +1098,8 @@ Notas:
 * sin runtime orchestration.
 * no modificar VERSION.
 * W5-T2 queda como siguiente tarea elegible.
-* no se ejecuto commit, push ni Engram.
+* W5-T2+ no fueron cerradas.
+* Push remoto queda sujeto a politica/credenciales externas.
 
 ---
 

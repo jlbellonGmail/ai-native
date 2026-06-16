@@ -2,11 +2,11 @@
 
 Latest execution:
 
-`ENTERPRISE-10-10 W4-T6 Prompt Registry Audit`
+`ENTERPRISE-10-10 W5-T1 Agent Schema`
 
 Archive:
 
-`governance/execution/archive/ENTERPRISE-10-10-V1/W4-T6/`
+`governance/execution/archive/ENTERPRISE-10-10-V1/W5-T1/`
 
 Final realignment archive:
 
@@ -14,4 +14,4 @@ Final realignment archive:
 
 Next eligible task:
 
-`W5-T1`
+`W5-T2`

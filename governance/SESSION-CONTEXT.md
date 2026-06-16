@@ -369,13 +369,62 @@ Evidencia disponible:
 
 ---
 
-## Proximo paso
+## Contexto historico posterior a W4-T6
 
-W5-T1.
+W5-T1 fue el siguiente paso elegible despues de W4-T6.
 
-Restricciones:
+Estado actual:
+
+* Superseded by W5-T1-AGENT-REGISTRY-SCHEMA.
+* Proximo paso vigente: W5-T2.
+
+Restricciones historicas:
 
 * no abrir W5-T1 sin instruccion explicita
 * no modificar VERSION sin autorizacion explicita
 * no cerrar W5+ por arrastre
+* push bloqueado por politica/credenciales externas debe registrarse como CONTEXTUAL_NON_BLOCKING
+
+---
+
+## Ultima ejecucion valida
+
+Tipo:
+W5-T1-AGENT-REGISTRY-SCHEMA
+
+Estado:
+PRODUCT IMPLEMENTED AND GOVERNANCE CLOSED
+
+Repositorio producto impactado:
+
+* ai-knowledge
+
+Commits producto:
+
+* ai-knowledge W5-T1 product commit: `bcd8da9`
+
+Validado:
+
+* W5-T1 Agent Schema tiene schema canonico, contrato documental, ejemplo valido y validador real en ai-knowledge.
+* `config/agent-registry.schema.json` define un agent registry entry con owner, capacidades declaradas, tools declaradas, evaluation suite, runtime controls y governance.
+* `scripts/validate-agent-registry-schema.mjs` valida schema, ejemplo, coverage y que W5-T2+ permanecen abiertas o baseline-only.
+* No se creo runtime orchestration, storage model, capability catalog, ownership chain ni evaluation linkage.
+* W5-T2 queda como siguiente tarea elegible.
+* No se cerro W5-T2.
+
+Evidencia disponible:
+
+* governance/execution/archive/ENTERPRISE-10-10-V1/W5-T1/
+
+---
+
+## Proximo paso
+
+W5-T2.
+
+Restricciones:
+
+* no abrir W5-T2 sin instruccion explicita
+* no modificar VERSION sin autorizacion explicita
+* no cerrar W5-T2+ por arrastre
 * push bloqueado por politica/credenciales externas debe registrarse como CONTEXTUAL_NON_BLOCKING
