@@ -1145,7 +1145,10 @@ Notas:
 Capabilities Catalog
 
 Estado:
-[ ]
+[x]
+
+Fecha cierre:
+2026-06-16
 
 Entregables:
 
@@ -1155,16 +1158,24 @@ Entregables:
 
 Evidencia:
 
-* capacidades definidas.
-* relaciones documentadas.
-* artefacto machine-readable generado.
+* capacidades definidas en `ai-knowledge/config/agent-registry/capabilities.catalog.json`.
+* schema de capability creado en `ai-knowledge/config/agent-registry.capability.schema.json`.
+* relaciones y dependency model documentados en `ai-knowledge/config/agent-registry/CAPABILITIES.md`.
+* artefacto machine-readable generado y validado.
+* catalogo vinculado a entradas existentes de `ai-knowledge/registries/agents/registry.storage.json`.
+* validacion local implementada en `ai-knowledge/scripts/validate-agent-registry-capabilities.mjs`.
+* `ai-knowledge/validation/roadmap-coverage.json` actualizado con W5-T3 `IMPLEMENTED`.
+* matriz roadmap -> archivos actualizada en `ai-knowledge/docs/ENTERPRISE-10-10/ROADMAP_TO_FILES.md`.
+* commit producto: `28dc9ec`.
+* archive governance: `governance/execution/archive/ENTERPRISE-10-10-V1/W5-T3/`.
 
 Notas:
 
 * no implementar capacidades.
 * no modificar agentes reales.
 * W5-T4 queda como siguiente tarea elegible.
-* no se ejecuto commit, push ni Engram.
+* W5-T4+ no fueron cerradas.
+* Push remoto queda sujeto a politica/credenciales externas.
 
 ---
 

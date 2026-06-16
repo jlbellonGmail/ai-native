@@ -469,11 +469,61 @@ Evidencia disponible:
 
 ## Proximo paso
 
-W5-T3.
+W5-T4.
 
 Restricciones:
 
-* no abrir W5-T3 sin instruccion explicita
+* no abrir W5-T4 sin instruccion explicita
 * no modificar VERSION sin autorizacion explicita
-* no cerrar W5-T3+ por arrastre
+* no cerrar W5-T4+ por arrastre
+* push bloqueado por politica/credenciales externas debe registrarse como CONTEXTUAL_NON_BLOCKING
+
+---
+
+## Ultima ejecucion valida
+
+Tipo:
+W5-T3-AGENT-CAPABILITIES-CATALOG
+
+Estado:
+PRODUCT IMPLEMENTED AND GOVERNANCE CLOSED
+
+Repositorio producto impactado:
+
+* ai-knowledge
+
+Commits producto:
+
+* ai-knowledge W5-T3 product commit: `28dc9ec`
+
+Validado:
+
+* W5-T3 Capabilities Catalog tiene catalogo de capacidades, schema de capability y modelo de dependencias en ai-knowledge.
+* `config/agent-registry/capabilities.catalog.json` define capacidades gobernadas y las vincula a entradas existentes del storage W5-T2.
+* `config/agent-registry.capability.schema.json` valida cada capability record sin implementar capacidades ni activar agentes.
+* `config/agent-registry/CAPABILITIES.md` documenta reglas de uso, relaciones `requires`, `supports`, `incompatibleWith` y non-goals.
+* `scripts/validate-agent-registry-capabilities.mjs` valida schema, catalogo, source bindings, grafo aciclico de dependencias, coverage y que W5-T4+ permanecen abiertas o baseline-only.
+* No se implementaron capacidades reales, no se modificaron agentes reales, no se concedieron herramientas runtime, no se cerro ownership ni evaluation linkage.
+* W5-T4 queda como siguiente tarea elegible.
+* No se cerro W5-T4.
+
+Evidencia disponible:
+
+* governance/execution/archive/ENTERPRISE-10-10-V1/W5-T3/
+
+---
+
+## Contexto historico posterior a W5-T3
+
+W5-T4 fue el siguiente paso elegible despues de W5-T3.
+
+Estado actual:
+
+* Proximo paso vigente: W5-T4.
+
+Restricciones historicas:
+
+* no abrir W5-T4 sin instruccion explicita
+* no modificar VERSION sin autorizacion explicita
+* no cerrar W5-T4+ por arrastre
 * push bloqueado por politica/credenciales externas debe registrarse como CONTEXTUAL_NON_BLOCKING
