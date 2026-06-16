@@ -73,5 +73,28 @@
       }
     ],
     "doesNotClose": ["W4-T6"]
+  },
+  "agentRegistryLinkage": {
+    "task": "W5-T5",
+    "contract": "config/agent-registry/evaluation-linkage.json",
+    "policy": "config/evaluation-policy.json",
+    "agentExecutionStatus": "not-executed",
+    "evaluationRunStatus": "not-created",
+    "pipelineStatus": "not-created",
+    "resultStatus": "not-produced",
+    "bindings": [
+      {
+        "agentId": "knowledge.reviewer",
+        "agentVersion": "1.0.0",
+        "sourceStorageEntry": "agent-skill-index",
+        "capabilityId": "knowledge-review",
+        "evaluationSuite": "enterprise-10-10-agent-evaluation",
+        "benchmarkId": "bench-agent-repair",
+        "datasetId": "ds-repair-tasks",
+        "scoringModel": "weighted-rubric-v1",
+        "minimumScore": 0.8
+      }
+    ],
+    "doesNotClose": ["W5-T6"]
   }
 }

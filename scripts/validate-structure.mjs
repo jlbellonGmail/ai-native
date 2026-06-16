@@ -92,12 +92,8 @@ assert(coverage.taskStates["W5-T1"] === "IMPLEMENTED", "W5-T1 must be implemente
 assert(coverage.taskStates["W5-T2"] === "IMPLEMENTED", "W5-T2 must be implemented");
 assert(coverage.taskStates["W5-T3"] === "IMPLEMENTED", "W5-T3 must be implemented");
 assert(coverage.taskStates["W5-T4"] === "IMPLEMENTED", "W5-T4 must be implemented");
-for (const task of ["W5-T5", "W5-T6"]) {
-  assert(
-    ["BASELINE_PRESENT", "READY_FOR_FUTURE_TASK"].includes(coverage.taskStates[task]),
-    `${task} must remain unopened or baseline-only`
-  );
-}
+assert(coverage.taskStates["W5-T5"] === "IMPLEMENTED", "W5-T5 must be implemented");
+assert(coverage.taskStates["W5-T6"] === "READY_FOR_FUTURE_TASK", "W5-T6 must remain unopened");
 
 const emptyDirs = walkDirs(root).filter((dir) => !dir.includes("_deprecated"));
 assert(emptyDirs.length === 0, `empty active directories found: ${emptyDirs.join(", ")}`);

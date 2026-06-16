@@ -11,5 +11,14 @@
     "requiredEvidence": ["dataset", "benchmark", "rubric", "decision", "owner"],
     "runtimeEvaluation": "not-created-by-w4-t5",
     "doesNotClose": ["W4-T6"]
+  },
+  "agentRegistryLinkage": {
+    "roadmapTask": "W5-T5",
+    "contract": "config/agent-registry/evaluation-linkage.json",
+    "requiredBeforeActivation": true,
+    "requiredEvidence": ["dataset", "benchmark", "rubric", "decision", "owner"],
+    "runtimeEvaluation": "not-created-by-w5-t5",
+    "agentExecution": "not-executed-by-w5-t5",
+    "doesNotClose": ["W5-T6"]
   }
 }
