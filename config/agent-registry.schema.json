@@ -30,7 +30,7 @@
     "owner": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Agent owner identity required for governance accountability. This is not IAM and does not close W5-T4 ownership.",
+      "description": "Agent owner identity required for governance accountability and the W5-T4 ownership policy. This is not IAM and does not grant runtime permissions.",
       "required": ["team", "contact"],
       "properties": {
         "team": {

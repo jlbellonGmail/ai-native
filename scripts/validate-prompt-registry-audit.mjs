@@ -53,10 +53,14 @@ assert(
   ["IMPLEMENTED", "BASELINE_PRESENT", "READY_FOR_FUTURE_TASK"].includes(coverage.taskStates["W5-T3"]),
   "W5-T3 may be implemented only after W5-T2 closure"
 );
+assert(
+  ["IMPLEMENTED", "BASELINE_PRESENT", "READY_FOR_FUTURE_TASK"].includes(coverage.taskStates["W5-T4"]),
+  "W5-T4 may be implemented only after W5-T3 closure"
+);
 for (const task of ["W5-T3", "W5-T4", "W5-T5", "W5-T6"]) {
   assert(audit.scope.doesNotClose.includes(task), `${task} must remain outside W4-T6 closure`);
 }
-for (const task of ["W5-T4", "W5-T5", "W5-T6"]) {
+for (const task of ["W5-T5", "W5-T6"]) {
   assert(
     ["BASELINE_PRESENT", "READY_FOR_FUTURE_TASK"].includes(coverage.taskStates[task]),
     `${task} must remain unopened or baseline-only`

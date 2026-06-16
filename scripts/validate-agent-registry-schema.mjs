@@ -101,10 +101,11 @@ assert(coverage.taskStates["W4-T6"] === "IMPLEMENTED", "W4 must remain complete 
 assert(coverage.taskStates["W5-T1"] === "IMPLEMENTED", "W5-T1 must be marked IMPLEMENTED");
 assert(coverage.taskStates["W5-T2"] === "IMPLEMENTED", "W5-T2 must be marked IMPLEMENTED after product validation");
 assert(coverage.taskStates["W5-T3"] === "IMPLEMENTED", "W5-T3 must be marked IMPLEMENTED after product validation");
-for (const task of ["W5-T4", "W5-T5", "W5-T6"]) {
+assert(coverage.taskStates["W5-T4"] === "IMPLEMENTED", "W5-T4 must be marked IMPLEMENTED after product validation");
+for (const task of ["W5-T5", "W5-T6"]) {
   assert(
     ["BASELINE_PRESENT", "READY_FOR_FUTURE_TASK"].includes(coverage.taskStates[task]),
-    `${task} must remain open after W5-T3`
+    `${task} must remain open after W5-T4`
   );
 }
 
