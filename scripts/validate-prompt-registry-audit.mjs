@@ -61,7 +61,7 @@ for (const task of ["W5-T3", "W5-T4", "W5-T5", "W5-T6"]) {
   assert(audit.scope.doesNotClose.includes(task), `${task} must remain outside W4-T6 closure`);
 }
 assert(coverage.taskStates["W5-T5"] === "IMPLEMENTED", "W5-T5 may be implemented after W5-T4 closure");
-assert(coverage.taskStates["W5-T6"] === "READY_FOR_FUTURE_TASK", "W5-T6 must remain unopened");
+assert(coverage.taskStates["W5-T6"] === "IMPLEMENTED", "W5-T6 may be implemented after W5-T5 closure");
 
 for (const [name, path] of Object.entries(audit.auditInputs)) {
   assert(exists(path), `${name} audit input missing: ${path}`);

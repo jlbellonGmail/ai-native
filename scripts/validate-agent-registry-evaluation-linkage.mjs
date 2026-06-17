@@ -125,7 +125,7 @@ for (const binding of linkage.bindings) {
 for (const task of ["W5-T1", "W5-T2", "W5-T3", "W5-T4", "W5-T5"]) {
   assert(coverage.taskStates[task] === "IMPLEMENTED", `${task} must be marked IMPLEMENTED`);
 }
-assert(coverage.taskStates["W5-T6"] === "READY_FOR_FUTURE_TASK", "W5-T6 must remain open after W5-T5");
+assert(coverage.taskStates["W5-T6"] === "IMPLEMENTED", "W5-T6 must be marked IMPLEMENTED after product validation");
 for (const file of coverage.tasks["W5-T5"]) {
   assert(existsSync(join(root, file)), `W5-T5 maps missing file ${file}`);
 }

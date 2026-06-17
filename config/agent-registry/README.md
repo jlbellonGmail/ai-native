@@ -20,6 +20,11 @@ IAM or execution.
 | `CAPABILITIES.md` | Human-readable W5-T3 catalog rules and non-goals. |
 | `ownership.policy.json` | W5-T4 ownership, accountability and approval-chain contract. |
 | `OWNERSHIP.md` | Human-readable W5-T4 ownership rules and non-goals. |
+| `evaluation-linkage.json` | W5-T5 evaluation linkage contract. |
+| `EVALUATION-LINKAGE.md` | Human-readable W5-T5 evaluation linkage rules and non-goals. |
+| `agent-registry.audit.json` | W5-T6 final agent registry audit contract. |
+| `AUDIT.md` | Human-readable W5-T6 audit guide and closure rules. |
+| `../../scripts/validate-agent-registry-audit.mjs` | Local validation contract for final agent registry audit. |
 
 ## Governance Rules
 
@@ -49,3 +54,11 @@ Changes to `capabilities.catalog.json` require review of `CAPABILITIES.md`,
 Changes to `ownership.policy.json` require review of `OWNERSHIP.md`,
 `agent-registry.schema.json` and
 `scripts/validate-agent-registry-ownership.mjs`.
+
+Changes to `evaluation-linkage.json` require review of
+`EVALUATION-LINKAGE.md`, `config/evaluation-policy.json`,
+`evaluation/enterprise-10-10/evaluation-program.json` and
+`scripts/validate-agent-registry-evaluation-linkage.mjs`.
+
+Changes to `agent-registry.audit.json` require review of `AUDIT.md`, this
+README, all W5 validators and `scripts/validate-agent-registry-audit.mjs`.
