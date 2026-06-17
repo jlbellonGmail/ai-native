@@ -1262,7 +1262,10 @@ Notas:
 Agent Registry Audit
 
 Estado:
-[ ]
+[x]
+
+Fecha cierre:
+2026-06-16
 
 Validar:
 
@@ -1278,12 +1281,21 @@ Evidencia:
 * consistencia del registry validada.
 * trazabilidad completa validada.
 * artefactos machine-readable validados.
+* guia de auditoria creada en `ai-knowledge/config/agent-registry/AUDIT.md`.
+* contrato machine-readable creado en `ai-knowledge/config/agent-registry/agent-registry.audit.json`.
+* validacion local implementada en `ai-knowledge/scripts/validate-agent-registry-audit.mjs`.
+* `ai-knowledge/validation/roadmap-coverage.json` actualizado con W5-T6 `IMPLEMENTED`.
+* matriz roadmap -> archivos actualizada en `ai-knowledge/docs/ENTERPRISE-10-10/ROADMAP_TO_FILES.md`.
+* commit producto: `4d2fdd0`.
+* archive governance: `governance/execution/archive/ENTERPRISE-10-10-V1/W5-T6/`.
 
 Notas:
 
 * cierre completo del Agent Registry.
 * W6-T1 queda como siguiente tarea elegible.
-* no se ejecuto commit, push ni Engram.
+* W6-T1 no fue abierta.
+* W6+ no fueron cerradas.
+* Push remoto queda sujeto a politica/credenciales externas.
 
 ---
 

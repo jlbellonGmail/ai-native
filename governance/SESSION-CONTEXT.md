@@ -619,13 +619,63 @@ W5-T6 fue el siguiente paso elegible despues de W5-T5.
 
 Estado actual:
 
-* Proximo paso vigente: W5-T6.
+* Superseded by W5-T6-AGENT-REGISTRY-AUDIT.
+* Proximo paso vigente: W6-T1.
 
 Restricciones historicas:
 
 * no abrir W5-T6 sin instruccion explicita
 * no modificar VERSION sin autorizacion explicita
 * no cerrar W5-T6+ por arrastre
+* push bloqueado por politica/credenciales externas debe registrarse como CONTEXTUAL_NON_BLOCKING
+
+---
+
+## Ultima ejecucion valida
+
+Tipo:
+W5-T6-AGENT-REGISTRY-AUDIT
+
+Estado:
+PRODUCT IMPLEMENTED AND GOVERNANCE CLOSED
+
+Repositorio producto impactado:
+
+* ai-knowledge
+
+Commits producto:
+
+* ai-knowledge W5-T6 product commit: `4d2fdd0`
+
+Validado:
+
+* W5-T6 Agent Registry Audit tiene guia humana, contrato audit machine-readable y validador final en ai-knowledge.
+* `config/agent-registry/agent-registry.audit.json` audita W5-T1 a W5-T5 y declara W6 fuera del cierre.
+* `scripts/validate-agent-registry-audit.mjs` valida consistencia entre schema, storage, capabilities catalog, ownership y evaluation linkage.
+* `validation/roadmap-coverage.json` marca W5-T1 a W5-T6 como `IMPLEMENTED`.
+* W6-T1 permanece sin abrir en coverage producto y queda como siguiente tarea elegible.
+* No se abrio W6.
+* No se cerro W6.
+
+Evidencia disponible:
+
+* governance/execution/archive/ENTERPRISE-10-10-V1/W5-T6/
+
+---
+
+## Contexto historico posterior a W5-T6
+
+W6-T1 fue el siguiente paso elegible despues de W5-T6.
+
+Estado actual:
+
+* Proximo paso vigente: W6-T1.
+
+Restricciones historicas:
+
+* no abrir W6-T1 sin instruccion explicita
+* no modificar VERSION sin autorizacion explicita
+* no cerrar W6-T1+ por arrastre
 * push bloqueado por politica/credenciales externas debe registrarse como CONTEXTUAL_NON_BLOCKING
 
 ---
@@ -652,4 +702,4 @@ Regla:
 * Engram es memoria auxiliar.
 * Si Engram contradice git/governance, git/governance gana.
 * Si Engram falla, registrar `CONTEXTUAL_NON_BLOCKING` y continuar con git local, roadmap, SESSION-CONTEXT y archive.
-* Proximo paso vigente no cambia: W5-T5.
+* Proximo paso vigente: W6-T1.
