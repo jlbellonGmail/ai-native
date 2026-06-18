@@ -818,13 +818,62 @@ W6-T4 fue el siguiente paso elegible despues de W6-T3.
 
 Estado actual:
 
-* Proximo paso vigente: W6-T4.
+* Superseded by W6-T4-PERFORMANCE-TESTING.
+* Proximo paso vigente: W6-T5.
 
 Restricciones historicas:
 
 * no abrir W6-T4 sin instruccion explicita
 * no modificar VERSION sin autorizacion explicita
 * no cerrar W6-T4+ por arrastre
+* push bloqueado por politica/credenciales externas debe registrarse como CONTEXTUAL_NON_BLOCKING
+
+---
+
+## Ultima ejecucion valida
+
+Tipo:
+W6-T4-PERFORMANCE-TESTING
+
+Estado:
+PRODUCT IMPLEMENTED AND GOVERNANCE CLOSED
+
+Repositorio producto impactado:
+
+* ai-template
+
+Commits producto:
+
+* ai-template W6-T4 product commit: `8b4ca75`
+
+Validado:
+
+* W6-T4 Performance Testing tiene modelo de performance, contrato de medicion y schema de reporte en ai-template.
+* `validation/performance-testing.contract.json` define metricas, targets, thresholds planificados, sample policy y report template sin resultados runtime.
+* `scripts/validate-performance-testing.mjs` valida contrato W6-T4, binding con W6-T3 load testing, coverage, matriz roadmap -> archivos y que W6-T5+ permanecen abiertas.
+* Validaciones ai-template PASS: validate-structure, validate-enterprise-template, validate-contract-testing, validate-mutation-testing, validate-load-testing, validate-performance-testing, git diff --check, typecheck, lint, test, build.
+* No se ejecutaron benchmarks reales, no se recolectaron mediciones runtime, no se modifico producto runtime y no se cerro W6-T5.
+* W6-T5 queda como siguiente tarea elegible.
+
+Evidencia disponible:
+
+* governance/execution/archive/ENTERPRISE-10-10-V1/W6-T4/
+
+---
+
+## Contexto historico posterior a W6-T4
+
+W6-T5 fue el siguiente paso elegible despues de W6-T4.
+
+Estado actual:
+
+* Proximo paso vigente: W6-T5.
+
+Restricciones historicas:
+
+* no abrir W6-T5 sin instruccion explicita
+* no modificar VERSION sin autorizacion explicita
+* no cerrar W6-T5+ por arrastre
 * push bloqueado por politica/credenciales externas debe registrarse como CONTEXTUAL_NON_BLOCKING
 
 ---
@@ -851,4 +900,4 @@ Regla:
 * Engram es memoria auxiliar.
 * Si Engram contradice git/governance, git/governance gana.
 * Si Engram falla, registrar `CONTEXTUAL_NON_BLOCKING` y continuar con git local, roadmap, SESSION-CONTEXT y archive.
-* Proximo paso vigente: W6-T4.
+* Proximo paso vigente: W6-T5.

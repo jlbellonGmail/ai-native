@@ -1426,7 +1426,7 @@ Notas:
 Performance Testing
 
 Estado:
-[ ]
+[x]
 
 Entregables:
 
@@ -1439,13 +1439,23 @@ Evidencia:
 * performance framework definido.
 * mediciones documentadas.
 * artefacto machine-readable generado.
+* modelo documental creado en `ai-template/validation/performance-testing.md`.
+* contrato machine-readable creado en `ai-template/validation/performance-testing.contract.json`.
+* validacion local implementada en `ai-template/scripts/validate-performance-testing.mjs`.
+* `ai-template/validation/README.md` y `ai-template/validation/strategy.md` actualizados.
+* `ai-template/validation/roadmap-coverage.json` actualizado con W6-T4 `IMPLEMENTED`.
+* matriz roadmap -> archivos actualizada en `ai-template/docs/ENTERPRISE-10-10/ROADMAP_TO_FILES.md`.
+* validadores W6-T1/W6-T2/W6-T3 actualizados para permitir W6-T4 implementado sin cerrar W6-T5.
+* commit producto: `8b4ca75`.
+* archive governance: `governance/execution/archive/ENTERPRISE-10-10-V1/W6-T4/`.
 
 Notas:
 
 * sin benchmarks reales.
 * sin cambios producto.
 * W6-T5 queda como siguiente tarea elegible.
-* no se ejecuto commit, push ni Engram.
+* W6-T5 no fue cerrada.
+* Push remoto queda sujeto a politica/credenciales externas.
 
 ---
 

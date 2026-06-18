@@ -22,6 +22,7 @@ Product commits:
 * ai-template W6-T1 product implementation: `5ffe94b`
 * ai-template W6-T2 product implementation: `09831fc`
 * ai-template W6-T3 product implementation: `8ba7333`
+* ai-template W6-T4 product implementation: `8b4ca75`
 
 Evidence archives:
 
@@ -41,3 +42,4 @@ Evidence archives:
 * `governance/execution/archive/ENTERPRISE-10-10-V1/W6-T1/`
 * `governance/execution/archive/ENTERPRISE-10-10-V1/W6-T2/`
 * `governance/execution/archive/ENTERPRISE-10-10-V1/W6-T3/`
+* `governance/execution/archive/ENTERPRISE-10-10-V1/W6-T4/`
