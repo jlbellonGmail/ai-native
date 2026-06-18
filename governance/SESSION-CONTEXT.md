@@ -719,13 +719,63 @@ W6-T2 fue el siguiente paso elegible despues de W6-T1.
 
 Estado actual:
 
-* Proximo paso vigente: W6-T2.
+* Superseded by W6-T2-MUTATION-TESTING.
+* Proximo paso vigente: W6-T3.
 
 Restricciones historicas:
 
 * no abrir W6-T2 sin instruccion explicita
 * no modificar VERSION sin autorizacion explicita
 * no cerrar W6-T2+ por arrastre
+* push bloqueado por politica/credenciales externas debe registrarse como CONTEXTUAL_NON_BLOCKING
+
+---
+
+## Ultima ejecucion valida
+
+Tipo:
+W6-T2-MUTATION-TESTING
+
+Estado:
+PRODUCT IMPLEMENTED AND GOVERNANCE CLOSED
+
+Repositorio producto impactado:
+
+* ai-template
+
+Commits producto:
+
+* ai-template W6-T2 product commit: `09831fc`
+
+Validado:
+
+* W6-T2 Mutation Testing tiene framework documental, contrato machine-readable y reglas de governance en ai-template.
+* `validation/mutation-testing.contract.json` define target categories, excluded targets, mutation rules, governance evidence y non-goals de ejecucion.
+* `scripts/validate-mutation-testing.mjs` valida contrato, binding con W6-T1 contract testing, coverage, matriz roadmap -> archivos y que W6-T3+ permanecen `READY_FOR_FUTURE_TASK`.
+* Scripts existentes ejecutados en ai-template: `typecheck`, `lint`, `test`, `build`.
+* No se ejecutaron mutaciones reales, no se modifico producto runtime y no se cerro W6-T3.
+* W6-T3 queda como siguiente tarea elegible.
+* No se cerro W6-T3.
+
+Evidencia disponible:
+
+* governance/execution/archive/ENTERPRISE-10-10-V1/W6-T2/
+
+---
+
+## Contexto historico posterior a W6-T2
+
+W6-T3 fue el siguiente paso elegible despues de W6-T2.
+
+Estado actual:
+
+* Proximo paso vigente: W6-T3.
+
+Restricciones historicas:
+
+* no abrir W6-T3 sin instruccion explicita
+* no modificar VERSION sin autorizacion explicita
+* no cerrar W6-T3+ por arrastre
 * push bloqueado por politica/credenciales externas debe registrarse como CONTEXTUAL_NON_BLOCKING
 
 ---
@@ -752,4 +802,4 @@ Regla:
 * Engram es memoria auxiliar.
 * Si Engram contradice git/governance, git/governance gana.
 * Si Engram falla, registrar `CONTEXTUAL_NON_BLOCKING` y continuar con git local, roadmap, SESSION-CONTEXT y archive.
-* Proximo paso vigente: W6-T2.
+* Proximo paso vigente: W6-T3.

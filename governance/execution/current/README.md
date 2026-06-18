@@ -2,11 +2,11 @@
 
 Latest execution:
 
-`ENTERPRISE-10-10 W6-T1 Contract Testing`
+`ENTERPRISE-10-10 W6-T2 Mutation Testing`
 
 Archive:
 
-`governance/execution/archive/ENTERPRISE-10-10-V1/W6-T1/`
+`governance/execution/archive/ENTERPRISE-10-10-V1/W6-T2/`
 
 Final realignment archive:
 
@@ -14,4 +14,4 @@ Final realignment archive:
 
 Next eligible task:
 
-`W6-T2`
+`W6-T3`

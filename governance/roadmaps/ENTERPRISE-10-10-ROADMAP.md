@@ -1348,7 +1348,10 @@ Notas:
 Mutation Testing
 
 Estado:
-[ ]
+[x]
+
+Fecha cierre:
+2026-06-18
 
 Entregables:
 
@@ -1361,13 +1364,22 @@ Evidencia:
 * framework definido.
 * reglas documentadas.
 * artefacto machine-readable generado.
+* framework documental creado en `ai-template/validation/mutation-testing.md`.
+* contrato machine-readable creado en `ai-template/validation/mutation-testing.contract.json`.
+* reglas y politica documentadas en `ai-template/validation/strategy.md` y `ai-template/validation/README.md`.
+* validacion local implementada en `ai-template/scripts/validate-mutation-testing.mjs`.
+* `ai-template/validation/roadmap-coverage.json` actualizado con W6-T2 `IMPLEMENTED`.
+* matriz roadmap -> archivos actualizada en `ai-template/docs/ENTERPRISE-10-10/ROADMAP_TO_FILES.md`.
+* commit producto: `09831fc`.
+* archive governance: `governance/execution/archive/ENTERPRISE-10-10-V1/W6-T2/`.
 
 Notas:
 
 * sin mutaciones reales.
 * sin modificar producto.
 * W6-T3 queda como siguiente tarea elegible.
-* no se ejecuto commit, push ni Engram.
+* W6-T3 no fue cerrada.
+* Push remoto queda sujeto a politica/credenciales externas.
 
 ---
 
