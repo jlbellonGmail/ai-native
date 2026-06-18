@@ -1308,7 +1308,10 @@ Notas:
 Contract Testing
 
 Estado:
-[ ]
+[x]
+
+Fecha cierre:
+2026-06-18
 
 Entregables:
 
@@ -1321,13 +1324,22 @@ Evidencia:
 * modelo definido.
 * política documentada.
 * artefacto machine-readable generado.
+* modelo documental creado en `ai-template/validation/contract-testing.md`.
+* contrato machine-readable creado en `ai-template/validation/contract-testing.contract.json`.
+* politica de validacion documentada en `ai-template/validation/tests/README.md` y `ai-template/validation/README.md`.
+* validacion local implementada en `ai-template/scripts/validate-contract-testing.mjs`.
+* `ai-template/validation/roadmap-coverage.json` actualizado con W6-T1 `IMPLEMENTED`.
+* matriz roadmap -> archivos actualizada en `ai-template/docs/ENTERPRISE-10-10/ROADMAP_TO_FILES.md`.
+* commit producto: `5ffe94b`.
+* archive governance: `governance/execution/archive/ENTERPRISE-10-10-V1/W6-T1/`.
 
 Notas:
 
 * sin ejecución runtime.
 * sin pipelines reales.
 * W6-T2 queda como siguiente tarea elegible.
-* no se ejecuto commit, push ni Engram.
+* W6-T2 no fue cerrada.
+* Push remoto queda sujeto a politica/credenciales externas.
 
 ---
 

@@ -669,13 +669,63 @@ W6-T1 fue el siguiente paso elegible despues de W5-T6.
 
 Estado actual:
 
-* Proximo paso vigente: W6-T1.
+* Superseded by W6-T1-CONTRACT-TESTING.
+* Proximo paso vigente: W6-T2.
 
 Restricciones historicas:
 
 * no abrir W6-T1 sin instruccion explicita
 * no modificar VERSION sin autorizacion explicita
 * no cerrar W6-T1+ por arrastre
+* push bloqueado por politica/credenciales externas debe registrarse como CONTEXTUAL_NON_BLOCKING
+
+---
+
+## Ultima ejecucion valida
+
+Tipo:
+W6-T1-CONTRACT-TESTING
+
+Estado:
+PRODUCT IMPLEMENTED AND GOVERNANCE CLOSED
+
+Repositorio producto impactado:
+
+* ai-template
+
+Commits producto:
+
+* ai-template W6-T1 product commit: `5ffe94b`
+
+Validado:
+
+* W6-T1 Contract Testing tiene modelo documental, contrato machine-readable y politica de validacion en ai-template.
+* `validation/contract-testing.contract.json` define boundary types, campos requeridos, evidencia permitida y non-goals de runtime/pipeline.
+* `scripts/validate-contract-testing.mjs` valida contrato, coverage, matriz roadmap -> archivos y que W6-T2+ permanecen `READY_FOR_FUTURE_TASK`.
+* Scripts existentes ejecutados en ai-template: `typecheck`, `lint`, `test`, `build`.
+* No se creo ejecucion runtime, pipeline real, mutation testing, load testing ni cierre W6-T2.
+* W6-T2 queda como siguiente tarea elegible.
+* No se cerro W6-T2.
+
+Evidencia disponible:
+
+* governance/execution/archive/ENTERPRISE-10-10-V1/W6-T1/
+
+---
+
+## Contexto historico posterior a W6-T1
+
+W6-T2 fue el siguiente paso elegible despues de W6-T1.
+
+Estado actual:
+
+* Proximo paso vigente: W6-T2.
+
+Restricciones historicas:
+
+* no abrir W6-T2 sin instruccion explicita
+* no modificar VERSION sin autorizacion explicita
+* no cerrar W6-T2+ por arrastre
 * push bloqueado por politica/credenciales externas debe registrarse como CONTEXTUAL_NON_BLOCKING
 
 ---
@@ -702,4 +752,4 @@ Regla:
 * Engram es memoria auxiliar.
 * Si Engram contradice git/governance, git/governance gana.
 * Si Engram falla, registrar `CONTEXTUAL_NON_BLOCKING` y continuar con git local, roadmap, SESSION-CONTEXT y archive.
-* Proximo paso vigente: W6-T1.
+* Proximo paso vigente: W6-T2.
