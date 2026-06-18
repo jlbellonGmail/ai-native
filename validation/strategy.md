@@ -19,3 +19,13 @@ real mutation execution is considered in a future project.
 
 The W6-T2 contract lives in `mutation-testing.contract.json`; the human-readable
 rules live in `mutation-testing.md`.
+
+## Load Testing
+
+W6-T3 defines load testing governance for generated projects. Load scenarios
+must identify stable service, API or workflow entry points, bounded traffic
+profiles, dependency policy, stop conditions, data safety controls and required
+observability signals before any real load generation is considered.
+
+The W6-T3 contract lives in `load-testing.contract.json`; the human-readable
+scenario catalog and execution rules live in `load-testing.md`.

@@ -1,0 +1,116 @@
+{
+  "schemaVersion": "load-testing.v1",
+  "roadmapTask": "W6-T3",
+  "description": "Reusable load testing governance, scenario catalog and execution contract for generated projects. This contract defines load-test readiness without generating load, creating runtime environments or closing W6-T4.",
+  "governanceModel": {
+    "scenarioCategories": [
+      "api-entrypoint",
+      "workflow-entrypoint",
+      "service-boundary",
+      "repository-boundary",
+      "automation-provider-adapter"
+    ],
+    "requiredScenarioFields": [
+      "id",
+      "category",
+      "owner",
+      "sourceTarget",
+      "trafficProfile",
+      "dependencyPolicy",
+      "executionStatus",
+      "environmentProvisioning",
+      "evidence"
+    ],
+    "allowedEvidence": [
+      "contract-test",
+      "mutation-target",
+      "source-entrypoint",
+      "validation-policy",
+      "scenario-catalog",
+      "validator"
+    ],
+    "forbiddenAsSoleEvidence": [
+      "manual-note",
+      "governance-archive",
+      "runtime-log"
+    ],
+    "runtimeExecution": "not-run-by-w6-t3",
+    "environmentProvisioning": "not-created-by-w6-t3",
+    "productRuntimeModification": "not-modified-by-w6-t3"
+  },
+  "executionContract": {
+    "requiresStableEntrypoint": true,
+    "requiresOwner": true,
+    "requiresIsolatedEnvironmentBeforeExecution": true,
+    "requiresStopConditions": true,
+    "requiresDataSafetyControls": true,
+    "requiresExternalDependencyPolicy": true,
+    "requiresObservabilitySignals": true,
+    "requiredStopConditions": [
+      "error-rate-threshold",
+      "latency-threshold",
+      "dependency-failure-threshold",
+      "manual-abort"
+    ],
+    "requiredObservabilitySignals": [
+      "request-count",
+      "latency-distribution",
+      "error-rate",
+      "dependency-error-rate"
+    ]
+  },
+  "scenarioCatalog": [
+    {
+      "id": "password-validator-service-burst",
+      "category": "service-boundary",
+      "owner": "template-validation",
+      "sourceTarget": "examples/reference-app/services/domain/services/password-validator.ts",
+      "contractBinding": "password-validator.service",
+      "trafficProfile": {
+        "shape": "bounded-burst",
+        "arrivalRatePerMinute": 120,
+        "durationSeconds": 300,
+        "concurrencyLimit": 20
+      },
+      "dependencyPolicy": {
+        "externalProviders": "none",
+        "databaseWrites": "none",
+        "networkCalls": "none"
+      },
+      "stopConditions": [
+        "error-rate-threshold",
+        "latency-threshold",
+        "dependency-failure-threshold",
+        "manual-abort"
+      ],
+      "observabilitySignals": [
+        "request-count",
+        "latency-distribution",
+        "error-rate",
+        "dependency-error-rate"
+      ],
+      "executionStatus": "not-run-by-w6-t3",
+      "environmentProvisioning": "not-created-by-w6-t3",
+      "evidence": [
+        "validation/contract-testing.contract.json",
+        "validation/mutation-testing.contract.json",
+        "examples/reference-app/services/domain/services/password-validator.ts"
+      ]
+    }
+  ],
+  "governance": {
+    "roadmapTask": "W6-T3",
+    "closes": [
+      "load testing governance",
+      "scenario catalog",
+      "execution contract"
+    ],
+    "doesNotClose": [
+      "W6-T4",
+      "W6-T5",
+      "W6-T6",
+      "W6-T7"
+    ],
+    "validation": "scripts/validate-load-testing.mjs"
+  }
+}
