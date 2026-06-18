@@ -5,7 +5,7 @@
     "W2-T8": ["templates/enterprise-10-10/template-manifest.json"],
     "W3-T7": ["templates/enterprise-10-10/template-manifest.json"],
     "W6-T1": ["validation/contract-testing.md", "validation/contract-testing.contract.json", "validation/tests/README.md", "validation/README.md", "scripts/validate-contract-testing.mjs", "validation/roadmap-coverage.json"],
-    "W6-T2": ["validation/strategy.md"],
+    "W6-T2": ["validation/mutation-testing.md", "validation/mutation-testing.contract.json", "validation/strategy.md", "validation/README.md", "scripts/validate-mutation-testing.mjs", "validation/roadmap-coverage.json"],
     "W6-T3": ["validation/strategy.md"],
     "W6-T4": ["validation/strategy.md"],
     "W6-T5": ["validation/strategy.md"],
@@ -22,7 +22,7 @@
   },
   "taskStates": {
     "W6-T1": "IMPLEMENTED",
-    "W6-T2": "READY_FOR_FUTURE_TASK",
+    "W6-T2": "IMPLEMENTED",
     "W6-T3": "READY_FOR_FUTURE_TASK",
     "W6-T4": "READY_FOR_FUTURE_TASK",
     "W6-T5": "READY_FOR_FUTURE_TASK",
