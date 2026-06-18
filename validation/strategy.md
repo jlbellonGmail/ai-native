@@ -29,3 +29,14 @@ observability signals before any real load generation is considered.
 
 The W6-T3 contract lives in `load-testing.contract.json`; the human-readable
 scenario catalog and execution rules live in `load-testing.md`.
+
+## Performance Testing
+
+W6-T4 defines the performance testing model for generated projects. Performance
+targets must bind to governed load scenarios, declare metric definitions,
+planned thresholds, sample policy and report shape before any real benchmark
+execution is considered.
+
+The W6-T4 contract lives in `performance-testing.contract.json`; the
+human-readable model, measurement contract and reporting schema live in
+`performance-testing.md`.

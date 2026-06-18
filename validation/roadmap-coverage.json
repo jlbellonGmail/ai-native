@@ -7,7 +7,7 @@
     "W6-T1": ["validation/contract-testing.md", "validation/contract-testing.contract.json", "validation/tests/README.md", "validation/README.md", "scripts/validate-contract-testing.mjs", "validation/roadmap-coverage.json"],
     "W6-T2": ["validation/mutation-testing.md", "validation/mutation-testing.contract.json", "validation/strategy.md", "validation/README.md", "scripts/validate-mutation-testing.mjs", "validation/roadmap-coverage.json"],
     "W6-T3": ["validation/load-testing.md", "validation/load-testing.contract.json", "validation/strategy.md", "validation/README.md", "scripts/validate-load-testing.mjs", "validation/roadmap-coverage.json"],
-    "W6-T4": ["validation/strategy.md"],
+    "W6-T4": ["validation/performance-testing.md", "validation/performance-testing.contract.json", "validation/strategy.md", "validation/README.md", "scripts/validate-performance-testing.mjs", "validation/roadmap-coverage.json"],
     "W6-T5": ["validation/strategy.md"],
     "W6-T6": ["vitest.config.ts"],
     "W6-T7": ["scripts/validate-structure.mjs"],
@@ -24,7 +24,7 @@
     "W6-T1": "IMPLEMENTED",
     "W6-T2": "IMPLEMENTED",
     "W6-T3": "IMPLEMENTED",
-    "W6-T4": "READY_FOR_FUTURE_TASK",
+    "W6-T4": "IMPLEMENTED",
     "W6-T5": "READY_FOR_FUTURE_TASK",
     "W6-T6": "READY_FOR_FUTURE_TASK",
     "W6-T7": "READY_FOR_FUTURE_TASK"
