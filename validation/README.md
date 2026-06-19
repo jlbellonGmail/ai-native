@@ -11,6 +11,7 @@ node scripts/validate-contract-testing.mjs
 node scripts/validate-mutation-testing.mjs
 node scripts/validate-load-testing.mjs
 node scripts/validate-performance-testing.mjs
+node scripts/validate-chaos-testing.mjs
 ```
 
 `tests/` contains the reference test suite moved from the old root `tests/`
@@ -27,3 +28,6 @@ W6-T3 load testing governance is defined in `load-testing.md` and
 
 W6-T4 performance testing policy is defined in `performance-testing.md` and
 `performance-testing.contract.json`.
+
+W6-T5 chaos testing governance is defined in `chaos-testing.md` and
+`chaos-testing.contract.json`.

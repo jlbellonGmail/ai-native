@@ -54,7 +54,8 @@ assert(coverage.taskStates["W6-T1"] === "IMPLEMENTED", "W6-T1 must be marked IMP
 assert(coverage.taskStates["W6-T2"] === "IMPLEMENTED", "W6-T2 may be implemented after W6-T1 closure");
 assert(coverage.taskStates["W6-T3"] === "IMPLEMENTED", "W6-T3 may be implemented after W6-T1 closure");
 assert(coverage.taskStates["W6-T4"] === "IMPLEMENTED", "W6-T4 may be implemented after W6-T1 closure");
-for (const task of ["W6-T5", "W6-T6", "W6-T7"]) {
+assert(coverage.taskStates["W6-T5"] === "IMPLEMENTED", "W6-T5 may be implemented after W6-T1 closure");
+for (const task of ["W6-T6", "W6-T7"]) {
   assert(coverage.taskStates[task] === "READY_FOR_FUTURE_TASK", `${task} must remain open after W6-T1`);
 }
 

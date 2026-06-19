@@ -96,7 +96,8 @@ for (const file of coverage.tasks["W6-T4"]) {
 for (const task of ["W6-T1", "W6-T2", "W6-T3", "W6-T4"]) {
   assert(coverage.taskStates[task] === "IMPLEMENTED", `${task} must be marked IMPLEMENTED`);
 }
-for (const task of ["W6-T5", "W6-T6", "W6-T7"]) {
+assert(coverage.taskStates["W6-T5"] === "IMPLEMENTED", "W6-T5 may be implemented after W6-T4 closure");
+for (const task of ["W6-T6", "W6-T7"]) {
   assert(coverage.taskStates[task] === "READY_FOR_FUTURE_TASK", `${task} must remain open after W6-T4`);
 }
 

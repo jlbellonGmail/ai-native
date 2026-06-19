@@ -40,3 +40,15 @@ execution is considered.
 The W6-T4 contract lives in `performance-testing.contract.json`; the
 human-readable model, measurement contract and reporting schema live in
 `performance-testing.md`.
+
+## Chaos Testing
+
+W6-T5 defines chaos testing governance for generated projects. Resilience
+scenarios must bind to planned performance targets, define a single failure
+mode, blast-radius limits, rollback plans, abort triggers, data safety controls
+and required observability signals before any real failure injection is
+considered.
+
+The W6-T5 contract lives in `chaos-testing.contract.json`; the human-readable
+governance model, resilience scenarios and validation contract live in
+`chaos-testing.md`.
