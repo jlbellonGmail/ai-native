@@ -103,7 +103,7 @@ assert(coverage.taskStates["W6-T3"] === "IMPLEMENTED", "W6-T3 must be marked IMP
 assert(coverage.taskStates["W6-T4"] === "IMPLEMENTED", "W6-T4 may be implemented after W6-T3 closure");
 assert(coverage.taskStates["W6-T5"] === "IMPLEMENTED", "W6-T5 may be implemented after W6-T3 closure");
 assert(coverage.taskStates["W6-T6"] === "IMPLEMENTED", "W6-T6 may be implemented after W6-T3 closure");
-assert(coverage.taskStates["W6-T7"] === "READY_FOR_FUTURE_TASK", "W6-T7 must remain open after W6-T3");
+assert(coverage.taskStates["W6-T7"] === "IMPLEMENTED", "W6-T7 may be implemented after W6-T3 closure");
 
 assert(roadmapToFiles.includes("| W6-T3 | Load Testing |"), "roadmap-to-files must include W6-T3");
 assert(roadmapToFiles.includes("load-testing.contract.json"), "roadmap-to-files must map load testing contract");

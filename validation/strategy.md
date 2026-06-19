@@ -8,6 +8,7 @@ Generated projects should ship with:
 * performance budgets for request handlers and workflow execution
 * chaos/resilience scenarios for external automation providers
 * coverage validation model bound to `vitest.config.ts`
+* testing audit final traceability across all W6 validation assets
 
 This file is a product contract for generated projects, not governance evidence.
 
@@ -63,3 +64,14 @@ any future project claims coverage results.
 The W6-T6 contract lives in `coverage-validation.contract.json`; the
 human-readable coverage governance, validation model and completeness contract
 live in `coverage-validation.md`.
+
+## Testing Audit Final
+
+W6-T7 defines the testing audit final for generated projects. The final audit
+must verify that W6-T1 through W6-T6 have human-readable policies,
+machine-readable contracts, local validators, roadmap coverage mappings and
+roadmap-to-files traceability before the W6 testing workstream is considered
+complete.
+
+The W6-T7 contract lives in `testing-audit-final.contract.json`; the
+human-readable testing audit final rules live in `testing-audit-final.md`.

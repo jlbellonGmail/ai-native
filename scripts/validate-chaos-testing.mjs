@@ -88,7 +88,7 @@ for (const task of ["W6-T1", "W6-T2", "W6-T3", "W6-T4", "W6-T5"]) {
   assert(coverage.taskStates[task] === "IMPLEMENTED", `${task} must be marked IMPLEMENTED`);
 }
 assert(coverage.taskStates["W6-T6"] === "IMPLEMENTED", "W6-T6 may be implemented after W6-T5 closure");
-assert(coverage.taskStates["W6-T7"] === "READY_FOR_FUTURE_TASK", "W6-T7 must remain open after W6-T5");
+assert(coverage.taskStates["W6-T7"] === "IMPLEMENTED", "W6-T7 may be implemented after W6-T5 closure");
 
 assert(roadmapToFiles.includes("| W6-T5 | Chaos Testing |"), "roadmap-to-files must include W6-T5");
 assert(roadmapToFiles.includes("chaos-testing.contract.json"), "roadmap-to-files must map chaos contract");

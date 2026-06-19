@@ -13,6 +13,7 @@ node scripts/validate-load-testing.mjs
 node scripts/validate-performance-testing.mjs
 node scripts/validate-chaos-testing.mjs
 node scripts/validate-coverage-validation.mjs
+node scripts/validate-testing-audit-final.mjs
 ```
 
 `tests/` contains the reference test suite moved from the old root `tests/`
@@ -35,3 +36,6 @@ W6-T5 chaos testing governance is defined in `chaos-testing.md` and
 
 W6-T6 coverage validation governance is defined in `coverage-validation.md` and
 `coverage-validation.contract.json`.
+
+W6-T7 testing audit final is defined in `testing-audit-final.md` and
+`testing-audit-final.contract.json`.
