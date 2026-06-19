@@ -1464,7 +1464,7 @@ Notas:
 Chaos Testing
 
 Estado:
-[ ]
+[x]
 
 Entregables:
 
@@ -1477,13 +1477,23 @@ Evidencia:
 * escenarios definidos.
 * reglas documentadas.
 * artefacto machine-readable generado.
+* governance documental creado en `ai-template/validation/chaos-testing.md`.
+* contrato machine-readable creado en `ai-template/validation/chaos-testing.contract.json`.
+* validacion local implementada en `ai-template/scripts/validate-chaos-testing.mjs`.
+* `ai-template/validation/README.md` y `ai-template/validation/strategy.md` actualizados.
+* `ai-template/validation/roadmap-coverage.json` actualizado con W6-T5 `IMPLEMENTED`.
+* matriz roadmap -> archivos actualizada en `ai-template/docs/ENTERPRISE-10-10/ROADMAP_TO_FILES.md`.
+* validadores W6-T1/W6-T2/W6-T3/W6-T4 actualizados para permitir W6-T5 implementado sin cerrar W6-T6.
+* commit producto: `06dae3d`.
+* archive governance: `governance/execution/archive/ENTERPRISE-10-10-V1/W6-T5/`.
 
 Notas:
 
 * sin inyección real.
 * sin alterar entornos.
 * W6-T6 queda como siguiente tarea elegible.
-* no se ejecuto commit, push ni Engram.
+* W6-T6 no fue cerrada.
+* Push remoto queda sujeto a politica/credenciales externas.
 
 ---
 

@@ -2,11 +2,11 @@
 
 Latest execution:
 
-`ENTERPRISE-10-10 W6-T4 Performance Testing`
+`ENTERPRISE-10-10 W6-T5 Chaos Testing`
 
 Archive:
 
-`governance/execution/archive/ENTERPRISE-10-10-V1/W6-T4/`
+`governance/execution/archive/ENTERPRISE-10-10-V1/W6-T5/`
 
 Final realignment archive:
 
@@ -14,4 +14,4 @@ Final realignment archive:
 
 Next eligible task:
 
-`W6-T5`
+`W6-T6`
