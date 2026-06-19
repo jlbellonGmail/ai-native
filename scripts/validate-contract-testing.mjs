@@ -55,9 +55,8 @@ assert(coverage.taskStates["W6-T2"] === "IMPLEMENTED", "W6-T2 may be implemented
 assert(coverage.taskStates["W6-T3"] === "IMPLEMENTED", "W6-T3 may be implemented after W6-T1 closure");
 assert(coverage.taskStates["W6-T4"] === "IMPLEMENTED", "W6-T4 may be implemented after W6-T1 closure");
 assert(coverage.taskStates["W6-T5"] === "IMPLEMENTED", "W6-T5 may be implemented after W6-T1 closure");
-for (const task of ["W6-T6", "W6-T7"]) {
-  assert(coverage.taskStates[task] === "READY_FOR_FUTURE_TASK", `${task} must remain open after W6-T1`);
-}
+assert(coverage.taskStates["W6-T6"] === "IMPLEMENTED", "W6-T6 may be implemented after W6-T1 closure");
+assert(coverage.taskStates["W6-T7"] === "READY_FOR_FUTURE_TASK", "W6-T7 must remain open after W6-T1");
 
 assert(roadmapToFiles.includes("| W6-T1 | Contract Testing |"), "roadmap-to-files must include W6-T1");
 assert(roadmapToFiles.includes("contract-testing.contract.json"), "roadmap-to-files must map contract testing contract");

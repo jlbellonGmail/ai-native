@@ -7,7 +7,7 @@ Generated projects should ship with:
 * load scenario definitions for API and workflow entry points
 * performance budgets for request handlers and workflow execution
 * chaos/resilience scenarios for external automation providers
-* coverage thresholds enforced by `vitest.config.ts`
+* coverage validation model bound to `vitest.config.ts`
 
 This file is a product contract for generated projects, not governance evidence.
 
@@ -52,3 +52,14 @@ considered.
 The W6-T5 contract lives in `chaos-testing.contract.json`; the human-readable
 governance model, resilience scenarios and validation contract live in
 `chaos-testing.md`.
+
+## Coverage Validation
+
+W6-T6 defines the coverage validation model for generated projects. Coverage
+readiness must bind configured Vitest thresholds to the W6 testing contracts,
+roadmap coverage mapping and a machine-readable completeness contract before
+any future project claims coverage results.
+
+The W6-T6 contract lives in `coverage-validation.contract.json`; the
+human-readable coverage governance, validation model and completeness contract
+live in `coverage-validation.md`.
