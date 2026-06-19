@@ -1,0 +1,89 @@
+{
+  "program": "ENTERPRISE-10-10",
+  "task": "W7-T2",
+  "title": "CONTRIBUTING Review",
+  "status": "IMPLEMENTED",
+  "scope": {
+    "type": "governance-only",
+    "productImpact": "N/A",
+    "productCommit": "N/A",
+    "versionModified": false,
+    "workflowModified": false,
+    "runtimeModified": false,
+    "pipelinesModified": false
+  },
+  "reviewedContributingSurfaces": [
+    {
+      "path": "ai-knowledge/CONTRIBUTING.md",
+      "purpose": "Knowledge contribution guidance",
+      "requiredSignals": [
+        "duplicate knowledge check",
+        "skill registration path",
+        "standard registration path",
+        "reusable knowledge principles"
+      ],
+      "result": "PASS"
+    },
+    {
+      "path": "ai-template/CONTRIBUTING.md",
+      "purpose": "Template contribution guidance",
+      "requiredSignals": [
+        "template validation commands",
+        "example placement rule",
+        "scaffold placement rule",
+        "legacy content handling"
+      ],
+      "result": "PASS"
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "purpose": "Root governance contribution guidance",
+      "requiredSignals": [
+        "reviewed absence recorded",
+        "no workflow change required by W7-T2",
+        "no product change required by W7-T2"
+      ],
+      "result": "RECORDED_ABSENT"
+    },
+    {
+      "path": "ai-foundation/CONTRIBUTING.md",
+      "purpose": "Foundation contribution guidance",
+      "requiredSignals": [
+        "reviewed absence recorded",
+        "no product change required by W7-T2"
+      ],
+      "result": "RECORDED_ABSENT"
+    }
+  ],
+  "contributionGovernanceRules": [
+    "Contribution guidance identifies the repository or governance surface being changed.",
+    "Contribution guidance preserves repo ownership boundaries between ai-foundation, ai-knowledge, ai-template and root governance.",
+    "Contribution guidance states required local validation when the target repo documents it.",
+    "Knowledge contributions remain under documented knowledge structures.",
+    "Template contributions remain under documented scaffold structures.",
+    "Ambiguous legacy content is retained unless a documented migration or deprecation path exists.",
+    "Documentation review tasks do not create workflow automation or runtime behavior.",
+    "Future documentation gaps are recorded without closing future roadmap tasks."
+  ],
+  "contributorLifecycle": [
+    "Classify the target surface: governance, knowledge, template or foundation.",
+    "Check existing guidance for duplicate or conflicting content.",
+    "Prepare the change within the target repo boundary.",
+    "Run validations named by the target repo when product files change.",
+    "Attach evidence to governance only when the roadmap task requires closure.",
+    "Leave future roadmap tasks unopened until explicitly selected."
+  ],
+  "traceability": {
+    "roadmap": "governance/roadmaps/ENTERPRISE-10-10-ROADMAP.md#W7-T2",
+    "reviewDocument": "governance/documentation/CONTRIBUTING-REVIEW.md",
+    "currentEvidence": "governance/execution/current/",
+    "archiveEvidence": "governance/execution/archive/ENTERPRISE-10-10-V1/W7-T2/"
+  },
+  "futureTaskGuardrails": {
+    "nextEligibleTask": "W7-T3",
+    "w7t3Opened": false,
+    "w7t3Closed": false,
+    "futureTasksClosed": false
+  },
+  "result": "PASS"
+}

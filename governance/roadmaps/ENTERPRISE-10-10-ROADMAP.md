@@ -1615,7 +1615,7 @@ Notas:
 CONTRIBUTING Review
 
 Estado:
-[ ]
+[x]
 
 Entregables:
 
@@ -1633,7 +1633,12 @@ Notas:
 
 * sin modificar workflows.
 * W7-T3 queda como siguiente tarea elegible.
-* no se ejecuto commit, push ni Engram.
+* producto: N/A.
+* commit producto: N/A.
+* contribution governance documentada.
+* contributor lifecycle documentado.
+* contrato machine-readable generado.
+* W7-T3 no fue abierta ni cerrada.
 
 ---
 

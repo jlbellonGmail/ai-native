@@ -2,11 +2,11 @@
 
 Latest execution:
 
-`ENTERPRISE-10-10 W7-T1 README Review`
+`ENTERPRISE-10-10 W7-T2 CONTRIBUTING Review`
 
 Archive:
 
-`governance/execution/archive/ENTERPRISE-10-10-V1/W7-T1/`
+`governance/execution/archive/ENTERPRISE-10-10-V1/W7-T2/`
 
 Final realignment archive:
 
@@ -14,4 +14,4 @@ Final realignment archive:
 
 Next eligible task:
 
-`W7-T2`
+`W7-T3`

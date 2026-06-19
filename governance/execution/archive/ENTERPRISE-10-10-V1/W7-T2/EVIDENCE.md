@@ -1,9 +1,16 @@
-# EVIDENCE
+# Evidence
 
 Product commit:
 
 * `N/A` - W7-T2 is governance-only per roadmap scope and explicitly says
   `sin modificar workflows`.
+
+Governance implementation:
+
+* CONTRIBUTING review completed.
+* Contribution governance rules documented.
+* Contributor lifecycle documented.
+* Machine-readable artifact generated.
 
 Primary governance artifacts:
 
@@ -11,12 +18,12 @@ Primary governance artifacts:
 * `governance/documentation/contributing-review.contract.json`
 * `governance/execution/archive/ENTERPRISE-10-10-V1/W7-T2/artifacts/contributing-review.contract.json`
 
-CONTRIBUTING review scope:
+Reviewed contribution surfaces:
 
-* contributing review
-* contribution governance
-* contributor lifecycle
-* machine-readable artifact validation
+* `ai-knowledge/CONTRIBUTING.md`
+* `ai-template/CONTRIBUTING.md`
+* root `CONTRIBUTING.md` absence recorded
+* `ai-foundation/CONTRIBUTING.md` absence recorded
 
 Non-goals preserved:
 
