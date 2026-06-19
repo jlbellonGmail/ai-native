@@ -1585,7 +1585,7 @@ Notas:
 README Review
 
 Estado:
-[ ]
+[x]
 
 Entregables:
 
@@ -1604,7 +1604,9 @@ Notas:
 * sin modificar producto.
 * sin cambios VERSION.
 * W7-T2 queda como siguiente tarea elegible.
-* no se ejecuto commit, push ni Engram.
+* producto: N/A.
+* contrato machine-readable generado.
+* W7-T2 no fue abierta ni cerrada.
 
 ---
 

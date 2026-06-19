@@ -2,11 +2,12 @@
 
 Latest validation archive:
 
-`governance/execution/archive/ENTERPRISE-10-10-V1/W6-T7/VALIDATION.md`
+`governance/execution/archive/ENTERPRISE-10-10-V1/W7-T1/VALIDATION.md`
 
 Status:
 
-* Product validators PASS.
-* W6-T7 testing audit final validator PASS.
-* Existing ai-template scripts PASS: `typecheck`, `lint`, `test`, `build`.
-* CRLF warnings are non-blocking.
+* Governance diff validation PASS: `git diff --check`.
+* W7-T1 JSON contracts PASS.
+* Roadmap continuity PASS: W7-T1 closed; W7-T2 remains open and next eligible.
+* No governance-specific validator script exists in the root repository.
+* Product validations are not applicable because W7-T1 is governance-only.

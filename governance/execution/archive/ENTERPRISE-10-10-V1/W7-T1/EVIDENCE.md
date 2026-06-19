@@ -1,8 +1,15 @@
-# EVIDENCE
+# Evidence
 
 Product commit:
 
 * `N/A` - W7-T1 is governance-only per roadmap.
+
+Governance implementation:
+
+* README governance review completed.
+* Documentation contract created.
+* Completeness rules documented.
+* Machine-readable artifact generated.
 
 Primary governance artifacts:
 
@@ -10,12 +17,12 @@ Primary governance artifacts:
 * `governance/documentation/readme-review.contract.json`
 * `governance/execution/archive/ENTERPRISE-10-10-V1/W7-T1/artifacts/readme-review.contract.json`
 
-README review scope:
+Reviewed README surfaces:
 
-* README governance review
-* documentation contract
-* completeness rules
-* machine-readable artifact validation
+* `governance/execution/README.md`
+* `governance/execution/current/README.md`
+* `governance/execution/archive/ENTERPRISE-10-10-V1/W6-T7/README.md`
+* archived task README pattern under `governance/execution/archive/ENTERPRISE-10-10-V1/`
 
 Non-goals preserved:
 
