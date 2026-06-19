@@ -1502,7 +1502,7 @@ Notas:
 Coverage Validation
 
 Estado:
-[ ]
+[x]
 
 Entregables:
 
@@ -1515,13 +1515,23 @@ Evidencia:
 * cobertura definida.
 * consistencia documentada.
 * artefacto machine-readable generado.
+* governance documental creado en `ai-template/validation/coverage-validation.md`.
+* contrato machine-readable creado en `ai-template/validation/coverage-validation.contract.json`.
+* validacion local implementada en `ai-template/scripts/validate-coverage-validation.mjs`.
+* `ai-template/validation/README.md` y `ai-template/validation/strategy.md` actualizados.
+* `ai-template/validation/roadmap-coverage.json` actualizado con W6-T6 `IMPLEMENTED`.
+* matriz roadmap -> archivos actualizada en `ai-template/docs/ENTERPRISE-10-10/ROADMAP_TO_FILES.md`.
+* validadores W6-T1/W6-T2/W6-T3/W6-T4/W6-T5 actualizados para permitir W6-T6 implementado sin cerrar W6-T7.
+* commit producto: `47880ff`.
+* archive governance: `governance/execution/archive/ENTERPRISE-10-10-V1/W6-T6/`.
 
 Notas:
 
 * sin ejecución real.
 * sin modificar pipelines.
 * W6-T7 queda como siguiente tarea elegible.
-* no se ejecuto commit, push ni Engram.
+* W6-T7 no fue cerrada.
+* Push remoto queda sujeto a politica/credenciales externas.
 
 ---
 

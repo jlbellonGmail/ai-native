@@ -882,7 +882,7 @@ Restricciones historicas:
 ## Ultima ejecucion valida
 
 Tipo:
-W6-T5-CHAOS-TESTING
+W6-T6-COVERAGE-VALIDATION
 
 Estado:
 PRODUCT IMPLEMENTED AND GOVERNANCE CLOSED
@@ -893,36 +893,36 @@ Repositorio producto impactado:
 
 Commits producto:
 
-* ai-template W6-T5 product commit: `06dae3d`
+* ai-template W6-T6 product commit: `47880ff`
 
 Validado:
 
-* W6-T5 Chaos Testing tiene governance, escenarios de resiliencia y contrato de validacion en ai-template.
-* `validation/chaos-testing.contract.json` define categorias de escenario, failure modes, blast radius, rollback, abort triggers, data safety y observability signals.
-* `scripts/validate-chaos-testing.mjs` valida contrato W6-T5, binding con W6-T4 performance testing, coverage, matriz roadmap -> archivos y que W6-T6+ permanecen abiertas.
-* Validaciones ai-template PASS: validate-structure, validate-enterprise-template, validate-contract-testing, validate-mutation-testing, validate-load-testing, validate-performance-testing, validate-chaos-testing, git diff --check, typecheck, lint, test, build.
-* No se inyectaron fallos reales, no se alteraron entornos, no se modifico producto runtime y no se cerro W6-T6.
-* W6-T6 queda como siguiente tarea elegible.
+* W6-T6 Coverage Validation tiene governance, modelo de validacion y contrato de completitud en ai-template.
+* `validation/coverage-validation.contract.json` define tareas fuente W6-T1..W6-T5, senales de coverage, thresholds minimos, evidencia requerida y estado sin ejecucion real.
+* `scripts/validate-coverage-validation.mjs` valida contrato W6-T6, binding con W6-T5 chaos testing, vitest coverage thresholds, matriz roadmap -> archivos y que W6-T7 permanece abierta.
+* Validaciones ai-template PASS: validate-structure, validate-enterprise-template, validate-contract-testing, validate-mutation-testing, validate-load-testing, validate-performance-testing, validate-chaos-testing, validate-coverage-validation, git diff --check, typecheck, lint, test, build.
+* No se ejecuto coverage real, no se modificaron pipelines, no se modifico producto runtime y no se cerro W6-T7.
+* W6-T7 queda como siguiente tarea elegible.
 
 Evidencia disponible:
 
-* governance/execution/archive/ENTERPRISE-10-10-V1/W6-T5/
+* governance/execution/archive/ENTERPRISE-10-10-V1/W6-T6/
 
 ---
 
-## Contexto historico posterior a W6-T5
+## Contexto historico posterior a W6-T6
 
-W6-T6 fue el siguiente paso elegible despues de W6-T5.
+W6-T7 fue el siguiente paso elegible despues de W6-T6.
 
 Estado actual:
 
-* Proximo paso vigente: W6-T6.
+* Proximo paso vigente: W6-T7.
 
 Restricciones historicas:
 
-* no abrir W6-T6 sin instruccion explicita
+* no abrir W6-T7 sin instruccion explicita
 * no modificar VERSION sin autorizacion explicita
-* no cerrar W6-T6+ por arrastre
+* no cerrar W6-T7+ por arrastre
 * push bloqueado por politica/credenciales externas debe registrarse como CONTEXTUAL_NON_BLOCKING
 
 ---
@@ -949,4 +949,4 @@ Regla:
 * Engram es memoria auxiliar.
 * Si Engram contradice git/governance, git/governance gana.
 * Si Engram falla, registrar `CONTEXTUAL_NON_BLOCKING` y continuar con git local, roadmap, SESSION-CONTEXT y archive.
-* Proximo paso vigente: W6-T6.
+* Proximo paso vigente: W6-T7.
