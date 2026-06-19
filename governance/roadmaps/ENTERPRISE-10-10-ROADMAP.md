@@ -1647,7 +1647,7 @@ Notas:
 Architecture Documentation
 
 Estado:
-[ ]
+[x]
 
 Entregables:
 
@@ -1665,7 +1665,12 @@ Notas:
 
 * sin cambios arquitectónicos reales.
 * W7-T4 queda como siguiente tarea elegible.
-* no se ejecuto commit, push ni Engram.
+* producto: N/A.
+* commit producto: N/A.
+* architecture contract generado.
+* system documentation documentada.
+* architecture map documentado.
+* W7-T4 no fue abierta ni cerrada.
 
 ---
 
