@@ -1069,13 +1069,64 @@ W7-T4 fue el siguiente paso elegible despues de W7-T3.
 
 Estado actual:
 
-* Proximo paso vigente: W7-T4.
+* Superseded by W7-T4-SETUP-DOCUMENTATION.
+* Proximo paso vigente: W7-T5.
 
 Restricciones historicas:
 
 * no abrir W7-T4 sin instruccion explicita
 * no modificar VERSION sin autorizacion explicita
 * no cerrar W7-T4+ por arrastre
+* push bloqueado por politica/credenciales externas debe registrarse como CONTEXTUAL_NON_BLOCKING
+
+---
+
+## Ultima ejecucion valida
+
+Tipo:
+W7-T4-SETUP-DOCUMENTATION
+
+Estado:
+GOVERNANCE IMPLEMENTED AND CLOSED
+
+Repositorio producto impactado:
+
+* N/A
+
+Commits producto:
+
+* N/A - W7-T4 es governance-only y declara `sin instalacion real`.
+
+Validado:
+
+* W7-T4 Setup Documentation tiene setup guide, bootstrap contract e installation documentation.
+* `governance/documentation/SETUP-DOCUMENTATION.md` documenta prerequisites, bootstrap flow, installation guidance y guardrails.
+* `governance/documentation/setup-documentation.contract.json` registra el contrato machine-readable.
+* `governance/execution/archive/ENTERPRISE-10-10-V1/W7-T4/` contiene evidencia reproducible.
+* No se modifico producto, no se instalo nada, no se modificaron workflows, runtime, pipelines ni VERSION.
+* W7-T5 queda como siguiente tarea elegible.
+* No se abrio W7-T5.
+* No se cerro W7-T5.
+
+Evidencia disponible:
+
+* governance/execution/archive/ENTERPRISE-10-10-V1/W7-T4/
+
+---
+
+## Contexto historico posterior a W7-T4
+
+W7-T5 fue el siguiente paso elegible despues de W7-T4.
+
+Estado actual:
+
+* Proximo paso vigente: W7-T5.
+
+Restricciones historicas:
+
+* no abrir W7-T5 sin instruccion explicita
+* no modificar VERSION sin autorizacion explicita
+* no cerrar W7-T5+ por arrastre
 * push bloqueado por politica/credenciales externas debe registrarse como CONTEXTUAL_NON_BLOCKING
 
 ---

@@ -2,11 +2,11 @@
 
 Latest execution:
 
-`ENTERPRISE-10-10 W7-T3 Architecture Documentation`
+`ENTERPRISE-10-10 W7-T4 Setup Documentation`
 
 Archive:
 
-`governance/execution/archive/ENTERPRISE-10-10-V1/W7-T3/`
+`governance/execution/archive/ENTERPRISE-10-10-V1/W7-T4/`
 
 Final realignment archive:
 
@@ -14,4 +14,4 @@ Final realignment archive:
 
 Next eligible task:
 
-`W7-T4`
+`W7-T5`

@@ -1679,7 +1679,7 @@ Notas:
 Setup Documentation
 
 Estado:
-[ ]
+[x]
 
 Entregables:
 
@@ -1697,7 +1697,12 @@ Notas:
 
 * sin instalación real.
 * W7-T5 queda como siguiente tarea elegible.
-* no se ejecuto commit, push ni Engram.
+* producto: N/A.
+* commit producto: N/A.
+* setup guide documentado.
+* bootstrap contract generado.
+* installation documentation documentada.
+* W7-T5 no fue abierta ni cerrada.
 
 ---
 

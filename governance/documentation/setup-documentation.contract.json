@@ -1,0 +1,188 @@
+{
+  "program": "ENTERPRISE-10-10",
+  "task": "W7-T4",
+  "title": "Setup Documentation",
+  "status": "IMPLEMENTED",
+  "scope": {
+    "type": "governance-only",
+    "productImpact": "N/A",
+    "productCommit": "N/A",
+    "versionModified": false,
+    "workflowModified": false,
+    "runtimeModified": false,
+    "pipelinesModified": false,
+    "installationExecuted": false,
+    "dependenciesInstalled": false
+  },
+  "setupSurfaces": [
+    {
+      "path": "governance/",
+      "component": "root governance",
+      "setupRole": "Read roadmap, session context, standards and execution evidence before selecting a task.",
+      "gitBoundary": "root repository",
+      "evidence": [
+        "governance/roadmaps/ENTERPRISE-10-10-ROADMAP.md",
+        "governance/SESSION-CONTEXT.md",
+        "governance/execution/"
+      ],
+      "result": "DOCUMENTED"
+    },
+    {
+      "path": "ai-foundation/",
+      "component": "foundation product repository",
+      "setupRole": "Validate foundation product artifacts only when the roadmap-selected task impacts ai-foundation.",
+      "gitBoundary": "independent product repository",
+      "evidence": [
+        "ai-foundation/scripts/",
+        "ai-foundation/validation/roadmap-coverage.json"
+      ],
+      "result": "DOCUMENTED"
+    },
+    {
+      "path": "ai-knowledge/",
+      "component": "knowledge product repository",
+      "setupRole": "Validate knowledge, registry and evaluation artifacts only when the roadmap-selected task impacts ai-knowledge.",
+      "gitBoundary": "independent product repository",
+      "evidence": [
+        "ai-knowledge/scripts/",
+        "ai-knowledge/validation/roadmap-coverage.json"
+      ],
+      "result": "DOCUMENTED"
+    },
+    {
+      "path": "ai-template/",
+      "component": "template product repository",
+      "setupRole": "Validate template, scaffold and testing artifacts only when the roadmap-selected task impacts ai-template.",
+      "gitBoundary": "independent product repository",
+      "evidence": [
+        "ai-template/scripts/",
+        "ai-template/validation/"
+      ],
+      "result": "DOCUMENTED"
+    }
+  ],
+  "prerequisites": [
+    {
+      "name": "Git",
+      "purpose": "Inspect repository status and commit history in the root and product repositories.",
+      "installationPerformedByThisTask": false
+    },
+    {
+      "name": "Node.js and npm",
+      "purpose": "Run product validators and package scripts where those scripts exist.",
+      "installationPerformedByThisTask": false
+    },
+    {
+      "name": "PowerShell",
+      "purpose": "Run documented Windows setup and validation commands.",
+      "installationPerformedByThisTask": false
+    },
+    {
+      "name": "Engram CLI",
+      "purpose": "Load and save auxiliary continuity checkpoints for project ai-native.",
+      "installationPerformedByThisTask": false,
+      "sourceOfTruth": false
+    }
+  ],
+  "bootstrapSteps": [
+    {
+      "order": 1,
+      "action": "Verify root governance repository status.",
+      "requiredBeforeImplementation": true
+    },
+    {
+      "order": 2,
+      "action": "Verify each product repository status independently.",
+      "requiredBeforeImplementation": true
+    },
+    {
+      "order": 3,
+      "action": "Read roadmap, session context and relevant execution archive.",
+      "requiredBeforeImplementation": true
+    },
+    {
+      "order": 4,
+      "action": "Confirm the next eligible task and impacted repository from the roadmap.",
+      "requiredBeforeImplementation": true
+    },
+    {
+      "order": 5,
+      "action": "Run only validators that exist and apply to the impacted repository.",
+      "requiredBeforeClosure": true
+    },
+    {
+      "order": 6,
+      "action": "Commit product changes only in the impacted product repository when product changes are required.",
+      "requiredBeforeClosure": false
+    },
+    {
+      "order": 7,
+      "action": "Commit governance changes in the root repository.",
+      "requiredBeforeClosure": true
+    },
+    {
+      "order": 8,
+      "action": "Attempt push once per affected repository and record policy or remote verification blocks as CONTEXTUAL_NON_BLOCKING.",
+      "requiredBeforeClosure": false
+    }
+  ],
+  "installationDocumentation": [
+    {
+      "surface": "root governance",
+      "guidance": "Open the governance repository and inspect roadmap/session context before task work.",
+      "commandsDocumented": [
+        "git status --short",
+        "git status -sb",
+        "git log --oneline -8"
+      ],
+      "installationExecuted": false
+    },
+    {
+      "surface": "product repositories",
+      "guidance": "Open each product repository independently and run relevant validators only when impacted.",
+      "commandsDocumented": [
+        "node scripts/validate-structure.mjs",
+        "git diff --check",
+        "npm run typecheck",
+        "npm run lint",
+        "npm run test",
+        "npm run build"
+      ],
+      "installationExecuted": false
+    },
+    {
+      "surface": "Engram",
+      "guidance": "Use project ai-native for auxiliary continuity checkpoints and prefer git/governance if Engram is unavailable.",
+      "commandsDocumented": [
+        "engram context ai-native",
+        "engram search --project ai-native",
+        "engram save --project ai-native --scope project"
+      ],
+      "installationExecuted": false
+    }
+  ],
+  "setupGuardrails": [
+    "Setup documentation preserves independent Git boundaries between root governance and product repositories.",
+    "Roadmap, session context and execution archive are the mandatory setup reading order.",
+    "Documentation-only tasks do not install packages, create services or change runtime state.",
+    "Documentation-only tasks do not modify VERSION files.",
+    "Blocked pushes are attempted once and recorded as CONTEXTUAL_NON_BLOCKING when caused by external policy or unverified remote destination.",
+    "Future roadmap tasks remain unopened until explicitly selected.",
+    "Setup gaps are recorded without closing onboarding, runbook or final audit tasks."
+  ],
+  "traceability": {
+    "roadmap": "governance/roadmaps/ENTERPRISE-10-10-ROADMAP.md#W7-T4",
+    "setupDocument": "governance/documentation/SETUP-DOCUMENTATION.md",
+    "setupContract": "governance/documentation/setup-documentation.contract.json",
+    "currentEvidence": "governance/execution/current/",
+    "archiveEvidence": "governance/execution/archive/ENTERPRISE-10-10-V1/W7-T4/"
+  },
+  "futureTaskGuardrails": {
+    "nextEligibleTask": "W7-T5",
+    "w7t5Opened": false,
+    "w7t5Closed": false,
+    "futureTasksClosed": false,
+    "w8Touched": false
+  },
+  "result": "PASS"
+}
