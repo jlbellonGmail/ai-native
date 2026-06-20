@@ -2,11 +2,11 @@
 
 Latest execution:
 
-`ENTERPRISE-10-10 W7-T5 Onboarding Documentation`
+`ENTERPRISE-10-10 W7-T6 Runbooks & Playbooks`
 
 Archive:
 
-`governance/execution/archive/ENTERPRISE-10-10-V1/W7-T5/`
+`governance/execution/archive/ENTERPRISE-10-10-V1/W7-T6/`
 
 Final realignment archive:
 
@@ -14,4 +14,4 @@ Final realignment archive:
 
 Next eligible task:
 
-`W7-T6`
+`W7-T7`

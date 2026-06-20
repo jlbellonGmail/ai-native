@@ -1743,7 +1743,7 @@ Notas:
 Runbooks & Playbooks
 
 Estado:
-[ ]
+[x]
 
 Entregables:
 
@@ -1761,7 +1761,13 @@ Notas:
 
 * sin operación runtime.
 * W7-T7 queda como siguiente tarea elegible.
-* no se ejecuto commit, push ni Engram.
+* producto: N/A.
+* commit producto: N/A.
+* operational runbooks documentados.
+* governance playbooks documentados.
+* incident procedures documentados.
+* contrato machine-readable generado.
+* W7-T7 no fue abierta ni cerrada.
 
 ---
 

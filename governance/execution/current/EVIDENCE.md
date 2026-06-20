@@ -2,37 +2,36 @@
 
 Product commit:
 
-* `N/A` - W7-T5 is governance-only per roadmap scope and explicitly says
-  `sin automatizacion onboarding`.
+* `N/A` - W7-T6 is governance-only per roadmap scope and explicitly says
+  `sin operacion runtime`.
 
 Primary governance artifacts:
 
-* `governance/documentation/ONBOARDING-DOCUMENTATION.md`
-* `governance/documentation/onboarding-documentation.contract.json`
-* `governance/execution/archive/ENTERPRISE-10-10-V1/W7-T5/artifacts/onboarding-documentation.contract.json`
+* `governance/documentation/RUNBOOKS-PLAYBOOKS.md`
+* `governance/documentation/runbooks-playbooks.contract.json`
+* `governance/execution/archive/ENTERPRISE-10-10-V1/W7-T6/artifacts/runbooks-playbooks.contract.json`
 
-Onboarding documentation scope:
+Runbooks and playbooks documentation scope:
 
-* onboarding guide
-* learning path
-* onboarding contract
-* role-specific onboarding checklists
+* operational runbooks
+* governance playbooks
+* incident procedures
 * machine-readable artifact validation
 
 Non-goals preserved:
 
 * no product repo modification
-* no onboarding automation
-* no identity or access changes
+* no runtime operation
+* no incident simulation
 * no workflow modification
-* no runtime modification
 * no pipeline modification
+* no remote configuration modification
 * no VERSION modification
-* no W7-T6 opening
-* no W7-T6 closure
+* no W7-T7 opening
+* no W7-T7 closure
 * no W8 or later workstream modification
 
 Previous push context:
 
-* W6-T3 through W7-T4 pushes were `CONTEXTUAL_NON_BLOCKING` due external
+* W6-T3 through W7-T5 pushes were `CONTEXTUAL_NON_BLOCKING` due external
   policy/unverified remote.

@@ -1,0 +1,233 @@
+{
+  "program": "ENTERPRISE-10-10",
+  "task": "W7-T6",
+  "title": "Runbooks & Playbooks",
+  "status": "IMPLEMENTED",
+  "scope": {
+    "type": "governance-only",
+    "productImpact": "N/A",
+    "productCommit": "N/A",
+    "versionModified": false,
+    "workflowModified": false,
+    "runtimeModified": false,
+    "pipelinesModified": false,
+    "remoteConfigurationModified": false,
+    "incidentSimulationExecuted": false
+  },
+  "operationalRunbooks": [
+    {
+      "id": "local-continuity",
+      "title": "Local Continuity Runbook",
+      "purpose": "Verify governance and repository state before implementing a selected roadmap task.",
+      "steps": [
+        "Read governance/SESSION-CONTEXT.md.",
+        "Read the selected task directly from governance/roadmaps/ENTERPRISE-10-10-ROADMAP.md.",
+        "Inspect the latest archive under governance/execution/archive/ENTERPRISE-10-10-V1/.",
+        "Verify root governance git status.",
+        "Verify each independent product repository git status.",
+        "Confirm that the selected task is the next eligible task.",
+        "Stop with STOP HUMAN REQUIRED if uncommitted changes or unexpected task closures are found."
+      ],
+      "result": "DOCUMENTED"
+    },
+    {
+      "id": "product-impact",
+      "title": "Product Impact Runbook",
+      "purpose": "Guide product changes only when the roadmap names a product repository.",
+      "steps": [
+        "Confirm the impacted product repository from the roadmap.",
+        "Read existing validators and coverage files in that repository.",
+        "Implement real product artifacts for the selected task only.",
+        "Run existing relevant validators.",
+        "Run git diff --check before committing product changes.",
+        "Create a product commit only in the impacted product repository.",
+        "Record the product commit in governance evidence."
+      ],
+      "executedForW7T6": false,
+      "result": "DOCUMENTED_ONLY"
+    },
+    {
+      "id": "governance-closure",
+      "title": "Governance Closure Runbook",
+      "purpose": "Close the selected task with roadmap, current execution and archive evidence.",
+      "steps": [
+        "Update the roadmap state for the selected task only.",
+        "Update governance/SESSION-CONTEXT.md.",
+        "Update governance/execution/current/.",
+        "Create the selected task archive.",
+        "Record validation commands, product commit, governance commit and push status.",
+        "Leave the next eligible task unopened.",
+        "Confirm future tasks and later workstreams remain untouched."
+      ],
+      "result": "DOCUMENTED"
+    },
+    {
+      "id": "engram-continuity",
+      "title": "Engram Continuity Runbook",
+      "purpose": "Use Engram as auxiliary memory while preserving git/governance as source of truth.",
+      "steps": [
+        "Use project ai-native.",
+        "Query Engram before editing when a resume requests it.",
+        "Compare Engram output against git, roadmap, session context and archive.",
+        "Treat git/governance as the source of truth.",
+        "Record Engram failures as CONTEXTUAL_NON_BLOCKING when local governance is valid.",
+        "Do not reconstruct task scope from Engram alone."
+      ],
+      "result": "DOCUMENTED"
+    },
+    {
+      "id": "push-blocked",
+      "title": "Push-Blocked Runbook",
+      "purpose": "Record blocked push attempts without rewriting local valid commits.",
+      "steps": [
+        "Attempt push once for each affected repository.",
+        "Do not force push.",
+        "Do not change remotes without human authorization.",
+        "Do not retry in a loop.",
+        "Record CONTEXTUAL_NON_BLOCKING in governance evidence.",
+        "Preserve local commits as valid source of truth.",
+        "Save a push-attempt checkpoint in Engram when possible."
+      ],
+      "result": "DOCUMENTED"
+    }
+  ],
+  "governancePlaybooks": [
+    {
+      "id": "next-task-selection",
+      "title": "Next Task Selection Playbook",
+      "rules": [
+        "Select the next task only from the roadmap.",
+        "Do not infer scope from workstream name, prior chat history or Engram memory.",
+        "Confirm all prior tasks in the sequence are closed.",
+        "Confirm future tasks have not been closed unexpectedly."
+      ],
+      "result": "DOCUMENTED"
+    },
+    {
+      "id": "documentation-only",
+      "title": "Documentation-Only Playbook",
+      "rules": [
+        "Add meaningful governance documentation.",
+        "Add or update the machine-readable contract requested by the task.",
+        "Validate JSON artifacts when present.",
+        "Do not create product changes just to force a product commit.",
+        "Record product commit as N/A.",
+        "Preserve explicit non-goals."
+      ],
+      "result": "DOCUMENTED"
+    },
+    {
+      "id": "product-task",
+      "title": "Product Task Playbook",
+      "rules": [
+        "Modify only the impacted product repository.",
+        "Prefer existing repository patterns and validators.",
+        "Update product coverage or traceability files when relevant.",
+        "Avoid VERSION changes unless explicitly authorized.",
+        "Commit product changes before governance closure."
+      ],
+      "result": "DOCUMENTED"
+    },
+    {
+      "id": "evidence",
+      "title": "Evidence Playbook",
+      "rules": [
+        "Name the selected task and exact title.",
+        "Record product impact and product commit or N/A.",
+        "Record governance artifacts.",
+        "Record validation commands and results.",
+        "Record push status.",
+        "Record next eligible task and future-task guardrails."
+      ],
+      "result": "DOCUMENTED"
+    }
+  ],
+  "incidentProcedures": [
+    {
+      "id": "unexpected-dirty-workspace",
+      "condition": "Any root or product repository has uncommitted changes before task edits.",
+      "action": "STOP HUMAN REQUIRED",
+      "steps": [
+        "Stop before editing.",
+        "Report STOP HUMAN REQUIRED.",
+        "Do not stage, revert or overwrite unrelated changes."
+      ]
+    },
+    {
+      "id": "commit-mismatch",
+      "condition": "Local commit differs from the checkpoint required for the resume.",
+      "action": "STOP HUMAN REQUIRED",
+      "steps": [
+        "Stop before editing.",
+        "Report expected and actual commits.",
+        "Do not repair history without human authorization."
+      ]
+    },
+    {
+      "id": "future-task-already-closed",
+      "condition": "A future task appears closed before the selected task finishes.",
+      "action": "STOP HUMAN REQUIRED",
+      "steps": [
+        "Stop before editing or closing governance.",
+        "Report STOP HUMAN REQUIRED.",
+        "Do not rewrite roadmap history."
+      ]
+    },
+    {
+      "id": "validation-failure",
+      "condition": "A relevant existing validator fails.",
+      "action": "FIX_OR_STOP",
+      "steps": [
+        "Fix recoverable issues within the selected task scope.",
+        "Re-run the failing validation.",
+        "Stop with STOP HUMAN REQUIRED if the failure is ambiguous, external or outside scope."
+      ]
+    },
+    {
+      "id": "engram-failure",
+      "condition": "Engram search or save fails due policy, risk review or unavailable memory.",
+      "action": "CONTEXTUAL_NON_BLOCKING",
+      "steps": [
+        "Record CONTEXTUAL_NON_BLOCKING.",
+        "Continue if git/governance sources are valid.",
+        "Do not revert local commits."
+      ]
+    },
+    {
+      "id": "push-failure",
+      "condition": "Push is blocked by policy, credentials or remote verification.",
+      "action": "CONTEXTUAL_NON_BLOCKING",
+      "steps": [
+        "Record CONTEXTUAL_NON_BLOCKING.",
+        "Do not retry repeatedly.",
+        "Do not change remotes.",
+        "Keep local commits as the source of truth."
+      ]
+    }
+  ],
+  "traceability": {
+    "roadmap": "governance/roadmaps/ENTERPRISE-10-10-ROADMAP.md#W7-T6",
+    "runbooksDocument": "governance/documentation/RUNBOOKS-PLAYBOOKS.md",
+    "runbooksContract": "governance/documentation/runbooks-playbooks.contract.json",
+    "currentEvidence": "governance/execution/current/",
+    "archiveEvidence": "governance/execution/archive/ENTERPRISE-10-10-V1/W7-T6/"
+  },
+  "futureTaskGuardrails": {
+    "nextEligibleTask": "W7-T7",
+    "w7t7Opened": false,
+    "w7t7Closed": false,
+    "futureTasksClosed": false,
+    "w8Touched": false
+  },
+  "nonGoals": [
+    "No product repo changes.",
+    "No runtime operation.",
+    "No incident simulation.",
+    "No workflow changes.",
+    "No pipeline changes.",
+    "No remote configuration changes.",
+    "No VERSION changes.",
+    "No W7-T7 opening or closure."
+  ],
+  "result": "PASS"
+}
