@@ -1,0 +1,188 @@
+{
+  "program": "ENTERPRISE-10-10",
+  "task": "W7-T5",
+  "title": "Onboarding Documentation",
+  "status": "IMPLEMENTED",
+  "scope": {
+    "type": "governance-only",
+    "productImpact": "N/A",
+    "productCommit": "N/A",
+    "versionModified": false,
+    "workflowModified": false,
+    "runtimeModified": false,
+    "pipelinesModified": false,
+    "onboardingAutomated": false,
+    "identityAccessModified": false
+  },
+  "onboardingAudiences": [
+    {
+      "role": "governance operator",
+      "responsibility": "Operate roadmap closure, evidence updates and governance commits.",
+      "requiredReading": [
+        "governance/SESSION-CONTEXT.md",
+        "governance/roadmaps/ENTERPRISE-10-10-ROADMAP.md",
+        "governance/execution/current/"
+      ],
+      "result": "DOCUMENTED"
+    },
+    {
+      "role": "product repository contributor",
+      "responsibility": "Implement product changes only when the roadmap-selected task names a product repository.",
+      "requiredReading": [
+        "governance/documentation/ARCHITECTURE-DOCUMENTATION.md",
+        "governance/documentation/SETUP-DOCUMENTATION.md"
+      ],
+      "result": "DOCUMENTED"
+    },
+    {
+      "role": "validation reviewer",
+      "responsibility": "Confirm validation evidence, JSON contract parsing and non-goal preservation.",
+      "requiredReading": [
+        "governance/execution/current/VALIDATION.md",
+        "governance/execution/archive/ENTERPRISE-10-10-V1/"
+      ],
+      "result": "DOCUMENTED"
+    },
+    {
+      "role": "continuity maintainer",
+      "responsibility": "Use Engram project ai-native as auxiliary memory and keep git/governance primary.",
+      "requiredReading": [
+        "governance/standards/ENGRAM-OPERATING-STANDARD.md",
+        "governance/SESSION-CONTEXT.md"
+      ],
+      "result": "DOCUMENTED"
+    }
+  ],
+  "onboardingSteps": [
+    {
+      "order": 1,
+      "action": "Open the root governance repository.",
+      "requiredBeforeImplementation": true
+    },
+    {
+      "order": 2,
+      "action": "Read session context and roadmap before selecting or executing a task.",
+      "requiredBeforeImplementation": true
+    },
+    {
+      "order": 3,
+      "action": "Inspect the latest execution archive for continuity evidence.",
+      "requiredBeforeImplementation": true
+    },
+    {
+      "order": 4,
+      "action": "Verify root and product repository git status independently.",
+      "requiredBeforeImplementation": true
+    },
+    {
+      "order": 5,
+      "action": "Use Engram project ai-native only as auxiliary continuity memory.",
+      "requiredBeforeImplementation": false
+    },
+    {
+      "order": 6,
+      "action": "Run existing validators relevant to the impacted repository.",
+      "requiredBeforeClosure": true
+    },
+    {
+      "order": 7,
+      "action": "Record product commit, governance commit, validation and push status in governance evidence.",
+      "requiredBeforeClosure": true
+    }
+  ],
+  "learningPath": [
+    {
+      "stage": 1,
+      "title": "Governance model",
+      "objective": "Understand that roadmap, session context and archive evidence control task closure.",
+      "evidence": [
+        "governance/roadmaps/ENTERPRISE-10-10-ROADMAP.md",
+        "governance/SESSION-CONTEXT.md"
+      ]
+    },
+    {
+      "stage": 2,
+      "title": "Repository boundaries",
+      "objective": "Understand root governance and the three independent product Git repositories.",
+      "evidence": [
+        "governance/documentation/ARCHITECTURE-DOCUMENTATION.md"
+      ]
+    },
+    {
+      "stage": 3,
+      "title": "Setup flow",
+      "objective": "Understand local status checks, validation readiness and one-attempt push recording.",
+      "evidence": [
+        "governance/documentation/SETUP-DOCUMENTATION.md"
+      ]
+    },
+    {
+      "stage": 4,
+      "title": "Product evidence",
+      "objective": "Understand where product artifacts and validators live when a task impacts product code.",
+      "evidence": [
+        "ai-foundation/",
+        "ai-knowledge/",
+        "ai-template/"
+      ]
+    },
+    {
+      "stage": 5,
+      "title": "Closure discipline",
+      "objective": "Understand product commit rules, governance commit rules and future-task guardrails.",
+      "evidence": [
+        "governance/execution/current/",
+        "governance/execution/archive/ENTERPRISE-10-10-V1/"
+      ]
+    }
+  ],
+  "roleChecklists": {
+    "governanceOperator": [
+      "Verify git status before editing files.",
+      "Confirm exact roadmap task name and deliverables.",
+      "Avoid opening or closing future tasks.",
+      "Update current and archive evidence after validation."
+    ],
+    "productContributor": [
+      "Work only in the product repository named by the roadmap.",
+      "Run existing validators relevant to that repository.",
+      "Avoid changing VERSION files without explicit authorization.",
+      "Leave unrelated product repositories untouched."
+    ],
+    "validationReviewer": [
+      "Compare evidence against roadmap deliverables.",
+      "Confirm machine-readable contracts parse successfully.",
+      "Confirm non-goals are preserved.",
+      "Record blockers as STOP HUMAN REQUIRED only when local state cannot be safely reconciled."
+    ],
+    "continuityMaintainer": [
+      "Use Engram project ai-native.",
+      "Treat Engram as auxiliary and git/governance as primary.",
+      "Record blocked Engram or push operations as CONTEXTUAL_NON_BLOCKING when caused by external policy or unverified remote destination."
+    ]
+  },
+  "onboardingGuardrails": [
+    "Onboarding documentation preserves independent Git boundaries between root governance and product repositories.",
+    "Roadmap must be read directly before task execution.",
+    "Documentation-only onboarding does not automate onboarding or change identity/access systems.",
+    "Documentation-only onboarding does not modify product runtime, workflows, pipelines or VERSION files.",
+    "Engram is auxiliary continuity memory and is not a primary source of truth.",
+    "Future roadmap tasks remain unopened until explicitly selected.",
+    "Onboarding gaps are recorded without closing runbook or final audit tasks."
+  ],
+  "traceability": {
+    "roadmap": "governance/roadmaps/ENTERPRISE-10-10-ROADMAP.md#W7-T5",
+    "onboardingDocument": "governance/documentation/ONBOARDING-DOCUMENTATION.md",
+    "onboardingContract": "governance/documentation/onboarding-documentation.contract.json",
+    "currentEvidence": "governance/execution/current/",
+    "archiveEvidence": "governance/execution/archive/ENTERPRISE-10-10-V1/W7-T5/"
+  },
+  "futureTaskGuardrails": {
+    "nextEligibleTask": "W7-T6",
+    "w7t6Opened": false,
+    "w7t6Closed": false,
+    "futureTasksClosed": false,
+    "w8Touched": false
+  },
+  "result": "PASS"
+}

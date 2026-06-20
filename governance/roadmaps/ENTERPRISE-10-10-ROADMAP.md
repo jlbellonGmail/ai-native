@@ -1711,7 +1711,7 @@ Notas:
 Onboarding Documentation
 
 Estado:
-[ ]
+[x]
 
 Entregables:
 
@@ -1729,7 +1729,12 @@ Notas:
 
 * sin automatización onboarding.
 * W7-T6 queda como siguiente tarea elegible.
-* no se ejecuto commit, push ni Engram.
+* producto: N/A.
+* commit producto: N/A.
+* onboarding guide documentado.
+* learning path documentado.
+* onboarding contract generado.
+* W7-T6 no fue abierta ni cerrada.
 
 ---
 
