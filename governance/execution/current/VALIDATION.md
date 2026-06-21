@@ -2,15 +2,21 @@
 
 Latest validation archive:
 
-`governance/execution/archive/ENTERPRISE-10-10-V1/W7-T7/VALIDATION.md`
+`governance/execution/archive/ENTERPRISE-10-10-V1/W8-T1/VALIDATION.md`
 
 Status:
 
+* ai-foundation validation PASS: structure, ENTERPRISE-10-10, W8-T1 legacy
+  inventory, diff check, typecheck, lint, test and build. Lint reported 5
+  preexisting warnings and 0 errors.
+* ai-knowledge validation PASS: structure, enterprise evaluation, prompt
+  registry schema/storage/versioning/ownership/audit, agent registry audit,
+  W8-T1 legacy inventory and diff check.
+* ai-knowledge npm scripts: N/A because no `package.json` exists.
+* ai-template validation PASS: structure, enterprise template, W6 testing
+  validators, W8-T1 legacy inventory, diff check, typecheck, lint, test and
+  build.
 * Governance diff validation PASS: `git diff --check`.
-* W7-T7 JSON contracts PASS.
-* Governance JSON pattern validation PASS for W7 documentation, review,
-  contract, runbook and audit artifacts.
-* Roadmap continuity PASS: W7-T1 through W7-T7 closed; W8-T1 remains open and
-  next eligible.
+* Roadmap continuity PASS: W8-T1 closed; W8-T2 remains not opened, not closed
+  and next eligible.
 * No governance-specific validator script exists in the root repository.
-* Product validations are not applicable because W7-T7 is governance-only.

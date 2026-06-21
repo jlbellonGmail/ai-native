@@ -1275,13 +1275,74 @@ W8-T1 es el siguiente paso elegible despues del cierre completo del workstream W
 
 Estado actual:
 
-* Proximo paso vigente: W8-T1.
+* Superseded by W8-T1-LEGACY-INVENTORY.
+* Proximo paso vigente: W8-T2.
 
 Restricciones historicas:
 
 * no abrir W8-T1 sin instruccion explicita
 * no cerrar W8-T1 por arrastre
 * no tocar W8+ sin seleccion explicita del roadmap
+* push bloqueado por politica/credenciales externas debe registrarse como CONTEXTUAL_NON_BLOCKING
+
+---
+
+## Ultima ejecucion valida
+
+Tipo:
+W8-T1-LEGACY-INVENTORY
+
+Estado:
+PRODUCT IMPLEMENTED AND GOVERNANCE CLOSED
+
+Repositorio producto impactado:
+
+* ai-foundation
+* ai-knowledge
+* ai-template
+
+Commits producto:
+
+* ai-foundation W8-T1 product commit: `1c09bf1`
+* ai-knowledge W8-T1 product commit: `361d54d`
+* ai-template W8-T1 product commit: `dea11b6`
+
+Validado:
+
+* W8-T1 Legacy Inventory tiene inventario legacy, ownership map, classification model y contrato machine-readable en los tres repos producto.
+* `legacy-inventory.md` documenta alcance, ownership, clasificacion y reglas de no eliminacion por repo.
+* `legacy-inventory.contract.json` registra el inventario machine-readable por repo.
+* `scripts/validate-legacy-inventory.mjs` valida contrato, paths legacy existentes, coverage, matriz roadmap -> archivos y que W8-T2 no queda cerrada en coverage producto.
+* No se eliminaron ni movieron archivos legacy.
+* No se modificaron runtime, pipelines, remotes ni VERSION.
+* Validaciones producto PASS en `ai-foundation`, `ai-knowledge` y `ai-template`.
+* `ai-foundation` lint tuvo warnings preexistentes sin errores.
+* `ai-knowledge` no tiene `package.json`, por lo tanto scripts npm: N/A.
+* W8-T2 queda como siguiente tarea elegible.
+* W8-T2 no fue abierta.
+* W8-T2 no fue cerrada.
+* W8+ futuras no fueron cerradas.
+
+Evidencia disponible:
+
+* governance/execution/archive/ENTERPRISE-10-10-V1/W8-T1/
+
+---
+
+## Contexto historico posterior a W8-T1
+
+W8-T2 es el siguiente paso elegible despues de W8-T1 Legacy Inventory.
+
+Estado actual:
+
+* Proximo paso vigente: W8-T2.
+
+Restricciones historicas:
+
+* no abrir W8-T2 sin instruccion explicita
+* no cerrar W8-T2 por arrastre
+* no tocar W8+ sin seleccion explicita del roadmap
+* no borrar ni mover archivos legacy sin una tarea futura explicita
 * push bloqueado por politica/credenciales externas debe registrarse como CONTEXTUAL_NON_BLOCKING
 
 ---
@@ -1308,4 +1369,4 @@ Regla:
 * Engram es memoria auxiliar.
 * Si Engram contradice git/governance, git/governance gana.
 * Si Engram falla, registrar `CONTEXTUAL_NON_BLOCKING` y continuar con git local, roadmap, SESSION-CONTEXT y archive.
-* Proximo paso vigente: W8-T1.
+* Proximo paso vigente: W8-T2.

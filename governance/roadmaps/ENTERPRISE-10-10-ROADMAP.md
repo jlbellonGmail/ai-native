@@ -1818,7 +1818,10 @@ Notas:
 Legacy Inventory
 
 Estado:
-[ ]
+[x]
+
+Fecha cierre:
+2026-06-21
 
 Entregables:
 
@@ -1835,8 +1838,16 @@ Evidencia:
 Notas:
 
 * sin eliminar archivos.
+* repos producto impactados: `ai-foundation`, `ai-knowledge`, `ai-template`.
+* commits producto: `ai-foundation` `1c09bf1`, `ai-knowledge` `361d54d`, `ai-template` `dea11b6`.
+* inventario, ownership map y classification model documentados en cada repo.
+* artefacto machine-readable `legacy-inventory.contract.json` generado en cada repo.
+* validador dedicado `scripts/validate-legacy-inventory.mjs` agregado y ejecutado en cada repo.
 * W8-T2 queda como siguiente tarea elegible.
-* no se ejecuto commit, push ni Engram.
+* W8-T2 no fue abierta ni cerrada.
+* W8+ futuras no fueron cerradas.
+* no se eliminaron ni movieron archivos legacy.
+* no se modificaron runtime, pipelines, remotes ni VERSION.
 
 ---
 

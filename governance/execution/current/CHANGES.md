@@ -1,10 +1,16 @@
 # CHANGES
 
-W7-T7 governance implementation:
+W8-T1 product implementation:
 
-* `governance/documentation/DOCUMENTATION-AUDIT-FINAL.md`
-* `governance/documentation/documentation-audit-final.contract.json`
-* `governance/execution/archive/ENTERPRISE-10-10-V1/W7-T7/`
+* `ai-foundation/_deprecated/2026-06-11/legacy-inventory.md`
+* `ai-foundation/_deprecated/2026-06-11/legacy-inventory.contract.json`
+* `ai-foundation/scripts/validate-legacy-inventory.mjs`
+* `ai-knowledge/_deprecated/2026-06-11/legacy-inventory.md`
+* `ai-knowledge/_deprecated/2026-06-11/legacy-inventory.contract.json`
+* `ai-knowledge/scripts/validate-legacy-inventory.mjs`
+* `ai-template/_deprecated/2026-06-11/legacy-inventory.md`
+* `ai-template/_deprecated/2026-06-11/legacy-inventory.contract.json`
+* `ai-template/scripts/validate-legacy-inventory.mjs`
 
 Updated governance continuity:
 
@@ -15,21 +21,26 @@ Updated governance continuity:
 * `governance/execution/current/EVIDENCE.md`
 * `governance/execution/current/SUMMARY.md`
 * `governance/execution/current/VALIDATION.md`
+* `governance/execution/archive/ENTERPRISE-10-10-V1/W8-T1/`
 
-Final audit coverage:
+Legacy inventory coverage:
 
-* W7-T1 README Review
-* W7-T2 CONTRIBUTING Review
-* W7-T3 Architecture Documentation
-* W7-T4 Setup Documentation
-* W7-T5 Onboarding Documentation
-* W7-T6 Runbooks & Playbooks
+* legacy inventory
+* ownership map
+* classification model
+* machine-readable contract
+* dedicated product validator
 
-No product repo was modified because W7-T7 is a governance-only documentation
-audit final task.
+Product commits:
+
+* ai-foundation: `1c09bf1`
+* ai-knowledge: `361d54d`
+* ai-template: `dea11b6`
+
+No legacy files were deleted or moved.
 
 No workflow, runtime, pipeline, remote configuration or VERSION file was
 modified.
 
-W7 Documentation Completion is complete. W8-T1 remains unopened and is the next
-eligible task.
+W8-T1 Legacy Inventory is complete. W8-T2 remains unopened, not closed, and is
+the next eligible task.
