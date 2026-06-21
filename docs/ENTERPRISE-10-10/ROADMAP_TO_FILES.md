@@ -30,5 +30,5 @@ agent registry and knowledge quality gates.
 | W7-T4 | Setup Documentation | `docs/onboarding/developer-onboarding.md` | File presence | IMPLEMENTED_BY_EXISTING_FILES | Setup/onboarding guidance exists. |
 | W7-T5 | Onboarding Documentation | `docs/onboarding/developer-onboarding.md` | File presence | IMPLEMENTED_BY_EXISTING_FILES | Onboarding path exists. |
 | W7-T6 | Runbooks & Playbooks | `docs/runbooks/ops-runbook.md`, `docs/playbooks/working-with-ai-agents.md` | File presence | IMPLEMENTED_BY_EXISTING_FILES | Operational procedures exist. |
-| W8-T1 | Legacy Inventory | `_deprecated/2026-06-11/README.md` | `validate-structure.mjs` | IMPLEMENTED_BY_REPAIR | Tool-context legacy is isolated. |
+| W8-T1 | Legacy Inventory | `_deprecated/2026-06-11/README.md`, `_deprecated/2026-06-11/legacy-inventory.md`, `_deprecated/2026-06-11/legacy-inventory.contract.json`, `scripts/validate-legacy-inventory.mjs`, `validation/roadmap-coverage.json` | `validate-legacy-inventory.mjs`, `validate-structure.mjs` | IMPLEMENTED | Knowledge legacy tool context is inventoried with owner, classification, non-deletion guardrails and machine-readable validation while leaving W8-T2 open. |
 | W8-T5 | Reference Validation | `scripts/validate-structure.mjs` | Local validation PASS required | IMPLEMENTED_BY_REPAIR | Coverage files are checked. |
