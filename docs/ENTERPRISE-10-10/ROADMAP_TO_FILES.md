@@ -17,7 +17,7 @@ template validation.
 | W7-T1 | README Review | `README.md`, folder READMEs | `validate-structure.mjs` | IMPLEMENTED_BY_REPAIR | Repo is navigable from README. |
 | W7-T3 | Architecture Documentation | `docs/architecture/` | File presence | IMPLEMENTED_BY_EXISTING_FILES | Architecture docs exist. |
 | W7-T4 | Setup Documentation | `docs/setup/local-dev.md` | File presence | IMPLEMENTED_BY_EXISTING_FILES | Local setup docs exist. |
-| W8-T1 | Legacy Inventory | `_deprecated/2026-06-11/README.md` | `validate-structure.mjs` | IMPLEMENTED_BY_REPAIR | Legacy source analysis is isolated. |
+| W8-T1 | Legacy Inventory | `_deprecated/2026-06-11/README.md`, `_deprecated/2026-06-11/legacy-inventory.md`, `_deprecated/2026-06-11/legacy-inventory.contract.json`, `scripts/validate-legacy-inventory.mjs`, `validation/roadmap-coverage.json` | `validate-legacy-inventory.mjs`, `validate-structure.mjs` | IMPLEMENTED | Template legacy groups are inventoried with owner, classification, non-deletion guardrails and machine-readable validation while leaving W8-T2 open. |
 | W8-T2 | Historical Archive | `_deprecated/2026-06-11/source-legacy-analysis/` | `validate-structure.mjs` | IMPLEMENTED_BY_REPAIR | Historical analysis moved to archive surface. |
 | W8-T3 | Duplicate Detection | `scripts/validate-structure.mjs` | Local validation PASS required | IMPLEMENTED_BY_REPAIR | Root duplicate package-lock is deprecated. |
 | W8-T4 | Obsolete Artifacts | `_deprecated/2026-06-11/` | `validate-structure.mjs` | IMPLEMENTED_BY_REPAIR | Obsolete/local artifacts have recovery location. |
