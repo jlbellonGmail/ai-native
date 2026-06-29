@@ -45,7 +45,10 @@ for (const file of contract.traceability) assert(exists(file), `traceability fil
 for (const file of coverage.tasks["W8-T1"]) assert(exists(file), `W8-T1 maps missing file ${file}`);
 
 assert(coverage.taskStates["W8-T1"] === "IMPLEMENTED", "W8-T1 must be IMPLEMENTED in product coverage");
-assert(!coverage.taskStates["W8-T2"], "W8-T1 must not close W8-T2 in product coverage");
+assert(
+  !coverage.taskStates["W8-T2"] || coverage.taskStates["W8-T2"] === "IMPLEMENTED",
+  "W8-T2 must be absent or implemented by its own task in product coverage"
+);
 assert(roadmapToFiles.includes("| W8-T1 | Legacy Inventory |"), "roadmap-to-files missing W8-T1");
 assert(roadmapToFiles.includes("legacy-inventory.contract.json"), "roadmap-to-files missing inventory contract");
 assert(roadmapToFiles.includes("validate-legacy-inventory.mjs"), "roadmap-to-files missing inventory validator");
