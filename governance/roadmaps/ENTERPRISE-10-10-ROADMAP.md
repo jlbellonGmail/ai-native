@@ -1856,7 +1856,10 @@ Notas:
 Historical Archive
 
 Estado:
-[ ]
+[x]
+
+Fecha cierre:
+2026-06-29
 
 Entregables:
 
@@ -1873,8 +1876,16 @@ Evidencia:
 Notas:
 
 * sin borrado físico.
+* repos producto impactados: `ai-foundation`, `ai-knowledge`, `ai-template`.
+* commits producto: `ai-foundation` `93ad4be`, `ai-knowledge` `1e35776`, `ai-template` `43b11c2`.
+* archive policy, retention model y archival contract documentados en cada repo.
+* artefacto machine-readable `historical-archive.contract.json` generado en cada repo.
+* validador dedicado `scripts/validate-historical-archive.mjs` agregado y ejecutado en cada repo.
 * W8-T3 queda como siguiente tarea elegible.
-* no se ejecuto commit, push ni Engram.
+* W8-T3 no fue abierta ni cerrada.
+* W8+ futuras no fueron cerradas.
+* no se eliminaron ni movieron archivos legacy.
+* no se modificaron runtime, pipelines, remotes ni VERSION.
 
 ---
 

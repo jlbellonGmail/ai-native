@@ -1335,12 +1335,77 @@ W8-T2 es el siguiente paso elegible despues de W8-T1 Legacy Inventory.
 
 Estado actual:
 
-* Proximo paso vigente: W8-T2.
+* Superseded by W8-T2-HISTORICAL-ARCHIVE.
+* Proximo paso vigente: W8-T3.
 
 Restricciones historicas:
 
-* no abrir W8-T2 sin instruccion explicita
-* no cerrar W8-T2 por arrastre
+* no abrir W8-T3 sin instruccion explicita
+* no cerrar W8-T3 por arrastre
+* no tocar W8+ sin seleccion explicita del roadmap
+* no borrar ni mover archivos legacy sin una tarea futura explicita
+* push bloqueado por politica/credenciales externas debe registrarse como CONTEXTUAL_NON_BLOCKING
+
+---
+
+## Ultima ejecucion valida
+
+Tipo:
+W8-T2-HISTORICAL-ARCHIVE
+
+Estado:
+PRODUCT IMPLEMENTED AND GOVERNANCE CLOSED
+
+Repositorio producto impactado:
+
+* ai-foundation
+* ai-knowledge
+* ai-template
+
+Commits producto:
+
+* ai-foundation W8-T2 product commit: `93ad4be`
+* ai-knowledge W8-T2 product commit: `1e35776`
+* ai-template W8-T2 product commit: `43b11c2`
+
+Validado:
+
+* W8-T1 gate confirmado antes de abrir W8-T2: commits producto `1c09bf1`, `361d54d`, `dea11b6` y governance `312c813`.
+* Engram W8-T1 operational checkpoint `#63` verificado.
+* Engram W8-T1 push-attempt checkpoint `#64` no pudo verificarse por bloqueo de politica antes de ejecucion y quedo registrado como `CONTEXTUAL_NON_BLOCKING`.
+* W8-T2 Historical Archive tiene archive policy, retention model, archival contract y contrato machine-readable en los tres repos producto.
+* `historical-archive.md` documenta alcance, politica de archivo, modelo de retencion y reglas de no eliminacion por repo.
+* `historical-archive.contract.json` registra el archivo historico machine-readable por repo.
+* `scripts/validate-historical-archive.mjs` valida contrato, paths archive existentes, coverage, matriz roadmap -> archivos y que W8-T3 no queda cerrada en coverage producto.
+* `scripts/validate-legacy-inventory.mjs` fue ajustado para permitir W8-T2 cuando queda implementada por su propia tarea posterior.
+* No se eliminaron ni movieron archivos legacy.
+* No se modificaron runtime, pipelines, remotes ni VERSION.
+* Validaciones producto PASS en `ai-foundation`, `ai-knowledge` y `ai-template`.
+* `ai-foundation` lint tuvo warnings preexistentes sin errores.
+* `ai-knowledge` no tiene `package.json`, por lo tanto scripts npm: N/A.
+* W8-T3 queda como siguiente tarea elegible.
+* W8-T3 no fue abierta.
+* W8-T3 no fue cerrada.
+* W8+ futuras no fueron cerradas.
+
+Evidencia disponible:
+
+* governance/execution/archive/ENTERPRISE-10-10-V1/W8-T2/
+
+---
+
+## Contexto historico posterior a W8-T2
+
+W8-T3 es el siguiente paso elegible despues de W8-T2 Historical Archive.
+
+Estado actual:
+
+* Proximo paso vigente: W8-T3.
+
+Restricciones historicas:
+
+* no abrir W8-T3 sin instruccion explicita
+* no cerrar W8-T3 por arrastre
 * no tocar W8+ sin seleccion explicita del roadmap
 * no borrar ni mover archivos legacy sin una tarea futura explicita
 * push bloqueado por politica/credenciales externas debe registrarse como CONTEXTUAL_NON_BLOCKING
@@ -1369,4 +1434,4 @@ Regla:
 * Engram es memoria auxiliar.
 * Si Engram contradice git/governance, git/governance gana.
 * Si Engram falla, registrar `CONTEXTUAL_NON_BLOCKING` y continuar con git local, roadmap, SESSION-CONTEXT y archive.
-* Proximo paso vigente: W8-T2.
+* Proximo paso vigente: W8-T3.

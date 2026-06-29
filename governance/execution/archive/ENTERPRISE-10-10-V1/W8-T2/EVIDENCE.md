@@ -1,5 +1,16 @@
 # EVIDENCE
 
+W8-T1 gate:
+
+* root governance commit verified: `312c813`
+* ai-foundation W8-T1 commit verified: `1c09bf1`
+* ai-knowledge W8-T1 commit verified: `361d54d`
+* ai-template W8-T1 commit verified: `dea11b6`
+* Engram operational checkpoint `#63` verified.
+* Engram push-attempt checkpoint `#64` direct search was policy-blocked and
+  treated as `CONTEXTUAL_NON_BLOCKING` under the local Engram operating rule:
+  git/governance local state remains source of truth when Engram fails.
+
 Product commits:
 
 * ai-foundation: `93ad4be`
@@ -23,10 +34,10 @@ Validation artifacts:
 
 Historical archive scope:
 
-* archive policy defined for deprecated surfaces in all three product repos
+* archive policy defined per repo
 * retention model documented per repo
 * archival contract generated per repo
-* machine-readable artifact generated per repo
+* archived material retained in place
 * W8-T3 kept unopened and not closed
 
 Non-goals preserved:
@@ -46,12 +57,3 @@ Previous push context:
 
 * W6-T3 through W8-T1 pushes were `CONTEXTUAL_NON_BLOCKING` due external
   policy/unverified remote.
-
-W8-T1 gate context:
-
-* W8-T1 root governance commit `312c813` verified.
-* W8-T1 product commits `1c09bf1`, `361d54d`, `dea11b6` verified.
-* Engram W8-T1 operational checkpoint `#63` verified.
-* Engram W8-T1 push-attempt checkpoint `#64` direct verification was
-  policy-blocked and treated as `CONTEXTUAL_NON_BLOCKING` because
-  git/governance local state remained the source of truth.
