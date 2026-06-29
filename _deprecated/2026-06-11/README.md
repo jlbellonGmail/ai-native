@@ -43,3 +43,18 @@ Artifacts:
 
 The next eligible roadmap task is W8-T3. W8-T3 is not opened or closed by this
 archive policy.
+
+## W8-T3 Duplicate Detection
+
+W8-T3 classifies duplicate and overlap patterns in this deprecated template
+surface without deleting, moving, or promoting archived files.
+
+Artifacts:
+
+* `duplicate-detection.md` documents duplication rules, classification report,
+  and non-action guardrails for this repository.
+* `duplicate-detection.contract.json` provides the machine-readable duplicate
+  detection contract used by `scripts/validate-duplicate-detection.mjs`.
+
+The next eligible roadmap task is W8-T4. W8-T4 is not opened or closed by this
+duplicate detection report.

@@ -16,7 +16,7 @@
     "W7-T4": ["docs/setup/local-dev.md"],
     "W8-T1": ["_deprecated/2026-06-11/README.md", "_deprecated/2026-06-11/legacy-inventory.md", "_deprecated/2026-06-11/legacy-inventory.contract.json", "scripts/validate-legacy-inventory.mjs", "validation/roadmap-coverage.json", "docs/ENTERPRISE-10-10/ROADMAP_TO_FILES.md"],
     "W8-T2": ["_deprecated/2026-06-11/README.md", "_deprecated/2026-06-11/historical-archive.md", "_deprecated/2026-06-11/historical-archive.contract.json", "_deprecated/2026-06-11/source-legacy-analysis/knowledge/README.md", "scripts/validate-historical-archive.mjs", "validation/roadmap-coverage.json", "docs/ENTERPRISE-10-10/ROADMAP_TO_FILES.md"],
-    "W8-T3": ["scripts/validate-structure.mjs"],
+    "W8-T3": ["_deprecated/2026-06-11/README.md", "_deprecated/2026-06-11/duplicate-detection.md", "_deprecated/2026-06-11/duplicate-detection.contract.json", "_deprecated/2026-06-11/package-lock.json", "pnpm-lock.yaml", "scripts/validate-duplicate-detection.mjs", "validation/roadmap-coverage.json", "docs/ENTERPRISE-10-10/ROADMAP_TO_FILES.md"],
     "W8-T4": ["_deprecated/2026-06-11/package-lock.json"],
     "W8-T5": ["manifests/enterprise-10-10-structure.json"]
   },
@@ -29,6 +29,7 @@
     "W6-T6": "IMPLEMENTED",
     "W6-T7": "IMPLEMENTED",
     "W8-T1": "IMPLEMENTED",
-    "W8-T2": "IMPLEMENTED"
+    "W8-T2": "IMPLEMENTED",
+    "W8-T3": "IMPLEMENTED"
   }
 }
