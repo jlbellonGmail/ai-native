@@ -52,7 +52,10 @@ for (const file of coverage.tasks["W8-T2"]) assert(exists(file), `W8-T2 maps mis
 
 assert(coverage.taskStates["W8-T1"] === "IMPLEMENTED", "W8-T1 must remain IMPLEMENTED");
 assert(coverage.taskStates["W8-T2"] === "IMPLEMENTED", "W8-T2 must be IMPLEMENTED in product coverage");
-assert(!coverage.taskStates["W8-T3"], "W8-T2 must not close W8-T3 in product coverage");
+assert(
+  !coverage.taskStates["W8-T3"] || coverage.taskStates["W8-T3"] === "IMPLEMENTED",
+  "W8-T3 must be absent or implemented by its own task in product coverage"
+);
 assert(roadmapToFiles.includes("| W8-T2 | Historical Archive |"), "roadmap-to-files missing W8-T2");
 assert(roadmapToFiles.includes("historical-archive.contract.json"), "roadmap-to-files missing historical archive contract");
 assert(roadmapToFiles.includes("validate-historical-archive.mjs"), "roadmap-to-files missing historical archive validator");

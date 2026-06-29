@@ -29,6 +29,7 @@
     "W7-T6": ["docs/runbooks/ops-runbook.md", "docs/playbooks/working-with-ai-agents.md"],
     "W8-T1": ["_deprecated/2026-06-11/README.md", "_deprecated/2026-06-11/legacy-inventory.md", "_deprecated/2026-06-11/legacy-inventory.contract.json", "scripts/validate-legacy-inventory.mjs", "docs/ENTERPRISE-10-10/ROADMAP_TO_FILES.md"],
     "W8-T2": ["_deprecated/2026-06-11/README.md", "_deprecated/2026-06-11/historical-archive.md", "_deprecated/2026-06-11/historical-archive.contract.json", "scripts/validate-historical-archive.mjs", "docs/ENTERPRISE-10-10/ROADMAP_TO_FILES.md"],
+    "W8-T3": ["_deprecated/2026-06-11/README.md", "_deprecated/2026-06-11/duplicate-detection.md", "_deprecated/2026-06-11/duplicate-detection.contract.json", "scripts/validate-duplicate-detection.mjs", "docs/ENTERPRISE-10-10/ROADMAP_TO_FILES.md"],
     "W8-T5": ["scripts/validate-structure.mjs"]
   },
   "taskStates": {
@@ -59,6 +60,7 @@
     "W7-T6": "IMPLEMENTED_BY_EXISTING_FILES",
     "W8-T1": "IMPLEMENTED",
     "W8-T2": "IMPLEMENTED",
+    "W8-T3": "IMPLEMENTED",
     "W8-T5": "IMPLEMENTED_BY_REPAIR"
   }
 }
