@@ -23,3 +23,19 @@ Artifacts:
 
 The next eligible roadmap task remains W8-T2. W8-T2 is not opened or closed by
 this inventory.
+
+## W8-T2 Historical Archive
+
+W8-T2 defines this deprecated tool-context surface as a retained in-place
+historical archive. The archive policy does not delete files, move files,
+promote deprecated context, or change active knowledge product behavior.
+
+Artifacts:
+
+* `historical-archive.md` documents the archive policy, retention model,
+  archival contract, and continuity guardrails for this repository.
+* `historical-archive.contract.json` provides the machine-readable archive
+  policy used by `scripts/validate-historical-archive.mjs`.
+
+The next eligible roadmap task is W8-T3. W8-T3 is not opened or closed by this
+archive policy.
