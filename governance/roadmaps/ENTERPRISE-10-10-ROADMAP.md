@@ -1970,7 +1970,10 @@ Notas:
 Reference Validation
 
 Estado:
-[ ]
+[x]
+
+Fecha cierre:
+2026-06-30
 
 Entregables:
 
@@ -1987,8 +1990,14 @@ Evidencia:
 Notas:
 
 * sin cambios producto.
+* W8-T5 se cerro como validacion governance-only sobre artefactos W8-T1..W8-T4 ya existentes en `ai-foundation`, `ai-knowledge` y `ai-template`.
+* referencias legacy, dependency map y consistency contract quedaron documentados en `governance/execution/archive/ENTERPRISE-10-10-V1/W8-T5/`.
+* artefacto machine-readable generado: `governance/execution/archive/ENTERPRISE-10-10-V1/W8-T5/reference-validation.contract.json`.
+* no se crearon commits producto porque el roadmap exige sin cambios producto.
+* no se eliminaron ni movieron archivos legacy.
+* no se modificaron runtime, pipelines, remotes ni VERSION.
 * W8-T6 queda como siguiente tarea elegible.
-* no se ejecuto commit, push ni Engram.
+* W8-T6 no fue abierta ni cerrada en roadmap.
 
 ---
 

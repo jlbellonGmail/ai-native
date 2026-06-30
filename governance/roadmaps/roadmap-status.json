@@ -75,5 +75,19 @@
       "artifact attestation persistence no disponible para repositorio privado user-owned bajo plan/configuracion actual",
       "limitacion de plataforma aceptada por HITL sin convertir repositorio a publico"
     ]
+  },
+  "W8-T5": {
+    "title": "Reference Validation",
+    "status": "completed",
+    "closed_at": "2026-06-30",
+    "result": "completed_governance_only",
+    "evidence": [
+      "Roadmap confirmed W8-T5 as next eligible after W8-T4",
+      "Reference validation completed without product changes",
+      "Dependency map validated across W8-T1 through W8-T4 contracts",
+      "Consistency contract generated at governance/execution/archive/ENTERPRISE-10-10-V1/W8-T5/reference-validation.contract.json",
+      "W8-T6 remains open and next eligible",
+      "Push status CONTEXTUAL_NON_BLOCKING due external unverified remote policy"
+    ]
   }
 }

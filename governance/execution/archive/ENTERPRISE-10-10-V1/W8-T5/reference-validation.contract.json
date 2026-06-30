@@ -1,0 +1,167 @@
+{
+  "schemaVersion": "reference-validation.v1",
+  "roadmapTask": "W8-T5",
+  "taskName": "Reference Validation",
+  "scope": "governance-only",
+  "roadmapNote": "sin cambios producto",
+  "createdAt": "2026-06-30",
+  "governance": {
+    "nextEligibleTask": "W8-T6",
+    "doesNotOpen": ["W8-T6"],
+    "doesNotClose": ["W8-T6"],
+    "productChangesAllowed": false,
+    "deletionAllowed": false,
+    "physicalMoveAllowed": false,
+    "runtimeActivationAllowed": false,
+    "runtimeDeletionAllowed": false
+  },
+  "referenceValidation": [
+    {
+      "repo": "ai-foundation",
+      "productCommit": "aadab8c",
+      "validationMode": "read_only",
+      "contracts": [
+        {
+          "task": "W8-T1",
+          "path": "ai-foundation/_deprecated/2026-06-11/legacy-inventory.contract.json",
+          "entries": 11,
+          "traceabilityStatus": "PASS"
+        },
+        {
+          "task": "W8-T2",
+          "path": "ai-foundation/_deprecated/2026-06-11/historical-archive.contract.json",
+          "entries": 11,
+          "traceabilityStatus": "PASS",
+          "dependsOn": "W8-T1"
+        },
+        {
+          "task": "W8-T3",
+          "path": "ai-foundation/_deprecated/2026-06-11/duplicate-detection.contract.json",
+          "entries": 11,
+          "traceabilityStatus": "PASS",
+          "dependsOn": "W8-T2"
+        },
+        {
+          "task": "W8-T4",
+          "path": "ai-foundation/_deprecated/2026-06-11/obsolete-artifacts.contract.json",
+          "entries": 11,
+          "traceabilityStatus": "PASS",
+          "dependsOn": "W8-T3"
+        }
+      ],
+      "consistencyStatus": "PASS"
+    },
+    {
+      "repo": "ai-knowledge",
+      "productCommit": "e1a3820",
+      "validationMode": "read_only",
+      "contracts": [
+        {
+          "task": "W8-T1",
+          "path": "ai-knowledge/_deprecated/2026-06-11/legacy-inventory.contract.json",
+          "entries": 1,
+          "traceabilityStatus": "PASS"
+        },
+        {
+          "task": "W8-T2",
+          "path": "ai-knowledge/_deprecated/2026-06-11/historical-archive.contract.json",
+          "entries": 1,
+          "traceabilityStatus": "PASS",
+          "dependsOn": "W8-T1"
+        },
+        {
+          "task": "W8-T3",
+          "path": "ai-knowledge/_deprecated/2026-06-11/duplicate-detection.contract.json",
+          "entries": 1,
+          "traceabilityStatus": "PASS",
+          "dependsOn": "W8-T2"
+        },
+        {
+          "task": "W8-T4",
+          "path": "ai-knowledge/_deprecated/2026-06-11/obsolete-artifacts.contract.json",
+          "entries": 1,
+          "traceabilityStatus": "PASS",
+          "dependsOn": "W8-T3"
+        }
+      ],
+      "consistencyStatus": "PASS"
+    },
+    {
+      "repo": "ai-template",
+      "productCommit": "046ab7a",
+      "validationMode": "read_only",
+      "contracts": [
+        {
+          "task": "W8-T1",
+          "path": "ai-template/_deprecated/2026-06-11/legacy-inventory.contract.json",
+          "entries": 5,
+          "traceabilityStatus": "PASS"
+        },
+        {
+          "task": "W8-T2",
+          "path": "ai-template/_deprecated/2026-06-11/historical-archive.contract.json",
+          "entries": 5,
+          "traceabilityStatus": "PASS",
+          "dependsOn": "W8-T1"
+        },
+        {
+          "task": "W8-T3",
+          "path": "ai-template/_deprecated/2026-06-11/duplicate-detection.contract.json",
+          "entries": 5,
+          "traceabilityStatus": "PASS",
+          "dependsOn": "W8-T2"
+        },
+        {
+          "task": "W8-T4",
+          "path": "ai-template/_deprecated/2026-06-11/obsolete-artifacts.contract.json",
+          "entries": 5,
+          "traceabilityStatus": "PASS",
+          "dependsOn": "W8-T3"
+        }
+      ],
+      "consistencyStatus": "PASS"
+    }
+  ],
+  "dependencyMap": [
+    {
+      "from": "W8-T2",
+      "to": "W8-T1",
+      "field": "basedOnInventoryTask",
+      "status": "PASS"
+    },
+    {
+      "from": "W8-T3",
+      "to": "W8-T2",
+      "field": "basedOnArchiveTask",
+      "status": "PASS"
+    },
+    {
+      "from": "W8-T4",
+      "to": "W8-T3",
+      "field": "basedOnDetectionTask",
+      "status": "PASS"
+    }
+  ],
+  "validators": [
+    "node scripts/validate-structure.mjs",
+    "node scripts/validate-legacy-inventory.mjs",
+    "node scripts/validate-historical-archive.mjs",
+    "node scripts/validate-duplicate-detection.mjs",
+    "node scripts/validate-obsolete-artifacts.mjs",
+    "read-only W8-T5 reference consistency check"
+  ],
+  "traceability": [
+    "governance/roadmaps/ENTERPRISE-10-10-ROADMAP.md",
+    "governance/SESSION-CONTEXT.md",
+    "governance/execution/current/README.md",
+    "governance/execution/current/SUMMARY.md",
+    "governance/execution/current/CHANGES.md",
+    "governance/execution/current/VALIDATION.md",
+    "governance/execution/current/EVIDENCE.md",
+    "governance/execution/archive/ENTERPRISE-10-10-V1/W8-T5/README.md",
+    "governance/execution/archive/ENTERPRISE-10-10-V1/W8-T5/SUMMARY.md",
+    "governance/execution/archive/ENTERPRISE-10-10-V1/W8-T5/CHANGES.md",
+    "governance/execution/archive/ENTERPRISE-10-10-V1/W8-T5/VALIDATION.md",
+    "governance/execution/archive/ENTERPRISE-10-10-V1/W8-T5/EVIDENCE.md"
+  ]
+}

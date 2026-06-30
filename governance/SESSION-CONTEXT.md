@@ -1530,12 +1530,73 @@ W8-T5 es el siguiente paso elegible despues de W8-T4 Obsolete Artifacts.
 
 Estado actual:
 
-* Proximo paso vigente: W8-T5.
+* Superseded by W8-T5-REFERENCE-VALIDATION.
+* Proximo paso vigente: W8-T6.
 
 Restricciones historicas:
 
-* no abrir W8-T5 sin instruccion explicita
-* no cerrar W8-T5 por arrastre
+* no abrir W8-T6 sin instruccion explicita
+* no cerrar W8-T6 por arrastre
+* no tocar W8+ sin seleccion explicita del roadmap
+* no borrar ni mover archivos legacy sin una tarea futura explicita
+* push bloqueado por politica/credenciales externas debe registrarse como CONTEXTUAL_NON_BLOCKING
+
+---
+
+## Ultima ejecucion valida
+
+Tipo:
+W8-T5-REFERENCE-VALIDATION
+
+Estado:
+GOVERNANCE ONLY CLOSED
+
+Repositorio producto impactado:
+
+* N/A, validacion read-only sin cambios producto
+
+Commits producto:
+
+* ai-foundation W8-T5 product commit: N/A
+* ai-knowledge W8-T5 product commit: N/A
+* ai-template W8-T5 product commit: N/A
+
+Validado:
+
+* W8-T1, W8-T2, W8-T3 y W8-T4 fueron verificados antes de cerrar W8-T5.
+* Engram W8-T4 operational checkpoint `#72` verificado.
+* Engram W8-T4 push-attempt checkpoint `#73` verificado.
+* W8-T5 Reference Validation fue leida desde roadmap local.
+* Roadmap W8-T5 indica `sin cambios producto`.
+* `ai-foundation`, `ai-knowledge` y `ai-template` quedaron sin cambios de producto.
+* Contratos W8-T1, W8-T2, W8-T3 y W8-T4 fueron validados en los tres repos producto.
+* `traceability` de contratos producto apunta a archivos existentes.
+* Dependency map validado: W8-T2 -> W8-T1, W8-T3 -> W8-T2, W8-T4 -> W8-T3.
+* Consistency contract generado en `governance/execution/archive/ENTERPRISE-10-10-V1/W8-T5/reference-validation.contract.json`.
+* No se eliminaron ni movieron archivos legacy.
+* No se modificaron runtime, pipelines, remotes ni VERSION.
+* W8-T6 queda como siguiente tarea elegible.
+* W8-T6 no fue abierta ni cerrada en roadmap.
+* W8+ futuras no fueron cerradas.
+
+Evidencia disponible:
+
+* governance/execution/archive/ENTERPRISE-10-10-V1/W8-T5/
+
+---
+
+## Contexto historico posterior a W8-T5
+
+W8-T6 es el siguiente paso elegible despues de W8-T5 Reference Validation.
+
+Estado actual:
+
+* Proximo paso vigente: W8-T6.
+
+Restricciones historicas:
+
+* no abrir W8-T6 sin instruccion explicita
+* no cerrar W8-T6 por arrastre
 * no tocar W8+ sin seleccion explicita del roadmap
 * no borrar ni mover archivos legacy sin una tarea futura explicita
 * push bloqueado por politica/credenciales externas debe registrarse como CONTEXTUAL_NON_BLOCKING
@@ -1564,4 +1625,4 @@ Regla:
 * Engram es memoria auxiliar.
 * Si Engram contradice git/governance, git/governance gana.
 * Si Engram falla, registrar `CONTEXTUAL_NON_BLOCKING` y continuar con git local, roadmap, SESSION-CONTEXT y archive.
-* Proximo paso vigente: W8-T5.
+* Proximo paso vigente: W8-T6.
