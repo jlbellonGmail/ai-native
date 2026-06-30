@@ -2,11 +2,11 @@
 
 Latest execution:
 
-`ENTERPRISE-10-10 W8-T5 Reference Validation`
+`ENTERPRISE-10-10 W8-T6 Legacy Audit Final`
 
 Archive:
 
-`governance/execution/archive/ENTERPRISE-10-10-V1/W8-T5/`
+`governance/execution/archive/ENTERPRISE-10-10-V1/W8-T6/`
 
 Final realignment archive:
 
@@ -14,15 +14,16 @@ Final realignment archive:
 
 Workstream status:
 
-`W8 Legacy Validation has W8-T1 through W8-T5 closed`
+`W8 Legacy Validation is complete with W8-T1 through W8-T6 closed`
 
 Next eligible task:
 
-`W8-T6`
+`CIERRE GLOBAL - Auditoria Final`
 
 Guardrails:
 
-* W8-T5 closed only.
-* W8-T6 was not opened or closed in the roadmap.
+* W8-T6 closed only.
+* No W8-T7 exists in the local roadmap.
 * W8+ future tasks were not closed.
-* Reference validation was completed without product changes.
+* CIERRE GLOBAL / Auditoria Final was not opened or closed.
+* Legacy audit final was completed without product changes.

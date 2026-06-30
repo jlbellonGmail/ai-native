@@ -89,5 +89,20 @@
       "W8-T6 remains open and next eligible",
       "Push status CONTEXTUAL_NON_BLOCKING due external unverified remote policy"
     ]
+  },
+  "W8-T6": {
+    "title": "Legacy Audit Final",
+    "status": "completed",
+    "closed_at": "2026-06-30",
+    "result": "completed_governance_only",
+    "evidence": [
+      "Roadmap confirmed W8-T6 as next eligible after W8-T5",
+      "Legacy Inventory, Historical Archive, Duplicate Detection, Obsolete Artifacts and Reference Validation validated",
+      "W8-T1 through W8-T5 archives verified complete",
+      "Product machine-readable legacy contracts validated in ai-foundation, ai-knowledge and ai-template",
+      "Legacy audit final contract generated at governance/execution/archive/ENTERPRISE-10-10-V1/W8-T6/legacy-audit-final.contract.json",
+      "CIERRE GLOBAL Auditoria Final remains open and next eligible",
+      "Push status CONTEXTUAL_NON_BLOCKING due external unverified remote policy"
+    ]
   }
 }

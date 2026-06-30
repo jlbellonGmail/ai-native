@@ -1,12 +1,34 @@
 # EVIDENCE
 
+Pre-task gate:
+
+* root/governance clean at gate with W8-T5 governance commit `5329912`.
+* ai-foundation clean at gate with W8-T4 product commit `aadab8c`.
+* ai-knowledge clean at gate with W8-T4 product commit `e1a3820`.
+* ai-template clean at gate with W8-T4 product commit `046ab7a`.
+* Roadmap confirmed W8-T1, W8-T2, W8-T3, W8-T4 and W8-T5 closed.
+* Roadmap confirmed W8-T6 open and next eligible.
+* Roadmap has no W8-T7 entry.
+* CIERRE GLOBAL / Auditoria Final remained open.
+* Engram W8-T5 operational checkpoint `#74` recovered with non-blocking drift
+  to pre-amend commit `c4d3827`.
+* Engram W8-T5 push-attempt checkpoint `#75` verified.
+
 Product commits:
 
 * ai-foundation: N/A, no product changes for W8-T6
 * ai-knowledge: N/A, no product changes for W8-T6
 * ai-template: N/A, no product changes for W8-T6
 
-Validated W8 legacy artifacts:
+Validated W8 chain:
+
+* W8-T1 Legacy Inventory
+* W8-T2 Historical Archive
+* W8-T3 Duplicate Detection
+* W8-T4 Obsolete Artifacts
+* W8-T5 Reference Validation
+
+Validated product contracts:
 
 * `ai-foundation/_deprecated/2026-06-11/legacy-inventory.contract.json`
 * `ai-foundation/_deprecated/2026-06-11/historical-archive.contract.json`
@@ -21,27 +43,19 @@ Validated W8 legacy artifacts:
 * `ai-template/_deprecated/2026-06-11/duplicate-detection.contract.json`
 * `ai-template/_deprecated/2026-06-11/obsolete-artifacts.contract.json`
 
-Validation artifacts:
+Governance archive validation:
 
-* existing W8-T1 through W8-T4 validators in each product repo
-* governance W8-T5 reference validation contract:
-  `governance/execution/archive/ENTERPRISE-10-10-V1/W8-T5/reference-validation.contract.json`
-* governance W8-T6 legacy audit final contract:
-  `governance/execution/archive/ENTERPRISE-10-10-V1/W8-T6/legacy-audit-final.contract.json`
-
-Legacy audit final scope:
-
-* W8-T1 Legacy Inventory validated
-* W8-T2 Historical Archive validated
-* W8-T3 Duplicate Detection validated
-* W8-T4 Obsolete Artifacts validated
-* W8-T5 Reference Validation validated
-* W8-T1 through W8-T5 archives verified complete
-* CIERRE GLOBAL / Auditoria Final kept unopened and not closed in the roadmap
+* W8-T1 archive complete.
+* W8-T2 archive complete.
+* W8-T3 archive complete.
+* W8-T4 archive complete.
+* W8-T5 archive complete.
+* W8-T6 archive created with the five standard files and
+  `legacy-audit-final.contract.json`.
 
 Non-goals preserved:
 
-* no product file changes
+* no product changes
 * no product commits
 * no legacy deletion
 * no legacy move
@@ -51,20 +65,11 @@ Non-goals preserved:
 * no pipeline modification
 * no remote configuration modification
 * no VERSION modification
-* no W8-T7 opening because no W8-T7 exists in the local roadmap
+* no W8-T7 opening
 * no CIERRE GLOBAL opening
 * no CIERRE GLOBAL closure
-* no W8+ future task closure
 
-Previous push context:
+Push context:
 
-* W6-T3 through W8-T5 pushes were `CONTEXTUAL_NON_BLOCKING` due external
-  policy/unverified remote.
-
-Pre-task gate context:
-
-* W8-T5 root governance commit `5329912` verified.
-* Engram W8-T5 operational checkpoint `#74` recovered with non-blocking drift
-  to pre-amend commit `c4d3827`.
-* Engram W8-T5 push-attempt checkpoint `#75` verified.
-* W8-T6 confirmed as next eligible before execution.
+* W8-T6 push is `CONTEXTUAL_NON_BLOCKING` because local policy does not permit
+  pushing to the external GitHub remote without verified trust.

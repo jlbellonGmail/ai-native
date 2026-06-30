@@ -1,6 +1,14 @@
 # CHANGES
 
-W8-T6 governance-only legacy audit final:
+Estado:
+
+COMPLETADA
+
+W8-T6 product implementation:
+
+* N/A. W8-T6 is a final audit over existing W8 evidence.
+
+W8-T6 governance artifacts:
 
 * `governance/execution/archive/ENTERPRISE-10-10-V1/W8-T6/README.md`
 * `governance/execution/archive/ENTERPRISE-10-10-V1/W8-T6/SUMMARY.md`
@@ -20,8 +28,9 @@ Updated governance continuity:
 * `governance/execution/current/SUMMARY.md`
 * `governance/execution/current/VALIDATION.md`
 
-No product files were changed because W8-T6 is a final audit over existing W8
-evidence.
+No product files were changed.
+
+Root/governance commit is pending until final W8-T6 governance commit.
 
 No legacy artifact was deleted or moved.
 

@@ -2006,7 +2006,10 @@ Notas:
 Legacy Audit Final
 
 Estado:
-[ ]
+[x]
+
+Fecha cierre:
+2026-06-30
 
 Validar:
 
@@ -2027,7 +2030,14 @@ Notas:
 
 * cierre completo del workstream.
 * habilita cierre global.
-* no se ejecuto commit, push ni Engram.
+* W8-T6 se cerro como auditoria final governance-only del Workstream 8.
+* se validaron Legacy Inventory, Historical Archive, Duplicate Detection, Obsolete Artifacts y Reference Validation.
+* archives W8-T1..W8-T5 completos y artefactos machine-readable producto/governance validados.
+* artefacto machine-readable generado: `governance/execution/archive/ENTERPRISE-10-10-V1/W8-T6/legacy-audit-final.contract.json`.
+* no se modifico producto.
+* no se eliminaron ni movieron archivos legacy.
+* no se modificaron runtime, pipelines, remotes ni VERSION.
+* CIERRE GLOBAL / Auditoria Final queda como siguiente bloque elegible.
 
 ---
 

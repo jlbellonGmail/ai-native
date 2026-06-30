@@ -1,0 +1,133 @@
+{
+  "schemaVersion": "legacy-audit-final.v1",
+  "roadmapTask": "W8-T6",
+  "taskName": "Legacy Audit Final",
+  "scope": "governance-only",
+  "createdAt": "2026-06-30",
+  "governance": {
+    "workstream": "W8 Legacy Validation",
+    "workstreamStatus": "completed",
+    "nextEligibleBlock": "CIERRE GLOBAL - Auditoria Final",
+    "w8t7ExistsInRoadmap": false,
+    "productChangesAllowed": false,
+    "deletionAllowed": false,
+    "physicalMoveAllowed": false,
+    "runtimeActivationAllowed": false,
+    "runtimeDeletionAllowed": false
+  },
+  "closedTasks": [
+    {
+      "task": "W8-T1",
+      "name": "Legacy Inventory",
+      "governanceCommit": "312c813",
+      "status": "PASS",
+      "archive": "governance/execution/archive/ENTERPRISE-10-10-V1/W8-T1/"
+    },
+    {
+      "task": "W8-T2",
+      "name": "Historical Archive",
+      "governanceCommit": "36cf993",
+      "status": "PASS",
+      "archive": "governance/execution/archive/ENTERPRISE-10-10-V1/W8-T2/"
+    },
+    {
+      "task": "W8-T3",
+      "name": "Duplicate Detection",
+      "governanceCommit": "d050cd1",
+      "status": "PASS",
+      "archive": "governance/execution/archive/ENTERPRISE-10-10-V1/W8-T3/"
+    },
+    {
+      "task": "W8-T4",
+      "name": "Obsolete Artifacts",
+      "governanceCommit": "484f175",
+      "status": "PASS",
+      "archive": "governance/execution/archive/ENTERPRISE-10-10-V1/W8-T4/"
+    },
+    {
+      "task": "W8-T5",
+      "name": "Reference Validation",
+      "governanceCommit": "5329912",
+      "status": "PASS",
+      "archive": "governance/execution/archive/ENTERPRISE-10-10-V1/W8-T5/"
+    }
+  ],
+  "productRepos": [
+    {
+      "repo": "ai-foundation",
+      "head": "aadab8c",
+      "productChangesForW8T6": false,
+      "contracts": [
+        "ai-foundation/_deprecated/2026-06-11/legacy-inventory.contract.json",
+        "ai-foundation/_deprecated/2026-06-11/historical-archive.contract.json",
+        "ai-foundation/_deprecated/2026-06-11/duplicate-detection.contract.json",
+        "ai-foundation/_deprecated/2026-06-11/obsolete-artifacts.contract.json"
+      ],
+      "status": "PASS"
+    },
+    {
+      "repo": "ai-knowledge",
+      "head": "e1a3820",
+      "productChangesForW8T6": false,
+      "contracts": [
+        "ai-knowledge/_deprecated/2026-06-11/legacy-inventory.contract.json",
+        "ai-knowledge/_deprecated/2026-06-11/historical-archive.contract.json",
+        "ai-knowledge/_deprecated/2026-06-11/duplicate-detection.contract.json",
+        "ai-knowledge/_deprecated/2026-06-11/obsolete-artifacts.contract.json"
+      ],
+      "status": "PASS"
+    },
+    {
+      "repo": "ai-template",
+      "head": "046ab7a",
+      "productChangesForW8T6": false,
+      "contracts": [
+        "ai-template/_deprecated/2026-06-11/legacy-inventory.contract.json",
+        "ai-template/_deprecated/2026-06-11/historical-archive.contract.json",
+        "ai-template/_deprecated/2026-06-11/duplicate-detection.contract.json",
+        "ai-template/_deprecated/2026-06-11/obsolete-artifacts.contract.json"
+      ],
+      "status": "PASS"
+    }
+  ],
+  "archiveRequirements": {
+    "requiredFiles": ["README.md", "SUMMARY.md", "CHANGES.md", "VALIDATION.md", "EVIDENCE.md"],
+    "w8t1ThroughW8t5Status": "PASS",
+    "w8t6Status": "PASS"
+  },
+  "machineReadableArtifacts": [
+    "ai-foundation/_deprecated/2026-06-11/legacy-inventory.contract.json",
+    "ai-foundation/_deprecated/2026-06-11/historical-archive.contract.json",
+    "ai-foundation/_deprecated/2026-06-11/duplicate-detection.contract.json",
+    "ai-foundation/_deprecated/2026-06-11/obsolete-artifacts.contract.json",
+    "ai-knowledge/_deprecated/2026-06-11/legacy-inventory.contract.json",
+    "ai-knowledge/_deprecated/2026-06-11/historical-archive.contract.json",
+    "ai-knowledge/_deprecated/2026-06-11/duplicate-detection.contract.json",
+    "ai-knowledge/_deprecated/2026-06-11/obsolete-artifacts.contract.json",
+    "ai-template/_deprecated/2026-06-11/legacy-inventory.contract.json",
+    "ai-template/_deprecated/2026-06-11/historical-archive.contract.json",
+    "ai-template/_deprecated/2026-06-11/duplicate-detection.contract.json",
+    "ai-template/_deprecated/2026-06-11/obsolete-artifacts.contract.json",
+    "governance/execution/archive/ENTERPRISE-10-10-V1/W8-T5/reference-validation.contract.json",
+    "governance/execution/archive/ENTERPRISE-10-10-V1/W8-T6/legacy-audit-final.contract.json"
+  ],
+  "validators": [
+    "node scripts/validate-structure.mjs",
+    "node scripts/validate-legacy-inventory.mjs",
+    "node scripts/validate-historical-archive.mjs",
+    "node scripts/validate-duplicate-detection.mjs",
+    "node scripts/validate-obsolete-artifacts.mjs",
+    "W8-T6 read-only final archive and contract audit"
+  ],
+  "nonGoals": [
+    "no product changes",
+    "no legacy deletion",
+    "no legacy move",
+    "no runtime activation",
+    "no runtime deletion",
+    "no pipeline changes",
+    "no remote changes",
+    "no VERSION changes",
+    "no CIERRE GLOBAL closure"
+  ]
+}

@@ -1591,14 +1591,76 @@ W8-T6 es el siguiente paso elegible despues de W8-T5 Reference Validation.
 
 Estado actual:
 
-* Proximo paso vigente: W8-T6.
+* Superseded by W8-T6-LEGACY-AUDIT-FINAL.
+* Proximo paso vigente: CIERRE GLOBAL / Auditoria Final.
 
 Restricciones historicas:
 
-* no abrir W8-T6 sin instruccion explicita
-* no cerrar W8-T6 por arrastre
+* no abrir CIERRE GLOBAL sin instruccion explicita
+* no cerrar CIERRE GLOBAL por arrastre
 * no tocar W8+ sin seleccion explicita del roadmap
 * no borrar ni mover archivos legacy sin una tarea futura explicita
+* push bloqueado por politica/credenciales externas debe registrarse como CONTEXTUAL_NON_BLOCKING
+
+---
+
+## Ultima ejecucion valida
+
+Tipo:
+W8-T6-LEGACY-AUDIT-FINAL
+
+Estado:
+GOVERNANCE ONLY CLOSED
+
+Repositorio producto impactado:
+
+* N/A, auditoria read-only sin cambios producto
+
+Commits producto:
+
+* ai-foundation W8-T6 product commit: N/A
+* ai-knowledge W8-T6 product commit: N/A
+* ai-template W8-T6 product commit: N/A
+
+Validado:
+
+* W8-T1, W8-T2, W8-T3, W8-T4 y W8-T5 fueron verificados antes de cerrar W8-T6.
+* W8-T5 governance commit final `5329912` verificado como fuente de verdad local.
+* Engram W8-T5 operational checkpoint `#74` recuperado con drift no bloqueante al commit pre-amend `c4d3827`.
+* Engram W8-T5 push-attempt checkpoint `#75` verificado.
+* W8-T6 Legacy Audit Final fue leida desde roadmap local.
+* Roadmap W8-T6 valida Legacy Inventory, Historical Archive, Duplicate Detection, Obsolete Artifacts y Reference Validation.
+* Archives W8-T1..W8-T5 contienen README, SUMMARY, CHANGES, VALIDATION y EVIDENCE.
+* Contratos machine-readable producto W8-T1..W8-T4 fueron validados en `ai-foundation`, `ai-knowledge` y `ai-template`.
+* Contrato machine-readable W8-T5 `reference-validation.contract.json` validado.
+* Contrato machine-readable W8-T6 generado en `governance/execution/archive/ENTERPRISE-10-10-V1/W8-T6/legacy-audit-final.contract.json`.
+* W8 Legacy Validation queda completo.
+* No existe W8-T7 en el roadmap local.
+* CIERRE GLOBAL / Auditoria Final queda como siguiente bloque elegible.
+* CIERRE GLOBAL no fue abierto ni cerrado.
+* No se eliminaron ni movieron archivos legacy.
+* No se modificaron runtime, pipelines, remotes ni VERSION.
+
+Evidencia disponible:
+
+* governance/execution/archive/ENTERPRISE-10-10-V1/W8-T6/
+
+---
+
+## Contexto historico posterior a W8-T6
+
+CIERRE GLOBAL / Auditoria Final es el siguiente bloque elegible despues de W8-T6 Legacy Audit Final.
+
+Estado actual:
+
+* Proximo paso vigente: CIERRE GLOBAL / Auditoria Final.
+
+Restricciones historicas:
+
+* no abrir CIERRE GLOBAL sin instruccion explicita
+* no cerrar CIERRE GLOBAL por arrastre
+* no modificar producto durante auditoria final
+* no cambiar VERSION salvo autorizacion explicita
 * push bloqueado por politica/credenciales externas debe registrarse como CONTEXTUAL_NON_BLOCKING
 
 ---
@@ -1625,4 +1687,4 @@ Regla:
 * Engram es memoria auxiliar.
 * Si Engram contradice git/governance, git/governance gana.
 * Si Engram falla, registrar `CONTEXTUAL_NON_BLOCKING` y continuar con git local, roadmap, SESSION-CONTEXT y archive.
-* Proximo paso vigente: W8-T6.
+* Proximo paso vigente: CIERRE GLOBAL / Auditoria Final.

@@ -2,18 +2,18 @@
 
 Latest archived execution:
 
-W8-T5 Reference Validation.
+W8-T6 Legacy Audit Final.
 
 Result:
 
-* W8-T5 closed with governance-only reference validation, as required by the
-  roadmap note `sin cambios producto`.
+* W8-T6 closed with governance-only final audit of Workstream 8.
 * Product impact: validation only, no product file changes.
 * Product commits: N/A.
-* References across W8-T1 legacy inventory, W8-T2 historical archive, W8-T3
-  duplicate detection and W8-T4 obsolete artifact contracts were validated in
-  `ai-foundation`, `ai-knowledge` and `ai-template`.
-* Dependency map and consistency contract are documented in the W8-T5 archive.
-* W8-T6 is the next eligible task.
-* W8-T6 is not opened or closed in the roadmap.
-* W8+ future tasks are not closed.
+* Legacy Inventory, Historical Archive, Duplicate Detection, Obsolete Artifacts
+  and Reference Validation were validated as a complete W8 chain.
+* W8-T1 through W8-T5 governance archives are complete.
+* Product machine-readable legacy contracts are present in `ai-foundation`,
+  `ai-knowledge` and `ai-template`.
+* W8 Legacy Validation is complete.
+* CIERRE GLOBAL - Auditoria Final is the next eligible block.
+* CIERRE GLOBAL was not opened or closed.
