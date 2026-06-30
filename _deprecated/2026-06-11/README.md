@@ -54,3 +54,19 @@ Artifacts:
 
 The next eligible roadmap task is W8-T4. W8-T4 is not opened or closed by this
 duplicate detection report.
+
+## W8-T4 Obsolete Artifacts
+
+W8-T4 defines obsolete artifact policy, deprecation model, and lifecycle rules
+for this deprecated knowledge surface. Obsolete artifacts remain retained in
+place; no physical movement, deletion, or promotion is performed.
+
+Artifacts:
+
+* `obsolete-artifacts.md` documents the obsolete policy, deprecation model,
+  lifecycle rules, and non-action guardrails for this repository.
+* `obsolete-artifacts.contract.json` provides the machine-readable obsolete
+  artifact contract used by `scripts/validate-obsolete-artifacts.mjs`.
+
+The next eligible roadmap task is W8-T5. W8-T5 is not opened or closed by this
+obsolete artifact policy.

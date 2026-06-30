@@ -52,7 +52,10 @@ for (const file of coverage.tasks["W8-T3"]) assert(exists(file), `W8-T3 maps mis
 assert(coverage.taskStates["W8-T1"] === "IMPLEMENTED", "W8-T1 must remain IMPLEMENTED");
 assert(coverage.taskStates["W8-T2"] === "IMPLEMENTED", "W8-T2 must remain IMPLEMENTED");
 assert(coverage.taskStates["W8-T3"] === "IMPLEMENTED", "W8-T3 must be IMPLEMENTED in product coverage");
-assert(!coverage.taskStates["W8-T4"], "W8-T3 must not close W8-T4 in product coverage");
+assert(
+  !coverage.taskStates["W8-T4"] || coverage.taskStates["W8-T4"] === "IMPLEMENTED",
+  "W8-T4 must be absent or implemented by its own task in product coverage"
+);
 assert(roadmapToFiles.includes("| W8-T3 | Duplicate Detection |"), "roadmap-to-files missing W8-T3");
 assert(roadmapToFiles.includes("duplicate-detection.contract.json"), "roadmap-to-files missing duplicate detection contract");
 assert(roadmapToFiles.includes("validate-duplicate-detection.mjs"), "roadmap-to-files missing duplicate detection validator");
