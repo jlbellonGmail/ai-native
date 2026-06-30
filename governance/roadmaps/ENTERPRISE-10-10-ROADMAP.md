@@ -1894,7 +1894,10 @@ Notas:
 Duplicate Detection
 
 Estado:
-[ ]
+[x]
+
+Fecha cierre:
+2026-06-29
 
 Entregables:
 
@@ -1911,8 +1914,16 @@ Evidencia:
 Notas:
 
 * sin eliminación automática.
+* repos producto impactados: `ai-foundation`, `ai-knowledge`, `ai-template`.
+* commits producto: `ai-foundation` `d595cd2`, `ai-knowledge` `2054ea1`, `ai-template` `ed25c94`.
+* duplication rules, detection contract y classification report documentados en cada repo.
+* artefacto machine-readable `duplicate-detection.contract.json` generado en cada repo.
+* validador dedicado `scripts/validate-duplicate-detection.mjs` agregado y ejecutado en cada repo.
 * W8-T4 queda como siguiente tarea elegible.
-* no se ejecuto commit, push ni Engram.
+* W8-T4 no fue abierta ni cerrada.
+* W8+ futuras no fueron cerradas.
+* no se eliminaron ni movieron archivos legacy.
+* no se modificaron runtime, pipelines, remotes ni VERSION.
 
 ---
 

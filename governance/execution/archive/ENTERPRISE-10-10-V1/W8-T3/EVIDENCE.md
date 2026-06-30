@@ -1,5 +1,14 @@
 # EVIDENCE
 
+W8-T1/W8-T2 gate:
+
+* W8-T1 governance commit verified in root log: `312c813`
+* W8-T2 governance commit verified in root log: `36cf993`
+* W8-T2 Engram operational checkpoint `#68` verified.
+* W8-T2 Engram push-attempt checkpoint `#69` verified.
+* Roadmap confirmed W8-T1 and W8-T2 closed and W8-T3 open/next eligible before
+  implementation.
+
 Product commits:
 
 * ai-foundation: `d595cd2`
@@ -23,10 +32,10 @@ Validation artifacts:
 
 Duplicate detection scope:
 
-* duplication rules defined for deprecated surfaces in all three product repos
+* duplication rules defined per repo
 * classification report documented per repo
 * detection contract generated per repo
-* machine-readable artifact generated per repo
+* duplicate/overlap patterns classified without automatic removal
 * W8-T4 kept unopened and not closed
 
 Non-goals preserved:
@@ -46,11 +55,3 @@ Previous push context:
 
 * W6-T3 through W8-T2 pushes were `CONTEXTUAL_NON_BLOCKING` due external
   policy/unverified remote.
-
-Pre-task gate context:
-
-* W8-T1 root governance commit `312c813` verified.
-* W8-T2 root governance commit `36cf993` verified.
-* Engram W8-T2 operational checkpoint `#68` verified.
-* Engram W8-T2 push-attempt checkpoint `#69` verified.
-* W8-T3 confirmed as next eligible before implementation.

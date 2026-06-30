@@ -2,11 +2,11 @@
 
 Latest execution:
 
-`ENTERPRISE-10-10 W8-T2 Historical Archive`
+`ENTERPRISE-10-10 W8-T3 Duplicate Detection`
 
 Archive:
 
-`governance/execution/archive/ENTERPRISE-10-10-V1/W8-T2/`
+`governance/execution/archive/ENTERPRISE-10-10-V1/W8-T3/`
 
 Final realignment archive:
 
@@ -14,15 +14,15 @@ Final realignment archive:
 
 Workstream status:
 
-`W8 Legacy Validation has W8-T1 and W8-T2 closed`
+`W8 Legacy Validation has W8-T1, W8-T2 and W8-T3 closed`
 
 Next eligible task:
 
-`W8-T3`
+`W8-T4`
 
 Guardrails:
 
-* W8-T2 closed only.
-* W8-T3 was not opened or closed.
+* W8-T3 closed only.
+* W8-T4 was not opened or closed.
 * W8+ future tasks were not closed.
-* Legacy files were archived in place, not deleted or moved.
+* Duplicates were classified, not deleted or moved.

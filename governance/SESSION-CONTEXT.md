@@ -1400,12 +1400,77 @@ W8-T3 es el siguiente paso elegible despues de W8-T2 Historical Archive.
 
 Estado actual:
 
-* Proximo paso vigente: W8-T3.
+* Superseded by W8-T3-DUPLICATE-DETECTION.
+* Proximo paso vigente: W8-T4.
 
 Restricciones historicas:
 
-* no abrir W8-T3 sin instruccion explicita
-* no cerrar W8-T3 por arrastre
+* no abrir W8-T4 sin instruccion explicita
+* no cerrar W8-T4 por arrastre
+* no tocar W8+ sin seleccion explicita del roadmap
+* no borrar ni mover archivos legacy sin una tarea futura explicita
+* push bloqueado por politica/credenciales externas debe registrarse como CONTEXTUAL_NON_BLOCKING
+
+---
+
+## Ultima ejecucion valida
+
+Tipo:
+W8-T3-DUPLICATE-DETECTION
+
+Estado:
+PRODUCT IMPLEMENTED AND GOVERNANCE CLOSED
+
+Repositorio producto impactado:
+
+* ai-foundation
+* ai-knowledge
+* ai-template
+
+Commits producto:
+
+* ai-foundation W8-T3 product commit: `d595cd2`
+* ai-knowledge W8-T3 product commit: `2054ea1`
+* ai-template W8-T3 product commit: `ed25c94`
+
+Validado:
+
+* W8-T1 y W8-T2 fueron verificados antes de abrir W8-T3.
+* Engram W8-T2 operational checkpoint `#68` verificado.
+* Engram W8-T2 push-attempt checkpoint `#69` verificado.
+* W8-T3 Duplicate Detection tiene duplication rules, detection contract, classification report y contrato machine-readable en los tres repos producto.
+* `duplicate-detection.md` documenta reglas, clasificacion y non-actions por repo.
+* `duplicate-detection.contract.json` registra la deteccion machine-readable por repo.
+* `scripts/validate-duplicate-detection.mjs` valida contrato, paths legacy existentes, coverage, matriz roadmap -> archivos y que W8-T4 no queda cerrada en coverage producto.
+* `scripts/validate-historical-archive.mjs` fue ajustado para permitir W8-T3 cuando queda implementada por su propia tarea posterior.
+* No se eliminaron ni movieron archivos legacy.
+* No se modificaron runtime, pipelines, remotes ni VERSION.
+* Validaciones producto PASS en `ai-foundation`, `ai-knowledge` y `ai-template`.
+* `ai-foundation` lint tuvo warnings preexistentes sin errores.
+* `ai-knowledge` no tiene `package.json`, por lo tanto scripts npm: N/A.
+* W8-T4 queda como siguiente tarea elegible.
+* W8-T4 no fue abierta.
+* W8-T4 no fue cerrada.
+* W8+ futuras no fueron cerradas.
+
+Evidencia disponible:
+
+* governance/execution/archive/ENTERPRISE-10-10-V1/W8-T3/
+
+---
+
+## Contexto historico posterior a W8-T3
+
+W8-T4 es el siguiente paso elegible despues de W8-T3 Duplicate Detection.
+
+Estado actual:
+
+* Proximo paso vigente: W8-T4.
+
+Restricciones historicas:
+
+* no abrir W8-T4 sin instruccion explicita
+* no cerrar W8-T4 por arrastre
 * no tocar W8+ sin seleccion explicita del roadmap
 * no borrar ni mover archivos legacy sin una tarea futura explicita
 * push bloqueado por politica/credenciales externas debe registrarse como CONTEXTUAL_NON_BLOCKING
@@ -1434,4 +1499,4 @@ Regla:
 * Engram es memoria auxiliar.
 * Si Engram contradice git/governance, git/governance gana.
 * Si Engram falla, registrar `CONTEXTUAL_NON_BLOCKING` y continuar con git local, roadmap, SESSION-CONTEXT y archive.
-* Proximo paso vigente: W8-T3.
+* Proximo paso vigente: W8-T4.
