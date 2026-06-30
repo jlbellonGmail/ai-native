@@ -2,18 +2,17 @@
 
 Latest archived execution:
 
-W8-T6 Legacy Audit Final.
+GLOBAL-FINAL-AUDIT Auditoria Final.
 
 Result:
 
-* W8-T6 closed with governance-only final audit of Workstream 8.
+* ENTERPRISE-10-10-V1 globally closed with governance-only final audit.
 * Product impact: validation only, no product file changes.
 * Product commits: N/A.
-* Legacy Inventory, Historical Archive, Duplicate Detection, Obsolete Artifacts
-  and Reference Validation were validated as a complete W8 chain.
-* W8-T1 through W8-T5 governance archives are complete.
-* Product machine-readable legacy contracts are present in `ai-foundation`,
-  `ai-knowledge` and `ai-template`.
-* W8 Legacy Validation is complete.
-* CIERRE GLOBAL - Auditoria Final is the next eligible block.
-* CIERRE GLOBAL was not opened or closed.
+* W1 through W8 were verified closed from the local roadmap.
+* W8-T6 Legacy Audit Final was verified as the last W8 task.
+* W8-T7 does not exist in the local roadmap.
+* Final score recorded as 10 / 10 based on roadmap workstream closure evidence.
+* Enterprise AI-Native Certification marked completed.
+* Final archive and machine-readable global final audit contract were created.
+* Next eligible action: NONE - ENTERPRISE-10-10-V1 globally closed.
