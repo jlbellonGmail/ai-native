@@ -1,5 +1,17 @@
 # EVIDENCE
 
+Pre-task gate:
+
+* root/governance clean at gate with W8-T3 commit `d050cd1`.
+* ai-foundation clean at gate with W8-T3 commit `d595cd2`.
+* ai-knowledge clean at gate with W8-T3 commit `2054ea1`.
+* ai-template clean at gate with W8-T3 commit `ed25c94`.
+* Roadmap confirmed W8-T1, W8-T2 and W8-T3 closed.
+* Roadmap confirmed W8-T4 open and next eligible.
+* Roadmap confirmed W8-T5 open.
+* Engram W8-T3 operational checkpoint `#70` verified.
+* Engram W8-T3 push-attempt checkpoint `#71` verified.
+
 Product commits:
 
 * ai-foundation: `aadab8c`
@@ -23,10 +35,10 @@ Validation artifacts:
 
 Obsolete artifact scope:
 
-* obsolete policy defined for deprecated surfaces in all three product repos
+* obsolete policy defined per repo
 * deprecation model documented per repo
 * lifecycle rules documented per repo
-* machine-readable artifact generated per repo
+* obsolete artifact contract generated per repo
 * W8-T5 kept unopened and not closed in the roadmap
 
 Non-goals preserved:
@@ -39,18 +51,9 @@ Non-goals preserved:
 * no pipeline modification
 * no remote configuration modification
 * no VERSION modification
-* no W8-T5 roadmap opening
 * no W8-T5 roadmap closure
-* no W8+ future task closure
 
 Previous push context:
 
 * W6-T3 through W8-T3 pushes were `CONTEXTUAL_NON_BLOCKING` due external
   policy/unverified remote.
-
-Pre-task gate context:
-
-* W8-T3 root governance commit `d050cd1` verified.
-* Engram W8-T3 operational checkpoint `#70` verified.
-* Engram W8-T3 push-attempt checkpoint `#71` verified.
-* W8-T4 confirmed as next eligible before implementation.

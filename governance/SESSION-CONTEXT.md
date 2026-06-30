@@ -1465,12 +1465,77 @@ W8-T4 es el siguiente paso elegible despues de W8-T3 Duplicate Detection.
 
 Estado actual:
 
-* Proximo paso vigente: W8-T4.
+* Superseded by W8-T4-OBSOLETE-ARTIFACTS.
+* Proximo paso vigente: W8-T5.
 
 Restricciones historicas:
 
-* no abrir W8-T4 sin instruccion explicita
-* no cerrar W8-T4 por arrastre
+* no abrir W8-T5 sin instruccion explicita
+* no cerrar W8-T5 por arrastre
+* no tocar W8+ sin seleccion explicita del roadmap
+* no borrar ni mover archivos legacy sin una tarea futura explicita
+* push bloqueado por politica/credenciales externas debe registrarse como CONTEXTUAL_NON_BLOCKING
+
+---
+
+## Ultima ejecucion valida
+
+Tipo:
+W8-T4-OBSOLETE-ARTIFACTS
+
+Estado:
+PRODUCT IMPLEMENTED AND GOVERNANCE CLOSED
+
+Repositorio producto impactado:
+
+* ai-foundation
+* ai-knowledge
+* ai-template
+
+Commits producto:
+
+* ai-foundation W8-T4 product commit: `aadab8c`
+* ai-knowledge W8-T4 product commit: `e1a3820`
+* ai-template W8-T4 product commit: `046ab7a`
+
+Validado:
+
+* W8-T1, W8-T2 y W8-T3 fueron verificados antes de abrir W8-T4.
+* Engram W8-T3 operational checkpoint `#70` verificado.
+* Engram W8-T3 push-attempt checkpoint `#71` verificado.
+* W8-T4 Obsolete Artifacts tiene obsolete policy, deprecation model, lifecycle rules y contrato machine-readable en los tres repos producto.
+* `obsolete-artifacts.md` documenta politica, modelo de deprecacion, lifecycle rules y non-actions por repo.
+* `obsolete-artifacts.contract.json` registra obsolescencia machine-readable por repo.
+* `scripts/validate-obsolete-artifacts.mjs` valida contrato, paths legacy existentes, coverage, matriz roadmap -> archivos y que W8-T5 no queda cerrada como `IMPLEMENTED` en coverage producto.
+* `scripts/validate-duplicate-detection.mjs` fue ajustado para permitir W8-T4 cuando queda implementada por su propia tarea posterior.
+* No se eliminaron ni movieron archivos legacy.
+* No se modificaron runtime, pipelines, remotes ni VERSION.
+* Validaciones producto PASS en `ai-foundation`, `ai-knowledge` y `ai-template`.
+* `ai-foundation` lint tuvo warnings preexistentes sin errores.
+* `ai-knowledge` no tiene `package.json`, por lo tanto scripts npm/pnpm: N/A.
+* `ai-template` pnpm fue bloqueado por controles locales de dependencias/build approval antes de ejecutar scripts; scripts npm equivalentes PASS.
+* W8-T5 queda como siguiente tarea elegible.
+* W8-T5 no fue abierta ni cerrada en roadmap.
+* W8+ futuras no fueron cerradas.
+
+Evidencia disponible:
+
+* governance/execution/archive/ENTERPRISE-10-10-V1/W8-T4/
+
+---
+
+## Contexto historico posterior a W8-T4
+
+W8-T5 es el siguiente paso elegible despues de W8-T4 Obsolete Artifacts.
+
+Estado actual:
+
+* Proximo paso vigente: W8-T5.
+
+Restricciones historicas:
+
+* no abrir W8-T5 sin instruccion explicita
+* no cerrar W8-T5 por arrastre
 * no tocar W8+ sin seleccion explicita del roadmap
 * no borrar ni mover archivos legacy sin una tarea futura explicita
 * push bloqueado por politica/credenciales externas debe registrarse como CONTEXTUAL_NON_BLOCKING
@@ -1499,4 +1564,4 @@ Regla:
 * Engram es memoria auxiliar.
 * Si Engram contradice git/governance, git/governance gana.
 * Si Engram falla, registrar `CONTEXTUAL_NON_BLOCKING` y continuar con git local, roadmap, SESSION-CONTEXT y archive.
-* Proximo paso vigente: W8-T4.
+* Proximo paso vigente: W8-T5.

@@ -1932,7 +1932,10 @@ Notas:
 Obsolete Artifacts
 
 Estado:
-[ ]
+[x]
+
+Fecha cierre:
+2026-06-30
 
 Entregables:
 
@@ -1949,8 +1952,16 @@ Evidencia:
 Notas:
 
 * sin borrado runtime.
+* repos producto impactados: `ai-foundation`, `ai-knowledge`, `ai-template`.
+* commits producto: `ai-foundation` `aadab8c`, `ai-knowledge` `e1a3820`, `ai-template` `046ab7a`.
+* obsolete policy, deprecation model y lifecycle rules documentados en cada repo.
+* artefacto machine-readable `obsolete-artifacts.contract.json` generado en cada repo.
+* validador dedicado `scripts/validate-obsolete-artifacts.mjs` agregado y ejecutado en cada repo.
 * W8-T5 queda como siguiente tarea elegible.
-* no se ejecuto commit, push ni Engram.
+* W8-T5 no fue abierta ni cerrada en roadmap.
+* W8+ futuras no fueron cerradas.
+* no se eliminaron ni movieron archivos legacy.
+* no se modificaron runtime, pipelines, remotes ni VERSION.
 
 ---
 
