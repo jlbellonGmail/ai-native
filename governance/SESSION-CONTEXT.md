@@ -693,6 +693,10 @@ Repositorio producto impactado:
 
 * ai-template
 
+Commit producto:
+
+* ai-template H2 product commit: `5e4d3c9`
+
 Commits producto:
 
 * ai-template W6-T1 product commit: `5ffe94b`
@@ -1786,5 +1790,64 @@ Evidencia disponible:
 Restricciones vigentes:
 
 * no abrir H2 sin instruccion explicita en una ejecucion separada
+* no reabrir ENTERPRISE-10-10-V1
+* no crear ENTERPRISE-10-10-V2
+
+---
+
+## Ultima ejecucion valida
+
+Tipo:
+AI-NATIVE-HARDENING-V1.1 H2
+
+Estado:
+PROJECT GENERATOR CLOSED LOCALLY
+
+Repositorio producto impactado:
+
+* ai-template
+
+Validado:
+
+* H2 - Project Generator / create-ai-native-app fue recuperada desde un working
+  tree sucio esperado por interrupcion previa.
+* Los cambios existentes pertenecian a H2 y no habia cambios fuera de alcance.
+* `ai-foundation` permanecio read-only y sin cambios.
+* `ai-knowledge` permanecio read-only y sin cambios.
+* `create-ai-native-app` quedo como generador local ejecutable.
+* El generador acepta `--name`, `--dest`, `--target`, `--preset`,
+  `--dry-run` y `--help`.
+* El generador rechaza nombres invalidos y destinos existentes.
+* Se agrego scaffold materializado en `ai-template/scaffolds/ai-native-app/files/`.
+* El proyecto generado referencia el flujo H1 SDD
+  `Specify -> Plan -> Implement -> Verify`.
+* Se agrego contrato machine-readable en
+  `ai-template/generators/create-ai-native-app/create-ai-native-app.contract.json`.
+* Se agregaron validadores locales:
+  `ai-template/scripts/validate-create-ai-native-app.mjs` y
+  `ai-template/scripts/validate-generated-project.mjs`.
+* Validaciones H2 PASS:
+  `node generators/create-ai-native-app.mjs --help`,
+  `node scripts/validate-create-ai-native-app.mjs`,
+  `node scripts/validate-structure.mjs`,
+  `node scripts/validate-enterprise-template.mjs`,
+  `git diff --check`,
+  smoke generation,
+  generated project validation.
+* H3-H8 no fueron abiertas.
+* ENTERPRISE-10-10-V1 permanece cerrado.
+* ENTERPRISE-10-10-V2 no fue creado.
+* HITL queda REQUIRED para aprobacion humana final.
+* Engram post-task guardado como observacion `#81`.
+* Push a remotos GitHub bloqueado por revision de riesgo local antes de ejecutar:
+  CONTEXTUAL_NON_BLOCKING.
+
+Evidencia disponible:
+
+* governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H2/
+
+Restricciones vigentes:
+
+* no abrir H3 sin instruccion explicita en una ejecucion separada
 * no reabrir ENTERPRISE-10-10-V1
 * no crear ENTERPRISE-10-10-V2

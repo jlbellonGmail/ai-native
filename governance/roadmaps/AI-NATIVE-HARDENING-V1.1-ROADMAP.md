@@ -180,6 +180,19 @@ ai-template/validation/sdd-validation.md
 
 ## H2 — Project Generator / create-ai-native-app
 
+Status:
+
+```text
+[x] CLOSED
+Closed at: 2026-07-01
+Product repo: ai-template
+Product scope: create-ai-native-app generator only
+Governance archive: governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H2/
+Next eligible: H3 — Runtime Observability Wiring
+H3 opened: NO
+HITL: REQUIRED
+```
+
 ### Objective
 
 Turn `ai-template` from a validated scaffold into a practical project bootstrap path.
@@ -224,6 +237,24 @@ ai-template/scripts/validate-generated-project.mjs
 ### Closure Condition
 
 `H2` is closed only when `ai-template` can produce or clearly materialize a new AI-Native project baseline.
+
+### Closure Evidence
+
+* `create-ai-native-app` completed as a local CLI-style generator in `ai-template`.
+* Generator accepts `--name`, `--dest`, `--target`, `--preset`, `--dry-run` and `--help`.
+* Invalid project names and existing destinations are rejected.
+* Generated project baseline includes README, manifest, base config, docs, services and validation.
+* Generated project references H1 SDD flow `Specify -> Plan -> Implement -> Verify`.
+* Machine-readable generator contract added at
+  `ai-template/generators/create-ai-native-app/create-ai-native-app.contract.json`.
+* Local generator validator added at
+  `ai-template/scripts/validate-create-ai-native-app.mjs`.
+* Generated project validator added at
+  `ai-template/scripts/validate-generated-project.mjs`.
+* Real smoke project generated and validated under `C:\tmp\ai-native-h2-smoke`.
+* H3-H8 were not opened.
+* `ENTERPRISE-10-10-V1` was not reopened.
+* `ENTERPRISE-10-10-V2` was not created.
 
 ---
 

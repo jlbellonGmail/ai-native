@@ -1,29 +1,24 @@
-# Current Execution
+# H2 - Project Generator / create-ai-native-app
 
-Latest execution:
+Current execution snapshot for `AI-NATIVE HARDENING-V1.1`.
 
-`ENTERPRISE-10-10 GLOBAL-FINAL-AUDIT Auditoria Final`
+Status:
 
-Archive:
+```text
+H2: CLOSED_LOCALLY
+HITL: REQUIRED
+H3 opened: NO
+```
 
-`governance/execution/archive/ENTERPRISE-10-10-V1/GLOBAL-FINAL-AUDIT/`
+Scope:
 
-Final realignment archive:
+* complete `create-ai-native-app` in `ai-template`
+* generate an AI-Native project baseline
+* validate generated structure and SDD references
+* archive H2 governance evidence
 
-`governance/execution/archive/ENTERPRISE-10-10-V1/REPO-REALIGNMENT-FINAL/`
+Non-goals:
 
-Workstream status:
-
-`ENTERPRISE-10-10-V1 globally closed with W1 through W8 complete`
-
-Next eligible task:
-
-`NONE - ENTERPRISE-10-10-V1 globally closed`
-
-Guardrails:
-
-* Global final audit closed only.
-* No W8-T7 exists in the local roadmap.
-* No product files were changed.
-* Runtime, pipelines, remotes and VERSION were not modified.
-* No future roadmap task was invented.
+* H3-H8 execution
+* reopening `ENTERPRISE-10-10-V1`
+* creating `ENTERPRISE-10-10-V2`

@@ -1,32 +1,7 @@
 # CHANGES
 
-GLOBAL-FINAL-AUDIT governance-only closure:
+See archive:
 
-* `governance/execution/archive/ENTERPRISE-10-10-V1/GLOBAL-FINAL-AUDIT/README.md`
-* `governance/execution/archive/ENTERPRISE-10-10-V1/GLOBAL-FINAL-AUDIT/SUMMARY.md`
-* `governance/execution/archive/ENTERPRISE-10-10-V1/GLOBAL-FINAL-AUDIT/CHANGES.md`
-* `governance/execution/archive/ENTERPRISE-10-10-V1/GLOBAL-FINAL-AUDIT/VALIDATION.md`
-* `governance/execution/archive/ENTERPRISE-10-10-V1/GLOBAL-FINAL-AUDIT/EVIDENCE.md`
-* `governance/execution/archive/ENTERPRISE-10-10-V1/GLOBAL-FINAL-AUDIT/global-final-audit.contract.json`
-
-Updated governance continuity:
-
-* `governance/roadmaps/ENTERPRISE-10-10-ROADMAP.md`
-* `governance/roadmaps/roadmap-status.json`
-* `governance/SESSION-CONTEXT.md`
-* `governance/execution/current/README.md`
-* `governance/execution/current/CHANGES.md`
-* `governance/execution/current/EVIDENCE.md`
-* `governance/execution/current/SUMMARY.md`
-* `governance/execution/current/VALIDATION.md`
-
-No product files were changed because W8-T6 is a final audit over existing W8
-evidence and the global final audit roadmap notes prohibit product changes.
-
-No legacy artifact was deleted or moved.
-
-No workflow, runtime, pipeline, remote configuration or VERSION file was
-modified.
-
-CIERRE GLOBAL / Auditoria Final is complete. ENTERPRISE-10-10-V1 is globally
-closed and no next task is eligible.
+```text
+governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H2/CHANGES.md
+```

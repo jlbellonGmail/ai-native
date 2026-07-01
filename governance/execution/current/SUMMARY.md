@@ -1,18 +1,18 @@
 # SUMMARY
 
-Latest archived execution:
-
-GLOBAL-FINAL-AUDIT Auditoria Final.
+H2 - Project Generator / create-ai-native-app is closed locally and awaiting HITL.
 
 Result:
 
-* ENTERPRISE-10-10-V1 globally closed with governance-only final audit.
-* Product impact: validation only, no product file changes.
-* Product commits: N/A.
-* W1 through W8 were verified closed from the local roadmap.
-* W8-T6 Legacy Audit Final was verified as the last W8 task.
-* W8-T7 does not exist in the local roadmap.
-* Final score recorded as 10 / 10 based on roadmap workstream closure evidence.
-* Enterprise AI-Native Certification marked completed.
-* Final archive and machine-readable global final audit contract were created.
-* Next eligible action: NONE - ENTERPRISE-10-10-V1 globally closed.
+* Generator implemented in `ai-template`.
+* Generated project baseline validated.
+* Smoke test PASS.
+* H3-H8 not opened.
+* `ENTERPRISE-10-10-V1` remains closed.
+* `ENTERPRISE-10-10-V2` was not created.
+
+Next eligible task after HITL:
+
+* H3 - Runtime Observability Wiring
+
+H3 is not opened by this execution.
