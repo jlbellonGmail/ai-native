@@ -5,8 +5,8 @@ Current execution snapshot for `AI-NATIVE HARDENING-V1.1`.
 Status:
 
 ```text
-H2: CLOSED_LOCALLY
-HITL: REQUIRED
+H2: HITL_APPROVED
+HITL approved at: 2026-07-01
 H3 opened: NO
 ```
 

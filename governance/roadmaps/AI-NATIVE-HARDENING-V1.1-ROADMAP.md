@@ -190,7 +190,8 @@ Product scope: create-ai-native-app generator only
 Governance archive: governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H2/
 Next eligible: H3 — Runtime Observability Wiring
 H3 opened: NO
-HITL: REQUIRED
+HITL: APPROVED
+HITL approved at: 2026-07-01
 ```
 
 ### Objective

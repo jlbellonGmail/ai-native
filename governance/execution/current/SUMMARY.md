@@ -1,6 +1,6 @@
 # SUMMARY
 
-H2 - Project Generator / create-ai-native-app is closed locally and awaiting HITL.
+H2 - Project Generator / create-ai-native-app is HITL approved.
 
 Result:
 
@@ -11,7 +11,7 @@ Result:
 * `ENTERPRISE-10-10-V1` remains closed.
 * `ENTERPRISE-10-10-V2` was not created.
 
-Next eligible task after HITL:
+Next eligible task in a separate execution:
 
 * H3 - Runtime Observability Wiring
 

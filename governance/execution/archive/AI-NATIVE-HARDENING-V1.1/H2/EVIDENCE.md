@@ -69,6 +69,15 @@ H2 non-goals preserved:
 * `ENTERPRISE-10-10-V1` not reopened.
 * `ENTERPRISE-10-10-V2` not created.
 
+HITL approval:
+
+```text
+H2: HITL APPROVED
+Approved at: 2026-07-01
+H3: NOT_OPENED
+Note: H3 requires a separate execution, prompt, gate and scope.
+```
+
 Engram:
 
 ```text

@@ -6,7 +6,13 @@ Current evidence points to:
 governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H2/
 ```
 
-HITL remains required before treating H2 as human-approved.
+HITL approval:
+
+```text
+H2: HITL APPROVED
+Approved at: 2026-07-01
+H3 opened: NO
+```
 
 Engram post-task:
 

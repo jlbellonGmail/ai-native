@@ -24,4 +24,6 @@ H3 is not opened by this closure.
 
 HITL:
 
-* REQUIRED before treating H2 as human-approved.
+* APPROVED on 2026-07-01.
+
+H3 is next eligible but was not opened by this approval.

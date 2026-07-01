@@ -1801,7 +1801,7 @@ Tipo:
 AI-NATIVE-HARDENING-V1.1 H2
 
 Estado:
-PROJECT GENERATOR CLOSED LOCALLY
+PROJECT GENERATOR HITL APPROVED
 
 Repositorio producto impactado:
 
@@ -1837,7 +1837,7 @@ Validado:
 * H3-H8 no fueron abiertas.
 * ENTERPRISE-10-10-V1 permanece cerrado.
 * ENTERPRISE-10-10-V2 no fue creado.
-* HITL queda REQUIRED para aprobacion humana final.
+* HITL aprobado humanamente el 2026-07-01.
 * Engram post-task guardado como observacion `#81`.
 * Push a remotos GitHub bloqueado por revision de riesgo local antes de ejecutar:
   CONTEXTUAL_NON_BLOCKING.
@@ -1848,6 +1848,8 @@ Evidencia disponible:
 
 Restricciones vigentes:
 
-* no abrir H3 sin instruccion explicita en una ejecucion separada
+* H3 - Runtime Observability Wiring queda como proxima tarea elegible
+* no abrir H3 dentro de esta misma ejecucion
+* H3 requiere ejecucion separada con prompt propio, gate inicial y alcance independiente
 * no reabrir ENTERPRISE-10-10-V1
 * no crear ENTERPRISE-10-10-V2
