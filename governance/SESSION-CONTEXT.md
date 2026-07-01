@@ -1744,3 +1744,47 @@ Regla:
 * Si Engram contradice git/governance, git/governance gana.
 * Si Engram falla, registrar `CONTEXTUAL_NON_BLOCKING` y continuar con git local, roadmap, SESSION-CONTEXT y archive.
 * Proximo paso vigente: NONE - ENTERPRISE-10-10-V1 globally closed.
+
+---
+
+## Ultima ejecucion valida
+
+Tipo:
+AI-NATIVE-HARDENING-V1.1 H1
+
+Estado:
+SDD PACKAGE CLOSED
+
+Repositorio producto impactado:
+
+* ai-knowledge
+
+Validado:
+
+* H1 - SDD Package fue leida desde
+  `governance/roadmaps/AI-NATIVE-HARDENING-V1.1-ROADMAP.md`.
+* H1 estaba abierta y era la primera tarea elegible del roadmap HARDENING-V1.1.
+* Se agrego paquete SDD canonico en `ai-knowledge/sdd/`.
+* El flujo canonico quedo definido como `Specify -> Plan -> Implement -> Verify`.
+* Se agregaron templates de spec, plan, implementation y verification.
+* Se agregaron gates `SPEC_READY`, `PLAN_READY`, `IMPLEMENTATION_READY`,
+  `VERIFICATION_READY` y `DONE`.
+* Se agrego contrato machine-readable en
+  `ai-knowledge/sdd/contracts/sdd-package.contract.json`.
+* Se agrego validador local en
+  `ai-knowledge/sdd/validation/validate-sdd-package.mjs`.
+* H2 - Project Generator / create-ai-native-app queda como proxima elegible.
+* H2 no fue abierta.
+* H3-H8 no fueron abiertas.
+* ENTERPRISE-10-10-V1 permanece cerrado.
+* ENTERPRISE-10-10-V2 no fue creado.
+
+Evidencia disponible:
+
+* governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H1/
+
+Restricciones vigentes:
+
+* no abrir H2 sin instruccion explicita en una ejecucion separada
+* no reabrir ENTERPRISE-10-10-V1
+* no crear ENTERPRISE-10-10-V2
