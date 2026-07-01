@@ -14,6 +14,7 @@ to decide whether AI-native work is acceptable.
 | `datasets/` | Dataset registry and synthetic evaluation samples. |
 | `scoring/` | Rubrics, weights and pass/review/fail decision thresholds. |
 | `quality-gates/` | Product quality gates derived from evaluation and scoring rules. |
+| `sdd/` | Canonical Spec-Driven Development package, templates, gates and validator. |
 | `registries/` | Prompt, agent and knowledge registries. |
 | `docs/` | Standards, architecture, compliance, onboarding, runbooks and roadmap mapping. |
 | `config/` | Machine-readable schemas and policies. |
@@ -26,6 +27,7 @@ to decide whether AI-native work is acceptable.
 ```bash
 node scripts/validate-enterprise-evaluation.mjs
 node scripts/validate-structure.mjs
+node sdd/validation/validate-sdd-package.mjs
 ```
 
 ## ENTERPRISE-10-10 coverage
