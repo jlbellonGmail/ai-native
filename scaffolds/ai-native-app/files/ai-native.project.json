@@ -1,0 +1,22 @@
+{
+  "projectName": "__PROJECT_NAME__",
+  "preset": "__PROJECT_PRESET__",
+  "generator": "create-ai-native-app",
+  "generatorTask": "AI-NATIVE-HARDENING-V1.1/H2",
+  "baseline": "ai-native-app",
+  "sdd": {
+    "source": "ai-knowledge/sdd",
+    "flow": ["Specify", "Plan", "Implement", "Verify"],
+    "gates": [
+      "SPEC_READY",
+      "PLAN_READY",
+      "IMPLEMENTATION_READY",
+      "VERIFICATION_READY",
+      "DONE"
+    ]
+  },
+  "validation": {
+    "command": "npm run validate",
+    "validator": "scripts/validate-ai-native-project.mjs"
+  }
+}

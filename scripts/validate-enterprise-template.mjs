@@ -15,6 +15,7 @@ assert(manifest.status === "PRODUCT_REPAIRED", "template manifest must be PRODUC
 assert(Array.isArray(manifest.templates) && manifest.templates.length === 3, "manifest must define three repair templates");
 assert(structure.requiredDirectories.includes("scaffolds"), "structure manifest must include scaffolds");
 assert(structure.scaffolds.some((scaffold) => scaffold.id === "ai-native-app"), "ai-native-app scaffold must be registered");
+assert(structure.generators.some((generator) => generator.id === "create-ai-native-app"), "create-ai-native-app generator must be registered");
 
 const repairedTasks = new Set(manifest.templates.flatMap((template) => template.repairs));
 for (const task of ["W1-T7", "W2-T1", "W2-T8", "W3-T1", "W3-T7"]) {

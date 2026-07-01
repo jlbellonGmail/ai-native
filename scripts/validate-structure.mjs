@@ -14,10 +14,16 @@ const requiredFiles = [
   "validation/strategy.md",
   "scaffolds/README.md",
   "scaffolds/ai-native-app/README.md",
+  "scaffolds/ai-native-app/files/README.md",
   "templates/README.md",
   "manifests/enterprise-10-10-structure.json",
   "examples/README.md",
-  "generators/create-ai-native-app.mjs"
+  "generators/README.md",
+  "generators/create-ai-native-app.mjs",
+  "generators/create-ai-native-app/create-ai-native-app.contract.json",
+  "docs/setup/PROJECT_BOOTSTRAP.md",
+  "scripts/validate-create-ai-native-app.mjs",
+  "scripts/validate-generated-project.mjs"
 ];
 
 function assert(condition, message) {

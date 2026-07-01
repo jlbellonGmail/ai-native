@@ -18,7 +18,18 @@
     "W8-T2": ["_deprecated/2026-06-11/README.md", "_deprecated/2026-06-11/historical-archive.md", "_deprecated/2026-06-11/historical-archive.contract.json", "_deprecated/2026-06-11/source-legacy-analysis/knowledge/README.md", "scripts/validate-historical-archive.mjs", "validation/roadmap-coverage.json", "docs/ENTERPRISE-10-10/ROADMAP_TO_FILES.md"],
     "W8-T3": ["_deprecated/2026-06-11/README.md", "_deprecated/2026-06-11/duplicate-detection.md", "_deprecated/2026-06-11/duplicate-detection.contract.json", "_deprecated/2026-06-11/package-lock.json", "pnpm-lock.yaml", "scripts/validate-duplicate-detection.mjs", "validation/roadmap-coverage.json", "docs/ENTERPRISE-10-10/ROADMAP_TO_FILES.md"],
     "W8-T4": ["_deprecated/2026-06-11/README.md", "_deprecated/2026-06-11/obsolete-artifacts.md", "_deprecated/2026-06-11/obsolete-artifacts.contract.json", "_deprecated/2026-06-11/package-lock.json", "pnpm-lock.yaml", "scripts/validate-obsolete-artifacts.mjs", "validation/roadmap-coverage.json", "docs/ENTERPRISE-10-10/ROADMAP_TO_FILES.md"],
-    "W8-T5": ["manifests/enterprise-10-10-structure.json"]
+    "W8-T5": ["manifests/enterprise-10-10-structure.json"],
+    "H2": [
+      "generators/create-ai-native-app.mjs",
+      "generators/create-ai-native-app/create-ai-native-app.contract.json",
+      "generators/README.md",
+      "scaffolds/ai-native-app/README.md",
+      "scaffolds/ai-native-app/files/README.md",
+      "scripts/validate-create-ai-native-app.mjs",
+      "scripts/validate-generated-project.mjs",
+      "docs/setup/PROJECT_BOOTSTRAP.md",
+      "manifests/enterprise-10-10-structure.json"
+    ]
   },
   "taskStates": {
     "W6-T1": "IMPLEMENTED",
@@ -31,6 +42,7 @@
     "W8-T1": "IMPLEMENTED",
     "W8-T2": "IMPLEMENTED",
     "W8-T3": "IMPLEMENTED",
-    "W8-T4": "IMPLEMENTED"
+    "W8-T4": "IMPLEMENTED",
+    "H2": "IMPLEMENTED"
   }
 }
