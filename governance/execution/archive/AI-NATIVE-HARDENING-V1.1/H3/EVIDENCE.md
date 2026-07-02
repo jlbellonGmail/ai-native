@@ -49,3 +49,15 @@ TEMP_EXISTS_AFTER_CLEANUP=False
 * `ENTERPRISE-10-10-V2` was not created.
 * Remote collector deployment remains out of scope.
 * Observability defaults do not require endpoint, token or vendor-specific collector.
+
+## HITL approval
+
+Human approval was granted on 2026-07-02 for formal H3 closure.
+
+Confirmed approval scope:
+
+* `ai-foundation`: `ef6a740`
+* `ai-template`: `eda1f98`
+* `ai-knowledge`: no changes
+* root/governance local closure: `5ba8c2c`
+* H4 remains eligible only, not opened.

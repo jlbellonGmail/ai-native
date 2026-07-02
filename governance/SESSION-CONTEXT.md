@@ -1862,7 +1862,7 @@ Tipo:
 AI-NATIVE-HARDENING-V1.1 H3
 
 Estado:
-RUNTIME OBSERVABILITY WIRING CLOSED LOCALLY / HITL REQUIRED
+RUNTIME OBSERVABILITY WIRING HITL APPROVED
 
 Recovery:
 
@@ -1891,6 +1891,7 @@ Validado:
 * El proyecto generado incluye config, helper runtime, docs, manifest y validador H3.
 * Smoke real generado en `C:\tmp\ai-native-h3-smoke-codex`, validado y eliminado.
 * `ai-knowledge` permanecio sin cambios.
+* HITL aprobado humanamente el 2026-07-02.
 * H4 - Executable Testing Profiles queda como proxima tarea elegible.
 * H4-H8 no fueron abiertas.
 * ENTERPRISE-10-10-V1 permanece cerrado.
@@ -1905,5 +1906,40 @@ Restricciones vigentes:
 * H4 - Executable Testing Profiles queda como proxima tarea elegible
 * no abrir H4 dentro del cierre H3
 * no ejecutar H5-H8 por arrastre
+* no reabrir ENTERPRISE-10-10-V1
+* no crear ENTERPRISE-10-10-V2
+
+---
+
+## Ultima ejecucion valida
+
+Tipo:
+AI-NATIVE-HARDENING-V1.1 H3 HITL APPROVAL
+
+Estado:
+HITL APPROVED
+
+Validado:
+
+* H3 - Runtime Observability Wiring fue aprobado humanamente para cierre formal.
+* Commits confirmados:
+  * ai-foundation: `ef6a740`
+  * ai-template: `eda1f98`
+  * ai-knowledge: sin cambios
+  * root/governance local closure: `5ba8c2c`
+* Validaciones H3 reportadas como PASS.
+* Root-level expected validators fueron reportados correctamente como `SKIPPED_NOT_FOUND`.
+* Engram checkpoint H3 previo guardado como `#82`.
+* Push quedo documentado como `CONTEXTUAL_NON_BLOCKING` por rechazo de auto_review antes de ejecutar remotos no verificados.
+* H4 - Executable Testing Profiles queda como proxima tarea elegible.
+* H4 no fue abierta.
+* H5-H8 no fueron ejecutadas.
+* ENTERPRISE-10-10-V1 permanece cerrado.
+* ENTERPRISE-10-10-V2 no fue creado.
+
+Restricciones vigentes:
+
+* H4 - Executable Testing Profiles queda como proxima tarea elegible
+* no abrir H4 sin instruccion explicita separada
 * no reabrir ENTERPRISE-10-10-V1
 * no crear ENTERPRISE-10-10-V2

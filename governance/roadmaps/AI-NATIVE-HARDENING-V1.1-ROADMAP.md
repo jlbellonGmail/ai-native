@@ -264,14 +264,16 @@ ai-template/scripts/validate-generated-project.mjs
 Status:
 
 ```text
-[x] CLOSED_LOCALLY
+[x] CLOSED
 Closed locally at: 2026-07-02
+Closed formally at: 2026-07-02
 Product repos: ai-foundation, ai-template
 Product scope: runtime observability wiring only
 Governance archive: governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H3/
 Next eligible: H4 — Executable Testing Profiles
 H4 opened: NO
-HITL: REQUIRED
+HITL: APPROVED
+HITL approved at: 2026-07-02
 Recovery: usage limit interruption recovered after ai-foundation commit ef6a740
 ```
 
@@ -327,6 +329,7 @@ ai-template/examples/reference-app/observability/
 * Local H3 validators passed in `ai-foundation` and `ai-template`.
 * A real smoke project was generated, validated and removed from `C:\tmp\ai-native-h3-smoke-codex`.
 * `ai-knowledge` had no H3 product changes.
+* HITL approval was granted on 2026-07-02.
 * H4-H8 were not opened.
 * `ENTERPRISE-10-10-V1` was not reopened.
 * `ENTERPRISE-10-10-V2` was not created.

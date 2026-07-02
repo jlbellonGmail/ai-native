@@ -1,6 +1,6 @@
 # SUMMARY
 
-H3 - Runtime Observability Wiring is closed locally and requires HITL approval.
+H3 - Runtime Observability Wiring is formally closed with HITL approval.
 
 Result:
 
@@ -11,6 +11,7 @@ Result:
 * Defaults are safe for local use: disabled, no-op mode, no endpoint, no token and no remote export.
 * A generated project can validate the observability wiring locally.
 * `ai-knowledge` had no H3 changes.
+* HITL approval was granted on 2026-07-02.
 * H4 through H8 were not opened.
 * `ENTERPRISE-10-10-V1` remains closed.
 * `ENTERPRISE-10-10-V2` was not created.
@@ -23,4 +24,4 @@ H4 is not opened by this closure.
 
 HITL:
 
-* REQUIRED after local closure.
+* APPROVED on 2026-07-02.

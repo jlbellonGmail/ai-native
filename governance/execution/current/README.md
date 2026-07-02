@@ -5,8 +5,8 @@ Current execution snapshot for `AI-NATIVE HARDENING-V1.1`.
 Status:
 
 ```text
-H3: CLOSED_LOCALLY
-HITL: REQUIRED
+H3: HITL_APPROVED
+HITL approved at: 2026-07-02
 H4 opened: NO
 ```
 
@@ -16,6 +16,7 @@ Scope:
 * verify `ai-foundation` runtime observability commit `ef6a740`
 * close `ai-template` generated-app runtime observability wiring
 * archive H3 governance evidence
+* record H3 HITL approval
 * leave H4 as the next eligible task only
 
 Non-goals:

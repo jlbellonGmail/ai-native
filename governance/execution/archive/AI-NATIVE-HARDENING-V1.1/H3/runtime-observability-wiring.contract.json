@@ -2,10 +2,11 @@
   "program": "AI-NATIVE-HARDENING-V1.1",
   "task": "H3",
   "name": "Runtime Observability Wiring",
-  "status": "CLOSED_LOCALLY",
+  "status": "CLOSED",
   "hitl": {
     "required": true,
-    "approved": false
+    "approved": true,
+    "approved_at": "2026-07-02"
   },
   "recovery": {
     "required": true,
