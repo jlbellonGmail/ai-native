@@ -1,0 +1,28 @@
+{
+  "benchmarks": [
+    {
+      "id": "bench-prompt-grounding",
+      "target": "prompt",
+      "dataset": "ds-grounded-qa",
+      "scoringModel": "weighted-rubric-v1",
+      "minimumScore": 0.85,
+      "owner": "knowledge-evaluation"
+    },
+    {
+      "id": "bench-agent-repair",
+      "target": "agent",
+      "dataset": "ds-repair-tasks",
+      "scoringModel": "weighted-rubric-v1",
+      "minimumScore": 0.8,
+      "owner": "knowledge-evaluation"
+    },
+    {
+      "id": "bench-template-scaffold",
+      "target": "template",
+      "dataset": "ds-template-validation",
+      "scoringModel": "weighted-rubric-v1",
+      "minimumScore": 0.9,
+      "owner": "template-quality"
+    }
+  ]
+}

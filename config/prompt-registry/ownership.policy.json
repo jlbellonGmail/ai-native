@@ -1,0 +1,83 @@
+{
+  "schemaVersion": "prompt-registry-ownership.v1",
+  "roadmapTask": "W4-T4",
+  "description": "Prompt registry ownership, approval rules and accountability contract for ENTERPRISE-10-10 W4-T4. This contract governs prompt ownership only; it does not create IAM, runtime permissions, deployment authorization or evaluation linkage.",
+  "appliesTo": {
+    "entrySchema": "config/prompt-registry.schema.json",
+    "storageContract": "registries/prompts/registry.storage.json",
+    "versioningContract": "config/prompt-registry/versioning.compatibility.json"
+  },
+  "ownershipModel": {
+    "requiredOwnerFields": ["team", "contact"],
+    "roles": [
+      {
+        "id": "prompt_owner",
+        "description": "Accountable for prompt purpose, lifecycle stewardship and review readiness."
+      },
+      {
+        "id": "prompt_reviewer",
+        "description": "Reviews prompt changes before activation or major version transitions."
+      },
+      {
+        "id": "risk_accountable",
+        "description": "Confirms prompt risk controls are acknowledged before activation."
+      },
+      {
+        "id": "registry_steward",
+        "description": "Maintains registry consistency across schema, storage and versioning contracts."
+      }
+    ]
+  },
+  "approvalRules": {
+    "states": ["owner-assigned", "review-required", "approved", "deprecated"],
+    "defaultState": "owner-assigned",
+    "activationRule": "human-review-required-before-active",
+    "majorChangeRule": "owner-and-registry-steward-review-required",
+    "retirementRule": "owner-acknowledgement-required",
+    "nonGoals": [
+      "No IAM role is created.",
+      "No runtime permission is granted.",
+      "No prompt is approved for execution by this task.",
+      "No W4-T5 evaluation linkage is closed by W4-T4."
+    ]
+  },
+  "accountability": {
+    "maintenance": "prompt_owner",
+    "changeReview": "prompt_reviewer",
+    "riskControls": "risk_accountable",
+    "registryConsistency": "registry_steward"
+  },
+  "records": [
+    {
+      "id": "code-generator.system",
+      "owner": {
+        "team": "ai-knowledge",
+        "contact": "knowledge-owner@example.invalid"
+      },
+      "roles": {
+        "prompt_owner": "ai-knowledge",
+        "prompt_reviewer": "ai-knowledge",
+        "risk_accountable": "ai-knowledge",
+        "registry_steward": "ai-knowledge"
+      },
+      "approvalState": "owner-assigned",
+      "activationApproval": "not-approved",
+      "appliesToVersions": ["1.0.0", "2.0.0", "3.0.0"],
+      "accountabilityNotes": [
+        "Owner and contact are recorded for registry accountability.",
+        "Activation remains blocked until future review requirements are satisfied.",
+        "Evaluation linkage remains outside W4-T4."
+      ]
+    }
+  ],
+  "governance": {
+    "roadmapTask": "W4-T4",
+    "closes": [
+      "ownership model",
+      "approval rules",
+      "accountability contract"
+    ],
+    "doesNotClose": ["W4-T5", "W4-T6"],
+    "validation": "scripts/validate-prompt-registry-ownership.mjs"
+  }
+}

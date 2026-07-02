@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "legacy-inventory.v1",
+  "roadmapTask": "W8-T1",
+  "taskName": "Legacy Inventory",
+  "repo": "ai-knowledge",
+  "inventoryRoot": "_deprecated/2026-06-11",
+  "createdFrom": "2026-06-11 structural realignment",
+  "governance": {
+    "nextEligibleTask": "W8-T2",
+    "doesNotOpen": ["W8-T2"],
+    "doesNotClose": ["W8-T2", "W8-T3", "W8-T4", "W8-T5"],
+    "deletionAllowed": false,
+    "runtimeActivationAllowed": false
+  },
+  "classificationModel": [
+    {
+      "id": "tool_context",
+      "description": "Local AI/tool guidance retained for recovery only."
+    }
+  ],
+  "inventory": [
+    {
+      "path": "_deprecated/2026-06-11/ai-context",
+      "owner": "knowledge-stewards",
+      "classification": "tool_context",
+      "disposition": "retain_recovery_only",
+      "deletionAllowed": false
+    }
+  ],
+  "validators": ["scripts/validate-legacy-inventory.mjs"],
+  "traceability": [
+    "_deprecated/2026-06-11/README.md",
+    "_deprecated/2026-06-11/legacy-inventory.md",
+    "_deprecated/2026-06-11/legacy-inventory.contract.json",
+    "validation/roadmap-coverage.json",
+    "docs/ENTERPRISE-10-10/ROADMAP_TO_FILES.md"
+  ]
+}

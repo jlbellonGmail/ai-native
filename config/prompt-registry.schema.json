@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-native.local/schemas/prompt-registry-entry.v1.schema.json",
+  "title": "Prompt Registry Entry",
+  "description": "Machine-readable contract for ENTERPRISE-10-10 W4-T1 Prompt Schema. This schema defines one prompt registry entry; it does not create registry storage, runtime persistence or migrations. W4-T3 defines the per-prompt versioning policy for the version field in config/prompt-registry/versioning.compatibility.json. W4-T4 defines owner accountability in config/prompt-registry/ownership.policy.json.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "id",
+    "owner",
+    "purpose",
+    "version",
+    "status",
+    "evaluationSuite",
+    "prompt",
+    "riskControls",
+    "governance"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "prompt-registry-entry.v1"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*(\\.[a-z][a-z0-9-]*)*$",
+      "description": "Stable prompt identifier. Storage layout is intentionally deferred to W4-T2."
+    },
+    "owner": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Prompt owner identity required by W4-T4 ownership policy. This is governance accountability, not IAM.",
+      "required": ["team", "contact"],
+      "properties": {
+        "team": {
+          "type": "string",
+          "minLength": 2
+        },
+        "contact": {
+          "type": "string",
+          "minLength": 3
+        }
+      }
+    },
+    "purpose": {
+      "type": "string",
+      "minLength": 20
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Per-prompt semantic version. This is not the repository VERSION file."
+    },
+    "status": {
+      "enum": ["draft", "active", "deprecated"]
+    },
+    "evaluationSuite": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "minimumScore", "requiredBeforeActivation"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 3
+        },
+        "minimumScore": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "requiredBeforeActivation": {
+          "type": "boolean",
+          "const": true
+        }
+      }
+    },
+    "prompt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role", "content", "variables"],
+      "properties": {
+        "role": {
+          "enum": ["system", "developer", "user", "tool"]
+        },
+        "content": {
+          "type": "string",
+          "minLength": 40
+        },
+        "variables": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]*$"
+          },
+          "uniqueItems": true
+        }
+      }
+    },
+    "riskControls": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["promptInjection", "dataBoundary", "humanReview"],
+      "properties": {
+        "promptInjection": {
+          "enum": ["required", "not-applicable"]
+        },
+        "dataBoundary": {
+          "enum": ["public", "internal", "confidential"]
+        },
+        "humanReview": {
+          "enum": ["required-before-active", "required-on-major-change"]
+        }
+      }
+    },
+    "governance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["roadmapTask", "approvalState", "changePolicy"],
+      "properties": {
+        "roadmapTask": {
+          "const": "W4-T1"
+        },
+        "approvalState": {
+          "enum": ["proposed", "approved", "deprecated"]
+        },
+        "changePolicy": {
+          "enum": ["schema-review-required"]
+        }
+      }
+    }
+  }
+}
