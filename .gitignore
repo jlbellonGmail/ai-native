@@ -33,3 +33,6 @@ Thumbs.db
 .repomix/
 .repomixignore
 .claude/
+
+# Local backup artifacts
+.backups/
