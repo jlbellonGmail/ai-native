@@ -1,0 +1,48 @@
+{
+    "name": "project-name",
+    "version": "0.1.0",
+    "private": true,
+    "scripts": {
+        "dev": "next dev",
+        "build": "node scripts/validate-enterprise-template.mjs && node scripts/validate-structure.mjs && tsc --noEmit",
+        "start": "next start",
+        "validate": "node scripts/validate-enterprise-template.mjs && node scripts/validate-structure.mjs",
+        "create-ai-native-app": "node generators/create-ai-native-app.mjs",
+        "validate:create-ai-native-app": "node scripts/validate-create-ai-native-app.mjs",
+        "validate:generated-project": "node scripts/validate-generated-project.mjs",
+        "validate:runtime-observability": "node scripts/validate-runtime-observability-wiring.mjs",
+        "analyze": "tsx scripts/analyze.ts",
+        "prepare": "node -e \"require('fs').mkdirSync('.ai-runtime-data',{recursive:true});require('fs').mkdirSync('logs',{recursive:true});require('fs').mkdirSync('docs/incidents',{recursive:true})\"",
+        "test": "vitest run validation/tests",
+        "setup": "pnpm install && pnpm run bootstrap",
+        "bootstrap": "tsx scripts/bootstrap.ts",
+        "lint": "node scripts/validate-structure.mjs",
+        "typecheck": "tsc --noEmit"
+    },
+    "dependencies": {
+        "@supabase/supabase-js": "^2.48.0",
+        "clsx": "^2.1.1",
+        "express": "^5.2.1",
+        "lucide-react": "^0.454.0",
+        "next": "^15.0.0",
+        "react": "^18.3.1",
+        "react-dom": "^18.3.1",
+        "tailwind-merge": "^2.5.4",
+        "tailwindcss-animate": "^1.0.7"
+    },
+    "devDependencies": {
+        "@playwright/test": "^1.56.1",
+        "@types/express": "^5.0.6",
+        "@types/node": "^20.0.0",
+        "@types/react": "^18.3.0",
+        "@types/react-dom": "^18.3.0",
+        "eslint": "^9.0.0",
+        "eslint-config-next": "15.0.0",
+        "postcss": "^8.0.0",
+        "tailwindcss": "^4.0.0",
+        "ts-node": "^10.9.2",
+        "tsx": "^4.21.0",
+        "typescript": "^5.9.3",
+        "vitest": "^4.1.1"
+    }
+}

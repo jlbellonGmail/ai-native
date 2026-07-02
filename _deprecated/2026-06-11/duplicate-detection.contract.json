@@ -1,0 +1,83 @@
+{
+  "schemaVersion": "duplicate-detection.v1",
+  "roadmapTask": "W8-T3",
+  "taskName": "Duplicate Detection",
+  "repo": "ai-template",
+  "archiveRoot": "_deprecated/2026-06-11",
+  "basedOnArchiveTask": "W8-T2",
+  "governance": {
+    "nextEligibleTask": "W8-T4",
+    "doesNotOpen": ["W8-T4"],
+    "doesNotClose": ["W8-T4", "W8-T5", "W8-T6"],
+    "deletionAllowed": false,
+    "physicalMoveAllowed": false,
+    "automaticRemovalAllowed": false,
+    "runtimeActivationAllowed": false
+  },
+  "duplicationRules": [
+    {
+      "id": "package_manager_duplicate",
+      "description": "Archived package manager artifact is superseded by the active lockfile."
+    },
+    {
+      "id": "runtime_evidence_overlap",
+      "description": "Archived runtime data and logs overlap historical runtime evidence only."
+    },
+    {
+      "id": "source_analysis_overlap",
+      "description": "Archived source analysis overlaps historical analysis, not active templates."
+    },
+    {
+      "id": "local_state_only",
+      "description": "Archived local editor/worktree state has no product source-of-truth counterpart."
+    }
+  ],
+  "duplicates": [
+    {
+      "path": "_deprecated/2026-06-11/cursor-worktree-state",
+      "duplicateClass": "local_state_only",
+      "activeCounterpart": null,
+      "disposition": "retain_local_recovery_history",
+      "deletionAllowed": false
+    },
+    {
+      "path": "_deprecated/2026-06-11/runtime-data",
+      "duplicateClass": "runtime_evidence_overlap",
+      "activeCounterpart": "active runtime outside _deprecated",
+      "disposition": "retain_runtime_evidence",
+      "deletionAllowed": false
+    },
+    {
+      "path": "_deprecated/2026-06-11/runtime-logs",
+      "duplicateClass": "runtime_evidence_overlap",
+      "activeCounterpart": "active runtime outside _deprecated",
+      "disposition": "retain_runtime_log_evidence",
+      "deletionAllowed": false
+    },
+    {
+      "path": "_deprecated/2026-06-11/source-legacy-analysis",
+      "duplicateClass": "source_analysis_overlap",
+      "activeCounterpart": "templates, manifests",
+      "disposition": "retain_historical_source_analysis",
+      "deletionAllowed": false
+    },
+    {
+      "path": "_deprecated/2026-06-11/package-lock.json",
+      "duplicateClass": "package_manager_duplicate",
+      "activeCounterpart": "pnpm-lock.yaml",
+      "disposition": "retain_package_manager_history",
+      "deletionAllowed": false
+    }
+  ],
+  "validators": ["scripts/validate-duplicate-detection.mjs"],
+  "traceability": [
+    "_deprecated/2026-06-11/README.md",
+    "_deprecated/2026-06-11/legacy-inventory.contract.json",
+    "_deprecated/2026-06-11/historical-archive.contract.json",
+    "_deprecated/2026-06-11/duplicate-detection.md",
+    "_deprecated/2026-06-11/duplicate-detection.contract.json",
+    "pnpm-lock.yaml",
+    "validation/roadmap-coverage.json",
+    "docs/ENTERPRISE-10-10/ROADMAP_TO_FILES.md"
+  ]
+}

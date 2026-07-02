@@ -1,0 +1,84 @@
+{
+  "schemaVersion": "mutation-testing.v1",
+  "roadmapTask": "W6-T2",
+  "description": "Reusable mutation testing framework, mutation rules and governance contract for generated projects. This contract defines mutation readiness without running mutants, modifying product code or closing W6-T3.",
+  "framework": {
+    "targetCategories": [
+      "pure-domain-service",
+      "boundary-validator",
+      "authorization-policy",
+      "serialization-mapping",
+      "error-handling-branch"
+    ],
+    "excludedTargets": [
+      "generated-files",
+      "framework-wrappers",
+      "network-calls",
+      "runtime-infrastructure",
+      "external-provider-side-effects"
+    ],
+    "minimumMutationScore": 0.75,
+    "runtimeExecution": "not-run-by-w6-t2",
+    "productModification": "not-modified-by-w6-t2"
+  },
+  "mutationRules": {
+    "requiresExistingTestTarget": true,
+    "requiresOwner": true,
+    "requiresWaiverForExcludedCriticalPath": true,
+    "waiverFields": [
+      "target",
+      "reason",
+      "reviewOwner",
+      "expiresOn"
+    ],
+    "allowedEvidence": [
+      "unit-test",
+      "contract-test",
+      "target-list",
+      "validator"
+    ],
+    "forbiddenAsSoleEvidence": [
+      "manual-note",
+      "governance-archive"
+    ]
+  },
+  "targetGroups": [
+    {
+      "id": "password-validator-domain",
+      "category": "pure-domain-service",
+      "owner": "template-validation",
+      "sourceTarget": "domain/services/password-validator",
+      "testTarget": "validation/tests/unit/password-validator-test.ts",
+      "contractBinding": "password-validator.service",
+      "mutationOperators": [
+        "conditional-boundary",
+        "boolean-literal",
+        "string-literal"
+      ],
+      "minimumMutationScore": 0.75,
+      "executionStatus": "not-run-by-w6-t2",
+      "productModification": "not-modified-by-w6-t2",
+      "evidence": [
+        "validation/contract-testing.contract.json",
+        "validation/tests/unit/password-validator-test.ts",
+        "vitest.config.ts"
+      ]
+    }
+  ],
+  "governance": {
+    "roadmapTask": "W6-T2",
+    "closes": [
+      "mutation framework",
+      "mutation rules",
+      "governance contract"
+    ],
+    "doesNotClose": [
+      "W6-T3",
+      "W6-T4",
+      "W6-T5",
+      "W6-T6",
+      "W6-T7"
+    ],
+    "validation": "scripts/validate-mutation-testing.mjs"
+  }
+}

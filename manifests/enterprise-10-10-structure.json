@@ -1,0 +1,28 @@
+{
+  "repo": "ai-template",
+  "requiredDirectories": ["docs", "scripts", "config", "validation", "scaffolds", "templates", "manifests", "examples", "generators"],
+  "scaffolds": [
+    {
+      "id": "ai-native-app",
+      "readme": "scaffolds/ai-native-app/README.md",
+      "files": "scaffolds/ai-native-app/files",
+      "reference": "examples/reference-app"
+    }
+  ],
+  "generators": [
+    {
+      "id": "create-ai-native-app",
+      "entrypoint": "generators/create-ai-native-app.mjs",
+      "contract": "generators/create-ai-native-app/create-ai-native-app.contract.json",
+      "validator": "scripts/validate-create-ai-native-app.mjs",
+      "generatedProjectValidator": "scripts/validate-generated-project.mjs"
+    }
+  ],
+  "validation": [
+    "scripts/validate-enterprise-template.mjs",
+    "scripts/validate-structure.mjs",
+    "scripts/validate-create-ai-native-app.mjs",
+    "scripts/validate-generated-project.mjs",
+    "validation/roadmap-coverage.json"
+  ]
+}
