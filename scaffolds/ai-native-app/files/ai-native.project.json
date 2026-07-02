@@ -15,6 +15,13 @@
       "DONE"
     ]
   },
+  "observability": {
+    "task": "AI-NATIVE-HARDENING-V1.1/H3",
+    "config": "config/observability/runtime-observability.json",
+    "runtimeHelper": "services/infrastructure/observability/runtime-observability.mjs",
+    "defaultMode": "noop",
+    "exportsRemotelyByDefault": false
+  },
   "validation": {
     "command": "npm run validate",
     "validator": "scripts/validate-ai-native-project.mjs"

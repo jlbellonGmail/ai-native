@@ -15,6 +15,9 @@ const requiredFiles = [
   "scaffolds/README.md",
   "scaffolds/ai-native-app/README.md",
   "scaffolds/ai-native-app/files/README.md",
+  "scaffolds/ai-native-app/files/config/observability/runtime-observability.json",
+  "scaffolds/ai-native-app/files/docs/observability/runtime-observability.md",
+  "scaffolds/ai-native-app/files/services/infrastructure/observability/runtime-observability.mjs",
   "templates/README.md",
   "manifests/enterprise-10-10-structure.json",
   "examples/README.md",
@@ -22,6 +25,7 @@ const requiredFiles = [
   "generators/create-ai-native-app.mjs",
   "generators/create-ai-native-app/create-ai-native-app.contract.json",
   "docs/setup/PROJECT_BOOTSTRAP.md",
+  "scripts/validate-runtime-observability-wiring.mjs",
   "scripts/validate-create-ai-native-app.mjs",
   "scripts/validate-generated-project.mjs"
 ];

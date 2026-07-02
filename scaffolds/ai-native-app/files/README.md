@@ -31,8 +31,17 @@ npm run validate
 
 This validates the generated structure and the project manifest.
 
+## Observability
+
+Runtime observability wiring is included with a safe no-op default:
+
+```text
+config/observability/runtime-observability.json
+services/infrastructure/observability/runtime-observability.mjs
+```
+
 ## Scope
 
 This generated baseline provides a controlled MVP or pilot starting point. It
-does not configure production infrastructure, runtime observability, security
+does not configure production infrastructure, remote collectors, security
 programs, real evaluation runs or client-specific business logic.

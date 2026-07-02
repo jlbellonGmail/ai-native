@@ -20,6 +20,7 @@ The generator produces:
 * `ai-native.project.json` manifest.
 * Base `package.json` with local validation.
 * AI configuration and canonical SDD reference.
+* Runtime observability wiring with local/no-op defaults.
 * App, service, docs and validation directories.
 * A generated project validator.
 
@@ -31,7 +32,7 @@ Specify -> Plan -> Implement -> Verify
 
 Out of scope for H2:
 
-* Runtime observability wiring.
+* Remote observability collector deployment.
 * Executable testing profile hardening.
 * Real evaluation runs.
 * Target repository security validation.

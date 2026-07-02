@@ -29,6 +29,16 @@
       "scripts/validate-generated-project.mjs",
       "docs/setup/PROJECT_BOOTSTRAP.md",
       "manifests/enterprise-10-10-structure.json"
+    ],
+    "H3": [
+      "scaffolds/ai-native-app/files/config/observability/runtime-observability.json",
+      "scaffolds/ai-native-app/files/docs/observability/runtime-observability.md",
+      "scaffolds/ai-native-app/files/services/infrastructure/observability/runtime-observability.mjs",
+      "scaffolds/ai-native-app/files/ai-native.project.json",
+      "scaffolds/ai-native-app/files/scripts/validate-ai-native-project.mjs",
+      "scripts/validate-runtime-observability-wiring.mjs",
+      "scripts/validate-generated-project.mjs",
+      "scripts/validate-structure.mjs"
     ]
   },
   "taskStates": {
@@ -43,6 +53,7 @@
     "W8-T2": "IMPLEMENTED",
     "W8-T3": "IMPLEMENTED",
     "W8-T4": "IMPLEMENTED",
-    "H2": "IMPLEMENTED"
+    "H2": "IMPLEMENTED",
+    "H3": "IMPLEMENTED"
   }
 }

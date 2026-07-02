@@ -67,6 +67,8 @@ async function validateGeneratedProject(target, contract) {
   assert(manifest.generator === "create-ai-native-app", "generated manifest generator mismatch");
   assert(manifest.generatorTask === "AI-NATIVE-HARDENING-V1.1/H2", "generated manifest task mismatch");
   assert(manifest.sdd.flow.join(" -> ") === "Specify -> Plan -> Implement -> Verify", "generated manifest SDD flow mismatch");
+  assert(manifest.observability?.task === "AI-NATIVE-HARDENING-V1.1/H3", "generated manifest observability task mismatch");
+  assert(manifest.observability.defaultMode === "noop", "generated manifest observability default mismatch");
 }
 
 const args = parseArgs(process.argv.slice(2));
