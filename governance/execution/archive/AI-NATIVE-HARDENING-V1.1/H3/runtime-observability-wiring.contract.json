@@ -1,0 +1,49 @@
+{
+  "program": "AI-NATIVE-HARDENING-V1.1",
+  "task": "H3",
+  "name": "Runtime Observability Wiring",
+  "status": "CLOSED_LOCALLY",
+  "hitl": {
+    "required": true,
+    "approved": false
+  },
+  "recovery": {
+    "required": true,
+    "reason": "usage limit interruption after ai-foundation commit",
+    "recovered_from_commit": "ef6a740"
+  },
+  "product_commits": {
+    "ai-foundation": "ef6a740",
+    "ai-template": "eda1f98",
+    "ai-knowledge": null
+  },
+  "scope": {
+    "runtime_observability_wiring": true,
+    "generated_project_wiring": true,
+    "remote_collector_deployment": false,
+    "testing_profiles": false,
+    "real_evaluation_runs": false,
+    "target_repo_security": false,
+    "first_client_playbook": false,
+    "final_adoption_audit": false
+  },
+  "defaults": {
+    "mode": "noop",
+    "enabled": false,
+    "exports_remotely_by_default": false,
+    "requires_endpoint": false,
+    "requires_token": false
+  },
+  "validation": {
+    "ai_foundation_runtime_observability": "PASS",
+    "ai_template_runtime_observability": "PASS",
+    "ai_template_structure": "PASS",
+    "ai_template_generator": "PASS",
+    "generated_project_smoke": "PASS",
+    "temporary_smoke_project_cleaned": true
+  },
+  "next_eligible_task": "H4 - Executable Testing Profiles",
+  "next_task_opened": false,
+  "enterprise_10_10_v1_reopened": false,
+  "enterprise_10_10_v2_created": false
+}

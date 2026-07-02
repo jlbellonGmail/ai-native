@@ -1853,3 +1853,57 @@ Restricciones vigentes:
 * H3 requiere ejecucion separada con prompt propio, gate inicial y alcance independiente
 * no reabrir ENTERPRISE-10-10-V1
 * no crear ENTERPRISE-10-10-V2
+
+---
+
+## Ultima ejecucion valida
+
+Tipo:
+AI-NATIVE-HARDENING-V1.1 H3
+
+Estado:
+RUNTIME OBSERVABILITY WIRING CLOSED LOCALLY / HITL REQUIRED
+
+Recovery:
+
+* Ejecucion recuperada despues de corte por usage limit.
+* `ai-foundation` ya estaba confirmado en `ef6a740`.
+* `ai-template` tenia cambios H3 staged y fueron revisados antes de commit.
+
+Repositorio producto impactado:
+
+* ai-foundation
+* ai-template
+
+Commits producto:
+
+* ai-foundation H3 product commit: `ef6a740`
+* ai-template H3 product commit: `eda1f98`
+* ai-knowledge H3 product commit: N/A
+
+Validado:
+
+* H1 - SDD Package permanece cerrada.
+* H2 - Project Generator / create-ai-native-app permanece cerrada con HITL aprobado.
+* H3 - Runtime Observability Wiring fue recuperada y cerrada localmente.
+* `ai-foundation` agrega wiring runtime configurable/no-op, contrato, guia, ejemplo y smoke validator.
+* `ai-template` agrega wiring runtime observability al proyecto generado con defaults local/no-op.
+* El proyecto generado incluye config, helper runtime, docs, manifest y validador H3.
+* Smoke real generado en `C:\tmp\ai-native-h3-smoke-codex`, validado y eliminado.
+* `ai-knowledge` permanecio sin cambios.
+* H4 - Executable Testing Profiles queda como proxima tarea elegible.
+* H4-H8 no fueron abiertas.
+* ENTERPRISE-10-10-V1 permanece cerrado.
+* ENTERPRISE-10-10-V2 no fue creado.
+
+Evidencia disponible:
+
+* governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H3/
+
+Restricciones vigentes:
+
+* H4 - Executable Testing Profiles queda como proxima tarea elegible
+* no abrir H4 dentro del cierre H3
+* no ejecutar H5-H8 por arrastre
+* no reabrir ENTERPRISE-10-10-V1
+* no crear ENTERPRISE-10-10-V2

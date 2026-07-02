@@ -1,24 +1,25 @@
-# H2 - Project Generator / create-ai-native-app
+# H3 - Runtime Observability Wiring
 
 Current execution snapshot for `AI-NATIVE HARDENING-V1.1`.
 
 Status:
 
 ```text
-H2: HITL_APPROVED
-HITL approved at: 2026-07-01
-H3 opened: NO
+H3: CLOSED_LOCALLY
+HITL: REQUIRED
+H4 opened: NO
 ```
 
 Scope:
 
-* complete `create-ai-native-app` in `ai-template`
-* generate an AI-Native project baseline
-* validate generated structure and SDD references
-* archive H2 governance evidence
+* recover interrupted H3 execution after usage-limit cut
+* verify `ai-foundation` runtime observability commit `ef6a740`
+* close `ai-template` generated-app runtime observability wiring
+* archive H3 governance evidence
+* leave H4 as the next eligible task only
 
 Non-goals:
 
-* H3-H8 execution
+* H4-H8 execution
 * reopening `ENTERPRISE-10-10-V1`
 * creating `ENTERPRISE-10-10-V2`

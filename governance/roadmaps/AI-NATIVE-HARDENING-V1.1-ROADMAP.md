@@ -261,6 +261,20 @@ ai-template/scripts/validate-generated-project.mjs
 
 ## H3 — Runtime Observability Wiring
 
+Status:
+
+```text
+[x] CLOSED_LOCALLY
+Closed locally at: 2026-07-02
+Product repos: ai-foundation, ai-template
+Product scope: runtime observability wiring only
+Governance archive: governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H3/
+Next eligible: H4 — Executable Testing Profiles
+H4 opened: NO
+HITL: REQUIRED
+Recovery: usage limit interruption recovered after ai-foundation commit ef6a740
+```
+
 ### Objective
 
 Move observability from validated governance/contracts toward executable runtime wiring.
@@ -303,6 +317,19 @@ ai-template/examples/reference-app/observability/
 ### Closure Condition
 
 `H3` is closed only when observability becomes actionable for a real project baseline.
+
+### Closure Evidence
+
+* `ai-foundation` runtime observability wiring was committed as `ef6a740`.
+* `ai-template` generated-app observability wiring was committed as `eda1f98`.
+* Generated projects include safe local/no-op observability defaults.
+* Generated projects include runtime helper, config, docs and validation.
+* Local H3 validators passed in `ai-foundation` and `ai-template`.
+* A real smoke project was generated, validated and removed from `C:\tmp\ai-native-h3-smoke-codex`.
+* `ai-knowledge` had no H3 product changes.
+* H4-H8 were not opened.
+* `ENTERPRISE-10-10-V1` was not reopened.
+* `ENTERPRISE-10-10-V2` was not created.
 
 ---
 
