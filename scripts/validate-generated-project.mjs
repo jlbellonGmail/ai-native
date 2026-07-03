@@ -69,6 +69,21 @@ async function validateGeneratedProject(target, contract) {
   assert(manifest.sdd.flow.join(" -> ") === "Specify -> Plan -> Implement -> Verify", "generated manifest SDD flow mismatch");
   assert(manifest.observability?.task === "AI-NATIVE-HARDENING-V1.1/H3", "generated manifest observability task mismatch");
   assert(manifest.observability.defaultMode === "noop", "generated manifest observability default mismatch");
+  assert(manifest.testingProfiles?.task === "AI-NATIVE-HARDENING-V1.1/H4", "generated manifest testing profiles task mismatch");
+  assert(manifest.testingProfiles.defaultExecution === "local", "generated testing profiles default mismatch");
+
+  for (const file of [
+    "testing/profiles/testing-profiles.json",
+    "testing/smoke/testing-smoke.mjs",
+    "docs/testing/executable-testing-profiles.md",
+    "scripts/validate-testing-profiles.mjs"
+  ]) {
+    assert(exists(resolvedTarget, file), `generated project missing H4 testing profile file ${file}`);
+  }
+
+  const testingProfiles = JSON.parse(await readFile(path.join(resolvedTarget, "testing/profiles/testing-profiles.json"), "utf8"));
+  assert(testingProfiles.roadmapTask === "AI-NATIVE-HARDENING-V1.1/H4", "generated testing profiles task mismatch");
+  assert(testingProfiles.safety.localOnly === true, "generated testing profiles must be local only");
 }
 
 const args = parseArgs(process.argv.slice(2));

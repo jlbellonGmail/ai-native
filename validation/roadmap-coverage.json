@@ -39,6 +39,22 @@
       "scripts/validate-runtime-observability-wiring.mjs",
       "scripts/validate-generated-project.mjs",
       "scripts/validate-structure.mjs"
+    ],
+    "H4": [
+      "validation/testing-profiles.md",
+      "testing/profiles/testing-profiles.json",
+      "testing/smoke/testing-smoke.mjs",
+      "scripts/validate-testing-profiles.mjs",
+      "scaffolds/ai-native-app/files/testing/profiles/testing-profiles.json",
+      "scaffolds/ai-native-app/files/testing/smoke/testing-smoke.mjs",
+      "scaffolds/ai-native-app/files/scripts/validate-testing-profiles.mjs",
+      "scaffolds/ai-native-app/files/docs/testing/executable-testing-profiles.md",
+      "templates/project/testing/profiles/testing-profiles.json",
+      "templates/project/testing/smoke/testing-smoke.mjs",
+      "templates/project/scripts/validate-testing-profiles.mjs",
+      "templates/project/docs/testing/executable-testing-profiles.md",
+      "scripts/validate-generated-project.mjs",
+      "scripts/validate-structure.mjs"
     ]
   },
   "taskStates": {
@@ -54,6 +70,7 @@
     "W8-T3": "IMPLEMENTED",
     "W8-T4": "IMPLEMENTED",
     "H2": "IMPLEMENTED",
-    "H3": "IMPLEMENTED"
+    "H3": "IMPLEMENTED",
+    "H4": "IMPLEMENTED"
   }
 }

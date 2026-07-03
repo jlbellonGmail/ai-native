@@ -12,9 +12,12 @@ const requiredDirectories = [
   "services/infrastructure",
   "config/ai",
   "config/observability",
+  "docs/testing",
   "docs/sdd",
   "docs/observability",
   "scripts",
+  "testing/profiles",
+  "testing/smoke",
   "validation"
 ];
 
@@ -27,8 +30,12 @@ const requiredFiles = [
   "docs/setup.md",
   "docs/sdd/README.md",
   "docs/observability/runtime-observability.md",
+  "docs/testing/executable-testing-profiles.md",
   "scripts/validate-ai-native-project.mjs",
+  "scripts/validate-testing-profiles.mjs",
   "services/infrastructure/observability/runtime-observability.mjs",
+  "testing/profiles/testing-profiles.json",
+  "testing/smoke/testing-smoke.mjs",
   "validation/README.md"
 ];
 
@@ -60,5 +67,14 @@ const observabilityConfig = JSON.parse(await readFile(path.join(root, "config/ob
 assert(observabilityConfig.enabled === false, "observability must default disabled");
 assert(observabilityConfig.mode === "noop", "observability config mode must be noop");
 assert(observabilityConfig.exports_remotely_by_default === false, "observability must not export remotely by default");
+
+assert(manifest.testingProfiles?.task === "AI-NATIVE-HARDENING-V1.1/H4", "manifest must reference H4 testing profiles");
+assert(manifest.testingProfiles.defaultExecution === "local", "testing profiles must default to local execution");
+
+const testingProfiles = JSON.parse(await readFile(path.join(root, "testing/profiles/testing-profiles.json"), "utf8"));
+assert(testingProfiles.schemaVersion === "testing-profiles.v1", "testing profiles schema version mismatch");
+assert(testingProfiles.roadmapTask === "AI-NATIVE-HARDENING-V1.1/H4", "testing profiles must reference H4");
+assert(testingProfiles.safety.localOnly === true, "testing profiles must be local only");
+assert(testingProfiles.safety.requiresNetwork === false, "testing profiles must not require network");
 
 console.log("generated AI-Native project validation PASS");

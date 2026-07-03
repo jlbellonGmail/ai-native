@@ -17,8 +17,16 @@ const requiredFiles = [
   "scaffolds/ai-native-app/files/README.md",
   "scaffolds/ai-native-app/files/config/observability/runtime-observability.json",
   "scaffolds/ai-native-app/files/docs/observability/runtime-observability.md",
+  "scaffolds/ai-native-app/files/docs/testing/executable-testing-profiles.md",
   "scaffolds/ai-native-app/files/services/infrastructure/observability/runtime-observability.mjs",
+  "scaffolds/ai-native-app/files/scripts/validate-testing-profiles.mjs",
+  "scaffolds/ai-native-app/files/testing/profiles/testing-profiles.json",
+  "scaffolds/ai-native-app/files/testing/smoke/testing-smoke.mjs",
   "templates/README.md",
+  "templates/project/docs/testing/executable-testing-profiles.md",
+  "templates/project/scripts/validate-testing-profiles.mjs",
+  "templates/project/testing/profiles/testing-profiles.json",
+  "templates/project/testing/smoke/testing-smoke.mjs",
   "manifests/enterprise-10-10-structure.json",
   "examples/README.md",
   "generators/README.md",
@@ -26,8 +34,12 @@ const requiredFiles = [
   "generators/create-ai-native-app/create-ai-native-app.contract.json",
   "docs/setup/PROJECT_BOOTSTRAP.md",
   "scripts/validate-runtime-observability-wiring.mjs",
+  "scripts/validate-testing-profiles.mjs",
   "scripts/validate-create-ai-native-app.mjs",
-  "scripts/validate-generated-project.mjs"
+  "scripts/validate-generated-project.mjs",
+  "testing/profiles/testing-profiles.json",
+  "testing/smoke/testing-smoke.mjs",
+  "validation/testing-profiles.md"
 ];
 
 function assert(condition, message) {
