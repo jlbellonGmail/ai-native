@@ -1943,3 +1943,53 @@ Restricciones vigentes:
 * no abrir H4 sin instruccion explicita separada
 * no reabrir ENTERPRISE-10-10-V1
 * no crear ENTERPRISE-10-10-V2
+
+---
+
+## Ultima ejecucion valida
+
+Tipo:
+AI-NATIVE-HARDENING-V1.1 H4
+
+Estado:
+EXECUTABLE TESTING PROFILES CLOSED LOCALLY / HITL REQUIRED
+
+Repositorio producto impactado:
+
+* ai-template
+
+Commits producto:
+
+* ai-template H4 product commit: `24e29b3`
+
+Validado:
+
+* H1 - SDD Package permanece cerrada.
+* H2 - Project Generator / create-ai-native-app permanece cerrada con HITL aprobado.
+* H3 - Runtime Observability Wiring permanece cerrada con HITL aprobado.
+* H4 - Executable Testing Profiles fue ejecutada en rama feature local.
+* Se agregaron perfiles `contract-smoke`, `coverage-smoke`, `mutation-smoke`,
+  `load-smoke`, `performance-smoke` y `chaos-smoke`.
+* El proyecto generado incluye catalogo, validador, smoke runner y documentacion
+  para perfiles ejecutables locales.
+* `ai-template/templates/project/` fue evaluado y actualizado con el baseline H4.
+* Smoke real generado en `C:\tmp\ai-native-h4-smoke-codex`, validado y eliminado.
+* `ai-foundation` permanecio sin cambios H4.
+* `ai-knowledge` permanecio sin cambios H4.
+* H5 - Real Evaluation Runs no fue abierta.
+* H5-H8 no fueron ejecutadas.
+* ENTERPRISE-10-10-V1 permanece cerrado.
+* ENTERPRISE-10-10-V2 no fue creado.
+* Push no ejecutado por instruccion explicita: NOT_PUSHED_BY_POLICY.
+
+Evidencia disponible:
+
+* specs/hardening-v1.1-h4-executable-testing-profiles/
+* governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H4/
+
+Restricciones vigentes:
+
+* H5 - Real Evaluation Runs queda no abierta
+* no abrir H5 sin instruccion explicita separada
+* no reabrir ENTERPRISE-10-10-V1
+* no crear ENTERPRISE-10-10-V2

@@ -338,6 +338,20 @@ ai-template/examples/reference-app/observability/
 
 ## H4 — Executable Testing Profiles
 
+Status:
+
+```text
+[x] CLOSED_LOCALLY
+Closed locally at: 2026-07-02
+Product repo: ai-template
+Product scope: executable testing profiles for template and generated projects
+Governance archive: governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H4/
+Next eligible: H5 — Real Evaluation Runs
+H5 opened: NO
+HITL: REQUIRED
+Push: NOT_PUSHED_BY_POLICY
+```
+
 ### Objective
 
 Convert testing readiness contracts into executable project testing profiles.
@@ -382,6 +396,23 @@ ai-template/examples/reference-app/tests/
 ### Closure Condition
 
 `H4` is closed only when testing moves from contract-only to executable baseline evidence.
+
+### Closure Evidence
+
+* `ai-template` executable testing profiles were committed as `24e29b3`.
+* Testing profiles include contract, coverage, mutation smoke, load smoke,
+  performance smoke and chaos smoke profiles.
+* Generated projects include testing profile catalog, local validator, smoke
+  runner and user documentation.
+* `ai-template/templates/project/` was evaluated and updated with matching
+  testing profile assets.
+* A real generated project smoke was created under
+  `C:\tmp\ai-native-h4-smoke-codex`, validated and removed.
+* Local validators passed in `ai-template`.
+* H1-H3 were not reopened.
+* H5-H8 were not opened.
+* `ENTERPRISE-10-10-V1` was not reopened.
+* `ENTERPRISE-10-10-V2` was not created.
 
 ---
 
