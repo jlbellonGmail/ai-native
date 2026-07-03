@@ -5,8 +5,8 @@ Current execution snapshot for `AI-NATIVE HARDENING-V1.1`.
 Status:
 
 ```text
-H4: CLOSED_LOCALLY
-HITL: REQUIRED
+H4: HITL_APPROVED
+HITL approved at: 2026-07-03
 H5 opened: NO
 ```
 
@@ -16,6 +16,7 @@ Scope:
 * add local generated-project testing smoke profiles
 * validate generated project testing profile compatibility
 * archive H4 governance evidence
+* record H4 HITL approval
 * leave H5 as not opened
 
 Non-goals:

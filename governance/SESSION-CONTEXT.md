@@ -1952,7 +1952,7 @@ Tipo:
 AI-NATIVE-HARDENING-V1.1 H4
 
 Estado:
-EXECUTABLE TESTING PROFILES CLOSED LOCALLY / HITL REQUIRED
+EXECUTABLE TESTING PROFILES HITL APPROVED
 
 Repositorio producto impactado:
 
@@ -1981,6 +1981,7 @@ Validado:
 * ENTERPRISE-10-10-V1 permanece cerrado.
 * ENTERPRISE-10-10-V2 no fue creado.
 * Push no ejecutado por instruccion explicita: NOT_PUSHED_BY_POLICY.
+* HITL aprobado humanamente el 2026-07-03.
 
 Evidencia disponible:
 
@@ -1990,6 +1991,40 @@ Evidencia disponible:
 Restricciones vigentes:
 
 * H5 - Real Evaluation Runs queda no abierta
+* no abrir H5 sin instruccion explicita separada
+* no reabrir ENTERPRISE-10-10-V1
+* no crear ENTERPRISE-10-10-V2
+
+---
+
+## Ultima ejecucion valida
+
+Tipo:
+AI-NATIVE-HARDENING-V1.1 H4 HITL APPROVAL
+
+Estado:
+HITL APPROVED
+
+Validado:
+
+* H4 - Executable Testing Profiles fue aprobado humanamente para cierre formal.
+* Commits confirmados:
+  * root/governance local closure: `b49a725`
+  * ai-template: `24e29b3`
+  * ai-foundation: sin cambios H4
+  * ai-knowledge: sin cambios H4
+* Validaciones H4 reportadas como PASS.
+* Inspector H4: `APPROVED_WITH_CONTEXTUAL_NON_BLOCKING_ITEMS`.
+* Unico hallazgo contextual: CI/PR remoto no ejecutado porque no hubo push por politica/instruccion explicita.
+* Push permanece `NOT_PUSHED_BY_POLICY`.
+* H5 - Real Evaluation Runs no fue abierta.
+* H5-H8 no fueron ejecutadas.
+* ENTERPRISE-10-10-V1 permanece cerrado.
+* ENTERPRISE-10-10-V2 no fue creado.
+
+Restricciones vigentes:
+
+* H5 - Real Evaluation Runs queda como proxima tarea elegible, no abierta
 * no abrir H5 sin instruccion explicita separada
 * no reabrir ENTERPRISE-10-10-V1
 * no crear ENTERPRISE-10-10-V2

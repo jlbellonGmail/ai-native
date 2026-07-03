@@ -51,3 +51,15 @@ runner and documentation assets.
 * No remote CI, push or PR was executed.
 * No dependency additions were made.
 * No VERSION files were modified.
+
+## HITL approval
+
+Human approval was granted on 2026-07-03 for formal H4 closure.
+
+Confirmed approval scope:
+
+* root/governance local closure: `b49a725`
+* `ai-template`: `24e29b3`
+* `ai-foundation`: no H4 changes
+* `ai-knowledge`: no H4 changes
+* H5 remains not opened.

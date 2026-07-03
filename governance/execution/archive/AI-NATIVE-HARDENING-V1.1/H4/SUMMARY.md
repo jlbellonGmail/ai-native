@@ -1,6 +1,6 @@
 # SUMMARY
 
-H4 - Executable Testing Profiles is closed locally and requires HITL approval.
+H4 - Executable Testing Profiles is formally closed with HITL approval.
 
 Result:
 
@@ -12,6 +12,7 @@ Result:
 * A real smoke project was generated, validated and removed.
 * `ai-foundation` had no H4 changes.
 * `ai-knowledge` had no H4 changes.
+* HITL approval was granted on 2026-07-03.
 * H5 through H8 were not opened.
 
 Next task state:
@@ -20,4 +21,4 @@ Next task state:
 
 HITL:
 
-* REQUIRED after local closure.
+* APPROVED on 2026-07-03.

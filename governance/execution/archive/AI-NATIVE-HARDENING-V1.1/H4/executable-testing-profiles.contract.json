@@ -2,10 +2,11 @@
   "program": "AI-NATIVE-HARDENING-V1.1",
   "task": "H4",
   "name": "Executable Testing Profiles",
-  "status": "CLOSED_LOCALLY",
+  "status": "CLOSED",
   "hitl": {
     "required": true,
-    "approved": false
+    "approved": true,
+    "approved_at": "2026-07-03"
   },
   "product_commits": {
     "ai-template": "24e29b3",

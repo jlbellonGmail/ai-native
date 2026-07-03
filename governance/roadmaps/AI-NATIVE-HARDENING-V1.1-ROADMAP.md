@@ -341,14 +341,16 @@ ai-template/examples/reference-app/observability/
 Status:
 
 ```text
-[x] CLOSED_LOCALLY
+[x] CLOSED
 Closed locally at: 2026-07-02
+Closed formally at: 2026-07-03
 Product repo: ai-template
 Product scope: executable testing profiles for template and generated projects
 Governance archive: governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H4/
 Next eligible: H5 — Real Evaluation Runs
 H5 opened: NO
-HITL: REQUIRED
+HITL: APPROVED
+HITL approved at: 2026-07-03
 Push: NOT_PUSHED_BY_POLICY
 ```
 
@@ -409,6 +411,7 @@ ai-template/examples/reference-app/tests/
 * A real generated project smoke was created under
   `C:\tmp\ai-native-h4-smoke-codex`, validated and removed.
 * Local validators passed in `ai-template`.
+* HITL approval was granted on 2026-07-03.
 * H1-H3 were not reopened.
 * H5-H8 were not opened.
 * `ENTERPRISE-10-10-V1` was not reopened.
