@@ -28,6 +28,7 @@ In root/governance:
 
 * `git diff --check`: PASS with CRLF warnings only
 * `node -e "const fs=require('fs'); JSON.parse(...real-evaluation-runs.contract.json...)"`: PASS
+* H5 HITL approval scope check: PASS
 * negative grep for H6 opened/closed markers: PASS
 * initial JSON parse one-liner using mixed top-level `await` and `require`: FAIL, corrected by the CommonJS parse command above
 

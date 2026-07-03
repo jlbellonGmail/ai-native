@@ -16,8 +16,9 @@ ai-knowledge/evaluation/runs/enterprise-10-10/bench-prompt-grounding-controlled/
 HITL:
 
 ```text
-H5: CLOSED_LOCALLY
-Human approval: REQUIRED
+H5: FORMALLY_CLOSED
+Human approval: APPROVED
+Approved at: 2026-07-03
 H6 opened: NO
 ```
 

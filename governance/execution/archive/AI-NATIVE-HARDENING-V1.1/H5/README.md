@@ -11,6 +11,7 @@ Scope:
 * validate the report against benchmarks, datasets, scoring and quality gates
 * document evidence policy for evaluation runs
 * close H5 locally in governance
+* record formal H5 HITL approval
 
 Non-goals:
 

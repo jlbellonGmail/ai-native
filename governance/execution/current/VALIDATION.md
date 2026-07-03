@@ -16,5 +16,6 @@ node scripts/validate-structure.mjs: PASS
 node sdd/validation/validate-sdd-package.mjs: PASS
 git diff --check: PASS with CRLF warnings only
 H5 governance contract JSON parse: PASS
+H5 HITL approval scope check: PASS
 H6 unopened negative grep: PASS
 ```

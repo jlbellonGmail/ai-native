@@ -2081,3 +2081,40 @@ Restricciones vigentes:
 * no abrir H6 sin instruccion explicita separada
 * no reabrir ENTERPRISE-10-10-V1
 * no crear ENTERPRISE-10-10-V2
+
+---
+
+## Ultima ejecucion valida
+
+Tipo:
+AI-NATIVE-HARDENING-V1.1 H5 HITL APPROVAL
+
+Estado:
+REAL EVALUATION RUNS FORMALLY CLOSED / HITL APPROVED
+
+Repositorio producto impactado:
+
+* N/A - aprobacion governance-only
+
+Commits base:
+
+* ai-knowledge H5 product commit: `cba745a`
+* root/governance H5 local closure commit: `20b8cd9`
+
+Validado:
+
+* H5 estaba `CLOSED_LOCALLY / HITL_REQUIRED` antes de la aprobacion formal.
+* El usuario otorgo aprobacion humana explicita el 2026-07-03.
+* H5 queda `FORMALLY_CLOSED / HITL_APPROVED`.
+* H6 queda `NOT_OPENED`.
+* Push no ejecutado por instruccion explicita: `NOT_PUSHED_BY_POLICY`.
+
+Evidencia disponible:
+
+* governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H5/
+
+Restricciones vigentes:
+
+* H6 - Target Repository Security Validation queda como proxima tarea elegible, no abierta
+* no abrir H6 sin instruccion explicita separada
+* no hacer push sin instruccion explicita

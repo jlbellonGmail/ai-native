@@ -1,6 +1,6 @@
 # SUMMARY
 
-H5 - Real Evaluation Runs is closed locally and requires HITL approval.
+H5 - Real Evaluation Runs is formally closed with HITL approval.
 
 Result:
 
@@ -13,6 +13,7 @@ Result:
 * `ai-foundation` had no H5 changes.
 * `ai-template` had no H5 changes.
 * `ai-template/templates/project/` was evaluated as NOT_APPLICABLE.
+* HITL approval was granted on 2026-07-03.
 * H1 through H4 were not reopened.
 * H6 through H8 were not opened.
 * Push was not executed by policy.
@@ -23,4 +24,4 @@ Next task state:
 
 HITL:
 
-* REQUIRED
+* APPROVED on 2026-07-03.

@@ -5,8 +5,9 @@ Current execution snapshot for `AI-NATIVE HARDENING-V1.1`.
 Status:
 
 ```text
-H5: CLOSED_LOCALLY
-HITL: REQUIRED
+H5: FORMALLY_CLOSED
+HITL: APPROVED
+HITL approved at: 2026-07-03
 H6 opened: NO
 Push: NOT_PUSHED_BY_POLICY
 ```
@@ -17,6 +18,7 @@ Scope:
 * generate machine-readable score report
 * validate report against dataset, benchmark, rubric and quality gates
 * archive H5 governance evidence
+* record formal H5 HITL approval
 * leave H6 as not opened
 
 Non-goals:

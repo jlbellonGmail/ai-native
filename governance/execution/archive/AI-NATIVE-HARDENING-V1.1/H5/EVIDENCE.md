@@ -61,6 +61,14 @@ Forbidden as sole evidence:
 * No VERSION files were modified.
 * `ai-template/templates/project/` impact was evaluated as NOT_APPLICABLE.
 
-## HITL
+## HITL approval
 
-Human approval is required for formal closure.
+Human approval was granted on 2026-07-03 for formal H5 closure.
+
+Confirmed approval scope:
+
+* root/governance local closure: `20b8cd9`
+* `ai-knowledge`: `cba745a`
+* `ai-foundation`: no H5 changes
+* `ai-template`: no H5 changes
+* H6 remains not opened.

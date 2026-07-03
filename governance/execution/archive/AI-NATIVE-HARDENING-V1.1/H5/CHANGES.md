@@ -31,3 +31,4 @@ behavior.
 * Updated H5 roadmap closure evidence.
 * Updated current execution snapshot.
 * Added H5 governance archive.
+* Recorded formal H5 HITL approval.

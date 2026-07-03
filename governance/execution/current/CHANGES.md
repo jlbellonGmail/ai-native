@@ -11,3 +11,11 @@ Product commit:
 ```text
 ai-knowledge: cba745a
 ```
+
+Governance approval:
+
+```text
+H5 HITL approval: APPROVED on 2026-07-03
+H6 opened: NO
+Push: NOT_PUSHED_BY_POLICY
+```

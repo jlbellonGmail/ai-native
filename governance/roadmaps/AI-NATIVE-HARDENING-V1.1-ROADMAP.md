@@ -426,13 +426,15 @@ Status:
 ```text
 [x] CLOSED
 Closed locally at: 2026-07-03
+Formally closed at: 2026-07-03
 Product repo: ai-knowledge
 Product scope: local controlled evaluation runner and score report
 Product commit: cba745a
 Governance archive: governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H5/
 Next eligible: H6 — Target Repository Security Validation
 H6 opened: NO
-HITL: REQUIRED
+HITL: APPROVED
+HITL approved at: 2026-07-03
 Push: NOT_PUSHED_BY_POLICY
 ```
 
@@ -495,7 +497,7 @@ ai-knowledge/scripts/run-evaluation.mjs
 * H1-H4 were not reopened.
 * H6-H8 were not opened.
 * Push was not executed by explicit policy.
-* HITL approval is required for formal closure.
+* HITL approval was granted on 2026-07-03.
 
 ---
 

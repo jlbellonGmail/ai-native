@@ -2,7 +2,12 @@
   "program": "AI-NATIVE-HARDENING-V1.1",
   "task": "H5",
   "name": "Real Evaluation Runs",
-  "status": "CLOSED_LOCALLY_HITL_REQUIRED",
+  "status": "FORMALLY_CLOSED",
+  "hitl": {
+    "required": true,
+    "approved": true,
+    "approved_at": "2026-07-03"
+  },
   "productRepo": "ai-knowledge",
   "productCommit": "cba745a",
   "run": {
@@ -18,6 +23,5 @@
     "h6Opened": false,
     "push": "NOT_PUSHED_BY_POLICY",
     "aiTemplateProjectImpact": "NOT_APPLICABLE"
-  },
-  "humanApproval": "REQUIRED"
+  }
 }
