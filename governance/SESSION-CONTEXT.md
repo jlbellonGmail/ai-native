@@ -2028,3 +2028,56 @@ Restricciones vigentes:
 * no abrir H5 sin instruccion explicita separada
 * no reabrir ENTERPRISE-10-10-V1
 * no crear ENTERPRISE-10-10-V2
+
+---
+
+## Ultima ejecucion valida
+
+Tipo:
+AI-NATIVE-HARDENING-V1.1 H5
+
+Estado:
+REAL EVALUATION RUNS CLOSED LOCALLY / HITL REQUIRED
+
+Repositorio producto impactado:
+
+* ai-knowledge
+
+Commits producto:
+
+* ai-knowledge H5 product commit: `cba745a`
+
+Validado:
+
+* H1 - SDD Package permanece cerrada con HITL aprobado.
+* H2 - Project Generator / create-ai-native-app permanece cerrada con HITL aprobado.
+* H3 - Runtime Observability Wiring permanece cerrada con HITL aprobado.
+* H4 - Executable Testing Profiles permanece cerrada con HITL aprobado.
+* H5 - Real Evaluation Runs fue ejecutada en rama feature local.
+* Se agrego `scripts/run-evaluation.mjs`.
+* Se agrego `scripts/validate-real-evaluation-runs.mjs`.
+* Se genero reporte machine-readable en
+  `ai-knowledge/evaluation/runs/enterprise-10-10/bench-prompt-grounding-controlled/score-report.json`.
+* La corrida controlada `bench-prompt-grounding` obtuvo `PASS` con score `1.00`.
+* Quality gates referencian el reporte real, comando de corrida y validador.
+* La evidencia rechaza governance archive, summary markdown y unchecked JSON como evidencia unica.
+* `ai-template/templates/project/` fue evaluado como NOT_APPLICABLE para H5.
+* `ai-foundation` permanecio sin cambios H5.
+* `ai-template` permanecio sin cambios H5.
+* H6-H8 no fueron ejecutadas ni abiertas.
+* ENTERPRISE-10-10-V1 permanece cerrado.
+* ENTERPRISE-10-10-V2 no fue creado.
+* Push no ejecutado por instruccion explicita: NOT_PUSHED_BY_POLICY.
+* HITL queda requerido para cierre formal H5.
+
+Evidencia disponible:
+
+* specs/hardening-v1.1-h5-real-evaluation-runs/
+* governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H5/
+
+Restricciones vigentes:
+
+* H6 - Target Repository Security Validation queda como proxima tarea elegible, no abierta
+* no abrir H6 sin instruccion explicita separada
+* no reabrir ENTERPRISE-10-10-V1
+* no crear ENTERPRISE-10-10-V2

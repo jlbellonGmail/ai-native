@@ -1,18 +1,19 @@
 # SUMMARY
 
-H2 - Project Generator / create-ai-native-app is HITL approved.
+H5 - Real Evaluation Runs is locally closed and requires HITL approval.
 
 Result:
 
-* Generator implemented in `ai-template`.
-* Generated project baseline validated.
-* Smoke test PASS.
-* H3-H8 not opened.
-* `ENTERPRISE-10-10-V1` remains closed.
-* `ENTERPRISE-10-10-V2` was not created.
+* `ai-knowledge` product commit `cba745a` implements a local controlled evaluation runner.
+* `bench-prompt-grounding` can be run with controlled fixture data.
+* Score report JSON is stored under `ai-knowledge/evaluation/runs/`.
+* Quality gates reference the real report path, run command and validator.
+* `ai-template/templates/project/` impact is NOT_APPLICABLE.
+* H1-H4 remain closed.
+* H6-H8 remain not opened.
 
-Next eligible task in a separate execution:
+Next eligible task after HITL approval:
 
-* H3 - Runtime Observability Wiring
+* H6 - Target Repository Security Validation
 
-H3 is not opened by this execution.
+H6 is not opened by this execution.

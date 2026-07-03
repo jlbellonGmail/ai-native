@@ -1,22 +1,20 @@
 # VALIDATION
 
-H2 validation summary:
+Current H5 validation is archived in:
 
 ```text
-node generators/create-ai-native-app.mjs --help: PASS
-node scripts/validate-create-ai-native-app.mjs: PASS
-node scripts/validate-structure.mjs: PASS
-node scripts/validate-enterprise-template.mjs: PASS
-git diff --check: PASS with CRLF warnings only
-smoke generation: PASS
-generated project validation: PASS
-generated project local validator: PASS
-invalid name rejection: PASS expected failure
-existing destination rejection: PASS expected failure
+governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H5/VALIDATION.md
 ```
 
-See archive:
+Summary:
 
 ```text
-governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H2/VALIDATION.md
+node scripts/run-evaluation.mjs --benchmark bench-prompt-grounding: PASS
+node scripts/validate-real-evaluation-runs.mjs: PASS
+node scripts/validate-enterprise-evaluation.mjs: PASS
+node scripts/validate-structure.mjs: PASS
+node sdd/validation/validate-sdd-package.mjs: PASS
+git diff --check: PASS with CRLF warnings only
+H5 governance contract JSON parse: PASS
+H6 unopened negative grep: PASS
 ```

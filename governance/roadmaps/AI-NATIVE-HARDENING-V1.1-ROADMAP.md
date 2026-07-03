@@ -421,6 +421,21 @@ ai-template/examples/reference-app/tests/
 
 ## H5 — Real Evaluation Runs
 
+Status:
+
+```text
+[x] CLOSED
+Closed locally at: 2026-07-03
+Product repo: ai-knowledge
+Product scope: local controlled evaluation runner and score report
+Product commit: cba745a
+Governance archive: governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H5/
+Next eligible: H6 — Target Repository Security Validation
+H6 opened: NO
+HITL: REQUIRED
+Push: NOT_PUSHED_BY_POLICY
+```
+
 ### Objective
 
 Run or define real evaluation execution paths using `ai-knowledge`.
@@ -463,6 +478,24 @@ ai-knowledge/scripts/run-evaluation.mjs
 ### Closure Condition
 
 `H5` is closed only when evaluation has at least one real executable path or clearly documented controlled run.
+
+### Closure Evidence
+
+* `ai-knowledge` real evaluation runs were committed as `cba745a`.
+* `scripts/run-evaluation.mjs` executes `bench-prompt-grounding` using controlled
+  fixture data.
+* `evaluation/runs/enterprise-10-10/bench-prompt-grounding-controlled/score-report.json`
+  is a machine-readable score report with `decision: PASS` and score `1.00`.
+* `scripts/validate-real-evaluation-runs.mjs` validates the report against
+  benchmark, dataset, scoring rubric, quality gates and evidence policy.
+* Quality gates reference the real report path, run command and validator.
+* Results are explicitly not governance-only evidence.
+* `ai-template/templates/project/` was evaluated as NOT_APPLICABLE because H5
+  does not affect generated-project behavior.
+* H1-H4 were not reopened.
+* H6-H8 were not opened.
+* Push was not executed by explicit policy.
+* HITL approval is required for formal closure.
 
 ---
 
