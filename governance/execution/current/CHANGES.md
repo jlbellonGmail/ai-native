@@ -1,21 +1,25 @@
 # CHANGES
 
-Current H5 changes are archived in:
+Current H6 changes are archived in:
 
 ```text
-governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H5/CHANGES.md
+governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H6/CHANGES.md
 ```
 
-Product commit:
+Product commits:
 
 ```text
-ai-knowledge: cba745a
+ai-foundation: 74611a7 feat(security): add target repository security validation
+ai-template: cf3bf9c feat(template): add target repository security bootstrap validation
+ai-knowledge: no H6 changes
 ```
 
-Governance approval:
+Governance:
 
 ```text
-H5 HITL approval: APPROVED on 2026-07-03
-H6 opened: NO
+H6 local closure: CLOSED_LOCALLY / HITL_REQUIRED
+HITL approval: NOT_RECORDED
+H7 opened: NO
+H8 opened: NO
 Push: NOT_PUSHED_BY_POLICY
 ```

@@ -2118,3 +2118,61 @@ Restricciones vigentes:
 * H6 - Target Repository Security Validation queda como proxima tarea elegible, no abierta
 * no abrir H6 sin instruccion explicita separada
 * no hacer push sin instruccion explicita
+
+---
+
+## Ultima ejecucion valida
+
+Tipo:
+AI-NATIVE-HARDENING-V1.1 H6
+
+Estado:
+TARGET REPOSITORY SECURITY VALIDATION CLOSED LOCALLY / HITL REQUIRED
+
+Repositorio producto impactado:
+
+* ai-foundation
+* ai-template
+
+Commits producto:
+
+* ai-foundation H6 product commit: `74611a7`
+* ai-template H6 product commit: `cf3bf9c`
+* ai-knowledge H6 product commit: N/A
+
+Validado:
+
+* H6 - Target Repository Security Validation fue recuperada quirurgicamente tras
+  corte por creditos.
+* Instruction gate y discovery H6 ya habian pasado antes del corte.
+* H6 fue descubierta desde el roadmap local como Target Repository Security
+  Validation.
+* `governance/security/TARGET-REPO-SECURITY-CHECKLIST.md` define evidencia
+  auditable para repositorios destino.
+* `ai-foundation` agrega procedimiento, contrato y validador para seguridad de
+  repositorio destino.
+* `ai-template` agrega bootstrap de seguridad para docs factory, scaffold
+  generado y project template.
+* Dependency Review, Dependabot, SBOM y attestations requieren evidencia del
+  repositorio destino.
+* No se tratan supuestos remotos como PASS local.
+* Smoke temporal H6 en `C:\tmp` fue eliminado durante recovery.
+* `ai-knowledge` permanecio sin cambios H6.
+* H1-H5 permanecen cerradas.
+* H7-H8 no fueron abiertas.
+* ENTERPRISE-10-10-V1 permanece cerrado.
+* ENTERPRISE-10-10-V2 no fue creado.
+* Push no ejecutado por instruccion explicita: NOT_PUSHED_BY_POLICY.
+* HITL queda requerido para cierre formal H6.
+
+Evidencia disponible:
+
+* specs/hardening-v1.1-h6-target-repo-security-validation/
+* governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H6/
+
+Restricciones vigentes:
+
+* H7 - First Client Project Playbook queda como proxima tarea elegible, no abierta
+* no abrir H7 sin instruccion explicita separada
+* no hacer push sin instruccion explicita
+* no registrar HITL APPROVED para H6 sin aprobacion humana explicita

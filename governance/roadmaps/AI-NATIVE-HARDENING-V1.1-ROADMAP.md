@@ -545,6 +545,30 @@ ai-template/docs/security/SECURITY-BOOTSTRAP.md
 
 `H6` is closed only when target repo security validation is repeatable and auditable.
 
+### Local Closure Status
+
+Status: CLOSED_LOCALLY
+HITL: REQUIRED
+Push: NOT_PUSHED_BY_POLICY
+Governance archive: governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H6/
+Next eligible: H7 — First Client Project Playbook
+H7 opened: NO
+H8 opened: NO
+
+Closure evidence:
+
+* Target repository security checklist added under governance.
+* `ai-foundation` target repository security validation procedure, contract and
+  validator added.
+* `ai-template` security bootstrap guidance added for factory docs, generated
+  scaffold and project template assets.
+* Dependency Review, Dependabot, SBOM and attestation evidence requirements are
+  explicit.
+* Local validation does not claim remote controls as PASS.
+* No remotes, credentials, GitHub settings, workflows, push or PR were modified.
+* H1-H5 remain closed.
+* H7-H8 were not opened.
+
 ---
 
 ## H7 — First Client Project Playbook
