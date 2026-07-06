@@ -617,6 +617,30 @@ ai-template/docs/onboarding/FIRST-PROJECT.md
 
 `H7` is closed only when the first project path is operationally clear.
 
+### Local Closure Status
+
+Status: CLOSED_LOCALLY
+HITL: REQUIRED
+Push: NOT_PUSHED_BY_POLICY
+Governance archive: governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H7/
+Next eligible: H8 — Adoption Readiness Final Audit
+H8: NOT_OPENED
+
+Closure evidence:
+
+* First Client Project Playbook added in `ai-knowledge`.
+* First project onboarding reference added in `ai-template`.
+* Governance playbook record added.
+* Playbook contract and validators added.
+* The playbook covers intake, readiness, SDD, delivery, evidence, Inspector,
+  local closure and HITL final review.
+* The playbook references H1 SDD, H2 generator, H3 observability, H4 testing,
+  H5 evaluation and H6 target repository security validation.
+* MVP/pilot path is distinguished from production-critical use.
+* H1-H6 remain formally closed.
+* H8 was not opened.
+* HITL approval remains required.
+
 ---
 
 ## H8 — Adoption Readiness Final Audit

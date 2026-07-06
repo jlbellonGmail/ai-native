@@ -1,28 +1,23 @@
 # SUMMARY
 
-H6 - Target Repository Security Validation is formally closed with HITL
-approval.
+H7 - First Client Project Playbook is closed locally and requires HITL approval
+for formal closure.
 
 Result:
 
-* `ai-foundation` product commit `74611a7` adds target repository security
-  validation procedure, contract and validator.
-* `ai-template` product commit `cf3bf9c` adds target repository security
-  bootstrap documentation and generated-project validation.
-* Governance adds the target repository security checklist.
-* Remote controls require target repository evidence and are not treated as
-  local PASS.
-* The H6 generated-project smoke directory under `C:\tmp` was removed.
-* HITL approval was granted on 2026-07-06.
-* H1-H5 remain closed.
-* H7-H8 remain not opened.
+* `ai-knowledge` product commit `8582290` adds the canonical first client
+  project playbook, contract and validator.
+* `ai-template` product commit `01b0971` adds first project onboarding
+  documentation and validator.
+* Governance adds the First Client Project Playbook governance record.
+* The playbook covers intake, readiness, SDD, delivery, evidence, Inspector
+  review, local closure and HITL final review.
+* MVP/pilot use is distinguished from production-critical escalation.
+* H1-H6 remain formally closed.
+* H8 remains not opened.
 
 Next eligible task in a separate execution:
 
-* H7 - First Client Project Playbook
+* H8 - Adoption Readiness Final Audit
 
-H7 is not opened by this execution.
-
-HITL:
-
-* APPROVED on 2026-07-06.
+H8 is not opened by this execution.

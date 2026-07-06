@@ -2175,6 +2175,62 @@ Restricciones vigentes:
 * H7 - First Client Project Playbook queda como proxima tarea elegible, no abierta
 * no abrir H7 sin instruccion explicita separada
 * no hacer push sin instruccion explicita
+
+---
+
+## Ultima ejecucion valida
+
+Tipo:
+AI-NATIVE-HARDENING-V1.1 H7
+
+Estado:
+FIRST CLIENT PROJECT PLAYBOOK CLOSED LOCALLY / HITL REQUIRED
+
+Recovery:
+
+* Ejecucion recuperada despues de bloqueo por usage limit / creditos.
+* Se continuo desde cambios parciales H7 sin reimplementar desde cero.
+
+Repositorio producto impactado:
+
+* ai-knowledge
+* ai-template
+
+Commits producto:
+
+* ai-knowledge H7 product commit: `8582290`
+* ai-template H7 product commit: `01b0971`
+* ai-foundation H7 product commit: N/A
+
+Validado:
+
+* H1-H6 permanecen formalmente cerradas con HITL aprobado.
+* H7 - First Client Project Playbook fue ejecutada en rama feature local.
+* `ai-knowledge` agrega playbook canonico, contrato y validador.
+* `ai-template` agrega onboarding del primer proyecto y validador.
+* El playbook cubre intake, readiness, SDD, delivery, evidencia, Inspector,
+  cierre local, HITL final, bloqueos y escalamiento.
+* El playbook referencia H1 SDD, H2 generator, H3 observability, H4 testing,
+  H5 evaluation y H6 target repository security validation.
+* MVP/pilot queda separado de uso production-critical.
+* `ai-foundation` permanecio sin cambios H7.
+* H8 no fue abierta.
+* ENTERPRISE-10-10-V1 permanece cerrado.
+* ENTERPRISE-10-10-V2 no fue creado.
+* Push no ejecutado por instruccion explicita: NOT_PUSHED_BY_POLICY.
+* HITL queda requerido para cierre formal H7.
+
+Evidencia disponible:
+
+* specs/hardening-v1.1-h7-first-client-project-playbook/
+* governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H7/
+
+Restricciones vigentes:
+
+* H8 - Adoption Readiness Final Audit queda como proxima tarea elegible, no abierta
+* no abrir H8 sin instruccion explicita separada
+* no hacer push sin instruccion explicita
+* no registrar HITL APPROVED para H7 sin aprobacion humana explicita
 * no registrar HITL APPROVED para H6 sin aprobacion humana explicita
 
 ---

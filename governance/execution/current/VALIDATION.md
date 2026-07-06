@@ -1,26 +1,26 @@
 # VALIDATION
 
-Current H6 validation is archived in:
+Current H7 validation is archived in:
 
 ```text
-governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H6/VALIDATION.md
+governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H7/VALIDATION.md
 ```
 
 Summary:
 
 ```text
-git diff --check root/governance: PASS
-git diff --check ai-foundation: PASS with CRLF warnings only
-git diff --check ai-knowledge: PASS
-git diff --check ai-template: PASS with CRLF warnings only
-ai-foundation H6 JSON parse: PASS
-ai-template H6 JSON parse: PASS
-node scripts/validate-target-repo-security.mjs: PASS
-node scripts/validate-security-bootstrap.mjs: PASS
+node scripts/validate-first-client-project-playbook.mjs: PASS
+H7 playbook contract JSON parse: PASS
+node sdd/validation/validate-sdd-package.mjs: PASS
+node scripts/validate-structure.mjs in ai-knowledge: PASS
+node scripts/validate-first-project-onboarding.mjs: PASS
+ai-template package.json parse: PASS
+node scripts/validate-structure.mjs in ai-template: PASS
 node scripts/validate-generated-project.mjs: PASS
 node scripts/validate-create-ai-native-app.mjs: PASS
-node sdd/validation/validate-sdd-package.mjs: PASS
-root checklist static validation: PASS
-H7/H8 unopened negative grep: PASS
-H6 HITL approval scope check: PASS
+git diff --check all repos: PASS
+ai-foundation changed check: NO_CHANGES
+Inspector: PASS
+H8 not opened: PASS
+H7 HITL approved by agent: NO
 ```

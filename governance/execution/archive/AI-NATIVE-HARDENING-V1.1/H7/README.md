@@ -1,28 +1,19 @@
 # H7 - First Client Project Playbook
 
-Current execution snapshot for `AI-NATIVE HARDENING-V1.1`.
-
-Status:
-
-```text
-H7: CLOSED_LOCALLY
-HITL: REQUIRED
-HITL approved: NO
-H8: NOT_OPENED
-Push: NOT_PUSHED_BY_POLICY
-```
+H7 closes the local first-client project startup path for
+`AI-NATIVE HARDENING-V1.1`.
 
 Scope:
 
 * add canonical First Client Project Playbook in `ai-knowledge`
 * add first project onboarding reference in `ai-template`
 * add governance playbook record
-* archive H7 governance evidence
-* leave H8 as not opened
+* validate playbook structure and template onboarding
+* close H7 locally in governance
 
 Non-goals:
 
-* H8 execution
+* H8 Adoption Readiness Final Audit
 * real client repository creation
 * remote GitHub mutation, push, PR or credentials
 * production-critical approval
