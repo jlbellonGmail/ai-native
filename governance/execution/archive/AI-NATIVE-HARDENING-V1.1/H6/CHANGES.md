@@ -8,6 +8,7 @@
 * Updated H6 roadmap closure state.
 * Updated current execution snapshot for H6.
 * Added H6 archive evidence.
+* Recorded formal H6 HITL approval.
 
 ## ai-foundation
 
@@ -33,3 +34,4 @@ Product commit: `cf3bf9c`
 * `ai-knowledge` has no H6 changes.
 * No `VERSION` files were modified.
 * No remotes, credentials, GitHub settings, push or PR were modified.
+* H7/H8 remain NOT_OPENED.

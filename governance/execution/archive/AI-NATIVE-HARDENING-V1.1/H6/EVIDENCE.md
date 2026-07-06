@@ -48,11 +48,11 @@ Key files:
 ## HITL
 
 ```text
-H6: CLOSED_LOCALLY
-Human approval: REQUIRED
-HITL approved: NO
-H7 opened: NO
-H8 opened: NO
+H6: FORMALLY_CLOSED
+Human approval: APPROVED
+HITL approved at: 2026-07-06
+H7: NOT_OPENED
+H8: NOT_OPENED
 ```
 
 ## Push

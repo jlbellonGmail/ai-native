@@ -2176,3 +2176,44 @@ Restricciones vigentes:
 * no abrir H7 sin instruccion explicita separada
 * no hacer push sin instruccion explicita
 * no registrar HITL APPROVED para H6 sin aprobacion humana explicita
+
+---
+
+## Ultima ejecucion valida
+
+Tipo:
+AI-NATIVE-HARDENING-V1.1 H6 HITL APPROVAL
+
+Estado:
+TARGET REPOSITORY SECURITY VALIDATION FORMALLY CLOSED / HITL APPROVED
+
+Repositorio producto impactado:
+
+* N/A - aprobacion governance-only
+
+Commits base:
+
+* root/governance H6 local closure commit: `4205028`
+* ai-foundation H6 product commit: `74611a7`
+* ai-template H6 product commit: `cf3bf9c`
+* ai-knowledge H6 product commit: N/A
+
+Validado:
+
+* H6 estaba `CLOSED_LOCALLY / HITL_REQUIRED` antes de la aprobacion formal.
+* El usuario otorgo aprobacion humana explicita el 2026-07-06.
+* H6 queda `FORMALLY_CLOSED / HITL_APPROVED`.
+* H7 queda `NOT_OPENED`.
+* H8 queda `NOT_OPENED`.
+* ai-foundation, ai-knowledge y ai-template permanecieron sin cambios nuevos.
+* Push no ejecutado por instruccion explicita: `NOT_PUSHED_BY_POLICY`.
+
+Evidencia disponible:
+
+* governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H6/
+
+Restricciones vigentes:
+
+* H7 - First Client Project Playbook queda como proxima tarea elegible, no abierta
+* no abrir H7 sin instruccion explicita separada
+* no hacer push sin instruccion explicita

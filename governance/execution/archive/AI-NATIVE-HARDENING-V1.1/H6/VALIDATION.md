@@ -9,6 +9,7 @@ Validation evidence recorded during H6 recovery and closure.
 * H7/H8 unopened negative grep: PASS.
 * ai-knowledge has no H6 changes: PASS.
 * H6 smoke temporary directory under `C:\tmp` removed: PASS.
+* H6 HITL approval scope check: PASS.
 * Push not executed: PASS.
 
 ## Commands

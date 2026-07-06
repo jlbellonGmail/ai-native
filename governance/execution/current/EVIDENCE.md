@@ -30,11 +30,11 @@ ai-template/scripts/validate-security-bootstrap.mjs
 HITL:
 
 ```text
-H6: CLOSED_LOCALLY
-Human approval: REQUIRED
-Approved: NO
-H7 opened: NO
-H8 opened: NO
+H6: FORMALLY_CLOSED
+Human approval: APPROVED
+Approved at: 2026-07-06
+H7: NOT_OPENED
+H8: NOT_OPENED
 ```
 
 Push:

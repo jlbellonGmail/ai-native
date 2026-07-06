@@ -17,9 +17,9 @@ ai-knowledge: no H6 changes
 Governance:
 
 ```text
-H6 local closure: CLOSED_LOCALLY / HITL_REQUIRED
-HITL approval: NOT_RECORDED
-H7 opened: NO
-H8 opened: NO
+H6 formal closure: FORMALLY_CLOSED / HITL_APPROVED
+HITL approval: APPROVED on 2026-07-06
+H7: NOT_OPENED
+H8: NOT_OPENED
 Push: NOT_PUSHED_BY_POLICY
 ```

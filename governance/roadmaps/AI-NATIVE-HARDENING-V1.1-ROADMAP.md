@@ -547,13 +547,14 @@ ai-template/docs/security/SECURITY-BOOTSTRAP.md
 
 ### Local Closure Status
 
-Status: CLOSED_LOCALLY
-HITL: REQUIRED
+Status: FORMALLY_CLOSED
+HITL: APPROVED
+HITL approved at: 2026-07-06
 Push: NOT_PUSHED_BY_POLICY
 Governance archive: governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H6/
 Next eligible: H7 — First Client Project Playbook
-H7 opened: NO
-H8 opened: NO
+H7: NOT_OPENED
+H8: NOT_OPENED
 
 Closure evidence:
 
@@ -568,6 +569,7 @@ Closure evidence:
 * No remotes, credentials, GitHub settings, workflows, push or PR were modified.
 * H1-H5 remain closed.
 * H7-H8 were not opened.
+* HITL approval was granted on 2026-07-06.
 
 ---
 

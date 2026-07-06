@@ -22,4 +22,5 @@ node scripts/validate-create-ai-native-app.mjs: PASS
 node sdd/validation/validate-sdd-package.mjs: PASS
 root checklist static validation: PASS
 H7/H8 unopened negative grep: PASS
+H6 HITL approval scope check: PASS
 ```

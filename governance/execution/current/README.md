@@ -5,11 +5,11 @@ Current execution snapshot for `AI-NATIVE HARDENING-V1.1`.
 Status:
 
 ```text
-H6: CLOSED_LOCALLY
-HITL: REQUIRED
-HITL approved: NO
-H7 opened: NO
-H8 opened: NO
+H6: FORMALLY_CLOSED
+HITL: APPROVED
+HITL approved at: 2026-07-06
+H7: NOT_OPENED
+H8: NOT_OPENED
 Push: NOT_PUSHED_BY_POLICY
 ```
 
@@ -19,6 +19,7 @@ Scope:
 * add reusable security validation procedure and validator in `ai-foundation`
 * add generated-project security bootstrap guidance in `ai-template`
 * record local closure evidence for H6
+* record formal H6 HITL approval
 * leave H7 and H8 as not opened
 
 Non-goals:
