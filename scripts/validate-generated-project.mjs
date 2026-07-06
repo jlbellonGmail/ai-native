@@ -71,11 +71,15 @@ async function validateGeneratedProject(target, contract) {
   assert(manifest.observability.defaultMode === "noop", "generated manifest observability default mismatch");
   assert(manifest.testingProfiles?.task === "AI-NATIVE-HARDENING-V1.1/H4", "generated manifest testing profiles task mismatch");
   assert(manifest.testingProfiles.defaultExecution === "local", "generated testing profiles default mismatch");
+  assert(manifest.securityValidation?.task === "AI-NATIVE-HARDENING-V1.1/H6", "generated manifest security validation task mismatch");
+  assert(manifest.securityValidation.remoteControlsRequireTargetEvidence === true, "generated security validation must require target evidence");
+  assert(manifest.securityValidation.localValidationIsRemotePass === false, "generated security validation must not mark remote PASS locally");
 
   for (const file of [
     "testing/profiles/testing-profiles.json",
     "testing/smoke/testing-smoke.mjs",
     "docs/testing/executable-testing-profiles.md",
+    "docs/security/SECURITY-BOOTSTRAP.md",
     "scripts/validate-testing-profiles.mjs"
   ]) {
     assert(exists(resolvedTarget, file), `generated project missing H4 testing profile file ${file}`);
@@ -84,6 +88,10 @@ async function validateGeneratedProject(target, contract) {
   const testingProfiles = JSON.parse(await readFile(path.join(resolvedTarget, "testing/profiles/testing-profiles.json"), "utf8"));
   assert(testingProfiles.roadmapTask === "AI-NATIVE-HARDENING-V1.1/H4", "generated testing profiles task mismatch");
   assert(testingProfiles.safety.localOnly === true, "generated testing profiles must be local only");
+
+  const securityBootstrap = await readFile(path.join(resolvedTarget, "docs/security/SECURITY-BOOTSTRAP.md"), "utf8");
+  assert(securityBootstrap.includes("AI-NATIVE-HARDENING-V1.1/H6"), "generated security bootstrap task mismatch");
+  assert(securityBootstrap.includes("does not prove remote"), "generated security bootstrap must reject remote PASS from local validation");
 }
 
 const args = parseArgs(process.argv.slice(2));

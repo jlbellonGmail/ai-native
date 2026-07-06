@@ -19,6 +19,7 @@
       "config",
       "config/ai",
       "docs",
+      "docs/security",
       "docs/sdd",
       "scripts",
       "validation"
@@ -29,6 +30,7 @@
       "ai-native.project.json",
       "config/ai/sdd-workflow.md",
       "docs/setup.md",
+      "docs/security/SECURITY-BOOTSTRAP.md",
       "docs/sdd/README.md",
       "scripts/validate-ai-native-project.mjs",
       "validation/README.md"

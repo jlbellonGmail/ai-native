@@ -13,6 +13,7 @@ const requiredDirectories = [
   "config/ai",
   "config/observability",
   "docs/testing",
+  "docs/security",
   "docs/sdd",
   "docs/observability",
   "scripts",
@@ -31,6 +32,7 @@ const requiredFiles = [
   "docs/sdd/README.md",
   "docs/observability/runtime-observability.md",
   "docs/testing/executable-testing-profiles.md",
+  "docs/security/SECURITY-BOOTSTRAP.md",
   "scripts/validate-ai-native-project.mjs",
   "scripts/validate-testing-profiles.mjs",
   "services/infrastructure/observability/runtime-observability.mjs",
@@ -70,11 +72,18 @@ assert(observabilityConfig.exports_remotely_by_default === false, "observability
 
 assert(manifest.testingProfiles?.task === "AI-NATIVE-HARDENING-V1.1/H4", "manifest must reference H4 testing profiles");
 assert(manifest.testingProfiles.defaultExecution === "local", "testing profiles must default to local execution");
+assert(manifest.securityValidation?.task === "AI-NATIVE-HARDENING-V1.1/H6", "manifest must reference H6 security validation");
+assert(manifest.securityValidation.remoteControlsRequireTargetEvidence === true, "security validation must require target evidence");
+assert(manifest.securityValidation.localValidationIsRemotePass === false, "local validation must not imply remote PASS");
 
 const testingProfiles = JSON.parse(await readFile(path.join(root, "testing/profiles/testing-profiles.json"), "utf8"));
 assert(testingProfiles.schemaVersion === "testing-profiles.v1", "testing profiles schema version mismatch");
 assert(testingProfiles.roadmapTask === "AI-NATIVE-HARDENING-V1.1/H4", "testing profiles must reference H4");
 assert(testingProfiles.safety.localOnly === true, "testing profiles must be local only");
 assert(testingProfiles.safety.requiresNetwork === false, "testing profiles must not require network");
+
+const securityBootstrap = await readFile(path.join(root, "docs/security/SECURITY-BOOTSTRAP.md"), "utf8");
+assert(securityBootstrap.includes("AI-NATIVE-HARDENING-V1.1/H6"), "security bootstrap must reference H6");
+assert(securityBootstrap.includes("does not prove remote"), "security bootstrap must reject remote PASS from local validation");
 
 console.log("generated AI-Native project validation PASS");
