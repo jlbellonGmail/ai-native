@@ -13,6 +13,7 @@
         "validate:runtime-observability": "node scripts/validate-runtime-observability-wiring.mjs",
         "validate:testing-profiles": "node scripts/validate-testing-profiles.mjs",
         "validate:security-bootstrap": "node scripts/validate-security-bootstrap.mjs",
+        "validate:first-project-onboarding": "node scripts/validate-first-project-onboarding.mjs",
         "analyze": "tsx scripts/analyze.ts",
         "prepare": "node -e \"require('fs').mkdirSync('.ai-runtime-data',{recursive:true});require('fs').mkdirSync('logs',{recursive:true});require('fs').mkdirSync('docs/incidents',{recursive:true})\"",
         "test": "vitest run validation/tests",
