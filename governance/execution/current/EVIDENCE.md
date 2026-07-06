@@ -28,9 +28,9 @@ governance/documentation/FIRST-CLIENT-PROJECT-PLAYBOOK.md
 HITL:
 
 ```text
-H7: CLOSED_LOCALLY
-Human approval: REQUIRED
-Approved: NO
+H7: FORMALLY_CLOSED
+Human approval: APPROVED
+HITL approved at: 2026-07-06
 H8: NOT_OPENED
 ```
 

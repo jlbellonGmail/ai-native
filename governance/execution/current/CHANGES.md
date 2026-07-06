@@ -17,8 +17,8 @@ ai-foundation: no H7 changes
 Governance:
 
 ```text
-H7 local closure: CLOSED_LOCALLY / HITL_REQUIRED
-HITL approval: NOT_RECORDED
+H7 formal closure: FORMALLY_CLOSED / HITL_APPROVED
+HITL approval: APPROVED on 2026-07-06
 H8: NOT_OPENED
 Push: NOT_PUSHED_BY_POLICY
 ```

@@ -619,8 +619,9 @@ ai-template/docs/onboarding/FIRST-PROJECT.md
 
 ### Local Closure Status
 
-Status: CLOSED_LOCALLY
-HITL: REQUIRED
+Status: FORMALLY_CLOSED
+HITL: APPROVED
+HITL approved at: 2026-07-06
 Push: NOT_PUSHED_BY_POLICY
 Governance archive: governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H7/
 Next eligible: H8 — Adoption Readiness Final Audit
@@ -639,7 +640,7 @@ Closure evidence:
 * MVP/pilot path is distinguished from production-critical use.
 * H1-H6 remain formally closed.
 * H8 was not opened.
-* HITL approval remains required.
+* HITL approval was granted on 2026-07-06.
 
 ---
 

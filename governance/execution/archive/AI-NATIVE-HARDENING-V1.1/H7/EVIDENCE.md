@@ -42,14 +42,14 @@ Key files:
 * `ENTERPRISE-10-10-V1` not reopened: PASS.
 * `ENTERPRISE-10-10-V2` not created: PASS.
 * No remote mutation or push: PASS.
-* H7 HITL approval not recorded: PASS.
+* H7 HITL approval recorded from explicit user instruction: PASS.
 
 ## HITL
 
 ```text
-H7: CLOSED_LOCALLY
-Human approval: REQUIRED
-HITL approved: NO
+H7: FORMALLY_CLOSED
+Human approval: APPROVED
+HITL approved at: 2026-07-06
 H8: NOT_OPENED
 ```
 

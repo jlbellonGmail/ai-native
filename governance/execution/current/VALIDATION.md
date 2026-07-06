@@ -22,5 +22,6 @@ git diff --check all repos: PASS
 ai-foundation changed check: NO_CHANGES
 Inspector: PASS
 H8 not opened: PASS
-H7 HITL approved by agent: NO
+H7 HITL approval scope check: PASS
+H7 HITL approved by explicit user instruction: PASS
 ```

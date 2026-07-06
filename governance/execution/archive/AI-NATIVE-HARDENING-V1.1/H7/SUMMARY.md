@@ -1,10 +1,10 @@
 # SUMMARY
 
-H7 - First Client Project Playbook is closed locally and requires HITL approval
-for formal closure.
+H7 - First Client Project Playbook is formally closed with HITL approval.
 
 Result:
 
+* Formal HITL approval was granted on 2026-07-06.
 * First Client Project Playbook exists in `ai-knowledge`.
 * First project onboarding exists in `ai-template`.
 * Governance record exists in root/governance.
@@ -28,4 +28,4 @@ Next task state:
 
 HITL:
 
-* REQUIRED. Not approved by agent.
+* APPROVED on 2026-07-06 by explicit user instruction.

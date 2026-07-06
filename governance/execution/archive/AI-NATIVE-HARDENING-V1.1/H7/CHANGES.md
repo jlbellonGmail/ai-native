@@ -6,6 +6,7 @@
 * Added H7 SDD artifacts under
   `specs/hardening-v1.1-h7-first-client-project-playbook/`.
 * Updated H7 roadmap closure state.
+* Recorded formal H7 HITL approval on 2026-07-06.
 * Updated current execution snapshot.
 * Added H7 governance archive.
 

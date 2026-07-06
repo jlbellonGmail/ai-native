@@ -12,7 +12,8 @@ Validation evidence recorded during H7 recovery and closure.
 * `ENTERPRISE-10-10-V1` not reopened: PASS.
 * `ENTERPRISE-10-10-V2` not created: PASS.
 * ai-foundation has no H7 changes: PASS.
-* H7 HITL approval not recorded: PASS.
+* H7 HITL approval scope check: PASS.
+* H7 HITL approved by explicit user instruction: PASS.
 * Push not executed: PASS.
 
 ## Commands
