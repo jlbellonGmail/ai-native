@@ -1,6 +1,6 @@
 # INSPECTOR
 
-Inspector result: PASS for local closure.
+Inspector result: PASS for formal HITL closure.
 
 Findings:
 
@@ -10,8 +10,8 @@ Findings:
 * Readiness decision is evidence-based and conservative:
   `READY_FOR_FIRST_PROJECT`, not unrestricted production certification.
 * Remaining risks are documented as first-project conditions.
-* H8 remains `CLOSED_LOCALLY / HITL_REQUIRED`.
-* The agent did not record human approval.
+* H8 is `FORMALLY_CLOSED / HITL_APPROVED`.
+* Formal HITL approval was recorded from explicit user instruction.
 * Push was not executed.
 
 Residual risks:

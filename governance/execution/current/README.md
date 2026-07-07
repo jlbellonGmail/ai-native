@@ -5,9 +5,9 @@ Current execution snapshot for `AI-NATIVE HARDENING-V1.1`.
 Status:
 
 ```text
-H8: CLOSED_LOCALLY
-HITL: REQUIRED
-HITL approved: NO
+H8: FORMALLY_CLOSED
+HITL: APPROVED
+HITL approved at: 2026-07-07
 Adoption readiness: READY_FOR_FIRST_PROJECT
 Readiness score: 91/100
 Push: NOT_PUSHED_BY_POLICY
@@ -16,14 +16,13 @@ Push: NOT_PUSHED_BY_POLICY
 Scope:
 
 * audit readiness after H1-H7 formal closure
+* record formal HITL approval for H8
 * distinguish governance, validation and runtime evidence
 * record final adoption-readiness decision
 * archive H8 governance evidence
-* leave HITL approval unrecorded
 
 Non-goals:
 
-* human approval or formal HITL closure
 * product implementation changes
 * real client repository creation
 * remote GitHub mutation, push, PR or credentials

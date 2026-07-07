@@ -2,11 +2,11 @@
   "program": "AI-NATIVE-HARDENING-V1.1",
   "task": "H8",
   "name": "Adoption Readiness Final Audit",
-  "status": "CLOSED_LOCALLY",
+  "status": "FORMALLY_CLOSED",
   "hitl": {
     "required": true,
-    "approved": false,
-    "approved_at": null
+    "approved": true,
+    "approved_at": "2026-07-07"
   },
   "decision": {
     "readiness": "READY_FOR_FIRST_PROJECT",

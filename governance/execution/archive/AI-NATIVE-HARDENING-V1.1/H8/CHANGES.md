@@ -4,6 +4,7 @@
 
 * Added H8 adoption-readiness final audit archive.
 * Added machine-readable H8 adoption-readiness contract.
+* Recorded formal H8 HITL approval on 2026-07-07.
 * Updated current execution snapshot for H8.
 * Updated HARDENING-V1.1 roadmap with H8 local closure state.
 * Updated session context with H8 local closure evidence.

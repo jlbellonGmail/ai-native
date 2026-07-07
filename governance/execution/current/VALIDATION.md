@@ -20,5 +20,6 @@ onboarding and structure validators: PASS
 git diff --check all repos: PASS
 product repo cleanliness: PASS
 Inspector: PASS
-H8 HITL approval recorded: NO
+H8 HITL approval scope check: PASS
+H8 HITL approved by explicit user instruction: PASS
 ```

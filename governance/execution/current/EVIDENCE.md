@@ -25,9 +25,9 @@ governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H8/INSPECTOR.md
 HITL:
 
 ```text
-H8: CLOSED_LOCALLY
-Human approval: REQUIRED
-Approved: NO
+H8: FORMALLY_CLOSED
+Human approval: APPROVED
+HITL approved at: 2026-07-07
 ```
 
 Push:

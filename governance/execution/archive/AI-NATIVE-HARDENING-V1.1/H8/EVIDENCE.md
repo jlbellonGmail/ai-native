@@ -53,14 +53,14 @@
 * `ENTERPRISE-10-10-V2` not created: PASS.
 * Product repositories unchanged: PASS.
 * No remote mutation or push: PASS.
-* H8 HITL approval not recorded: PASS.
+* H8 HITL approval recorded from explicit user instruction: PASS.
 
 ## HITL
 
 ```text
-H8: CLOSED_LOCALLY
-Human approval: REQUIRED
-HITL approved: NO
+H8: FORMALLY_CLOSED
+Human approval: APPROVED
+HITL approved at: 2026-07-07
 ```
 
 ## Push

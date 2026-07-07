@@ -696,9 +696,9 @@ governance/SESSION-CONTEXT.md
 
 ### Local Closure Status
 
-Status: CLOSED_LOCALLY
-HITL: REQUIRED
-HITL approved: NO
+Status: FORMALLY_CLOSED
+HITL: APPROVED
+HITL approved at: 2026-07-07
 Push: NOT_PUSHED_BY_POLICY
 Governance archive: governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H8/
 Adoption readiness: READY_FOR_FIRST_PROJECT
@@ -716,7 +716,7 @@ Closure evidence:
 * `ENTERPRISE-10-10-V1` was not reopened.
 * `ENTERPRISE-10-10-V2` was not created.
 * Push was not executed by policy.
-* HITL approval remains required.
+* HITL approval was granted on 2026-07-07.
 
 ---
 

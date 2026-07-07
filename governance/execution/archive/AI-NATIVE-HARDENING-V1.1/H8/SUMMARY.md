@@ -1,10 +1,10 @@
 # SUMMARY
 
-H8 - Adoption Readiness Final Audit is closed locally and requires HITL
-approval for formal closure.
+H8 - Adoption Readiness Final Audit is formally closed with HITL approval.
 
 Result:
 
+* Formal HITL approval was granted on 2026-07-07.
 * Final adoption decision: `READY_FOR_FIRST_PROJECT`.
 * Readiness score: `91/100`.
 * H1-H7 are formally closed with HITL approval.
@@ -23,9 +23,10 @@ Product commits used as evidence:
 
 Next action state:
 
-* H8 HITL approval: REQUIRED
-* First controlled real project: recommended only after H8 HITL approval
+* H8 HITL approval: APPROVED
+* First controlled real project: recommended under H7 playbook and H8
+  adoption conditions.
 
 HITL:
 
-* REQUIRED. Not approved by agent.
+* APPROVED on 2026-07-07 by explicit user instruction.

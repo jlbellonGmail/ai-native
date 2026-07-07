@@ -3,7 +3,8 @@
 Program: `AI-NATIVE HARDENING-V1.1`
 Task: `H8 - Adoption Readiness Final Audit`
 Date: 2026-07-07
-Status: `CLOSED_LOCALLY / HITL_REQUIRED`
+Status: `FORMALLY_CLOSED / HITL_APPROVED`
+HITL approved at: 2026-07-07
 
 ## Decision
 
@@ -11,8 +12,8 @@ Final adoption decision: `READY_FOR_FIRST_PROJECT`.
 
 Readiness score: `91/100`.
 
-Recommended next action after H8 HITL approval: start the first controlled
-real project from `ai-template`, using H7 playbook constraints and keeping
+Recommended next action: start the first controlled real project from
+`ai-template`, using H7 playbook constraints and keeping
 production-critical use behind project-specific architecture, security,
 legal, infrastructure and business review.
 
@@ -72,5 +73,4 @@ for a controlled first project or pilot.
 
 Inspector result: PASS for local closure.
 
-H8 may be prepared for human approval. The agent must not record HITL approval
-without explicit human approval.
+H8 HITL approval was granted on 2026-07-07 by explicit user instruction.

@@ -11,7 +11,8 @@ Validation evidence recorded during H8 local closure.
 * `ENTERPRISE-10-10-V1` not reopened: PASS.
 * `ENTERPRISE-10-10-V2` not created: PASS.
 * Product repositories have no H8 changes: PASS.
-* H8 HITL approval not recorded: PASS.
+* H8 HITL approval scope check: PASS.
+* H8 HITL approved by explicit user instruction: PASS.
 * Push not executed: PASS.
 
 ## Commands
