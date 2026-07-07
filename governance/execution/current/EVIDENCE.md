@@ -1,37 +1,33 @@
 # EVIDENCE
 
-Current H7 evidence points to:
+Current H8 evidence points to:
 
 ```text
-governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H7/
+governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H8/
 ```
 
 Product evidence:
 
 ```text
-ai-knowledge: 8582290
-ai-template: 01b0971
-ai-foundation: no H7 changes
+ai-foundation: 74611a7, no H8 changes
+ai-knowledge: 8582290, no H8 changes
+ai-template: 01b0971, no H8 changes
 ```
 
 Key artifacts:
 
 ```text
-ai-knowledge/docs/playbooks/first-client-project-playbook.md
-ai-knowledge/docs/playbooks/first-client-project-playbook.contract.json
-ai-knowledge/scripts/validate-first-client-project-playbook.mjs
-ai-template/docs/onboarding/FIRST-PROJECT.md
-ai-template/scripts/validate-first-project-onboarding.mjs
-governance/documentation/FIRST-CLIENT-PROJECT-PLAYBOOK.md
+governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H8/adoption-readiness-final-audit.md
+governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H8/adoption-readiness-final-audit.contract.json
+governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H8/INSPECTOR.md
 ```
 
 HITL:
 
 ```text
-H7: FORMALLY_CLOSED
-Human approval: APPROVED
-HITL approved at: 2026-07-06
-H8: NOT_OPENED
+H8: CLOSED_LOCALLY
+Human approval: REQUIRED
+Approved: NO
 ```
 
 Push:
