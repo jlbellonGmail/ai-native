@@ -2181,6 +2181,58 @@ Restricciones vigentes:
 ## Ultima ejecucion valida
 
 Tipo:
+AI-NATIVE PRE-FIRST-PROJECT READINESS CLEANUP P0-T1 HITL APPROVAL
+
+Estado:
+GOVERNANCE CONSISTENCY FORMALLY_ACCEPTED / HITL_APPROVED
+
+Repositorio producto impactado:
+
+* N/A - aprobacion governance-only
+
+Commit aceptado:
+
+* root/governance P0-T1 commit: `cb151a5`
+* mensaje: `docs(governance): align hardening readiness status`
+
+Validado:
+
+* El usuario otorgo aprobacion humana explicita el 2026-07-13.
+* P0-T1 queda `APPROVED / FORMALLY_ACCEPTED`.
+* HARDENING-V1.1 queda `FORMALLY_CLOSED / HITL_APPROVED`.
+* H8 permanece `READY_FOR_FIRST_PROJECT`.
+* Professional Readiness Audit queda registrado como `READY_FOR_CONTROLLED_FIRST_PROJECT_WITH_GAPS / 8.8/10`.
+* ENTERPRISE-10-10-V1 permanece `CLOSED / NOT_REOPENED`.
+* ENTERPRISE-10-10-V2 permanece `NOT_CREATED`.
+* H9 permanece `NOT_CREATED / NOT_OPENED`.
+* Primera aplicacion real permanece `NOT_STARTED`.
+* ai-foundation, ai-knowledge y ai-template permanecieron sin cambios.
+* Push no ejecutado por instruccion explicita: `NOT_PUSHED_BY_POLICY`.
+
+Evidencia aceptada:
+
+* Instruction Gate PASS.
+* Root git diff --check PASS.
+* roadmap-status.json JSON parse PASS.
+* Product repos clean.
+* Product HEADs sin cambios: ai-foundation `74611a7`, ai-knowledge `8582290`, ai-template `01b0971`.
+* No se ejecutaron pnpm package-level scripts.
+* Nota LF-to-CRLF aceptada como no bloqueante.
+
+Restricciones vigentes:
+
+* P0-T2 - Audit-Safe Script Mode queda como proxima tarea elegible, no iniciada.
+* no iniciar P0-T2 sin instruccion explicita separada
+* no abrir H9
+* no crear ENTERPRISE-10-10-V2
+* no iniciar primera aplicacion real
+* no hacer push sin instruccion explicita
+
+---
+
+## Ultima ejecucion valida
+
+Tipo:
 AI-NATIVE-HARDENING-V1.1 H8 HITL APPROVAL
 
 Estado:
