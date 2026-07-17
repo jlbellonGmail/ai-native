@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "p0-t2-implementation-approval.v1",
+  "taskId": "P0-T2",
+  "artifact": "Audit-Safe Script Mode Implementation",
+  "decision": "APPROVED",
+  "status": "P0_T2_IMPLEMENTATION_APPROVED_FORMALLY_ACCEPTED",
+  "approvedAt": "2026-07-17",
+  "acceptedImplementationCommit": "78e3214",
+  "acceptedSpecificationCommit": "f077fe0",
+  "specificationApprovalCommit": "70fadaa",
+  "approvalScope": "IMPLEMENTATION_ONLY",
+  "hitl": {
+    "required": true,
+    "approved": true,
+    "recordedFromExplicitUserInstruction": true
+  },
+  "negativeScope": {
+    "productScriptsModified": false,
+    "packageLevelScriptsExecuted": false,
+    "h1ThroughH8Reopened": false,
+    "p0T1Reopened": false,
+    "h9Opened": false,
+    "enterprise1010V2Created": false,
+    "firstRealApplicationStarted": false,
+    "productionCriticalReadinessDeclared": false,
+    "professional10Of10Declared": false,
+    "pushExecuted": false
+  },
+  "nextEligible": "FIRST_CONTROLLED_REAL_PROJECT_WHEN_EXPLICITLY_REQUESTED"
+}

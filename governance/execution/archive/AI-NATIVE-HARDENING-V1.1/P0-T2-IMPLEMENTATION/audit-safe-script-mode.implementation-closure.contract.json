@@ -2,11 +2,13 @@
   "schemaVersion": "audit-safe-script-mode.implementation-closure.v1",
   "taskId": "P0-T2",
   "artifact": "Audit-Safe Script Mode Implementation",
-  "status": "P0-T2_IMPLEMENTATION_CLOSED_LOCALLY",
-  "humanApproval": "HITL_REQUIRED",
-  "hitlApproved": false,
+  "status": "P0-T2_IMPLEMENTATION_APPROVED_FORMALLY_ACCEPTED",
+  "humanApproval": "FORMALLY_ACCEPTED",
+  "hitlApproved": true,
+  "hitlApprovedAt": "2026-07-17",
   "acceptedSpecificationCommit": "f077fe0",
   "specificationApprovalCommit": "70fadaa",
+  "acceptedImplementationCommit": "78e3214",
   "implementationArtifacts": [
     "scripts/audit-safe-script-mode.mjs",
     "scripts/validate-audit-safe-script-mode.mjs",
@@ -41,5 +43,5 @@
     "professionalTenOutOfTenDeclared": false,
     "pushExecuted": false
   },
-  "nextEligible": "P0-T2_IMPLEMENTATION_HITL_REVIEW"
+  "nextEligible": "FIRST_CONTROLLED_REAL_PROJECT_WHEN_EXPLICITLY_REQUESTED"
 }

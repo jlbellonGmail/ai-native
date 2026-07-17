@@ -1,7 +1,7 @@
 {
   "schemaVersion": "audit-safe-script-mode.implementation.v1",
   "taskId": "P0-T2",
-  "status": "IMPLEMENTED_LOCALLY_HITL_REQUIRED",
+  "status": "IMPLEMENTATION_APPROVED_FORMALLY_ACCEPTED",
   "approvedSpecification": {
     "path": "specs/p0-t2-audit-safe-script-mode/spec.md",
     "contract": "specs/p0-t2-audit-safe-script-mode/audit-safe-script-mode.contract.json",
@@ -57,7 +57,10 @@
   "validationCommand": "node scripts/validate-audit-safe-script-mode.mjs",
   "closure": {
     "localState": "P0-T2_IMPLEMENTATION_CLOSED_LOCALLY",
-    "humanApproval": "HITL_REQUIRED",
+    "formalState": "P0-T2_IMPLEMENTATION_APPROVED_FORMALLY_ACCEPTED",
+    "acceptedImplementationCommit": "78e3214",
+    "humanApproval": "FORMALLY_ACCEPTED",
+    "hitlApprovedAt": "2026-07-17",
     "push": "NOT_PUSHED_BY_POLICY"
   }
 }

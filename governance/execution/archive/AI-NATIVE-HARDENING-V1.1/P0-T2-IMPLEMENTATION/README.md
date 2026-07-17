@@ -1,28 +1,28 @@
 # P0-T2 - Audit-Safe Script Mode Implementation Archive
 
 This archive contains governance evidence for the local implementation closure
-of P0-T2 - Audit-Safe Script Mode.
+and HITL formal acceptance of P0-T2 - Audit-Safe Script Mode.
 
 Status:
 
 ```text
 P0-T2 specification: APPROVED / FORMALLY_ACCEPTED
-P0-T2 implementation: CLOSED_LOCALLY / HITL_REQUIRED
+P0-T2 implementation: APPROVED / FORMALLY_ACCEPTED
 HITL required: true
-HITL approved: false
+HITL approved: true
+HITL approved at: 2026-07-17
 Accepted spec commit: f077fe0
 Specification approval commit: 70fadaa
+Accepted implementation commit: 78e3214
 Push: NOT_PUSHED_BY_POLICY
 ```
 
 Scope:
 
-* implement the approved P0-T2 specification
-* provide a script classification and audit gate
-* block unsafe package-level, install/lifecycle, network/secret, destructive
-  and unknown execution by default
-* capture baseline and final git state
-* validate implementation without package-level scripts
+* record formal HITL approval of the P0-T2 implementation
+* accept implementation commit `78e3214`
+* preserve accepted specification commit `f077fe0`
+* preserve specification approval commit `70fadaa`
 * preserve all post-H8 restrictions
 
 Non-goals:
@@ -35,5 +35,6 @@ Non-goals:
 * first real application
 * production-critical certification
 * professional 10/10 readiness
-* formal HITL approval
+* reimplementing P0-T2
+* modifying the P0-T2 specification
 * push or PR

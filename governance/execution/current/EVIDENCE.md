@@ -15,7 +15,8 @@
 P0-T2 specification: APPROVED / FORMALLY_ACCEPTED
 Accepted spec commit: f077fe0
 Specification approval commit: 70fadaa
-Implementation approval: HITL_REQUIRED
+Implementation approval: APPROVED / FORMALLY_ACCEPTED
+Accepted implementation commit: 78e3214
 ```
 
 ## Implementation Evidence
@@ -59,9 +60,11 @@ The implementation provides:
 ## HITL
 
 ```text
-P0-T2 implementation: CLOSED_LOCALLY / HITL_REQUIRED
+P0-T2 implementation: APPROVED / FORMALLY_ACCEPTED
 Human approval required: true
-Human approval recorded: false
+Human approval recorded: true
+HITL approved at: 2026-07-17
+Accepted implementation commit: 78e3214
 ```
 
 ## Push

@@ -1,7 +1,7 @@
 # SUMMARY
 
-P0-T2 implementation is closed locally as
-`P0-T2_IMPLEMENTATION_CLOSED_LOCALLY / HITL_REQUIRED`.
+P0-T2 implementation is formally accepted as
+`P0-T2_IMPLEMENTATION_APPROVED / FORMALLY_ACCEPTED`.
 
 Implemented:
 
@@ -16,4 +16,4 @@ mutation when expected side effects are `none`.
 
 Product repositories remain unchanged.
 
-HITL approval has not been recorded for the implementation.
+HITL approval was recorded on 2026-07-17 for implementation commit `78e3214`.

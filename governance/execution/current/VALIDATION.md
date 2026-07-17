@@ -1,6 +1,6 @@
 # VALIDATION
 
-Validation evidence for P0-T2 implementation local closure.
+Validation evidence for P0-T2 implementation HITL approval.
 
 ## Scope And State
 
@@ -8,7 +8,9 @@ Validation evidence for P0-T2 implementation local closure.
 * Clean baseline across four repositories before writing: PASS.
 * Accepted spec commit `f077fe0` exists: PASS.
 * Specification approval commit `70fadaa` exists: PASS.
+* Implementation commit `78e3214` exists: PASS.
 * P0-T2 implementation scope: PASS.
+* P0-T2 implementation HITL approval scope: PASS.
 * Product repositories read-only: PASS.
 * Product scripts unchanged: PASS.
 * Package-level scripts not executed: PASS.
@@ -31,11 +33,12 @@ git diff --check
 ```
 
 Result: PASS in root/governance, `ai-foundation`, `ai-knowledge` and
-`ai-template` before implementation changes.
+`ai-template` before approval changes.
 
 ```text
 git show --no-patch --oneline f077fe0
 git show --no-patch --oneline 70fadaa
+git show --no-patch --oneline 78e3214
 ```
 
 Result: PASS.

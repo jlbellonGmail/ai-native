@@ -3,7 +3,7 @@
 Inspector result:
 
 ```text
-APPROVED_FOR_HITL_REVIEW
+FORMALLY_ACCEPTED_BY_HITL
 ```
 
 Findings:
@@ -20,9 +20,9 @@ Findings:
 * `ENTERPRISE-10-10-V2` is not created.
 * First real application is not started.
 * Push is not executed.
+* HITL approval was explicitly requested for implementation commit `78e3214`.
 
 Residual risk:
 
 * Remote CI/PR evidence is not available because push is intentionally not
   executed.
-* HITL approval remains required before formal acceptance.

@@ -1,6 +1,6 @@
 # VALIDATION
 
-P0-T2 implementation validation: PASS.
+P0-T2 implementation approval validation: PASS.
 
 Commands executed:
 
@@ -31,5 +31,6 @@ Validator coverage:
 * working-tree mutation detection
 * repeatability of package inventory classification
 * product repository cleanliness preservation
+* explicit HITL approval instruction for implementation commit `78e3214`
 
 No package-level scripts were executed.

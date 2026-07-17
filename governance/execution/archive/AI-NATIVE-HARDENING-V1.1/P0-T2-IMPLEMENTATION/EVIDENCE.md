@@ -13,6 +13,7 @@
 * `specs/p0-t2-audit-safe-script-mode/audit-safe-script-mode.contract.json`
 * Accepted spec commit: `f077fe0`
 * Specification approval commit: `70fadaa`
+* Accepted implementation commit: `78e3214`
 
 ## Product Repository Evidence
 
@@ -34,3 +35,13 @@ The implementation blocks by default:
 
 The implementation permits direct execution only with explicit `--execute` and
 `--expected-side-effects none`, using `shell: false`.
+
+## HITL Approval Evidence
+
+```text
+Decision: P0-T2 Implementation - APPROVED / FORMALLY_ACCEPTED
+Approved at: 2026-07-17
+Accepted implementation commit: 78e3214
+Accepted specification commit: f077fe0
+Specification approval commit: 70fadaa
+```

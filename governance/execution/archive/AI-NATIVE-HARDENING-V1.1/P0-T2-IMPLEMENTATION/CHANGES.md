@@ -2,13 +2,12 @@
 
 Governance/root changes:
 
-* Added Audit-Safe Script Mode policy.
-* Added implementation contract.
-* Added direct audit/classification CLI.
-* Added direct implementation validator.
-* Updated current execution records.
-* Added this implementation archive.
-* Updated session context.
+* Recorded formal HITL approval for the P0-T2 implementation.
+* Accepted implementation commit `78e3214`.
+* Added implementation approval contract.
+* Updated current execution records to formal acceptance.
+* Updated this implementation archive to formal acceptance.
+* Updated session context with the approval record.
 
 Product changes:
 
