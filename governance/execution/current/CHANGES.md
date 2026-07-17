@@ -1,18 +1,13 @@
 # CHANGES
 
-Specification/governance changes:
+Governance changes:
 
-* Added `specs/p0-t2-audit-safe-script-mode/spec.md`.
-* Added `specs/p0-t2-audit-safe-script-mode/plan.md`.
-* Added `specs/p0-t2-audit-safe-script-mode/tasks.md`.
-* Added `specs/p0-t2-audit-safe-script-mode/verification.md`.
-* Added `specs/p0-t2-audit-safe-script-mode/inspector.md`.
-* Added
-  `specs/p0-t2-audit-safe-script-mode/audit-safe-script-mode.contract.json`.
-* Updated `governance/execution/current/` to P0-T2 specification state.
-* Added archive evidence under
+* Recorded HITL approval for the P0-T2 specification.
+* Added approval contract under
   `governance/execution/archive/AI-NATIVE-HARDENING-V1.1/P0-T2-SPEC/`.
-* Updated `governance/SESSION-CONTEXT.md` with specification-only closure
+* Updated current execution evidence to
+  `P0-T2_SPEC_APPROVED / FORMALLY_ACCEPTED`.
+* Updated `governance/SESSION-CONTEXT.md` with the P0-T2 spec approval
   summary.
 
 Product changes:

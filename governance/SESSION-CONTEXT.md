@@ -2286,6 +2286,60 @@ Restricciones vigentes:
 ## Ultima ejecucion valida
 
 Tipo:
+AI-NATIVE P0-T2 AUDIT-SAFE SCRIPT MODE SPECIFICATION HITL APPROVAL
+
+Estado:
+P0-T2_SPEC_APPROVED / FORMALLY_ACCEPTED
+
+Repositorio producto impactado:
+
+* N/A - aprobacion governance-only
+
+Repositorio governance impactado:
+
+* root/governance
+
+Commit de especificacion aceptado:
+
+* `f077fe0 docs(specs): define P0-T2 audit-safe script mode`
+
+Validado:
+
+* El usuario otorgo aprobacion humana explicita el 2026-07-17 para la especificacion P0-T2.
+* P0-T2 Specification queda `APPROVED / FORMALLY_ACCEPTED`.
+* HITL required: `true`.
+* HITL approved: `true`.
+* P0-T2 implementacion permanece `NOT_STARTED`.
+* P0-T1 permanece `APPROVED / FORMALLY_ACCEPTED`.
+* H1-H8 permanecen formalmente cerradas.
+* H9 permanece `NOT_CREATED / NOT_OPENED`.
+* `ENTERPRISE-10-10-V2` permanece `NOT_CREATED`.
+* Primera aplicacion real permanece `NOT_STARTED`.
+* No se modificaron scripts productivos.
+* No se ejecutaron scripts package-level.
+* No se hizo push.
+
+Evidencia disponible:
+
+* `specs/p0-t2-audit-safe-script-mode/`
+* `governance/execution/archive/AI-NATIVE-HARDENING-V1.1/P0-T2-SPEC/`
+
+Restricciones vigentes:
+
+* siguiente accion elegible: implementar P0-T2 - Audit-Safe Script Mode
+* no iniciar implementacion P0-T2 dentro de esta aprobacion
+* no abrir H9
+* no crear ENTERPRISE-10-10-V2
+* no iniciar primera aplicacion real
+* no declarar produccion critica
+* no declarar 10/10 profesional
+* no hacer push sin instruccion explicita
+
+---
+
+## Ultima ejecucion valida
+
+Tipo:
 AI-NATIVE-HARDENING-V1.1 H8 HITL APPROVAL
 
 Estado:

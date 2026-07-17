@@ -7,6 +7,8 @@ Root/governance changes:
 * Updated current execution evidence to specification-only P0-T2 state.
 * Added P0-T2 specification archive evidence.
 * Updated session context with local specification closure.
+* Recorded HITL approval for the P0-T2 specification.
+* Added P0-T2 specification approval contract.
 
 Product changes:
 

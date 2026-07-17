@@ -1,5 +1,16 @@
 # EVIDENCE
 
+## HITL Approval
+
+```text
+Decision: P0-T2 Specification - APPROVED / FORMALLY_ACCEPTED
+Approved at: 2026-07-17
+Accepted spec commit: f077fe0
+Human approval required: true
+Human approval recorded: true
+Implementation status: NOT_STARTED
+```
+
 ## Specification Artifacts
 
 * `specs/p0-t2-audit-safe-script-mode/spec.md`
@@ -14,22 +25,13 @@
 * P0-T1 acceptance and P0-T2 eligibility from `governance/SESSION-CONTEXT.md`.
 * H8 readiness closure from
   `governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H8/`.
-* Package script evidence from root, `ai-foundation` and `ai-template`
-  `package.json` files.
-* Lifecycle side-effect evidence from `ai-template/package.json` and
-  `ai-template/scripts/bootstrap.ts`.
-* Generator side-effect evidence from
-  `ai-template/generators/create-ai-native-app.mjs`.
-* Child-validator execution evidence from
-  `ai-template/scripts/validate-testing-profiles.mjs`.
+* P0-T2 specification commit `f077fe0`.
 
 ## Repository Evidence
 
-Baseline and final checks confirm product repositories remained unchanged.
+Expected evidence HEADs before approval commit:
 
-Expected evidence HEADs:
-
-* root/governance: `dfe5a6f` before specification commit
+* root/governance: `f077fe0`
 * `ai-foundation`: `74611a7`
 * `ai-knowledge`: `8582290`
 * `ai-template`: `01b0971`

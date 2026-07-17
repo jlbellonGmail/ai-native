@@ -1,20 +1,16 @@
 # SUMMARY
 
-P0-T2 - Audit-Safe Script Mode specification is closed locally and requires
-HITL approval before implementation begins.
+P0-T2 - Audit-Safe Script Mode specification is formally accepted by HITL.
 
 Result:
 
-* A complete SDD specification was created under
-  `specs/p0-t2-audit-safe-script-mode/`.
-* A machine-readable contract was created:
-  `audit-safe-script-mode.contract.json`.
-* The specification defines canonical Audit-Safe Script Mode behavior,
-  package-level script policy, lifecycle hook rules, working-tree controls,
-  side-effect isolation, dependency policy, result states, evidence and
-  validations.
-* Product repositories were used only for read-only discovery evidence.
-* No product scripts were modified.
+* Human approval was explicitly granted on 2026-07-17 for the P0-T2
+  specification only.
+* Accepted specification commit: `f077fe0`.
+* P0-T2 Specification is `APPROVED / FORMALLY_ACCEPTED`.
+* HITL required: `true`.
+* HITL approved: `true`.
+* Product repositories remain unchanged.
 * No package-level scripts were executed.
 * P0-T2 implementation remains `NOT_STARTED`.
 * H1-H8 remain formally closed.
@@ -26,6 +22,6 @@ Result:
 
 Next action state:
 
-* P0-T2 specification: `SPEC_CLOSED_LOCALLY / HITL_REQUIRED`
-* P0-T2 implementation: available only after HITL approval of the
-  specification.
+* P0-T2 specification: `APPROVED / FORMALLY_ACCEPTED`
+* Next eligible action: `P0-T2 - Audit-Safe Script Mode Implementation`
+* P0-T2 implementation: `NOT_STARTED`

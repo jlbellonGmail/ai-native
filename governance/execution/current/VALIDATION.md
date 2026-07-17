@@ -1,13 +1,15 @@
 # VALIDATION
 
-Validation evidence for P0-T2 specification-only closure.
+Validation evidence for P0-T2 specification HITL approval.
 
 ## Scope And State
 
 * Instruction Gate: PASS.
 * Clean baseline across four repositories before writing: PASS.
+* Accepted spec commit `f077fe0` exists: PASS.
 * P0-T1 formal acceptance evidence: PASS.
-* P0-T2 specification-only scope: PASS.
+* P0-T2 specification approval scope: PASS.
+* HITL approval registered: PASS.
 * Product repositories read-only: PASS.
 * Product scripts unchanged: PASS.
 * Package-level scripts not executed: PASS.
@@ -29,7 +31,13 @@ git diff --check
 ```
 
 Result: PASS in root/governance, `ai-foundation`, `ai-knowledge` and
-`ai-template` before specification changes.
+`ai-template` before approval changes.
+
+```text
+git show --no-patch --oneline f077fe0
+```
+
+Result: PASS.
 
 ```text
 node -e "JSON.parse(...audit-safe-script-mode.contract.json...)"
@@ -38,13 +46,19 @@ node -e "JSON.parse(...audit-safe-script-mode.contract.json...)"
 Result: PASS.
 
 ```text
-required spec files existence check
+node -e "JSON.parse(...p0-t2-spec-approval.contract.json...)"
 ```
 
 Result: PASS.
 
 ```text
-rg -n "P0-T2|Audit-Safe Script Mode|SPEC_CLOSED_LOCALLY|HITL_REQUIRED" specs/p0-t2-audit-safe-script-mode
+node sdd/validation/validate-sdd-package.mjs
+```
+
+Result: PASS in `ai-knowledge`.
+
+```text
+rg -n "P0-T2|Audit-Safe Script Mode|APPROVED|FORMALLY_ACCEPTED|NOT_STARTED" ...
 ```
 
 Result: PASS.
@@ -53,14 +67,13 @@ Result: PASS.
 rg -n "H9.*(OPENED|CREATED)|ENTERPRISE-10-10-V2.*CREATED|First real application.*STARTED|first real application.*started" ...
 ```
 
-Result: PASS. Matches were limited to preserved negative states such as
-`NOT_CREATED`, `NOT_OPENED` and `NOT_STARTED`, plus specification non-goals.
+Result: PASS. No forbidden opening or creation state was found.
 
 ```text
 git diff --check
 ```
 
-Result: PASS in all four repositories after specification changes.
+Result: PASS in all four repositories.
 
 ## Notes
 

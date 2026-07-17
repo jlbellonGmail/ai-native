@@ -1,24 +1,26 @@
-# P0-T2 - Audit-Safe Script Mode Specification
+# P0-T2 - Audit-Safe Script Mode Specification HITL Approval
 
 Current execution snapshot for post-H8 pre-first-project readiness work.
 
 Status:
 
 ```text
-P0-T2 specification: SPEC_CLOSED_LOCALLY
+P0-T2 specification: APPROVED / FORMALLY_ACCEPTED
 P0-T2 implementation: NOT_STARTED
-HITL: REQUIRED
+HITL required: true
+HITL approved: true
+HITL approved at: 2026-07-17
+Accepted spec commit: f077fe0
 Push: NOT_PUSHED_BY_POLICY
 ```
 
 Scope:
 
-* create versioned SDD specification for Audit-Safe Script Mode
-* define package-level script and lifecycle hook policy
-* define working-tree, side-effect, dependency and cleanup requirements
-* define input/output contract and result states
-* create machine-readable contract
-* archive specification-only evidence
+* record formal HITL approval of the P0-T2 specification
+* preserve the accepted specification commit
+* keep P0-T2 implementation not started
+* keep product repositories unchanged
+* archive approval evidence
 
 Non-goals:
 

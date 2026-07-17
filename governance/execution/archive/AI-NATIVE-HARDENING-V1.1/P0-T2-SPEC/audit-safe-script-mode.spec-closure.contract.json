@@ -2,11 +2,13 @@
   "schemaVersion": "p0-t2-spec-closure.v1",
   "taskId": "P0-T2",
   "artifact": "Audit-Safe Script Mode Specification",
-  "status": "P0_T2_SPEC_CLOSED_LOCALLY_HITL_REQUIRED",
+  "status": "P0_T2_SPEC_APPROVED_FORMALLY_ACCEPTED",
   "implementationStatus": "NOT_STARTED",
   "hitl": {
     "required": true,
-    "approved": false
+    "approved": true,
+    "approvedAt": "2026-07-17",
+    "acceptedSpecCommit": "f077fe0"
   },
   "changedRepositories": {
     "rootGovernance": true,
