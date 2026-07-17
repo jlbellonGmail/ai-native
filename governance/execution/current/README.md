@@ -1,32 +1,34 @@
-# H8 - Adoption Readiness Final Audit
+# P0-T2 - Audit-Safe Script Mode Specification
 
-Current execution snapshot for `AI-NATIVE HARDENING-V1.1`.
+Current execution snapshot for post-H8 pre-first-project readiness work.
 
 Status:
 
 ```text
-H8: FORMALLY_CLOSED
-HITL: APPROVED
-HITL approved at: 2026-07-07
-Adoption readiness: READY_FOR_FIRST_PROJECT
-Readiness score: 91/100
+P0-T2 specification: SPEC_CLOSED_LOCALLY
+P0-T2 implementation: NOT_STARTED
+HITL: REQUIRED
 Push: NOT_PUSHED_BY_POLICY
 ```
 
 Scope:
 
-* audit readiness after H1-H7 formal closure
-* record formal HITL approval for H8
-* distinguish governance, validation and runtime evidence
-* record final adoption-readiness decision
-* archive H8 governance evidence
+* create versioned SDD specification for Audit-Safe Script Mode
+* define package-level script and lifecycle hook policy
+* define working-tree, side-effect, dependency and cleanup requirements
+* define input/output contract and result states
+* create machine-readable contract
+* archive specification-only evidence
 
 Non-goals:
 
-* product implementation changes
-* real client repository creation
-* remote GitHub mutation, push, PR or credentials
-* production-critical approval
-* reopening H1-H7
-* reopening `ENTERPRISE-10-10-V1`
+* implementing Audit-Safe Script Mode
+* modifying product scripts
+* executing package-level scripts
+* opening H9
 * creating `ENTERPRISE-10-10-V2`
+* starting the first real application
+* reopening H1-H8 or P0-T1
+* declaring production-critical readiness
+* declaring professional 10/10 readiness
+* push, PR or remote mutation

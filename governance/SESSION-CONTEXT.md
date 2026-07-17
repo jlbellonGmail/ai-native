@@ -2233,6 +2233,59 @@ Restricciones vigentes:
 ## Ultima ejecucion valida
 
 Tipo:
+AI-NATIVE P0-T2 AUDIT-SAFE SCRIPT MODE SPECIFICATION
+
+Estado:
+P0-T2_SPEC_CLOSED_LOCALLY / HITL_REQUIRED
+
+Repositorio producto impactado:
+
+* N/A - especificacion y governance solamente
+
+Repositorio governance impactado:
+
+* root/governance
+
+Validado:
+
+* Se creo la especificacion SDD de P0-T2 - Audit-Safe Script Mode.
+* Se creo contrato machine-readable en
+  `specs/p0-t2-audit-safe-script-mode/audit-safe-script-mode.contract.json`.
+* La especificacion define comportamiento canonico, politica package-level,
+  lifecycle hooks, aislamiento de efectos secundarios, working trees,
+  dependencias, cleanup, contrato de entrada/salida, estados, evidencia,
+  validaciones, criterios de aceptacion, bloqueo y cierre.
+* P0-T2 implementacion permanece `NOT_STARTED`.
+* P0-T1 permanece `APPROVED / FORMALLY_ACCEPTED`.
+* H1-H8 permanecen formalmente cerradas.
+* H9 permanece `NOT_CREATED / NOT_OPENED`.
+* `ENTERPRISE-10-10-V2` permanece `NOT_CREATED`.
+* Primera aplicacion real permanece `NOT_STARTED`.
+* No se modificaron scripts productivos.
+* No se ejecutaron scripts package-level.
+* No se hizo push.
+* HITL queda requerido para aprobar la especificacion antes de implementar P0-T2.
+
+Evidencia disponible:
+
+* `specs/p0-t2-audit-safe-script-mode/`
+* `governance/execution/archive/AI-NATIVE-HARDENING-V1.1/P0-T2-SPEC/`
+
+Restricciones vigentes:
+
+* no implementar P0-T2 hasta aprobacion HITL de la especificacion
+* no abrir H9
+* no crear ENTERPRISE-10-10-V2
+* no iniciar primera aplicacion real
+* no declarar produccion critica
+* no declarar 10/10 profesional
+* no hacer push sin instruccion explicita
+
+---
+
+## Ultima ejecucion valida
+
+Tipo:
 AI-NATIVE-HARDENING-V1.1 H8 HITL APPROVAL
 
 Estado:

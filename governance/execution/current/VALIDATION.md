@@ -1,25 +1,67 @@
 # VALIDATION
 
-Current H8 validation is archived in:
+Validation evidence for P0-T2 specification-only closure.
+
+## Scope And State
+
+* Instruction Gate: PASS.
+* Clean baseline across four repositories before writing: PASS.
+* P0-T1 formal acceptance evidence: PASS.
+* P0-T2 specification-only scope: PASS.
+* Product repositories read-only: PASS.
+* Product scripts unchanged: PASS.
+* Package-level scripts not executed: PASS.
+* P0-T2 implementation not started: PASS.
+* H1-H8 not reopened: PASS.
+* H9 not opened: PASS.
+* `ENTERPRISE-10-10-V2` not created: PASS.
+* First real application not started: PASS.
+* Push not executed: PASS.
+
+## Commands
 
 ```text
-governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H8/VALIDATION.md
+git branch --show-current
+git rev-parse --short HEAD
+git status --short
+git diff --stat
+git diff --check
 ```
 
-Summary:
+Result: PASS in root/governance, `ai-foundation`, `ai-knowledge` and
+`ai-template` before specification changes.
 
 ```text
-Instruction gate: PASS
-H1-H7 formally closed check: PASS
-H8 contract JSON parse: PASS
-H3-H7 contract JSON parse: PASS
-ai-knowledge SDD, structure, evaluation and playbook validators: PASS
-ai-foundation security, observability and structure validators: PASS
-ai-template generator, generated-project, observability, testing, security,
-onboarding and structure validators: PASS
-git diff --check all repos: PASS
-product repo cleanliness: PASS
-Inspector: PASS
-H8 HITL approval scope check: PASS
-H8 HITL approved by explicit user instruction: PASS
+node -e "JSON.parse(...audit-safe-script-mode.contract.json...)"
 ```
+
+Result: PASS.
+
+```text
+required spec files existence check
+```
+
+Result: PASS.
+
+```text
+rg -n "P0-T2|Audit-Safe Script Mode|SPEC_CLOSED_LOCALLY|HITL_REQUIRED" specs/p0-t2-audit-safe-script-mode
+```
+
+Result: PASS.
+
+```text
+rg -n "H9.*(OPENED|CREATED)|ENTERPRISE-10-10-V2.*CREATED|First real application.*STARTED|first real application.*started" ...
+```
+
+Result: PASS. Matches were limited to preserved negative states such as
+`NOT_CREATED`, `NOT_OPENED` and `NOT_STARTED`, plus specification non-goals.
+
+```text
+git diff --check
+```
+
+Result: PASS in all four repositories after specification changes.
+
+## Notes
+
+No `pnpm`, `npm`, package-level lifecycle, setup or bootstrap command was run.

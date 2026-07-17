@@ -1,0 +1,142 @@
+{
+  "schemaVersion": "audit-safe-script-mode.spec.v1",
+  "taskId": "P0-T2",
+  "name": "Audit-Safe Script Mode",
+  "status": "SPEC_CLOSED_LOCALLY_HITL_REQUIRED",
+  "scope": {
+    "specificationOnly": true,
+    "implementationIncluded": false,
+    "productRepositoriesModified": false,
+    "packageLevelScriptsExecuted": false,
+    "pushAllowed": false
+  },
+  "preconditions": [
+    "P0-T1_APPROVED_FORMALLY_ACCEPTED",
+    "H1_H8_FORMALLY_CLOSED_HITL_APPROVED",
+    "ENTERPRISE_10_10_V1_CLOSED_NOT_REOPENED",
+    "ENTERPRISE_10_10_V2_NOT_CREATED",
+    "H9_NOT_CREATED_NOT_OPENED",
+    "FIRST_REAL_APPLICATION_NOT_STARTED",
+    "WORKING_TREES_CLEAN"
+  ],
+  "canonicalDefinition": {
+    "summary": "Audit-Safe Script Mode classifies and controls script execution during audits so evidence can be gathered without hidden lifecycle, dependency, generated-output or working-tree side effects.",
+    "must": [
+      "classify_commands_before_execution",
+      "capture_repository_baseline",
+      "block_install_and_lifecycle_by_default",
+      "declare_expected_side_effects",
+      "capture_final_repository_state",
+      "report_executed_and_skipped_commands",
+      "preserve_human_approval_boundary"
+    ],
+    "mustNot": [
+      "silently_execute_install_or_lifecycle_hooks",
+      "implicitly_install_dependencies",
+      "hide_unexpected_working_tree_mutations",
+      "weaken_validators",
+      "open_h9",
+      "create_enterprise_10_10_v2",
+      "start_first_real_application"
+    ],
+    "should": [
+      "prefer_static_inspection",
+      "prefer_dry_run_for_generators",
+      "use_direct_validators_when_classified_safe",
+      "record_machine_readable_evidence"
+    ],
+    "may": [
+      "use_environment_variable",
+      "use_wrapper_command",
+      "use_validation_manifest",
+      "use_static_classifier",
+      "use_command_allowlist"
+    ]
+  },
+  "commandClasses": [
+    "STATIC_ONLY",
+    "DIRECT_VALIDATOR",
+    "CONTROLLED_DYNAMIC",
+    "PACKAGE_LEVEL",
+    "INSTALL_OR_LIFECYCLE",
+    "GENERATOR",
+    "NETWORK_OR_SECRET",
+    "DESTRUCTIVE",
+    "UNKNOWN"
+  ],
+  "resultStates": [
+    "PASS",
+    "FAIL",
+    "BLOCKED",
+    "NOT_RUN",
+    "NOT_APPLICABLE",
+    "CONTEXTUAL_NON_BLOCKING"
+  ],
+  "blockedByDefault": [
+    "prepare",
+    "preinstall",
+    "install",
+    "postinstall",
+    "setup",
+    "bootstrap",
+    "pnpm install",
+    "npm install",
+    "dependency_lockfile_mutation",
+    "network_or_secret_required_command",
+    "unknown_transitive_script",
+    "destructive_cleanup"
+  ],
+  "requiredEvidence": [
+    "instruction_gate",
+    "governance_task_eligibility",
+    "repository_baseline",
+    "script_inventory",
+    "package_lifecycle_inventory",
+    "command_classification",
+    "executed_commands",
+    "skipped_commands",
+    "side_effect_declaration",
+    "final_repository_state",
+    "cleanup_status",
+    "validation_results",
+    "inspector_result",
+    "no_push_confirmation"
+  ],
+  "repositoryCompatibility": {
+    "rootGovernance": {
+      "packageJson": true,
+      "packageLevelPolicy": "classify_before_execution",
+      "knownRisk": "historical verifier can execute pnpm install"
+    },
+    "aiFoundation": {
+      "packageJson": true,
+      "packageLevelPolicy": "classify_before_execution",
+      "knownRisk": "package manager build and validation require classification"
+    },
+    "aiKnowledge": {
+      "packageJson": false,
+      "packageLevelPolicy": "not_applicable_until_package_json_exists",
+      "knownRisk": "direct node validators still require classification"
+    },
+    "aiTemplate": {
+      "packageJson": true,
+      "packageLevelPolicy": "classify_before_execution",
+      "knownRisk": "prepare setup bootstrap generator and aggregate validators can create side effects"
+    }
+  },
+  "acceptanceCriteria": [
+    "canonical_definition_exists",
+    "package_level_policy_exists",
+    "working_tree_requirements_exist",
+    "side_effect_isolation_requirements_exist",
+    "input_output_contract_exists",
+    "result_states_defined",
+    "validation_expectations_defined",
+    "future_implementation_boundaries_defined"
+  ],
+  "closureState": {
+    "specificationTask": "P0_T2_SPEC_CLOSED_LOCALLY_HITL_REQUIRED",
+    "implementationTask": "NOT_STARTED",
+    "hitlApproval": "REQUIRED_NOT_RECORDED"
+  }
+}
