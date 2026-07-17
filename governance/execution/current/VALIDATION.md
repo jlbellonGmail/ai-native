@@ -1,20 +1,20 @@
 # VALIDATION
 
-Validation evidence for P0-T2 specification HITL approval.
+Validation evidence for P0-T2 implementation local closure.
 
 ## Scope And State
 
 * Instruction Gate: PASS.
 * Clean baseline across four repositories before writing: PASS.
 * Accepted spec commit `f077fe0` exists: PASS.
-* P0-T1 formal acceptance evidence: PASS.
-* P0-T2 specification approval scope: PASS.
-* HITL approval registered: PASS.
+* Specification approval commit `70fadaa` exists: PASS.
+* P0-T2 implementation scope: PASS.
 * Product repositories read-only: PASS.
 * Product scripts unchanged: PASS.
 * Package-level scripts not executed: PASS.
-* P0-T2 implementation not started: PASS.
+* Lifecycle, setup, bootstrap, prepare and install commands not executed: PASS.
 * H1-H8 not reopened: PASS.
+* P0-T1 not reopened: PASS.
 * H9 not opened: PASS.
 * `ENTERPRISE-10-10-V2` not created: PASS.
 * First real application not started: PASS.
@@ -31,43 +31,38 @@ git diff --check
 ```
 
 Result: PASS in root/governance, `ai-foundation`, `ai-knowledge` and
-`ai-template` before approval changes.
+`ai-template` before implementation changes.
 
 ```text
 git show --no-patch --oneline f077fe0
+git show --no-patch --oneline 70fadaa
 ```
 
 Result: PASS.
 
 ```text
-node -e "JSON.parse(...audit-safe-script-mode.contract.json...)"
+node scripts\validate-audit-safe-script-mode.mjs
 ```
 
 Result: PASS.
 
-```text
-node -e "JSON.parse(...p0-t2-spec-approval.contract.json...)"
-```
+Covered by the validator:
 
-Result: PASS.
-
-```text
-node sdd/validation/validate-sdd-package.mjs
-```
-
-Result: PASS in `ai-knowledge`.
-
-```text
-rg -n "P0-T2|Audit-Safe Script Mode|APPROVED|FORMALLY_ACCEPTED|NOT_STARTED" ...
-```
-
-Result: PASS.
-
-```text
-rg -n "H9.*(OPENED|CREATED)|ENTERPRISE-10-10-V2.*CREATED|First real application.*STARTED|first real application.*started" ...
-```
-
-Result: PASS. No forbidden opening or creation state was found.
+* approved specification contract JSON parse
+* implementation contract JSON parse
+* root/governance package inventory
+* `ai-foundation` package inventory
+* `ai-knowledge` no-root-`package.json` handling
+* `ai-template` package inventory
+* blocked install/lifecycle classification
+* allowlist metadata recorded without bypassing unsafe execution blocking
+* blocked package-level classification
+* generator dry-run classification
+* direct no-op execution with expected side effects `none`
+* working-tree mutation detection
+* repeatable inventory output
+* `git diff --check` in all four repositories
+* unchanged product repository working trees
 
 ```text
 git diff --check
@@ -77,4 +72,5 @@ Result: PASS in all four repositories.
 
 ## Notes
 
-No `pnpm`, `npm`, package-level lifecycle, setup or bootstrap command was run.
+No `pnpm`, `npm`, package-level lifecycle, setup, bootstrap, prepare or install
+command was run.

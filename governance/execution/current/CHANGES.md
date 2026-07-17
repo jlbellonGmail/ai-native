@@ -1,13 +1,15 @@
 # CHANGES
 
-Governance changes:
+Governance/root changes:
 
-* Recorded HITL approval for the P0-T2 specification.
-* Added approval contract under
-  `governance/execution/archive/AI-NATIVE-HARDENING-V1.1/P0-T2-SPEC/`.
+* Added Audit-Safe Script Mode policy.
+* Added implementation contract.
+* Added direct Node audit/classification CLI.
+* Added direct Node implementation validator.
+* Added P0-T2 implementation archive evidence.
 * Updated current execution evidence to
-  `P0-T2_SPEC_APPROVED / FORMALLY_ACCEPTED`.
-* Updated `governance/SESSION-CONTEXT.md` with the P0-T2 spec approval
+  `P0-T2_IMPLEMENTATION_CLOSED_LOCALLY / HITL_REQUIRED`.
+* Updated `governance/SESSION-CONTEXT.md` with the P0-T2 implementation
   summary.
 
 Product changes:
@@ -17,10 +19,11 @@ Product changes:
 Explicitly not changed:
 
 * Product scripts.
-* `package.json` files.
+* Product `package.json` files.
 * Lockfiles.
 * `VERSION` files.
 * H1-H8 archives.
+* P0-T1 approval records.
 * H9.
 * `ENTERPRISE-10-10-V2`.
 * First real application artifacts.

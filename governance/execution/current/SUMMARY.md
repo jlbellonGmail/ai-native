@@ -1,18 +1,19 @@
 # SUMMARY
 
-P0-T2 - Audit-Safe Script Mode specification is formally accepted by HITL.
+P0-T2 - Audit-Safe Script Mode implementation is closed locally and requires
+HITL approval before formal acceptance.
 
 Result:
 
-* Human approval was explicitly granted on 2026-07-17 for the P0-T2
-  specification only.
-* Accepted specification commit: `f077fe0`.
-* P0-T2 Specification is `APPROVED / FORMALLY_ACCEPTED`.
+* The approved specification at commit `f077fe0` was implemented in
+  root/governance only.
+* The P0-T2 specification remains `APPROVED / FORMALLY_ACCEPTED`.
+* P0-T2 implementation is `CLOSED_LOCALLY / HITL_REQUIRED`.
 * HITL required: `true`.
-* HITL approved: `true`.
+* HITL approved: `false`.
 * Product repositories remain unchanged.
 * No package-level scripts were executed.
-* P0-T2 implementation remains `NOT_STARTED`.
+* No productive package scripts were modified.
 * H1-H8 remain formally closed.
 * P0-T1 remains approved and formally accepted.
 * H9 remains not opened.
@@ -20,8 +21,14 @@ Result:
 * The first real application remains not started.
 * Push was not executed.
 
+Implemented artifacts:
+
+* `scripts/audit-safe-script-mode.mjs`
+* `scripts/validate-audit-safe-script-mode.mjs`
+* `governance/policies/AUDIT-SAFE-SCRIPT-MODE.md`
+* `governance/policies/audit-safe-script-mode.implementation.contract.json`
+
 Next action state:
 
-* P0-T2 specification: `APPROVED / FORMALLY_ACCEPTED`
-* Next eligible action: `P0-T2 - Audit-Safe Script Mode Implementation`
-* P0-T2 implementation: `NOT_STARTED`
+* P0-T2 implementation: `CLOSED_LOCALLY / HITL_REQUIRED`
+* Next eligible action: HITL review of P0-T2 implementation
