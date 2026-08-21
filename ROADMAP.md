@@ -56,4 +56,5 @@ minúsculas con guiones, seguido de `—` y descripción corta en español.
 
 ## Roadmap
 
-- [-] 00-fuente-unica-router-modelos — Fuente canonica agentica, router OpenCode y gate post-HITL listos para PR.
+- [x] 00-fuente-unica-router-modelos — Fuente canonica agentica, router OpenCode y gate post-HITL listos para PR.
+
