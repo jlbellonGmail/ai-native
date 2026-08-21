@@ -56,4 +56,4 @@ minúsculas con guiones, seguido de `—` y descripción corta en español.
 
 ## Roadmap
 
-- [ ] 00-fuente-unica-router-modelos — Puntos 0 y 1 implementados localmente; pendientes de HITL, sin PR/merge por restricción explícita del encargo.
+- [-] 00-fuente-unica-router-modelos — Fuente canonica agentica, router OpenCode y gate post-HITL listos para PR.
