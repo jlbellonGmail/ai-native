@@ -1,8 +1,8 @@
 # Roadmap: template
 
 Cada feature nueva se implementa siguiendo el circuito agéntico de
-[AGENTS.md](AGENTS.md): Analyst → Reviewer → Builder → QA →
-`[-] READY_FOR_PR` → PR → CI verde → HITL (único punto de aprobación
+[AGENTS.md](AGENTS.md): Analyst → Reviewer → Builder → QA → Code Reviewer
+→ `[-] READY_FOR_PR` → PR → CI verde → HITL (único punto de aprobación
 humana) → gate post-HITL → Merge → `[x]`, con su carpeta de evidencia en
 `runs/<NN>-<slug>/` y su documentación en `docs/tecnica/<slug>.md` +
 `docs/usuario/<slug>.md`.
@@ -37,9 +37,9 @@ Agregar cada ítem nuevo con el patrón:
 
 1. El humano mantiene el backlog: agrega, renombra o reordena items.
 2. Ningún item se marca `[x]` antes del merge a `develop`.
-3. Después de QA aprobado, la automatización cambia `[ ]` → `[-]` en la
-   rama de la feature (`scripts/ready-for-pr.ps1`) y lo lleva dentro de
-   la PR.
+3. Después de QA aprobado y de que `code-reviewer-agent` aprueba el diff
+   final, la automatización cambia `[ ]` → `[-]` en la rama de la feature
+   (`scripts/ready-for-pr.ps1`) y lo lleva dentro de la PR.
 4. Después de aprobar la PR, GitHub Actions ejecuta
    `post-hitl-merge-gate.yml`: vuelve a esperar Actions y mergea solo si
    quedan verdes. Si fallan, deja feedback para builder y no mergea.
