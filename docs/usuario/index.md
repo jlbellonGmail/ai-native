@@ -11,5 +11,6 @@ fuente canónica, regenerar adaptadores y declarar modelos por ejecución.
 
 - [Fuente unica router modelos](fuente-unica-router-modelos.md)
 - [Code Reviewer Y Sdd](code-reviewer-y-sdd.md)
+- [Integridad Post Hitl Y Ready For Pr](integridad-post-hitl-y-ready-for-pr.md)
 
 <!-- FEATURE_LINKS_END -->
