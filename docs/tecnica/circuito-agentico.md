@@ -1,16 +1,32 @@
 # Circuito agentico multiherramienta
 
+El circuito tiene 5 roles: `Analyst → Reviewer → Builder → QA → Code
+Reviewer`. `analyst-agent` produce `spec.md` (QUÉ+POR QUÉ), `plan.md`
+(CÓMO) y `tasks.md` (desglose ejecutable trazable a cada `AC-N` de
+`spec.md`) — Spec-Driven Development (SDD). `reviewer-agent` audita los
+tres juntos. `builder-agent` implementa. `qa-agent` testea. Recién
+después de que QA aprueba, `code-reviewer-agent` (read-only) revisa el
+DIFF FINAL y produce `code-review-N.md` con el mismo formato de veredicto
+que `audit-N.md`/`test-report-N.md`; un rechazo vuelve a `builder-agent`
+(nunca a `analyst-agent`). Ver `AGENTS.md` seccion "Circuito" para el
+detalle completo, incluido el orden numerado de pasos.
+
 ## Fuente canónica
 
 Las reglas compartidas siguen en `AGENTS.md`. La configuración que cambia
 por herramienta vive en `.agentic/`:
 
-- `.agentic/roles/*.md`: prompts funcionales canónicos.
+- `.agentic/roles/*.md`: prompts funcionales canónicos (`analyst-agent`,
+  `reviewer-agent`, `builder-agent`, `qa-agent`, `code-reviewer-agent`).
 - `.agentic/agents.json`: descripciones, permisos, herramientas, modelos
   y esfuerzo por adaptador.
 - `.agentic/models.json`: modelos permitidos, variantes y fallbacks de
   OpenCode.
 - `.agentic/mcp.json`: servidores MCP canónicos del template.
+- `.agentic/schemas/*.schema.json`: JSON Schema real de `agents.json`,
+  `models.json` y del manifest de Milestone (`work-unit.json`),
+  referenciado por `$schema` desde `agents.json`/`models.json` y validado
+  en `tests/test_agentic_schemas.py`.
 - `.agents/skills/`: skills Agent Skills portables.
 
 ## Adaptadores generados

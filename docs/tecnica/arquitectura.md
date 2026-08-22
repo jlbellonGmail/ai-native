@@ -54,3 +54,46 @@ OpenRouter solo se habilita si se declara explícitamente.
 La decisión no introduce backend, base de datos, servicio externo nuevo ni
 dependencia de build. Solo agrega configuración, scripts PowerShell y
 tests del circuito.
+
+## Decisión: validación real de JSON Schema para `.agentic/`
+
+`.agentic/agents.json` y `.agentic/models.json` declaraban `$schema`
+apuntando a `.agentic/schemas/agents.schema.json` y
+`.agentic/schemas/models.schema.json`, pero ese directorio no existía:
+la referencia estaba rota y ningún test validaba la forma real de esos
+archivos ni la del manifest de Milestone (`work-unit.json`).
+
+- **Qué se agrega**: `.agentic/schemas/agents.schema.json`,
+  `.agentic/schemas/models.schema.json` y
+  `.agentic/schemas/work-unit.schema.json` (JSON Schema Draft 2020-12
+  real, no ornamental), más la dependencia de test `jsonschema` (Python,
+  fijada en `requirements-dev.txt` con el mismo criterio `>=` que
+  `pytest`) usada exclusivamente por
+  `tests/test_agentic_schemas.py` para validar `.agentic/agents.json`,
+  `.agentic/models.json` y un manifest de Milestone real contra sus
+  schemas respectivos, con casos positivos y negativos por schema.
+- **Por qué ahora**: la feature `01-code-reviewer-y-sdd` corrige el
+  `$schema` roto detectado en auditoría y formaliza el contrato de estos
+  tres archivos JSON del propio circuito agéntico.
+- **Por qué este enfoque y no otro**: escribir un validador JSON Schema
+  artesanal sin dependencia externa era más riesgo (reinventar un motor
+  de validación) que agregar una librería de testing estándar y madura.
+  `jsonschema` es tooling exclusivo de test (paralelo a `pytest`, que
+  `AGENTS.md` ya exige sin pasar por este documento), no una dependencia
+  de runtime de producto — este template sigue sin tener stack de
+  producto propio.
+  - `agents.schema.json`/`models.schema.json` permiten propiedades
+    adicionales a nivel raíz de cada rol (`additionalProperties: true`)
+    para no romper con campos futuros menores, pero las prohíben dentro
+    de los bloques `claude`/`codex`/`opencode` (`additionalProperties:
+    false`) para detectar typos reales de configuración por herramienta.
+  - `work-unit.schema.json` sí es estricto en su raíz
+    (`additionalProperties: false`) porque el manifest de Milestone tiene
+    una forma fija y pequeña, sin campos opcionales conocidos.
+- **Qué sigue igual**: ningún backend, base de datos ni servicio externo
+  nuevo. Los manifests de Milestone (`work-unit.json`) no autoreferencian
+  su propio schema con un campo `$schema`: la validación se ejerce solo
+  desde los tests, para no tocar el formato de archivo ya cubierto por
+  `test_workunit_lib.py`/`test_start_work_unit.py` ni arriesgar
+  compatibilidad con un manifest ya committeado en algún Milestone en
+  curso.
