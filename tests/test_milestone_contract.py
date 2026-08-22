@@ -78,6 +78,17 @@ def run_ps(command: str, cwd: Path):
 ITEMS = ["02-item-a", "03-item-b"]
 
 
+def verdict_block(status: str = "approved", attempt: int = 1) -> str:
+    return (
+        "```yaml\n"
+        f"status: {status}\n"
+        f"attempt: {attempt}\n"
+        "feedback:\n"
+        "  - ok\n"
+        "```\n"
+    )
+
+
 def make_milestone_repo(tmp_path: Path, slug: str = "mi-milestone", items: list[str] = None):
     items = items if items is not None else ITEMS
     repo = tmp_path / "repo"
@@ -93,8 +104,11 @@ def make_milestone_repo(tmp_path: Path, slug: str = "mi-milestone", items: list[
     }
     (run_dir / "work-unit.json").write_text(json.dumps(manifest), encoding="utf-8")
     (run_dir / "spec.md").write_text("# Spec milestone\n", encoding="utf-8")
-    (run_dir / "audit-1.md").write_text("status: approved\n", encoding="utf-8")
-    (run_dir / "test-report-1.md").write_text("status: approved\n", encoding="utf-8")
+    (run_dir / "plan.md").write_text("# Plan milestone\n", encoding="utf-8")
+    (run_dir / "tasks.md").write_text("# Tasks milestone\n", encoding="utf-8")
+    (run_dir / "audit-1.md").write_text(verdict_block(), encoding="utf-8")
+    (run_dir / "test-report-1.md").write_text(verdict_block(), encoding="utf-8")
+    (run_dir / "code-review-1.md").write_text(verdict_block(), encoding="utf-8")
     (run_dir / "decision.md").write_text("# Decision\n", encoding="utf-8")
 
     (repo / "docs" / "tecnica" / "index.md").write_text(index_template("Tecnica"), encoding="utf-8")
@@ -170,6 +184,75 @@ def test_milestone_contract_require_ready_roadmap(tmp_path: Path):
         repo,
     )
     assert result.returncode == 0, result.stderr
+
+
+@pytest.mark.parametrize("missing_name", ["plan.md", "tasks.md"])
+def test_milestone_contract_missing_plan_or_tasks_is_rejected(tmp_path: Path, missing_name: str):
+    repo = make_milestone_repo(tmp_path)
+    (repo / "runs" / "milestone-mi-milestone" / missing_name).unlink()
+
+    result = run_ps(
+        f". '{CONTRACT}'; Assert-WorkUnitContract -Slug 'mi-milestone' -Mode Milestone",
+        repo,
+    )
+    assert result.returncode != 0
+    assert missing_name in plain_output(result.stderr)
+
+
+def test_milestone_contract_missing_code_review_is_rejected(tmp_path: Path):
+    repo = make_milestone_repo(tmp_path)
+    (repo / "runs" / "milestone-mi-milestone" / "code-review-1.md").unlink()
+
+    result = run_ps(
+        f". '{CONTRACT}'; Assert-WorkUnitContract -Slug 'mi-milestone' -Mode Milestone",
+        repo,
+    )
+    assert result.returncode != 0
+    assert "code-review" in plain_output(result.stderr)
+
+
+def test_milestone_contract_uses_real_numeric_order_not_lexicographic(tmp_path: Path):
+    repo = make_milestone_repo(tmp_path)
+    run_dir = repo / "runs" / "milestone-mi-milestone"
+    (run_dir / "test-report-1.md").unlink()
+    (run_dir / "test-report-2.md").write_text(verdict_block("rejected", 2), encoding="utf-8")
+    (run_dir / "test-report-10.md").write_text(verdict_block("approved", 10), encoding="utf-8")
+
+    result = run_ps(
+        f". '{CONTRACT}'; Assert-WorkUnitContract -Slug 'mi-milestone' -Mode Milestone",
+        repo,
+    )
+    assert result.returncode == 0, result.stderr
+
+
+def test_milestone_contract_fails_when_latest_real_attempt_is_rejected(tmp_path: Path):
+    repo = make_milestone_repo(tmp_path)
+    run_dir = repo / "runs" / "milestone-mi-milestone"
+    (run_dir / "test-report-1.md").unlink()
+    (run_dir / "test-report-2.md").write_text(verdict_block("approved", 2), encoding="utf-8")
+    (run_dir / "test-report-10.md").write_text(verdict_block("rejected", 10), encoding="utf-8")
+
+    result = run_ps(
+        f". '{CONTRACT}'; Assert-WorkUnitContract -Slug 'mi-milestone' -Mode Milestone",
+        repo,
+    )
+    assert result.returncode != 0
+    assert "test-report-10.md" in plain_output(result.stderr)
+
+
+def test_milestone_contract_fails_when_yaml_block_is_missing(tmp_path: Path):
+    repo = make_milestone_repo(tmp_path)
+    run_dir = repo / "runs" / "milestone-mi-milestone"
+    (run_dir / "audit-1.md").write_text("status: approved\nattempt: 1\n", encoding="utf-8")
+
+    result = run_ps(
+        f". '{CONTRACT}'; Assert-WorkUnitContract -Slug 'mi-milestone' -Mode Milestone",
+        repo,
+    )
+    assert result.returncode != 0
+    output = plain_output(result.stderr)
+    assert "audit-1.md" in output
+    assert "bloque" in output.lower()
 
 
 def test_milestone_contract_require_ready_roadmap_fails_if_one_item_pending(tmp_path: Path):

@@ -79,6 +79,32 @@ def test_sync_generates_adapters_and_is_idempotent(tmp_path: Path):
     assert opencode["mcp"]["servers"] == {}
 
 
+def test_sync_generates_read_only_code_reviewer_agent_adapter(tmp_path: Path):
+    repo = make_agentic_repo(tmp_path)
+
+    result = run_sync(repo)
+    check = run_sync(repo, "-Check")
+
+    assert result.returncode == 0, result.stderr
+    assert check.returncode == 0, check.stderr
+
+    claude_agent = repo / ".claude" / "agents" / "code-reviewer-agent.md"
+    assert claude_agent.exists()
+    frontmatter = claude_agent.read_text(encoding="utf-8")
+    assert "tools: Read, Grep, Glob" in frontmatter
+    assert "Write" not in frontmatter.split("---")[1]
+    assert "Edit" not in frontmatter.split("---")[1]
+    assert "Bash" not in frontmatter.split("---")[1]
+
+    assert (repo / ".codex" / "code-reviewer-agent.config.toml").exists()
+
+    opencode = json.loads((repo / "opencode.json").read_text(encoding="utf-8"))
+    code_reviewer = opencode["agent"]["code-reviewer-agent"]
+    assert code_reviewer["prompt"] == "{file:./.agentic/roles/code-reviewer-agent.md}"
+    assert code_reviewer["permission"]["edit"] == "deny"
+    assert code_reviewer["permission"]["bash"] == "deny"
+
+
 def test_check_detects_generated_adapter_divergence(tmp_path: Path):
     repo = make_agentic_repo(tmp_path)
     result = run_sync(repo)
