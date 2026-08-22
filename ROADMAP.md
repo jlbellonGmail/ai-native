@@ -57,4 +57,5 @@ minúsculas con guiones, seguido de `—` y descripción corta en español.
 ## Roadmap
 
 - [x] 00-fuente-unica-router-modelos — Fuente canonica agentica, router OpenCode y gate post-HITL listos para PR.
+- [ ] 01-code-reviewer-y-sdd — Quinto agente code-reviewer-agent, SDD formal (spec+plan+tasks), contrato que valida el ultimo veredicto real y corrige bugs detectados (decision.md, retry de cierre, schemas rotos).
 
