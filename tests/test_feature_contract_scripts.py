@@ -186,6 +186,38 @@ def test_scaffolding_decision_docs_and_index_links_are_idempotent(tmp_path: Path
         assert content.endswith(untouched_parts[index][1])
 
 
+def test_decision_file_does_not_claim_merge_and_references_hitl(tmp_path: Path):
+    # AC-19: New-DecisionFile ya no debe escribir "MERGE aprobado" ni
+    # ninguna afirmacion de que la PR fue mergeada; debe referenciar
+    # explicitamente que el merge depende del HITL/GitHub, y su seccion
+    # "Evidencias revisadas" debe incluir plan.md, tasks.md y
+    # code-review-1.md ademas de spec.md/audit-1.md/test-report-1.md
+    # (AC-18).
+    repo, slug, title = make_contract_repo(tmp_path)
+
+    create_decision = (
+        f". '{CONTRACT}'; "
+        "New-DecisionFile -Slug '99-demo-feature' -Title 'Demo feature' "
+        "-Decisions @('Decision demostrable uno')"
+    )
+    result = run_ps(create_decision, repo)
+    assert result.returncode == 0, result.stderr
+
+    decision = (repo / "runs" / slug / "decision.md").read_text(encoding="utf-8")
+
+    assert "MERGE aprobado" not in decision
+    assert "fue mergeada" not in decision.lower()
+    assert "la pr fue mergeada" not in decision.lower()
+    assert "hitl" in decision.lower()
+    assert "github" in decision.lower()
+    assert "plan.md" in decision
+    assert "tasks.md" in decision
+    assert "code-review-1.md" in decision
+    assert "spec.md" in decision
+    assert "audit-1.md" in decision
+    assert "test-report-1.md" in decision
+
+
 def test_index_update_fails_for_missing_destination_and_ambiguous_links(tmp_path: Path):
     repo, slug, title = make_contract_repo(tmp_path)
     missing = repo / "docs" / "tecnica" / "demo-feature.md"
@@ -374,6 +406,25 @@ def test_contract_fails_when_previous_attempt_rejected_and_no_later_attempt_exis
 
     assert result.returncode != 0
     assert "audit-1.md" in result.stderr
+
+
+def test_contract_fails_with_readable_message_when_latest_attempt_file_is_empty(tmp_path: Path):
+    # Complementa el test anterior: cubre explicitamente la mitad "vacio"
+    # del escenario descripto en AC-16 ("audit-2.md vacio o inexistente"),
+    # no solo la mitad "inexistente". audit-2.md existe como archivo de
+    # 0 bytes (mas reciente por numero real que audit-1.md rechazado): el
+    # contrato debe fallar con un mensaje identificable (ruta + causa),
+    # no con una excepcion .NET cruda sin diagnostico.
+    repo, slug, title = make_passing_repo(tmp_path)
+    (repo / "runs" / slug / "audit-1.md").write_text(verdict_block("rejected", 1), encoding="utf-8")
+    (repo / "runs" / slug / "audit-2.md").write_text("", encoding="utf-8")
+
+    result = assert_contract(repo, slug, title)
+
+    assert result.returncode != 0
+    assert "audit-2.md" in result.stderr
+    assert "valor no puede ser nulo" not in result.stderr.lower()
+    assert "parametername" not in result.stderr.lower().replace(" ", "")
 
 
 def test_contract_fails_when_yaml_block_is_missing(tmp_path: Path):
