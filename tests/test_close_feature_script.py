@@ -260,4 +260,42 @@ def test_rerun_after_success_does_not_create_commit(tmp_path: Path):
 
     assert second.returncode == 0, second.stdout
     assert "sin commit vacio" in captured_output(second)
+    assert "El remoto ya tiene el cierre" in captured_output(second)
     assert commit_count(repo) == before
+
+
+def test_retry_after_failed_push_completes_on_rerun(tmp_path: Path):
+    # Reproduce el escenario de AC-21: (1) el commit local de cierre se crea
+    # pero el push subsiguiente falla (remoto rechaza), y (2) una segunda
+    # ejecucion con el mismo estado local ([x] local, remoto todavia en
+    # [-]) detecta el push pendiente, lo completa, y pasa la verificacion
+    # final -- sin volver a intentar el commit (ya existe).
+    repo, remote, worktree, bin_dir = make_case(tmp_path, f"- [-] {SLUG} - Validacion\n")
+    hook = remote / "hooks" / "pre-receive"
+    hook.write_text("#!/bin/sh\nexit 1\n", encoding="utf-8")
+    hook.chmod(hook.stat().st_mode | stat.S_IXUSR)
+
+    first = close_feature(repo, worktree, bin_dir)
+
+    assert first.returncode != 0
+    assert "Command failed: git push origin develop" in exception_message(first)
+    assert f"- [x] {SLUG} - Validacion" in (repo / "ROADMAP.md").read_text(encoding="utf-8")
+    assert f"- [-] {SLUG}" in roadmap(repo, "origin/develop")
+    assert_not_cleaned(repo, worktree)
+    commits_after_failed_push = commit_count(repo)
+
+    # El remoto vuelve a aceptar pushes (se resuelve lo que causaba el
+    # rechazo original), como en el escenario real de reintento.
+    hook.unlink()
+
+    second = close_feature(repo, worktree, bin_dir)
+
+    assert second.returncode == 0, second.stdout
+    output = captured_output(second)
+    assert "Reejecucion segura, sin commit vacio" in output
+    assert "Pusheando commit local pendiente" in output
+    assert commit_count(repo) == commits_after_failed_push
+    assert f"- [x] {SLUG} - Validacion" in roadmap(repo, "origin/develop")
+    assert f"- [-] {SLUG}" not in roadmap(repo, "origin/develop")
+    assert not worktree.exists()
+    assert git(repo, "rev-parse", "--verify", "--quiet", BRANCH, check=False).returncode != 0

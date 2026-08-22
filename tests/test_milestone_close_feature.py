@@ -186,6 +186,46 @@ def test_partial_close_state_is_rejected_as_unrecoverable(tmp_path: Path):
     assert worktree.exists()
 
 
+def test_retry_after_failed_push_completes_on_rerun(tmp_path: Path):
+    # Version Milestone del escenario de AC-21: commit local de cierre para
+    # TODOS los items ya se creo, pero el push subsiguiente fallo. Una
+    # segunda ejecucion con el mismo estado local detecta el remoto todavia
+    # sin el cierre y completa el push pendiente, sin reintentar el commit.
+    lines = "".join(f"- [-] {item} - Item\n" for item in ITEMS)
+    repo, remote, worktree, bin_dir = make_case(tmp_path, lines)
+    hook = remote / "hooks" / "pre-receive"
+    hook.write_text("#!/bin/sh\nexit 1\n", encoding="utf-8")
+    hook.chmod(hook.stat().st_mode | stat.S_IXUSR)
+
+    first = close_feature(repo, worktree, bin_dir)
+
+    assert first.returncode != 0
+    assert "Command failed: git push origin develop" in exception_message(first)
+    local_roadmap = (repo / "ROADMAP.md").read_text(encoding="utf-8")
+    for item in ITEMS:
+        assert f"- [x] {item}" in local_roadmap
+    remote_roadmap_before = roadmap(repo, "origin/develop")
+    for item in ITEMS:
+        assert f"- [-] {item}" in remote_roadmap_before
+    assert worktree.exists()
+    commits_after_failed_push = commit_count(repo)
+
+    hook.unlink()
+
+    second = close_feature(repo, worktree, bin_dir)
+
+    assert second.returncode == 0, second.stdout
+    output = captured_output(second)
+    assert "Reejecucion segura, sin commit vacio" in output
+    assert "Pusheando commit local pendiente" in output
+    assert commit_count(repo) == commits_after_failed_push
+    remote_roadmap_after = roadmap(repo, "origin/develop")
+    for item in ITEMS:
+        assert f"- [x] {item}" in remote_roadmap_after
+        assert f"- [-] {item}" not in remote_roadmap_after
+    assert not worktree.exists()
+
+
 def test_rerun_after_success_does_not_create_commit(tmp_path: Path):
     lines = "".join(f"- [-] {item} - Item\n" for item in ITEMS)
     repo, _, worktree, bin_dir = make_case(tmp_path, lines)
