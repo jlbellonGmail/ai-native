@@ -106,6 +106,9 @@ function Get-LatestVerdictArtifact {
     $number = $latest.Number
 
     $content = Get-Content -LiteralPath $path -Raw -Encoding UTF8
+    if ([string]::IsNullOrWhiteSpace($content)) {
+        throw "El archivo $path esta vacio (archivo vacio)."
+    }
     $fence = [string][char]0x60 * 3
     $yamlFencePattern = "(?s)$fence" + "yaml\s*\r?\n(.*?)$fence"
     $yamlMatch = [regex]::Match($content, $yamlFencePattern)
