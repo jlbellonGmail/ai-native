@@ -1,4 +1,5 @@
 ﻿$ErrorActionPreference = "Stop"
+. (Join-Path $PSScriptRoot "workunit-lib.ps1")
 
 function Get-RepositoryRoot {
     $root = (& git rev-parse --show-toplevel) -join "`n"
@@ -38,6 +39,10 @@ function Get-FeatureStateDir {
 }
 
 function Get-FeatureInfo {
+    # Delgado sobre Get-WorkUnitInfo -Mode Feature (unica implementacion,
+    # en workunit-lib.ps1). El objeto devuelto conserva las mismas
+    # propiedades que siempre tuvo Get-FeatureInfo (mas algunas nuevas,
+    # como Mode/Branch/Items, que no rompen consumidores existentes).
     param(
         [Parameter(Mandatory = $true)]
         [string] $Slug,
@@ -45,29 +50,7 @@ function Get-FeatureInfo {
         [string] $Title = ""
     )
 
-    if ($Slug -notmatch "^(?<number>[0-9]{2})-(?<docSlug>[a-z0-9]+(?:-[a-z0-9]+)*)$") {
-        throw "Slug invalido '$Slug'. Debe tener formato NN-slug-en-minusculas."
-    }
-
-    $docSlug = $Matches["docSlug"]
-    if ([string]::IsNullOrWhiteSpace($Title)) {
-        $Title = ($docSlug -split "-" | ForEach-Object {
-            if ($_.Length -eq 0) { $_ } else { $_.Substring(0, 1).ToUpperInvariant() + $_.Substring(1) }
-        }) -join " "
-    }
-
-    return [pscustomobject]@{
-        Slug = $Slug
-        Number = $Matches["number"]
-        DocSlug = $docSlug
-        Title = $Title
-        RunDir = "runs/$Slug"
-        TechnicalDoc = "docs/tecnica/$docSlug.md"
-        UserDoc = "docs/usuario/$docSlug.md"
-        TechnicalIndex = "docs/tecnica/index.md"
-        UserIndex = "docs/usuario/index.md"
-        Decision = "runs/$Slug/decision.md"
-    }
+    return Get-WorkUnitInfo -Slug $Slug -Title $Title -Mode Feature
 }
 
 function Assert-NonEmptyFile {
@@ -319,6 +302,8 @@ function New-DecisionFile {
 }
 
 function Assert-FeatureContract {
+    # Delgado sobre Assert-WorkUnitContract -Mode Feature: misma validacion
+    # de siempre, unica implementacion.
     param(
         [Parameter(Mandatory = $true)]
         [string] $Slug,
@@ -328,11 +313,67 @@ function Assert-FeatureContract {
         [switch] $RequireReadyRoadmap
     )
 
-    $info = Get-FeatureInfo -Slug $Slug -Title $Title
+    Assert-WorkUnitContract -Slug $Slug -Title $Title -Mode Feature -RequireReadyRoadmap:$RequireReadyRoadmap
+}
+
+function Assert-WorkUnitContract {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string] $Slug,
+
+        [ValidateSet("Feature", "Milestone")]
+        [string] $Mode = "Feature",
+
+        [string] $Title = "",
+
+        [switch] $RequireReadyRoadmap
+    )
+
+    if ($Mode -eq "Feature") {
+        $info = Get-WorkUnitInfo -Slug $Slug -Title $Title -Mode Feature
+        Assert-NonEmptyFile $info.Decision
+        Assert-NonEmptyFile "$($info.RunDir)/spec.md"
+        Assert-NonEmptyFile $info.TechnicalDoc
+        Assert-NonEmptyFile $info.UserDoc
+
+        $audit = Get-FirstExistingArtifact -Directory $info.RunDir -Pattern "audit-*.md"
+        if ($null -eq $audit) {
+            throw "Falta al menos un audit-N.md en $($info.RunDir)."
+        }
+        Assert-NonEmptyFile $audit.FullName
+
+        $testReport = Get-FirstExistingArtifact -Directory $info.RunDir -Pattern "test-report-*.md"
+        if ($null -eq $testReport) {
+            throw "Falta al menos un test-report-N.md en $($info.RunDir)."
+        }
+        Assert-NonEmptyFile $testReport.FullName
+
+        Assert-IndexLink -IndexPath $info.TechnicalIndex -TargetPath $info.TechnicalDoc -Title $info.Title
+        Assert-IndexLink -IndexPath $info.UserIndex -TargetPath $info.UserDoc -Title $info.Title
+
+        if ($RequireReadyRoadmap) {
+            $roadmap = Get-Content -LiteralPath "ROADMAP.md" -Raw -Encoding UTF8
+            $escapedSlug = [regex]::Escape($Slug)
+            $readyCount = [regex]::Matches($roadmap, "(?m)^- \[-\] $escapedSlug(?=\s|$).*").Count
+            $doneCount = [regex]::Matches($roadmap, "(?m)^- \[x\] $escapedSlug(?=\s|$).*").Count
+            if ($doneCount -gt 0) {
+                throw "$Slug ya figura como [x]. No se puede preparar PR despues del cierre."
+            }
+            if ($readyCount -ne 1) {
+                throw "ROADMAP.md debe contener exactamente una entrada READY_FOR_PR para $Slug. Encontradas: $readyCount."
+            }
+        }
+        return
+    }
+
+    # Modo Milestone: un unico set de spec/decision/audit/test-report a
+    # nivel de work unit, mas docs+indices por cada item individual.
+    $manifestPath = "runs/milestone-$Slug/work-unit.json"
+    $manifest = Read-WorkUnitManifest -Path $manifestPath
+    $info = Get-WorkUnitInfo -Slug $Slug -Title $Title -Mode Milestone -Items $manifest.Items
+
     Assert-NonEmptyFile $info.Decision
     Assert-NonEmptyFile "$($info.RunDir)/spec.md"
-    Assert-NonEmptyFile $info.TechnicalDoc
-    Assert-NonEmptyFile $info.UserDoc
 
     $audit = Get-FirstExistingArtifact -Directory $info.RunDir -Pattern "audit-*.md"
     if ($null -eq $audit) {
@@ -346,19 +387,15 @@ function Assert-FeatureContract {
     }
     Assert-NonEmptyFile $testReport.FullName
 
-    Assert-IndexLink -IndexPath $info.TechnicalIndex -TargetPath $info.TechnicalDoc -Title $info.Title
-    Assert-IndexLink -IndexPath $info.UserIndex -TargetPath $info.UserDoc -Title $info.Title
+    foreach ($item in $info.Items) {
+        Assert-NonEmptyFile $item.TechnicalDoc
+        Assert-NonEmptyFile $item.UserDoc
+        Assert-IndexLink -IndexPath $item.TechnicalIndex -TargetPath $item.TechnicalDoc -Title $item.Title
+        Assert-IndexLink -IndexPath $item.UserIndex -TargetPath $item.UserDoc -Title $item.Title
+    }
 
     if ($RequireReadyRoadmap) {
         $roadmap = Get-Content -LiteralPath "ROADMAP.md" -Raw -Encoding UTF8
-        $escapedSlug = [regex]::Escape($Slug)
-        $readyCount = [regex]::Matches($roadmap, "(?m)^- \[-\] $escapedSlug(?=\s|$).*").Count
-        $doneCount = [regex]::Matches($roadmap, "(?m)^- \[x\] $escapedSlug(?=\s|$).*").Count
-        if ($doneCount -gt 0) {
-            throw "$Slug ya figura como [x]. No se puede preparar PR despues del cierre."
-        }
-        if ($readyCount -ne 1) {
-            throw "ROADMAP.md debe contener exactamente una entrada READY_FOR_PR para $Slug. Encontradas: $readyCount."
-        }
+        Assert-RoadmapItemsTransition -Content $roadmap -Items @($manifest.Items) -FromStates @("Ready") -ToState "verificacion-ready-for-pr"
     }
 }

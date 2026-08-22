@@ -8,42 +8,14 @@ param(
 
     [string] $WorktreeDir = "",
 
+    [ValidateSet("Feature", "Milestone")]
+    [string] $Mode = "Feature",
+
     [switch] $SkipLocalCleanup
 )
 
 $ErrorActionPreference = "Stop"
-
-function Invoke-Checked {
-    param(
-        [Parameter(Mandatory = $true)]
-        [string] $FilePath,
-
-        [Parameter(Mandatory = $true)]
-        [string[]] $Arguments
-    )
-
-    & $FilePath @Arguments
-    if ($LASTEXITCODE -ne 0) {
-        throw "Command failed: $FilePath $($Arguments -join ' ')"
-    }
-}
-
-function Get-CheckedOutput {
-    param(
-        [Parameter(Mandatory = $true)]
-        [string] $FilePath,
-
-        [Parameter(Mandatory = $true)]
-        [string[]] $Arguments
-    )
-
-    $output = & $FilePath @Arguments
-    if ($LASTEXITCODE -ne 0) {
-        throw "Command failed: $FilePath $($Arguments -join ' ')"
-    }
-
-    return ($output -join "`n").Trim()
-}
+. (Join-Path $PSScriptRoot "workunit-lib.ps1")
 
 function Test-GitSuccess {
     param(
@@ -53,20 +25,6 @@ function Test-GitSuccess {
 
     & git @Arguments *> $null
     return ($LASTEXITCODE -eq 0)
-}
-
-function Get-GitHubCliPath {
-    $command = Get-Command gh -ErrorAction SilentlyContinue
-    if ($command) {
-        return $command.Source
-    }
-
-    $defaultPath = Join-Path $env:ProgramFiles "GitHub CLI\gh.exe"
-    if (Test-Path -LiteralPath $defaultPath) {
-        return $defaultPath
-    }
-
-    throw "GitHub CLI (gh) no esta disponible. El cierre post-merge requiere confirmar la PR en GitHub."
 }
 
 function Assert-CleanWorktree {
@@ -82,6 +40,7 @@ function Assert-CleanWorktree {
 }
 
 function Get-RoadmapState {
+    # Wrapper delgado sobre la version compartida en workunit-lib.ps1.
     param(
         [Parameter(Mandatory = $true)]
         [string] $Content,
@@ -90,15 +49,7 @@ function Get-RoadmapState {
         [string] $Slug
     )
 
-    $escapedSlug = [regex]::Escape($Slug)
-    $suffix = "(?=\s|$)"
-    $states = [ordered]@{
-        Pending = [regex]::Matches($Content, "(?m)^- \[ \] $escapedSlug$suffix.*").Count
-        Ready = [regex]::Matches($Content, "(?m)^- \[-\] $escapedSlug$suffix.*").Count
-        Done = [regex]::Matches($Content, "(?m)^- \[x\] $escapedSlug$suffix.*").Count
-    }
-
-    return [pscustomobject]$states
+    return Get-RoadmapItemState -Content $Content -ItemSlug $Slug
 }
 
 function Assert-RoadmapClosedOnce {
@@ -148,6 +99,68 @@ function Assert-RoadmapCanClose {
     }
 
     throw "'$Slug' existe en ROADMAP.md pero no esta en READY_FOR_PR. El cierre post-merge solo cambia [-] a [x]."
+}
+
+function Assert-RoadmapItemsCanClose {
+    # Version Milestone (N items) de Assert-RoadmapCanClose: atomica, todo
+    # o nada. Un estado mezclado (algunos [x], otros no) es irrecuperable
+    # automaticamente -- no deberia ocurrir porque el cierre escribe todos
+    # los items en un unico commit, pero se detecta y rechaza por seguridad.
+    param(
+        [Parameter(Mandatory = $true)]
+        [string] $Content,
+
+        [Parameter(Mandatory = $true)]
+        [string[]] $Items
+    )
+
+    $states = @{}
+    foreach ($item in $Items) {
+        $state = Get-RoadmapItemState -Content $Content -ItemSlug $item
+        $total = $state.Pending + $state.Ready + $state.Done
+        if ($total -eq 0) {
+            throw "No existe una entrada exacta para '$item' en ROADMAP.md."
+        }
+        if ($total -gt 1) {
+            throw "ROADMAP.md contiene mas de una coincidencia exacta para '$item'. Estado: pending=$($state.Pending), ready=$($state.Ready), done=$($state.Done)."
+        }
+        $states[$item] = $state
+    }
+
+    $doneItems = @($Items | Where-Object { $states[$_].Done -eq 1 })
+    $readyItems = @($Items | Where-Object { $states[$_].Ready -eq 1 })
+    $pendingItems = @($Items | Where-Object { $states[$_].Pending -eq 1 })
+
+    if ($doneItems.Count -eq $Items.Count) {
+        return "already-closed"
+    }
+
+    if ($readyItems.Count -eq $Items.Count) {
+        return "ready"
+    }
+
+    if ($doneItems.Count -gt 0) {
+        throw "Estado ambiguo e irrecuperable automaticamente para el milestone: items ya cerrados [x] ($($doneItems -join ', ')) conviven con items que no lo estan (ready: $($readyItems -join ', '); pending: $($pendingItems -join ', ')). Requiere intervencion manual en ROADMAP.md."
+    }
+
+    throw "El milestone tiene items que no estan todos en READY_FOR_PR. El cierre post-merge solo cambia [-] a [x] para TODOS los items a la vez. Items: $($Items -join ', ')."
+}
+
+function Assert-RoadmapItemsClosedOnce {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string] $Content,
+
+        [Parameter(Mandatory = $true)]
+        [string[]] $Items,
+
+        [Parameter(Mandatory = $true)]
+        [string] $Context
+    )
+
+    foreach ($item in $Items) {
+        Assert-RoadmapClosedOnce $Content $item $Context
+    }
 }
 
 function Confirm-PrMergedIntoBase {
@@ -222,7 +235,7 @@ function Remove-LocalFeatureArtifacts {
 }
 
 if ([string]::IsNullOrWhiteSpace($Branch)) {
-    $Branch = "feature/$Slug"
+    $Branch = if ($Mode -eq "Milestone") { "milestone/$Slug" } else { "feature/$Slug" }
 }
 
 $baseBranch = "develop"
@@ -257,39 +270,84 @@ Invoke-Checked "git" @("pull", "--ff-only", "origin", $baseBranch)
 Assert-CleanWorktree "despues de sincronizar $baseBranch"
 
 $roadmapPath = "ROADMAP.md"
-Write-Host "==> Validando estado de '$Slug' en ROADMAP.md..."
-$roadmap = Get-Content -LiteralPath $roadmapPath -Raw -Encoding UTF8
-$closeState = Assert-RoadmapCanClose $roadmap $Slug
 
-if ($closeState -eq "already-closed") {
-    Write-Host "==> $Slug ya esta marcada exactamente una vez como [x]. Reejecucion segura, sin commit vacio."
-}
-else {
-    Write-Host "==> Marcando '$Slug' como completada en ROADMAP.md..."
-    $escapedSlug = [regex]::Escape($Slug)
-    $readyRegex = [regex]::new("(?m)^- \[-\] ($escapedSlug(?=\s|$).*)$")
-    $updatedRoadmap = $readyRegex.Replace($roadmap, '- [x] $1', 1)
-    Set-Content -LiteralPath $roadmapPath -Value $updatedRoadmap -Encoding UTF8
+if ($Mode -eq "Milestone") {
+    $manifestPath = "runs/milestone-$Slug/work-unit.json"
+    $manifest = Read-WorkUnitManifest -Path $manifestPath
+    $items = @($manifest.Items)
 
-    $postUpdateRoadmap = Get-Content -LiteralPath $roadmapPath -Raw -Encoding UTF8
-    Assert-RoadmapClosedOnce $postUpdateRoadmap $Slug "despues de actualizar ROADMAP.md"
+    Write-Host "==> Validando estado de los items del milestone '$Slug' en ROADMAP.md..."
+    $roadmap = Get-Content -LiteralPath $roadmapPath -Raw -Encoding UTF8
+    $closeState = Assert-RoadmapItemsCanClose $roadmap $items
 
-    Invoke-Checked "git" @("add", $roadmapPath)
-    & git diff --cached --quiet
-    if ($LASTEXITCODE -eq 0) {
-        throw "La actualizacion de ROADMAP.md no produjo cambios staged. Se evita crear commit vacio."
+    if ($closeState -eq "already-closed") {
+        Write-Host "==> Todos los items de '$Slug' ya estan marcados [x]. Reejecucion segura, sin commit vacio."
+    }
+    else {
+        Write-Host "==> Marcando todos los items de '$Slug' como completados en ROADMAP.md..."
+        $updatedRoadmap = $roadmap
+        foreach ($item in $items) {
+            $escapedItem = [regex]::Escape($item)
+            $readyRegex = [regex]::new("(?m)^- \[-\] ($escapedItem(?=\s|$).*)$")
+            $updatedRoadmap = $readyRegex.Replace($updatedRoadmap, '- [x] $1', 1)
+        }
+        Set-Content -LiteralPath $roadmapPath -Value $updatedRoadmap -Encoding UTF8
+
+        $postUpdateRoadmap = Get-Content -LiteralPath $roadmapPath -Raw -Encoding UTF8
+        Assert-RoadmapItemsClosedOnce $postUpdateRoadmap $items "despues de actualizar ROADMAP.md"
+
+        Invoke-Checked "git" @("add", $roadmapPath)
+        & git diff --cached --quiet
+        if ($LASTEXITCODE -eq 0) {
+            throw "La actualizacion de ROADMAP.md no produjo cambios staged. Se evita crear commit vacio."
+        }
+
+        Invoke-Checked "git" @("commit", "-m", "docs: cerrar milestone $Slug en ROADMAP.md ($($items -join ', '))")
+
+        Write-Host "==> Pusheando cierre a origin/$baseBranch..."
+        Invoke-Checked "git" @("push", "origin", $baseBranch)
     }
 
-    Invoke-Checked "git" @("commit", "-m", "docs: cerrar $Slug en ROADMAP.md")
-
-    Write-Host "==> Pusheando cierre a origin/$baseBranch..."
-    Invoke-Checked "git" @("push", "origin", $baseBranch)
+    Write-Host "==> Verificando cierre publicado en origin/$baseBranch..."
+    Invoke-Checked "git" @("fetch", "origin", $baseBranch)
+    $remoteRoadmap = Get-CheckedOutput "git" @("show", "origin/$baseBranch`:ROADMAP.md")
+    Assert-RoadmapItemsClosedOnce $remoteRoadmap $items "en origin/$baseBranch"
 }
+else {
+    Write-Host "==> Validando estado de '$Slug' en ROADMAP.md..."
+    $roadmap = Get-Content -LiteralPath $roadmapPath -Raw -Encoding UTF8
+    $closeState = Assert-RoadmapCanClose $roadmap $Slug
 
-Write-Host "==> Verificando cierre publicado en origin/$baseBranch..."
-Invoke-Checked "git" @("fetch", "origin", $baseBranch)
-$remoteRoadmap = Get-CheckedOutput "git" @("show", "origin/$baseBranch`:ROADMAP.md")
-Assert-RoadmapClosedOnce $remoteRoadmap $Slug "en origin/$baseBranch"
+    if ($closeState -eq "already-closed") {
+        Write-Host "==> $Slug ya esta marcada exactamente una vez como [x]. Reejecucion segura, sin commit vacio."
+    }
+    else {
+        Write-Host "==> Marcando '$Slug' como completada en ROADMAP.md..."
+        $escapedSlug = [regex]::Escape($Slug)
+        $readyRegex = [regex]::new("(?m)^- \[-\] ($escapedSlug(?=\s|$).*)$")
+        $updatedRoadmap = $readyRegex.Replace($roadmap, '- [x] $1', 1)
+        Set-Content -LiteralPath $roadmapPath -Value $updatedRoadmap -Encoding UTF8
+
+        $postUpdateRoadmap = Get-Content -LiteralPath $roadmapPath -Raw -Encoding UTF8
+        Assert-RoadmapClosedOnce $postUpdateRoadmap $Slug "despues de actualizar ROADMAP.md"
+
+        Invoke-Checked "git" @("add", $roadmapPath)
+        & git diff --cached --quiet
+        if ($LASTEXITCODE -eq 0) {
+            throw "La actualizacion de ROADMAP.md no produjo cambios staged. Se evita crear commit vacio."
+        }
+
+        Invoke-Checked "git" @("commit", "-m", "docs: cerrar $Slug en ROADMAP.md")
+
+        Write-Host "==> Pusheando cierre a origin/$baseBranch..."
+        Invoke-Checked "git" @("push", "origin", $baseBranch)
+    }
+
+    Write-Host "==> Verificando cierre publicado en origin/$baseBranch..."
+    Invoke-Checked "git" @("fetch", "origin", $baseBranch)
+    $remoteRoadmap = Get-CheckedOutput "git" @("show", "origin/$baseBranch`:ROADMAP.md")
+    Assert-RoadmapClosedOnce $remoteRoadmap $Slug "en origin/$baseBranch"
+}
 
 if ($SkipLocalCleanup) {
     Write-Host "==> Limpieza local omitida por -SkipLocalCleanup. GitHub Actions no puede borrar worktrees del equipo local."

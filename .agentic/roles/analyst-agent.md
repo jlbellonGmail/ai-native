@@ -65,3 +65,15 @@ Reglas duras:
 - No inventes contenido de negocio (datos, textos legales, precios,
   certificaciones, testimonios) que el proyecto real no proveyó. Ver
   "Reglas de dominio" en `AGENTS.md` y `.claude/rules/`.
+
+## Modo MILESTONE
+
+Si al arrancar existe `runs/milestone-<slug>/work-unit.json`, estas
+trabajando en un Milestone (ver "Modo MILESTONE" en `AGENTS.md`), no en
+una Feature individual. El `spec.md` sigue siendo uno solo para todo el
+work unit, pero tiene que atender a cada item listado en el manifest por
+separado: criterios de aceptacion propios por item, casos borde propios
+por item, y los dos `.md` de documentacion (`docs/tecnica/<item>.md` y
+`docs/usuario/<item>.md`) exigidos por item, no uno solo para todo el
+milestone. `runs/milestone-<slug>/decision.md` y los enlaces de indices
+tambien son obligatorios, igual que en Feature.

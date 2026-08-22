@@ -33,3 +33,13 @@ Si es el tercer intento y sigue fallando lo mismo, senala si el problema
 puede ser del spec, no de la implementacion. El retorno sigue siendo hacia
 `builder-agent` o, si corresponde, hacia la spec dentro del circuito
 agentico; no hacia un HITL intermedio.
+
+## Modo MILESTONE
+
+Si `runs/milestone-<slug>/work-unit.json` existe, verifica cada item del
+manifest individualmente: sus criterios de aceptacion propios, sus casos
+borde propios, y que `docs/tecnica/<item>.md` + `docs/usuario/<item>.md`
+existan, no esten vacios y esten enlazados en los indices -- para CADA
+item, no solo para uno representativo. Verifica el contrato comun con
+`Assert-WorkUnitContract -Mode Milestone` (via `feature-contract.ps1`) en
+lugar de `Assert-FeatureContract`.
