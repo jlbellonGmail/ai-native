@@ -2,56 +2,14 @@ param(
     [Parameter(Mandatory = $true)]
     [string] $Slug,
 
-    [string] $Title = ""
+    [string] $Title = "",
+
+    [ValidateSet("Feature", "Milestone")]
+    [string] $Mode = "Feature"
 )
 
 $ErrorActionPreference = "Stop"
 . (Join-Path $PSScriptRoot "feature-contract.ps1")
-
-function Invoke-Checked {
-    param(
-        [Parameter(Mandatory = $true)]
-        [string] $FilePath,
-
-        [Parameter(Mandatory = $true)]
-        [string[]] $Arguments
-    )
-
-    & $FilePath @Arguments
-    if ($LASTEXITCODE -ne 0) {
-        throw "Command failed: $FilePath $($Arguments -join ' ')"
-    }
-}
-
-function Get-CheckedOutput {
-    param(
-        [Parameter(Mandatory = $true)]
-        [string] $FilePath,
-
-        [Parameter(Mandatory = $true)]
-        [string[]] $Arguments
-    )
-
-    $output = & $FilePath @Arguments
-    if ($LASTEXITCODE -ne 0) {
-        throw "Command failed: $FilePath $($Arguments -join ' ')"
-    }
-    return ($output -join "`n").Trim()
-}
-
-function Get-GitHubCliPath {
-    $command = Get-Command gh -ErrorAction SilentlyContinue
-    if ($command) {
-        return $command.Source
-    }
-
-    $defaultPath = Join-Path $env:ProgramFiles "GitHub CLI\gh.exe"
-    if (Test-Path -LiteralPath $defaultPath) {
-        return $defaultPath
-    }
-
-    throw "GitHub CLI (gh) no esta disponible. Instalalo y autenticalo para crear/verificar PRs automaticamente."
-}
 
 function Get-PowerShellPath {
     $pwsh = Get-Command pwsh -ErrorAction SilentlyContinue
@@ -128,20 +86,32 @@ function Get-ExistingPr {
 }
 
 if ([string]::IsNullOrWhiteSpace($Title)) {
-    $Title = "Feature $Slug"
+    $Title = if ($Mode -eq "Milestone") { "Milestone $Slug" } else { "Feature $Slug" }
 }
 
 $baseBranch = if ([string]::IsNullOrWhiteSpace($env:BASE_BRANCH)) { "develop" } else { $env:BASE_BRANCH }
 $currentBranch = Get-CheckedOutput "git" @("branch", "--show-current")
-$contractTitle = $Title -replace "^Feature [0-9]{2}-", ""
-$info = Get-FeatureInfo -Slug $Slug -Title $contractTitle
+
+if ($Mode -eq "Milestone") {
+    $manifestPath = "runs/milestone-$Slug/work-unit.json"
+    $manifest = Read-WorkUnitManifest -Path $manifestPath
+    $items = @($manifest.Items)
+    $contractTitle = $Title -replace "^Milestone ", ""
+    $info = Get-WorkUnitInfo -Slug $Slug -Title $contractTitle -Mode Milestone -Items $items
+    $expectedBranchPrefix = "milestone/"
+}
+else {
+    $contractTitle = $Title -replace "^Feature [0-9]{2}-", ""
+    $info = Get-FeatureInfo -Slug $Slug -Title $contractTitle
+    $expectedBranchPrefix = "feature/"
+}
 
 if ($currentBranch -eq $baseBranch -or $currentBranch -eq "main") {
     throw "Este script debe correr en una rama de feature, no en $currentBranch."
 }
 
-if (-not $currentBranch.StartsWith("feature/")) {
-    throw "La rama actual debe empezar con 'feature/'. Rama actual: $currentBranch"
+if (-not $currentBranch.StartsWith($expectedBranchPrefix)) {
+    throw "La rama actual debe empezar con '$expectedBranchPrefix'. Rama actual: $currentBranch"
 }
 
 & git diff --quiet
@@ -154,30 +124,60 @@ if ($unstagedStatus -ne 0 -or $stagedStatus -ne 0) {
 
 $roadmapPath = "ROADMAP.md"
 $roadmap = Get-Content -LiteralPath $roadmapPath -Raw -Encoding UTF8
-$escapedSlug = [regex]::Escape($Slug)
 
-if ($roadmap -match "(?m)^- \[x\] $escapedSlug\b") {
-    throw "$Slug ya figura como [x]. No se puede marcar READY_FOR_PR despues del cierre."
-}
-
-if ($roadmap -match "(?m)^- \[-\] $escapedSlug\b") {
-    Write-Host "==> $Slug ya esta en READY_FOR_PR."
-}
-else {
-    $pendingPattern = "(?m)^- \[[ ~]\] ($escapedSlug.*)$"
-    if ($roadmap -notmatch $pendingPattern) {
-        throw "No encontre '$Slug' pendiente en ROADMAP.md."
+if ($Mode -eq "Milestone") {
+    $doneItems = @($items | Where-Object { (Get-RoadmapItemStateName -Content $roadmap -ItemSlug $_) -eq "Done" })
+    if ($doneItems.Count -gt 0) {
+        throw "$($doneItems -join ', ') ya figura(n) como [x]. No se puede marcar READY_FOR_PR despues del cierre."
     }
 
-    Write-Host "==> Marcando '$Slug' como READY_FOR_PR en ROADMAP.md..."
-    $pendingRegex = [regex]::new($pendingPattern)
-    $updatedRoadmap = $pendingRegex.Replace($roadmap, '- [-] $1', 1)
-    Set-Content -LiteralPath $roadmapPath -Value $updatedRoadmap -Encoding UTF8
-    Invoke-Checked "git" @("add", $roadmapPath)
-    Invoke-Checked "git" @("commit", "-m", "docs: marcar $Slug como ready for PR")
-}
+    $readyItems = @($items | Where-Object { (Get-RoadmapItemStateName -Content $roadmap -ItemSlug $_) -eq "Ready" })
+    if ($readyItems.Count -eq $items.Count) {
+        Write-Host "==> Todos los items del milestone '$Slug' ya estan en READY_FOR_PR."
+    }
+    else {
+        Assert-RoadmapItemsTransition -Content $roadmap -Items $items -FromStates @("Pending") -ToState "Ready"
 
-Assert-FeatureContract -Slug $Slug -Title $info.Title -RequireReadyRoadmap
+        Write-Host "==> Marcando todos los items del milestone '$Slug' como READY_FOR_PR en ROADMAP.md..."
+        $updatedRoadmap = $roadmap
+        foreach ($item in $items) {
+            $escapedItem = [regex]::Escape($item)
+            $pendingRegex = [regex]::new("(?m)^- \[[ ~]\] ($escapedItem.*)$")
+            $updatedRoadmap = $pendingRegex.Replace($updatedRoadmap, '- [-] $1', 1)
+        }
+        Set-Content -LiteralPath $roadmapPath -Value $updatedRoadmap -Encoding UTF8
+        Invoke-Checked "git" @("add", $roadmapPath)
+        Invoke-Checked "git" @("commit", "-m", "docs: marcar milestone $Slug como ready for PR ($($items -join ', '))")
+    }
+
+    Assert-WorkUnitContract -Slug $Slug -Mode Milestone -Title $info.Title -RequireReadyRoadmap
+}
+else {
+    $escapedSlug = [regex]::Escape($Slug)
+
+    if ($roadmap -match "(?m)^- \[x\] $escapedSlug\b") {
+        throw "$Slug ya figura como [x]. No se puede marcar READY_FOR_PR despues del cierre."
+    }
+
+    if ($roadmap -match "(?m)^- \[-\] $escapedSlug\b") {
+        Write-Host "==> $Slug ya esta en READY_FOR_PR."
+    }
+    else {
+        $pendingPattern = "(?m)^- \[[ ~]\] ($escapedSlug.*)$"
+        if ($roadmap -notmatch $pendingPattern) {
+            throw "No encontre '$Slug' pendiente en ROADMAP.md."
+        }
+
+        Write-Host "==> Marcando '$Slug' como READY_FOR_PR en ROADMAP.md..."
+        $pendingRegex = [regex]::new($pendingPattern)
+        $updatedRoadmap = $pendingRegex.Replace($roadmap, '- [-] $1', 1)
+        Set-Content -LiteralPath $roadmapPath -Value $updatedRoadmap -Encoding UTF8
+        Invoke-Checked "git" @("add", $roadmapPath)
+        Invoke-Checked "git" @("commit", "-m", "docs: marcar $Slug como ready for PR")
+    }
+
+    Assert-FeatureContract -Slug $Slug -Title $info.Title -RequireReadyRoadmap
+}
 
 Write-Host "==> Pusheando $currentBranch..."
 Invoke-Checked "git" @("push", "-u", "origin", $currentBranch)
@@ -190,14 +190,33 @@ if ($null -ne $existingPr) {
         throw "La PR existente #$($existingPr.number) apunta a '$($existingPr.baseRefName)', no a '$baseBranch'."
     }
     Write-Host "==> PR existente: #$($existingPr.number) $($existingPr.url)"
-    & $powerShellPath -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot "local-feature-reconcile.ps1") -Slug $Slug -Branch $currentBranch -WorktreeDir (Get-Location).Path -StartBackground
+    & $powerShellPath -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot "local-feature-reconcile.ps1") -Slug $Slug -Branch $currentBranch -WorktreeDir (Get-Location).Path -Mode $Mode -StartBackground
     exit 0
 }
 
-$bodyPath = Join-Path ([System.IO.Path]::GetTempPath()) ("pr-body-{0}.md" -f ([guid]::NewGuid()))
-$body = @"
-## Resumen
+$evidenceSection = if ($Mode -eq "Milestone") {
+    $itemLines = ($info.Items | ForEach-Object {
+        "- $($_.Slug): docs tecnica $($_.TechnicalDoc), docs usuario $($_.UserDoc)"
+    }) -join "`n"
+    @"
+- Milestone: $Slug
+- Rama: $currentBranch
+- Estado de roadmap: READY_FOR_PR para todos los items, sin marcar [x]
 
+## Items incluidos
+
+$itemLines
+
+## Evidencias
+
+- Spec: $($info.RunDir)/spec.md
+- Decision: $($info.Decision)
+- Auditoria: $($info.RunDir)/audit-N.md
+- QA: $($info.RunDir)/test-report-N.md
+"@
+}
+else {
+    @"
 - Feature: $Slug
 - Rama: $currentBranch
 - Estado de roadmap: READY_FOR_PR, sin marcar [x]
@@ -211,6 +230,14 @@ $body = @"
 - Documentacion tecnica: $($info.TechnicalDoc)
 - Documentacion de usuario: $($info.UserDoc)
 - Indices: $($info.TechnicalIndex), $($info.UserIndex)
+"@
+}
+
+$bodyPath = Join-Path ([System.IO.Path]::GetTempPath()) ("pr-body-{0}.md" -f ([guid]::NewGuid()))
+$body = @"
+## Resumen
+
+$evidenceSection
 
 ## Checklist
 
@@ -261,4 +288,4 @@ finally {
     }
 }
 
-& $powerShellPath -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot "local-feature-reconcile.ps1") -Slug $Slug -Branch $currentBranch -WorktreeDir (Get-Location).Path -StartBackground
+& $powerShellPath -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot "local-feature-reconcile.ps1") -Slug $Slug -Branch $currentBranch -WorktreeDir (Get-Location).Path -Mode $Mode -StartBackground

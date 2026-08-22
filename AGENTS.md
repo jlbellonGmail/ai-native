@@ -184,6 +184,81 @@ debe declararse como excepción, no ejecutarse en silencio.
 Regla dura: `ROADMAP.md` no se marca `[x]` antes del merge. Antes del
 merge solo puede quedar pendiente `[ ]` o `READY_FOR_PR` `[-]`.
 
+## Modo MILESTONE
+
+El circuito descripto arriba (pasos 1-9) es el modo `Feature`: un item de
+`ROADMAP.md`, una rama `feature/<NN>-<slug>`, un `runs/<NN>-<slug>/`. Es
+el modo por defecto y sigue siendo el camino normal para la enorme
+mayoria de cambios.
+
+`Modo MILESTONE` es una variante del mismo circuito, no un circuito
+paralelo, pensada para un grupo pequeño de items de `ROADMAP.md` que
+forman UN solo incremento funcional coherente y que conviene revisar,
+mergear y cerrar como unidad atomica (por ejemplo: varios items que
+serian inconsistentes o inutiles a medio terminar por separado). No es un
+mecanismo para acumular cambios sin relacion real entre si ni para
+esquivar el circuito por feature — el `reviewer-agent` rechaza
+automaticamente un Milestone cuyos items podrian shippearse como
+Features independientes sin perder valor.
+
+La abstraccion comun a ambos modos es el **WorkUnit**
+(`scripts/workunit-lib.ps1`, funcion `Get-WorkUnitInfo -Mode Feature` o
+`-Mode Milestone`). Un Milestone se identifica por un manifest
+`runs/milestone-<slug>/work-unit.json` (JSON con `schemaVersion`, `mode`,
+`slug` y la lista `items` de slugs de `ROADMAP.md`). El slug del
+Milestone en si NO lleva prefijo numerico (no es un item de
+`ROADMAP.md`); los slugs dentro de `items` si son items normales
+`NN-slug`.
+
+Diferencias concretas frente a Feature:
+
+- **Arranque:** `scripts/start-work-unit.ps1 -Mode Milestone -Slug
+  <slug-milestone> -Items <NN-item-a>,<NN-item-b>,...` valida que todos
+  los items esten pendientes `[ ]` en `ROADMAP.md`, que ninguno este ya
+  reclamado por otro Milestone abierto ni por una rama `feature/<item>`
+  viva, crea la rama `milestone/<slug-milestone>` y su worktree, y
+  commitea el manifest inicial. Para Feature, el mismo script (`-Mode
+  Feature -Slug <NN-slug>`, sin `-Items`) reemplaza el arranque manual
+  equivalente.
+- **Spec/auditoria/QA:** un unico `spec.md`, `audit-N.md` y
+  `test-report-N.md` por Milestone (en `runs/milestone-<slug>/`), pero
+  cada uno debe atender a TODOS los items del manifest individualmente:
+  criterios de aceptacion, casos borde y el par `docs/tecnica/<item>.md`
+  + `docs/usuario/<item>.md` son por item, no genericos para el grupo.
+  `runs/milestone-<slug>/decision.md` es unico para todo el work unit.
+- **Contrato:** `Assert-WorkUnitContract -Mode Milestone` (en
+  `scripts/feature-contract.ps1`, que ahora dot-sourcea
+  `scripts/workunit-lib.ps1`) reemplaza a `Assert-FeatureContract`:
+  valida el manifest, el spec/decision/audit/test-report a nivel de work
+  unit, y docs+indices de cada item.
+- **READY_FOR_PR:** `scripts/ready-for-pr.ps1 -Mode Milestone -Slug
+  <slug-milestone>` pasa TODOS los items de `[ ]` a `[-]` en un unico
+  commit, todo o nada: si un solo item no esta pendiente, no se modifica
+  ROADMAP.md y el script falla con el detalle exacto de que item bloquea
+  la transicion (`Assert-RoadmapItemsTransition`).
+- **Cierre post-merge:** `scripts/close-feature.ps1 -Mode Milestone`
+  hace la misma transicion atomica pero de `[-]` a `[x]` para todos los
+  items en un unico commit. Una reejecucion cuando todos los items ya
+  estan `[x]` es un no-op seguro, igual que en Feature. Un estado
+  mezclado (algunos items `[x]`, otros no) es un estado irrecuperable
+  automaticamente — no deberia ocurrir dado que la escritura es atomica,
+  pero si ocurre el script se niega a "terminar" el cierre en silencio y
+  exige intervencion manual sobre `ROADMAP.md`.
+- **Reconciliador local:** `scripts/local-feature-reconcile.ps1 -Mode
+  Milestone` solo limpia worktree/rama cuando TODOS los items del
+  manifest figuran `[x]` en `origin/develop:ROADMAP.md`.
+- **Rama y PR:** `milestone/<slug-milestone>` en vez de
+  `feature/<NN>-<slug>`. La PR generada por `ready-for-pr.ps1` lista
+  cada item incluido con su evidencia. Los workflows
+  `post-hitl-merge-gate.yml` y `post-merge-close-feature.yml` derivan el
+  modo (`Feature` o `Milestone`) del prefijo de la rama (`feature/` vs
+  `milestone/`) y pasan `-Mode` al script correspondiente
+  automaticamente; el humano no elige el modo a mano en GitHub.
+
+Todo lo demas del circuito (unico HITL, `NO MERGE` vuelve a
+`builder-agent`, `ROADMAP.md` nunca se marca `[x]` antes del merge, etc.)
+aplica igual en Milestone que en Feature.
+
 ## Git
 
 - Rama base de trabajo diario: `develop`
@@ -223,9 +298,16 @@ merge solo puede quedar pendiente `[ ]` o `READY_FOR_PR` `[-]`.
   ver paso 9 del circuito.
 - **Post-HITL merge gate**
   (`.github/workflows/post-hitl-merge-gate.yml`): se dispara cuando el
-  humano aprueba la PR hacia `develop`; invoca
-  `scripts/complete-approved-pr.ps1`, espera checks post-aprobación,
-  mergea solo si están verdes y devuelve feedback a builder si fallan.
+  humano aprueba la PR hacia `develop` (`pull_request_review: submitted`)
+  y tambien cada vez que se pushea un commit nuevo a una PR ya abierta
+  (`pull_request: synchronize`) — esto ultimo permite que, si Builder
+  corrige una PR cuyos checks post-HITL habian fallado, el gate se
+  reintente solo, sin pedir una segunda aprobación humana (violaría
+  "único HITL"). El gateo real de si la PR sigue aprobada lo hace
+  `scripts/complete-approved-pr.ps1` consultando `gh pr view` en vivo, no
+  el evento de GitHub. Invoca `scripts/complete-approved-pr.ps1`, espera
+  checks post-aprobación, mergea solo si están verdes y devuelve feedback
+  a builder si fallan.
 - **Release**: pendiente (ver sección Versionado). No hay `Dockerfile` ni
   `release.yml` todavía — se agregan cuando el stack real los requiera.
 

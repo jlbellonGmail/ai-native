@@ -6,6 +6,9 @@ param(
 
     [string] $WorktreeDir = "",
 
+    [ValidateSet("Feature", "Milestone")]
+    [string] $Mode = "Feature",
+
     [int] $PollSeconds = 60,
 
     [int] $MaxMinutes = 1440,
@@ -15,21 +18,6 @@ param(
 
 $ErrorActionPreference = "Stop"
 . (Join-Path $PSScriptRoot "feature-contract.ps1")
-
-function Invoke-Checked {
-    param(
-        [Parameter(Mandatory = $true)]
-        [string] $FilePath,
-
-        [Parameter(Mandatory = $true)]
-        [string[]] $Arguments
-    )
-
-    & $FilePath @Arguments
-    if ($LASTEXITCODE -ne 0) {
-        throw "Command failed: $FilePath $($Arguments -join ' ')"
-    }
-}
 
 function Test-GitSuccess {
     param([Parameter(Mandatory = $true)][string[]] $Arguments)
@@ -44,7 +32,7 @@ function Convert-ToPowerShellLiteral {
 
 function Start-LocalReconciler {
     if ([string]::IsNullOrWhiteSpace($Branch)) {
-        $Branch = "feature/$Slug"
+        $Branch = if ($Mode -eq "Milestone") { "milestone/$Slug" } else { "feature/$Slug" }
     }
 
     $mainRoot = Split-Path -Parent (Get-GitCommonDir)
@@ -83,6 +71,7 @@ function Start-LocalReconciler {
         "-Slug", (Convert-ToPowerShellLiteral $Slug),
         "-Branch", (Convert-ToPowerShellLiteral $Branch),
         "-WorktreeDir", (Convert-ToPowerShellLiteral $WorktreeDir),
+        "-Mode", (Convert-ToPowerShellLiteral $Mode),
         "-PollSeconds", $PollSeconds,
         "-MaxMinutes", $MaxMinutes
     ) -join " "
@@ -118,7 +107,7 @@ if ($StartBackground) {
 }
 
 if ([string]::IsNullOrWhiteSpace($Branch)) {
-    $Branch = "feature/$Slug"
+    $Branch = if ($Mode -eq "Milestone") { "milestone/$Slug" } else { "feature/$Slug" }
 }
 
 $repoRoot = Get-RepositoryRoot
@@ -126,12 +115,19 @@ if ([string]::IsNullOrWhiteSpace($WorktreeDir)) {
     $WorktreeDir = Join-Path (Join-Path (Split-Path -Parent $repoRoot) "worktrees") $Slug
 }
 
+$reconcileItems = if ($Mode -eq "Milestone") {
+    @((Read-WorkUnitManifest -Path "runs/milestone-$Slug/work-unit.json").Items)
+}
+else {
+    @($Slug)
+}
+
 $stateDir = Get-FeatureStateDir
 $safeName = $Slug -replace "[^A-Za-z0-9_.-]", "_"
 $lockPath = Join-Path $stateDir "$safeName.pid"
 
 $deadline = (Get-Date).AddMinutes($MaxMinutes)
-Write-Host "==> Reconciliador local activo para $Slug. Limpia solo si origin/develop contiene [x]."
+Write-Host "==> Reconciliador local activo para $Slug. Limpia solo si origin/develop contiene [x] para todos sus items."
 
 try {
     while ((Get-Date) -lt $deadline) {
@@ -141,11 +137,11 @@ try {
             throw "No pude leer origin/develop:ROADMAP.md."
         }
 
-        $escapedSlug = [regex]::Escape($Slug)
-        $doneCount = [regex]::Matches($remoteRoadmap, "(?m)^- \[x\] $escapedSlug(?=\s|$).*").Count
-        $readyCount = [regex]::Matches($remoteRoadmap, "(?m)^- \[-\] $escapedSlug(?=\s|$).*").Count
+        $itemStates = @($reconcileItems | ForEach-Object { Get-RoadmapItemState -Content $remoteRoadmap -ItemSlug $_ })
+        $allDone = ($itemStates.Count -gt 0) -and (-not ($itemStates | Where-Object { $_.Done -ne 1 -or $_.Ready -ne 0 }))
+        $anyAmbiguous = $itemStates | Where-Object { $_.Done -gt 1 -or $_.Ready -gt 1 }
 
-        if ($doneCount -eq 1 -and $readyCount -eq 0) {
+        if ($allDone) {
             Write-Host "==> Cierre remoto detectado para $Slug. Limpiando artefactos locales."
             $mainRoot = Split-Path -Parent (Get-GitCommonDir)
             $worktreeFullPath = [System.IO.Path]::GetFullPath($WorktreeDir)
@@ -165,8 +161,8 @@ try {
             exit 0
         }
 
-        if ($doneCount -gt 1 -or $readyCount -gt 1) {
-            throw "Estado remoto ambiguo para $Slug en ROADMAP.md: ready=$readyCount, done=$doneCount."
+        if ($anyAmbiguous) {
+            throw "Estado remoto ambiguo para $Slug en ROADMAP.md entre sus items: $($reconcileItems -join ', ')."
         }
 
         Start-Sleep -Seconds $PollSeconds

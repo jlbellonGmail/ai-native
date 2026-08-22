@@ -174,3 +174,37 @@ def test_complete_approved_pr_blocks_wrong_base_branch(tmp_path: Path):
     log = log_path.read_text(encoding="utf-8")
     assert "pr checks" not in log
     assert "pr merge" not in log
+
+
+def test_complete_approved_pr_is_rerunnable_after_checks_turn_green(tmp_path: Path):
+    # Regresion para el riesgo conocido: el gate post-HITL solo dispara con
+    # 'pull_request_review: submitted'. Si Builder pushea commits que
+    # arreglan CI despues de un rechazo, nada volvia a disparar el
+    # workflow -- pedir otra aprobacion humana violaria el "unico HITL".
+    # La correccion real vive en el trigger de
+    # post-hitl-merge-gate.yml (agregado 'pull_request: synchronize'),
+    # pero eso no se puede probar con pytest; lo que SI se prueba aca es
+    # que el script en si es re-ejecutable de forma segura: la misma PR
+    # (misma reviewDecision=APPROVED, sin pedir otra aprobacion) puede
+    # reintentarse cuantas veces haga falta hasta que los checks esten en
+    # verde, y solo entonces mergea.
+    repo, bin_dir, log_path = make_repo(tmp_path)
+
+    first = run_gate(repo, bin_dir, log_path, "checks_fail")
+    assert first.returncode != 0
+    first_log = log_path.read_text(encoding="utf-8")
+    assert "pr merge" not in first_log
+    assert len(reports(repo)) == 1
+
+    log_path.write_text("", encoding="utf-8")
+    second = run_gate(repo, bin_dir, log_path, "success")
+
+    assert second.returncode == 0, second.stderr + second.stdout
+    second_log = log_path.read_text(encoding="utf-8")
+    assert "pr merge 123 --merge --delete-branch" in second_log
+    # 'pr view' se volvio a consultar en vivo (no se reutilizo un estado
+    # de aprobacion cacheado de la primera corrida): la reviewDecision
+    # segui APPROVED sin que nadie la re-aprobara.
+    assert "pr view" in second_log
+    assert len(reports(repo)) == 2
+    assert reports(repo)[-1].read_text(encoding="utf-8").startswith("status: approved")

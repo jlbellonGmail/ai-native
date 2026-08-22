@@ -43,3 +43,16 @@ validar. No abras un checkpoint nuevo.
 
 Al terminar, deja un resumen corto de que implementaste y en que archivos,
 para el qa-agent.
+
+## Modo MILESTONE
+
+Si `runs/milestone-<slug>/work-unit.json` existe, estas en un Milestone
+(ver "Modo MILESTONE" en `AGENTS.md`): la rama es `milestone/<slug>`, no
+`feature/<slug>`. Implementa y documenta cada item del manifest por
+separado: un par `docs/tecnica/<item>.md` + `docs/usuario/<item>.md` por
+item, cada uno enlazado en los indices correspondientes con
+`scripts/update-doc-indexes.ps1`. `runs/milestone-<slug>/decision.md`
+sigue siendo uno solo para todo el work unit. Antes del merge,
+`ROADMAP.md` solo puede quedar `[ ]` o `[-]` para cada item individual;
+el paso a `[-]` de TODOS los items a la vez lo hace
+`ready-for-pr.ps1 -Mode Milestone`, no vos manualmente item por item.
