@@ -163,6 +163,41 @@ function Assert-RoadmapItemsClosedOnce {
     }
 }
 
+function Test-RoadmapClosedOnce {
+    # Version booleana de Assert-RoadmapClosedOnce: no lanza excepcion, solo
+    # informa si el cierre ya esta reflejado. Se usa para decidir, sin
+    # abortar, si un push de un commit local ya existente sigue pendiente.
+    param(
+        [Parameter(Mandatory = $true)]
+        [string] $Content,
+
+        [Parameter(Mandatory = $true)]
+        [string] $Slug
+    )
+
+    $state = Get-RoadmapState $Content $Slug
+    return ($state.Done -eq 1 -and $state.Ready -eq 0)
+}
+
+function Test-RoadmapItemsClosedOnce {
+    # Version booleana de Assert-RoadmapItemsClosedOnce (modo Milestone).
+    param(
+        [Parameter(Mandatory = $true)]
+        [string] $Content,
+
+        [Parameter(Mandatory = $true)]
+        [string[]] $Items
+    )
+
+    foreach ($item in $Items) {
+        if (-not (Test-RoadmapClosedOnce $Content $item)) {
+            return $false
+        }
+    }
+
+    return $true
+}
+
 function Confirm-PrMergedIntoBase {
     param(
         [Parameter(Mandatory = $true)]
@@ -281,7 +316,17 @@ if ($Mode -eq "Milestone") {
     $closeState = Assert-RoadmapItemsCanClose $roadmap $items
 
     if ($closeState -eq "already-closed") {
-        Write-Host "==> Todos los items de '$Slug' ya estan marcados [x]. Reejecucion segura, sin commit vacio."
+        Write-Host "==> Todos los items de '$Slug' ya estan marcados [x] localmente. Reejecucion segura, sin commit vacio."
+        Write-Host "==> Verificando si el push del cierre esta pendiente en origin/$baseBranch..."
+        Invoke-Checked "git" @("fetch", "origin", $baseBranch)
+        $remoteRoadmapCheck = Get-CheckedOutput "git" @("show", "origin/$baseBranch`:ROADMAP.md")
+        if (Test-RoadmapItemsClosedOnce $remoteRoadmapCheck $items) {
+            Write-Host "==> El remoto ya tiene el cierre. Nada que pushear."
+        }
+        else {
+            Write-Host "==> El remoto todavia no tiene el cierre. Pusheando commit local pendiente..."
+            Invoke-Checked "git" @("push", "origin", $baseBranch)
+        }
     }
     else {
         Write-Host "==> Marcando todos los items de '$Slug' como completados en ROADMAP.md..."
@@ -319,7 +364,17 @@ else {
     $closeState = Assert-RoadmapCanClose $roadmap $Slug
 
     if ($closeState -eq "already-closed") {
-        Write-Host "==> $Slug ya esta marcada exactamente una vez como [x]. Reejecucion segura, sin commit vacio."
+        Write-Host "==> $Slug ya esta marcada exactamente una vez como [x] localmente. Reejecucion segura, sin commit vacio."
+        Write-Host "==> Verificando si el push del cierre esta pendiente en origin/$baseBranch..."
+        Invoke-Checked "git" @("fetch", "origin", $baseBranch)
+        $remoteRoadmapCheck = Get-CheckedOutput "git" @("show", "origin/$baseBranch`:ROADMAP.md")
+        if (Test-RoadmapClosedOnce $remoteRoadmapCheck $Slug) {
+            Write-Host "==> El remoto ya tiene el cierre. Nada que pushear."
+        }
+        else {
+            Write-Host "==> El remoto todavia no tiene el cierre. Pusheando commit local pendiente..."
+            Invoke-Checked "git" @("push", "origin", $baseBranch)
+        }
     }
     else {
         Write-Host "==> Marcando '$Slug' como completada en ROADMAP.md..."

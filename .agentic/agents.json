@@ -60,6 +60,33 @@
         }
       }
     },
+    "code-reviewer-agent": {
+      "description": "Audita el diff final (codigo, tests, scripts, config, docs tecnicas) despues de que qa-agent aprueba. Read-only. Se usa siempre en sesion nueva, como subagente.",
+      "prompt": ".agentic/roles/code-reviewer-agent.md",
+      "claude": {
+        "tools": [
+          "Read",
+          "Grep",
+          "Glob"
+        ],
+        "model": "sonnet",
+        "effort": "high"
+      },
+      "codex": {
+        "model": "gpt-5.5",
+        "model_reasoning_effort": "high"
+      },
+      "opencode": {
+        "mode": "subagent",
+        "model": "opencode-go/kimi-k2.7-code",
+        "reasoningEffort": "high",
+        "permission": {
+          "edit": "deny",
+          "bash": "deny",
+          "webfetch": "deny"
+        }
+      }
+    },
     "builder-agent": {
       "description": "Implementa la feature a partir de un spec.md aprobado. Write, corre siempre dentro de su propio git worktree, como subagente.",
       "prompt": ".agentic/roles/builder-agent.md",

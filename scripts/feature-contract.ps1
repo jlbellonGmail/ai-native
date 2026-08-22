@@ -69,22 +69,104 @@ function Assert-NonEmptyFile {
     }
 }
 
-function Get-FirstExistingArtifact {
+function Get-LatestVerdictArtifact {
+    # Reemplaza el uso de "Get-FirstExistingArtifact" (orden lexicografico,
+    # ej. audit-1, audit-10, audit-2) para los artefactos de veredicto
+    # (audit-N.md, test-report-N.md, code-review-N.md): selecciona el de
+    # mayor numero ENTERO real, parsea el bloque ```yaml del veredicto, y
+    # valida su forma. Lanza excepciones con diagnostico identificable
+    # (ver AC-15 de runs/01-code-reviewer-y-sdd/spec.md).
     param(
         [Parameter(Mandatory = $true)]
         [string] $Directory,
 
         [Parameter(Mandatory = $true)]
-        [string] $Pattern
+        [string] $Prefix
     )
 
-    if (-not (Test-Path -LiteralPath $Directory -PathType Container)) {
-        return $null
+    $escapedPrefix = [regex]::Escape($Prefix)
+    $namePattern = "^$escapedPrefix-(\d+)\.md$"
+
+    $candidates = @()
+    if (Test-Path -LiteralPath $Directory -PathType Container) {
+        $candidates = @(Get-ChildItem -LiteralPath $Directory -File | Where-Object { $_.Name -match $namePattern })
     }
 
-    return Get-ChildItem -LiteralPath $Directory -Filter $Pattern -File |
-        Sort-Object Name |
-        Select-Object -First 1
+    if ($candidates.Count -eq 0) {
+        throw "Falta al menos un $Prefix-N.md en $Directory."
+    }
+
+    $withNumber = $candidates | ForEach-Object {
+        [void] ($_.Name -match $namePattern)
+        [pscustomobject]@{ File = $_; Number = [int] $Matches[1] }
+    }
+
+    $latest = $withNumber | Sort-Object Number -Descending | Select-Object -First 1
+    $path = $latest.File.FullName
+    $number = $latest.Number
+
+    $content = Get-Content -LiteralPath $path -Raw -Encoding UTF8
+    if ([string]::IsNullOrWhiteSpace($content)) {
+        throw "El archivo $path esta vacio (archivo vacio)."
+    }
+    $fence = [string][char]0x60 * 3
+    $yamlFencePattern = "(?s)$fence" + "yaml\s*\r?\n(.*?)$fence"
+    $yamlMatch = [regex]::Match($content, $yamlFencePattern)
+    if (-not $yamlMatch.Success) {
+        throw "El archivo $path no tiene bloque de codigo yaml valido delimitado por comillas invertidas triples (sin bloque YAML)."
+    }
+    $yamlBlock = $yamlMatch.Groups[1].Value
+
+    $statusMatches = [regex]::Matches($yamlBlock, "(?m)^\s*status:\s*(\S+)\s*$")
+    if ($statusMatches.Count -ne 1) {
+        throw "El archivo $path tiene status ausente o invalido (status ausente/invalido)."
+    }
+    $status = $statusMatches[0].Groups[1].Value
+    if ($status -cne "approved" -and $status -cne "rejected") {
+        # Comparacion case-sensitive (-cne): un valor como "Approved" (con
+        # mayuscula) NO cuenta como aprobado por default, se trata como
+        # malformado (ver caso borde en spec.md).
+        throw "El archivo $path tiene status ausente o invalido: '$status' (status ausente/invalido)."
+    }
+
+    $attemptMatches = [regex]::Matches($yamlBlock, "(?m)^\s*attempt:\s*(\d+)\s*$")
+    if ($attemptMatches.Count -ne 1) {
+        throw "El archivo $path tiene attempt ausente o no numerico (attempt ausente/no numerico)."
+    }
+    $attempt = [int] $attemptMatches[0].Groups[1].Value
+    if ($attempt -ne $number) {
+        throw "El archivo $path tiene attempt ($attempt) que no coincide con el nombre de archivo (esperado $number). (attempt no coincide con el nombre de archivo)"
+    }
+
+    return [pscustomobject]@{
+        Path = $path
+        Attempt = $attempt
+        Status = $status
+    }
+}
+
+function Assert-LatestVerdictApproved {
+    # Exige que el ULTIMO intento (por numero entero real, no orden
+    # lexicografico) de un artefacto de veredicto (audit/test-report/
+    # code-review) tenga status: approved. Un intento previo aprobado con
+    # un intento numericamente posterior rechazado NO pasa el contrato.
+    param(
+        [Parameter(Mandatory = $true)]
+        [string] $Directory,
+
+        [Parameter(Mandatory = $true)]
+        [string] $Prefix,
+
+        [Parameter(Mandatory = $true)]
+        [string] $Label
+    )
+
+    $artifact = Get-LatestVerdictArtifact -Directory $Directory -Prefix $Prefix
+    Assert-NonEmptyFile $artifact.Path
+    if ($artifact.Status -cne "approved") {
+        throw "El ultimo intento de $Label ($($artifact.Path), attempt $($artifact.Attempt)) no esta approved (status: $($artifact.Status)). (ultimo intento rejected)"
+    }
+    return $artifact
 }
 
 function Get-DocsIndexManagedRegion {
@@ -274,13 +356,19 @@ function New-DecisionFile {
     [void] $lines.Add("")
     [void] $lines.Add("## Estado")
     [void] $lines.Add("")
-    [void] $lines.Add("MERGE aprobado por evidencias del circuito agéntico.")
+    [void] $lines.Add("Estado tecnico: ready_for_pr.")
+    [void] $lines.Add("")
+    [void] $lines.Add("La aprobacion de merge es exclusivamente del HITL en GitHub sobre la PR.")
+    [void] $lines.Add("Este documento no otorga ni implica esa aprobacion.")
     [void] $lines.Add("")
     [void] $lines.Add("## Evidencias revisadas")
     [void] $lines.Add("")
     [void] $lines.Add("- ``$($info.RunDir)/spec.md``")
+    [void] $lines.Add("- ``$($info.RunDir)/plan.md``")
+    [void] $lines.Add("- ``$($info.RunDir)/tasks.md``")
     [void] $lines.Add("- ``$($info.RunDir)/audit-1.md``")
     [void] $lines.Add("- ``$($info.RunDir)/test-report-1.md``")
+    [void] $lines.Add("- ``$($info.RunDir)/code-review-1.md``")
     [void] $lines.Add("")
     [void] $lines.Add("## Decisiones demostrables")
     [void] $lines.Add("")
@@ -333,20 +421,14 @@ function Assert-WorkUnitContract {
         $info = Get-WorkUnitInfo -Slug $Slug -Title $Title -Mode Feature
         Assert-NonEmptyFile $info.Decision
         Assert-NonEmptyFile "$($info.RunDir)/spec.md"
+        Assert-NonEmptyFile "$($info.RunDir)/plan.md"
+        Assert-NonEmptyFile "$($info.RunDir)/tasks.md"
         Assert-NonEmptyFile $info.TechnicalDoc
         Assert-NonEmptyFile $info.UserDoc
 
-        $audit = Get-FirstExistingArtifact -Directory $info.RunDir -Pattern "audit-*.md"
-        if ($null -eq $audit) {
-            throw "Falta al menos un audit-N.md en $($info.RunDir)."
-        }
-        Assert-NonEmptyFile $audit.FullName
-
-        $testReport = Get-FirstExistingArtifact -Directory $info.RunDir -Pattern "test-report-*.md"
-        if ($null -eq $testReport) {
-            throw "Falta al menos un test-report-N.md en $($info.RunDir)."
-        }
-        Assert-NonEmptyFile $testReport.FullName
+        [void] (Assert-LatestVerdictApproved -Directory $info.RunDir -Prefix "audit" -Label "auditoria")
+        [void] (Assert-LatestVerdictApproved -Directory $info.RunDir -Prefix "test-report" -Label "QA")
+        [void] (Assert-LatestVerdictApproved -Directory $info.RunDir -Prefix "code-review" -Label "code review")
 
         Assert-IndexLink -IndexPath $info.TechnicalIndex -TargetPath $info.TechnicalDoc -Title $info.Title
         Assert-IndexLink -IndexPath $info.UserIndex -TargetPath $info.UserDoc -Title $info.Title
@@ -374,18 +456,12 @@ function Assert-WorkUnitContract {
 
     Assert-NonEmptyFile $info.Decision
     Assert-NonEmptyFile "$($info.RunDir)/spec.md"
+    Assert-NonEmptyFile "$($info.RunDir)/plan.md"
+    Assert-NonEmptyFile "$($info.RunDir)/tasks.md"
 
-    $audit = Get-FirstExistingArtifact -Directory $info.RunDir -Pattern "audit-*.md"
-    if ($null -eq $audit) {
-        throw "Falta al menos un audit-N.md en $($info.RunDir)."
-    }
-    Assert-NonEmptyFile $audit.FullName
-
-    $testReport = Get-FirstExistingArtifact -Directory $info.RunDir -Pattern "test-report-*.md"
-    if ($null -eq $testReport) {
-        throw "Falta al menos un test-report-N.md en $($info.RunDir)."
-    }
-    Assert-NonEmptyFile $testReport.FullName
+    [void] (Assert-LatestVerdictApproved -Directory $info.RunDir -Prefix "audit" -Label "auditoria")
+    [void] (Assert-LatestVerdictApproved -Directory $info.RunDir -Prefix "test-report" -Label "QA")
+    [void] (Assert-LatestVerdictApproved -Directory $info.RunDir -Prefix "code-review" -Label "code review")
 
     foreach ($item in $info.Items) {
         Assert-NonEmptyFile $item.TechnicalDoc

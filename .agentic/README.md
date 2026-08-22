@@ -3,11 +3,17 @@
 `.agentic/` contiene la configuracion canonica del circuito agentico que
 no pertenece a una herramienta concreta.
 
-- `agents.json`: metadatos por rol, modelos por herramienta y permisos de
-  adaptador.
+- `agents.json`: metadatos por rol (`analyst-agent`, `reviewer-agent`,
+  `builder-agent`, `qa-agent`, `code-reviewer-agent`), modelos por
+  herramienta y permisos de adaptador. Referencia
+  `./schemas/agents.schema.json` via `$schema`.
 - `roles/*.md`: definicion funcional canonica de cada rol.
 - `models.json`: router minimo de modelos para OpenCode, allowlists,
-  credenciales esperadas y fallbacks autorizados.
+  credenciales esperadas y fallbacks autorizados. Referencia
+  `./schemas/models.schema.json` via `$schema`.
+- `schemas/*.schema.json`: JSON Schema real (no ornamental) de
+  `agents.json`, `models.json` y del manifest de Milestone
+  (`work-unit.json`), validado en `tests/test_agentic_schemas.py`.
 - `mcp.json`: fuente canonica de servidores MCP del template. Arranca
   vacia a proposito; no se inventan servidores.
 - `run.example.yaml`: declaracion minima previa a `spec.md` para elegir

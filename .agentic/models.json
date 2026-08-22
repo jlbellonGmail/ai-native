@@ -109,6 +109,29 @@
         }
       ]
     },
+    "code-reviewer-agent": {
+      "default": {
+        "model": "opencode-go/kimi-k2.7-code",
+        "variant": "high"
+      },
+      "fallback": [
+        {
+          "label": "go",
+          "model": "opencode-go/kimi-k2.7-code",
+          "variant": "high"
+        },
+        {
+          "label": "zen",
+          "model": "opencode/kimi-k2.7-code",
+          "variant": "high"
+        },
+        {
+          "label": "openrouter-free",
+          "model": "openrouter/qwen/qwen3-coder:free",
+          "variant": "high"
+        }
+      ]
+    },
     "builder-agent": {
       "default": {
         "model": "opencode-go/kimi-k2.7-code",

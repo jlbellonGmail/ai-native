@@ -1,11 +1,12 @@
 # Proyecto: template
 
 Template base para arrancar un proyecto nuevo ya con un circuito
-agéntico AI-Native funcionando: analista → auditor → implementador → QA,
-con un único punto de intervención humana (la decisión de merge sobre la
-PR). No define stack de producto — eso lo decide cada proyecto real que
-nazca de este template, documentándolo en `docs/tecnica/arquitectura.md`
-antes de que cualquier agente asuma tecnología no declarada.
+agéntico AI-Native funcionando: analista → auditor → implementador → QA →
+code reviewer, con un único punto de intervención humana (la decisión de
+merge sobre la PR). No define stack de producto — eso lo decide cada
+proyecto real que nazca de este template, documentándolo en
+`docs/tecnica/arquitectura.md` antes de que cualquier agente asuma
+tecnología no declarada.
 
 ## Stack
 
@@ -20,10 +21,10 @@ explícitamente.
 
 ## Estructura del repo
 
-- `runs/`: artefactos por feature (`spec.md`, `audit-N.md`,
-  `test-report-N.md`, `decision.md`, y cuando aplique `run.yaml` +
-  `model-routing.jsonl`). No es código de producción, es historial del
-  circuito.
+- `runs/`: artefactos por feature (`spec.md`, `plan.md`, `tasks.md`,
+  `audit-N.md`, `test-report-N.md`, `code-review-N.md`, `decision.md`, y
+  cuando aplique `run.yaml` + `model-routing.jsonl`). No es código de
+  producción, es historial del circuito.
 - `.agentic/`: fuente canónica multiherramienta para roles, modelos,
   fallback, MCP y skills portables. Los adaptadores específicos se
   regeneran desde ahí.
@@ -53,7 +54,7 @@ El circuito tiene un solo punto de intervención humana: la decisión final
 sobre la PR ya creada y con CI verde. Esa decisión es binaria: `MERGE` o
 `NO MERGE`. No hay checkpoints humanos antes de crear la PR.
 
-Cada uno de los 4 agentes corre como **subagente**, invocado puntualmente
+Cada uno de los 5 agentes corre como **subagente**, invocado puntualmente
 para su etapa. Esto mantiene el contexto principal limpio: el subagente
 hace su tarea, entrega su artefacto en `runs/`, y termina.
 
@@ -63,27 +64,33 @@ El contrato mínimo de artefactos vive en una sola fuente ejecutable:
 `scripts/feature-contract.ps1`. Los prompts de Codex, Claude Code y
 opencode pueden recordar el contrato, pero no deben duplicar validaciones:
 deben invocar los scripts comunes. El contrato exige, según etapa:
-`spec.md`, `decision.md`, `audit-N.md`, `test-report-N.md`,
-`docs/tecnica/<slug>.md`, `docs/usuario/<slug>.md`, un enlace exacto en
-`docs/tecnica/index.md`, un enlace exacto en `docs/usuario/index.md`,
-estado correcto de `ROADMAP.md`, rama `feature/<NN>-<slug>`, PR contra
-`develop` y CI verde.
+`spec.md`, `plan.md`, `tasks.md`, `decision.md`, `audit-N.md`,
+`test-report-N.md`, `code-review-N.md`, `docs/tecnica/<slug>.md`,
+`docs/usuario/<slug>.md`, un enlace exacto en `docs/tecnica/index.md`, un
+enlace exacto en `docs/usuario/index.md`, estado correcto de
+`ROADMAP.md`, rama `feature/<NN>-<slug>`, PR contra `develop` y CI verde.
 
-1. `analyst-agent` (read-only, subagente, sesión nueva) → produce `spec.md`.
-   El spec SIEMPRE debe incluir como criterios de aceptación la creación
-   de `docs/tecnica/<slug>.md`, `docs/usuario/<slug>.md`,
-   `runs/<NN>-<slug>/decision.md`, y enlaces exactos en
-   `docs/tecnica/index.md` y `docs/usuario/index.md`.
-2. `reviewer-agent` (read-only, subagente, sesión nueva) → produce
-   `audit-N.md` con veredicto `approved` o `rejected`. Rechaza
-   automáticamente si el spec no exige los dos `.md` de documentación.
+1. `analyst-agent` (read-only, subagente, sesión nueva) → produce
+   `spec.md` (QUÉ + POR QUÉ), `plan.md` (CÓMO: arquitectura afectada,
+   componentes/contratos, compatibilidad, dependencias, estrategia de
+   tests, impacto operacional) y `tasks.md` (tareas ejecutables y
+   verificables, cada una trazable a un `AC-N` de `spec.md`) —
+   Spec-Driven Development (SDD). El spec SIEMPRE debe incluir como
+   criterios de aceptación la creación de `docs/tecnica/<slug>.md`,
+   `docs/usuario/<slug>.md`, `runs/<NN>-<slug>/decision.md`, y enlaces
+   exactos en `docs/tecnica/index.md` y `docs/usuario/index.md`.
+2. `reviewer-agent` (read-only, subagente, sesión nueva) → audita
+   `spec.md` + `plan.md` + `tasks.md` juntos (coherencia entre los tres y
+   trazabilidad requisito→plan→tarea) y produce `audit-N.md` con
+   veredicto `approved` o `rejected`. Rechaza automáticamente si el spec
+   no exige los dos `.md` de documentación.
    - Si `rejected` → vuelve a 1 con el feedback. La corrección sigue en
      el circuito agéntico; no hay checkpoint humano intermedio.
 3. Si `approved` → `builder-agent` (write, subagente, en worktree propio)
    → implementa el código Y escribe `docs/tecnica/<slug>.md` y
    `docs/usuario/<slug>.md` como parte de terminar la feature, no aparte.
    También crea `runs/<NN>-<slug>/decision.md` con decisiones demostrables
-   desde spec/auditoría/implementación, y ejecuta
+   desde spec/plan/tasks/auditoría/implementación, y ejecuta
    `scripts/update-doc-indexes.ps1 <NN>-<slug> "<Titulo>"`.
 4. `qa-agent` (write, subagente, mismo worktree) → corre tests (pytest y
    cualquier verificación real del producto, incluida verificación manual
@@ -93,18 +100,27 @@ estado correcto de `ROADMAP.md`, rama `feature/<NN>-<slug>`, PR contra
    - Si falla (código o documentación faltante) → vuelve a 3 con el
      reporte. La corrección sigue en el circuito agéntico; no hay
      checkpoint humano intermedio.
-5. Si QA aprueba → actualizar `ROADMAP.md` al estado `[-] READY_FOR_PR`
-   para esa feature, sin marcar `[x]`, y commitear ese cambio en la rama
-   de la feature. Script recomendado:
+5. Si QA aprueba → `code-reviewer-agent` (read-only, subagente, sesión
+   nueva) → revisa el DIFF FINAL (código, tests, scripts, config, docs
+   técnicas afectadas) DESPUÉS de que QA aprobó, no antes, y produce
+   `code-review-N.md` con veredicto `approved` o `rejected`.
+   - Si `rejected` → vuelve a 3 (`builder-agent`), nunca a
+     `analyst-agent`. Si Builder tocó código o tests para resolver el
+     feedback, el circuito vuelve a pasar por QA (paso 4) antes de que
+     `code-reviewer-agent` reevalúe: no alcanza con reevaluar un
+     `test-report-N.md` viejo que no cubrió el nuevo diff.
+6. Si `code-reviewer-agent` aprueba → actualizar `ROADMAP.md` al estado
+   `[-] READY_FOR_PR` para esa feature, sin marcar `[x]`, y commitear ese
+   cambio en la rama de la feature. Script recomendado:
    `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\ready-for-pr.ps1 <NN>-<slug>`.
-6. Push de la rama de feature y creación automatizada de PR hacia
+7. Push de la rama de feature y creación automatizada de PR hacia
    `develop` (`gh pr create`). La PR debe incluir evidencias completas:
-   resumen de cambios, resultados de tests, auditoría, checklist de
-   aceptación, riesgos y enlaces a spec/docs.
-7. Verificar que el CI de la PR corre en verde antes de pedir decisión
+   resumen de cambios, resultados de tests, auditoría, code review,
+   checklist de aceptación, riesgos y enlaces a spec/plan/tasks/docs.
+8. Verificar que el CI de la PR corre en verde antes de pedir decisión
    humana. Script recomendado:
    `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\wait-pr-ci.ps1`.
-8. **Único HITL:** el humano revisa la PR y sus evidencias completas y
+9. **Único HITL:** el humano revisa la PR y sus evidencias completas y
    decide `MERGE` o `NO MERGE`.
    - Si decide `NO MERGE` → vuelve a 3 con observaciones concretas para
      que `builder-agent` corrija la implementación o, si corresponde, la
@@ -124,7 +140,7 @@ estado correcto de `ROADMAP.md`, rama `feature/<NN>-<slug>`, PR contra
      el circuito sin pedir otro checkpoint humano.
    - Si esos checks post-HITL quedan verdes → el gate mergea la PR a
      `develop`. No se marca `[x]` antes del merge.
-9. **Cierre automático post-merge remoto:** GitHub Actions dispara
+10. **Cierre automático post-merge remoto:** GitHub Actions dispara
    `.github/workflows/post-merge-close-feature.yml` cuando una PR hacia
    `develop` se cierra como mergeada. El workflow corre código confiable
    de la rama base (`develop`) e invoca la lógica común:
@@ -167,6 +183,8 @@ limpieza.
 
 - `reviewer-agent` → `analyst-agent` cuando el spec es `rejected`.
 - `qa-agent` → `builder-agent` cuando QA falla.
+- `code-reviewer-agent` → `builder-agent` cuando el code review es
+  `rejected`.
 - `HITL final` → `builder-agent` cuando la decisión es `NO MERGE`.
 
 Cualquier otro retorno o pedido de intervención humana rompe el circuito y
@@ -220,8 +238,9 @@ Diferencias concretas frente a Feature:
   commitea el manifest inicial. Para Feature, el mismo script (`-Mode
   Feature -Slug <NN-slug>`, sin `-Items`) reemplaza el arranque manual
   equivalente.
-- **Spec/auditoria/QA:** un unico `spec.md`, `audit-N.md` y
-  `test-report-N.md` por Milestone (en `runs/milestone-<slug>/`), pero
+- **Spec/plan/tasks/auditoria/QA/code review:** un unico `spec.md`,
+  `plan.md`, `tasks.md`, `audit-N.md`, `test-report-N.md` y
+  `code-review-N.md` por Milestone (en `runs/milestone-<slug>/`), pero
   cada uno debe atender a TODOS los items del manifest individualmente:
   criterios de aceptacion, casos borde y el par `docs/tecnica/<item>.md`
   + `docs/usuario/<item>.md` son por item, no genericos para el grupo.
@@ -229,8 +248,8 @@ Diferencias concretas frente a Feature:
 - **Contrato:** `Assert-WorkUnitContract -Mode Milestone` (en
   `scripts/feature-contract.ps1`, que ahora dot-sourcea
   `scripts/workunit-lib.ps1`) reemplaza a `Assert-FeatureContract`:
-  valida el manifest, el spec/decision/audit/test-report a nivel de work
-  unit, y docs+indices de cada item.
+  valida el manifest, el spec/plan/tasks/decision/audit/test-report/
+  code-review a nivel de work unit, y docs+indices de cada item.
 - **READY_FOR_PR:** `scripts/ready-for-pr.ps1 -Mode Milestone -Slug
   <slug-milestone>` pasa TODOS los items de `[ ]` a `[-]` en un unico
   commit, todo o nada: si un solo item no esta pendiente, no se modifica
@@ -325,11 +344,18 @@ aplica igual en Milestone que en Feature.
 
 Cada ciclo de feature genera su carpeta en `runs/<NN>-<slug>/` con:
 
-- `spec.md`
-- `audit-N.md` (uno por intento del reviewer-agent)
+- `spec.md` (QUÉ + POR QUÉ)
+- `plan.md` (CÓMO: arquitectura, componentes/contratos, compatibilidad,
+  dependencias, estrategia de tests, impacto operacional)
+- `tasks.md` (tareas ejecutables y verificables, cada una trazable a un
+  `AC-N` de `spec.md`)
+- `audit-N.md` (uno por intento del reviewer-agent, sobre spec+plan+tasks)
 - `test-report-N.md` (uno por intento del qa-agent)
-- `decision.md` (archivo canónico obligatorio con decisiones demostrables
-  y evidencia de cierre/merge; no debe quedar vacío ni ornamental)
+- `code-review-N.md` (uno por intento del code-reviewer-agent, sobre el
+  diff final después de que QA aprueba)
+- `decision.md` (archivo canónico obligatorio con decisiones demostrables;
+  no afirma aprobación de merge — esa aprobación es exclusivamente del
+  HITL vía GitHub — y no debe quedar vacío ni ornamental)
 - `post-hitl-gate-N.md` (cuando el gate posterior a la aprobación humana
   necesita dejar evidencia de merge aprobado o feedback automático para
   builder si Actions falla después del HITL)
@@ -339,8 +365,9 @@ El número y slug de cada feature sale de `ROADMAP.md`.
 
 ## Formato de veredicto
 
-`reviewer-agent` y `qa-agent` deben abrir su output con un bloque YAML así,
-antes de cualquier prosa:
+`reviewer-agent` (produce `audit-N.md`), `qa-agent` (produce
+`test-report-N.md`) y `code-reviewer-agent` (produce `code-review-N.md`)
+deben abrir su output con un bloque YAML así, antes de cualquier prosa:
 
 ```yaml
 status: approved | rejected

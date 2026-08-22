@@ -210,9 +210,12 @@ $itemLines
 ## Evidencias
 
 - Spec: $($info.RunDir)/spec.md
+- Plan: $($info.RunDir)/plan.md
+- Tasks: $($info.RunDir)/tasks.md
 - Decision: $($info.Decision)
 - Auditoria: $($info.RunDir)/audit-N.md
 - QA: $($info.RunDir)/test-report-N.md
+- Code review: $($info.RunDir)/code-review-N.md
 "@
 }
 else {
@@ -224,9 +227,12 @@ else {
 ## Evidencias
 
 - Spec: $($info.RunDir)/spec.md
+- Plan: $($info.RunDir)/plan.md
+- Tasks: $($info.RunDir)/tasks.md
 - Decision: $($info.Decision)
 - Auditoria: $($info.RunDir)/audit-N.md
 - QA: $($info.RunDir)/test-report-N.md
+- Code review: $($info.RunDir)/code-review-N.md
 - Documentacion tecnica: $($info.TechnicalDoc)
 - Documentacion de usuario: $($info.UserDoc)
 - Indices: $($info.TechnicalIndex), $($info.UserIndex)

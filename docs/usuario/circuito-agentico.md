@@ -1,7 +1,17 @@
 # Circuito agentico
 
-Este template usa un circuito Analyst -> Reviewer -> Builder -> QA para
-llevar una feature hasta una PR lista para revision humana.
+Este template usa un circuito Analyst -> Reviewer -> Builder -> QA ->
+Code Reviewer para llevar una feature hasta una PR lista para revision
+humana.
+
+Analyst produce tres archivos por feature: `spec.md` (que se construye y
+por que), `plan.md` (como se construye) y `tasks.md` (las tareas
+concretas, cada una ligada a un criterio de aceptacion de `spec.md`).
+Reviewer audita los tres antes de que Builder implemente. Una vez que QA
+aprueba los tests, Code Reviewer revisa el diff final (codigo, tests,
+scripts, documentacion tecnica) y deja su veredicto en `code-review-N.md`;
+si lo rechaza, vuelve a Builder, no hace falta repetir todo el circuito
+desde Analyst.
 
 Para cambiar instrucciones de roles, modelos o fallbacks, editar
 `.agentic/` y regenerar adaptadores:

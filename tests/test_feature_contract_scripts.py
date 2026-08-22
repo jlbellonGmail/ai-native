@@ -105,6 +105,17 @@ def git_env(extra_path: Path | None = None) -> dict[str, str]:
     return env
 
 
+def verdict_block(status: str = "approved", attempt: int = 1) -> str:
+    return (
+        "```yaml\n"
+        f"status: {status}\n"
+        f"attempt: {attempt}\n"
+        "feedback:\n"
+        "  - ok\n"
+        "```\n"
+    )
+
+
 def make_contract_repo(tmp_path: Path, slug: str = "99-demo-feature", title: str = "Demo feature"):
     repo = tmp_path / "repo"
     repo.mkdir()
@@ -122,8 +133,11 @@ def make_contract_repo(tmp_path: Path, slug: str = "99-demo-feature", title: str
         path.mkdir(parents=True, exist_ok=True)
 
     (repo / "runs" / slug / "spec.md").write_text("# Spec\n", encoding="utf-8")
-    (repo / "runs" / slug / "audit-1.md").write_text("status: approved\n", encoding="utf-8")
-    (repo / "runs" / slug / "test-report-1.md").write_text("status: approved\n", encoding="utf-8")
+    (repo / "runs" / slug / "plan.md").write_text("# Plan\n", encoding="utf-8")
+    (repo / "runs" / slug / "tasks.md").write_text("# Tasks\n", encoding="utf-8")
+    (repo / "runs" / slug / "audit-1.md").write_text(verdict_block(), encoding="utf-8")
+    (repo / "runs" / slug / "test-report-1.md").write_text(verdict_block(), encoding="utf-8")
+    (repo / "runs" / slug / "code-review-1.md").write_text(verdict_block(), encoding="utf-8")
     (repo / "docs" / "tecnica" / f"{doc_slug}.md").write_text("# Tecnica\n", encoding="utf-8")
     (repo / "docs" / "usuario" / f"{doc_slug}.md").write_text("# Usuario\n", encoding="utf-8")
     (repo / "docs" / "tecnica" / "index.md").write_text(
@@ -170,6 +184,38 @@ def test_scaffolding_decision_docs_and_index_links_are_idempotent(tmp_path: Path
         assert managed_zone(content).count("- [Demo feature](demo-feature.md)") == 1
         assert content.startswith(untouched_parts[index][0])
         assert content.endswith(untouched_parts[index][1])
+
+
+def test_decision_file_does_not_claim_merge_and_references_hitl(tmp_path: Path):
+    # AC-19: New-DecisionFile ya no debe escribir "MERGE aprobado" ni
+    # ninguna afirmacion de que la PR fue mergeada; debe referenciar
+    # explicitamente que el merge depende del HITL/GitHub, y su seccion
+    # "Evidencias revisadas" debe incluir plan.md, tasks.md y
+    # code-review-1.md ademas de spec.md/audit-1.md/test-report-1.md
+    # (AC-18).
+    repo, slug, title = make_contract_repo(tmp_path)
+
+    create_decision = (
+        f". '{CONTRACT}'; "
+        "New-DecisionFile -Slug '99-demo-feature' -Title 'Demo feature' "
+        "-Decisions @('Decision demostrable uno')"
+    )
+    result = run_ps(create_decision, repo)
+    assert result.returncode == 0, result.stderr
+
+    decision = (repo / "runs" / slug / "decision.md").read_text(encoding="utf-8")
+
+    assert "MERGE aprobado" not in decision
+    assert "fue mergeada" not in decision.lower()
+    assert "la pr fue mergeada" not in decision.lower()
+    assert "hitl" in decision.lower()
+    assert "github" in decision.lower()
+    assert "plan.md" in decision
+    assert "tasks.md" in decision
+    assert "code-review-1.md" in decision
+    assert "spec.md" in decision
+    assert "audit-1.md" in decision
+    assert "test-report-1.md" in decision
 
 
 def test_index_update_fails_for_missing_destination_and_ambiguous_links(tmp_path: Path):
@@ -291,6 +337,148 @@ def test_ready_gate_fails_when_decision_or_index_link_is_missing(tmp_path: Path)
 
     assert result.returncode != 0
     assert "decision.md" in result.stderr
+
+
+def make_passing_repo(tmp_path: Path, slug: str = "99-demo-feature", title: str = "Demo feature"):
+    # Repo con todo el contrato satisfecho (decision.md creado, indices
+    # enlazados, spec/plan/tasks y los tres veredictos aprobados con
+    # attempt 1). Los tests de parseo de veredicto parten de esta base y
+    # corrompen un unico artefacto a la vez.
+    repo, slug, title = make_contract_repo(tmp_path, slug, title)
+    run_ps(
+        f". '{CONTRACT}'; "
+        f"New-DecisionFile -Slug '{slug}' -Title '{title}' "
+        "-Decisions @('Decision demostrable')",
+        repo,
+    )
+    result = run_file(UPDATE_INDEXES, [slug, title], repo)
+    assert result.returncode == 0, result.stderr
+    return repo, slug, title
+
+
+def assert_contract(repo: Path, slug: str, title: str):
+    command = (
+        f". '{CONTRACT}'; "
+        f"Assert-FeatureContract -Slug '{slug}' -Title '{title}'"
+    )
+    return run_ps(command, repo)
+
+
+def test_contract_passes_with_full_valid_run(tmp_path: Path):
+    repo, slug, title = make_passing_repo(tmp_path)
+
+    result = assert_contract(repo, slug, title)
+
+    assert result.returncode == 0, result.stderr
+
+
+def test_contract_uses_real_numeric_order_not_lexicographic(tmp_path: Path):
+    repo, slug, title = make_passing_repo(tmp_path)
+    (repo / "runs" / slug / "audit-1.md").unlink()
+    (repo / "runs" / slug / "audit-2.md").write_text(verdict_block("rejected", 2), encoding="utf-8")
+    (repo / "runs" / slug / "audit-10.md").write_text(verdict_block("approved", 10), encoding="utf-8")
+
+    result = assert_contract(repo, slug, title)
+
+    assert result.returncode == 0, result.stderr
+
+
+def test_contract_fails_when_latest_real_attempt_is_rejected(tmp_path: Path):
+    repo, slug, title = make_passing_repo(tmp_path)
+    (repo / "runs" / slug / "audit-1.md").unlink()
+    (repo / "runs" / slug / "audit-2.md").write_text(verdict_block("approved", 2), encoding="utf-8")
+    (repo / "runs" / slug / "audit-10.md").write_text(verdict_block("rejected", 10), encoding="utf-8")
+
+    result = assert_contract(repo, slug, title)
+
+    assert result.returncode != 0
+    assert "audit-10.md" in result.stderr
+    assert "rejected" in result.stderr.lower() or "ultimo intento" in result.stderr.lower()
+
+
+def test_contract_fails_when_previous_attempt_rejected_and_no_later_attempt_exists(tmp_path: Path):
+    # Reproduce el escenario exacto de la auditoria: audit-1.md rechazado
+    # seguido de audit-2.md vacio/inexistente ya NO debe pasar el contrato.
+    repo, slug, title = make_passing_repo(tmp_path)
+    (repo / "runs" / slug / "audit-1.md").write_text(verdict_block("rejected", 1), encoding="utf-8")
+
+    result = assert_contract(repo, slug, title)
+
+    assert result.returncode != 0
+    assert "audit-1.md" in result.stderr
+
+
+def test_contract_fails_with_readable_message_when_latest_attempt_file_is_empty(tmp_path: Path):
+    # Complementa el test anterior: cubre explicitamente la mitad "vacio"
+    # del escenario descripto en AC-16 ("audit-2.md vacio o inexistente"),
+    # no solo la mitad "inexistente". audit-2.md existe como archivo de
+    # 0 bytes (mas reciente por numero real que audit-1.md rechazado): el
+    # contrato debe fallar con un mensaje identificable (ruta + causa),
+    # no con una excepcion .NET cruda sin diagnostico.
+    repo, slug, title = make_passing_repo(tmp_path)
+    (repo / "runs" / slug / "audit-1.md").write_text(verdict_block("rejected", 1), encoding="utf-8")
+    (repo / "runs" / slug / "audit-2.md").write_text("", encoding="utf-8")
+
+    result = assert_contract(repo, slug, title)
+
+    assert result.returncode != 0
+    assert "audit-2.md" in result.stderr
+    assert "valor no puede ser nulo" not in result.stderr.lower()
+    assert "parametername" not in result.stderr.lower().replace(" ", "")
+
+
+def test_contract_fails_when_yaml_block_is_missing(tmp_path: Path):
+    repo, slug, title = make_passing_repo(tmp_path)
+    (repo / "runs" / slug / "test-report-1.md").write_text("status: approved\nattempt: 1\n", encoding="utf-8")
+
+    result = assert_contract(repo, slug, title)
+
+    assert result.returncode != 0
+    assert "test-report-1.md" in result.stderr
+    assert "bloque" in result.stderr.lower()
+
+
+def test_contract_fails_when_attempt_does_not_match_filename(tmp_path: Path):
+    repo, slug, title = make_passing_repo(tmp_path)
+    (repo / "runs" / slug / "code-review-1.md").write_text(verdict_block("approved", 2), encoding="utf-8")
+
+    result = assert_contract(repo, slug, title)
+
+    assert result.returncode != 0
+    assert "code-review-1.md" in result.stderr
+    assert "no coincide" in result.stderr.lower()
+
+
+def test_contract_fails_when_status_value_is_malformed(tmp_path: Path):
+    repo, slug, title = make_passing_repo(tmp_path)
+    (repo / "runs" / slug / "audit-1.md").write_text(verdict_block("Approved", 1), encoding="utf-8")
+
+    result = assert_contract(repo, slug, title)
+
+    assert result.returncode != 0
+    assert "audit-1.md" in result.stderr
+    assert "invalido" in result.stderr.lower()
+
+
+@pytest.mark.parametrize("missing_name", ["plan.md", "tasks.md"])
+def test_contract_fails_when_plan_or_tasks_is_missing(tmp_path: Path, missing_name: str):
+    repo, slug, title = make_passing_repo(tmp_path)
+    (repo / "runs" / slug / missing_name).unlink()
+
+    result = assert_contract(repo, slug, title)
+
+    assert result.returncode != 0
+    assert missing_name in result.stderr
+
+
+def test_contract_fails_when_code_review_is_entirely_missing(tmp_path: Path):
+    repo, slug, title = make_passing_repo(tmp_path)
+    (repo / "runs" / slug / "code-review-1.md").unlink()
+
+    result = assert_contract(repo, slug, title)
+
+    assert result.returncode != 0
+    assert "code-review" in result.stderr
 
 
 def make_fake_tools(bin_dir: Path, mode: str):

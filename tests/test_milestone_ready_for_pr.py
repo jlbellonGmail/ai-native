@@ -134,9 +134,13 @@ def make_milestone_repo(tmp_path: Path, roadmap_lines: list[str], items: list[st
 
     manifest = {"schemaVersion": 1, "mode": "milestone", "slug": SLUG, "items": items}
     (run_dir / "work-unit.json").write_text(json.dumps(manifest), encoding="utf-8")
+    verdict = "```yaml\nstatus: approved\nattempt: 1\nfeedback:\n  - ok\n```\n"
     (run_dir / "spec.md").write_text("# Spec\n", encoding="utf-8")
-    (run_dir / "audit-1.md").write_text("status: approved\n", encoding="utf-8")
-    (run_dir / "test-report-1.md").write_text("status: approved\n", encoding="utf-8")
+    (run_dir / "plan.md").write_text("# Plan\n", encoding="utf-8")
+    (run_dir / "tasks.md").write_text("# Tasks\n", encoding="utf-8")
+    (run_dir / "audit-1.md").write_text(verdict, encoding="utf-8")
+    (run_dir / "test-report-1.md").write_text(verdict, encoding="utf-8")
+    (run_dir / "code-review-1.md").write_text(verdict, encoding="utf-8")
     (run_dir / "decision.md").write_text("# Decision\n", encoding="utf-8")
 
     (repo / "docs" / "tecnica" / "index.md").write_text(index_template("Tecnica"), encoding="utf-8")

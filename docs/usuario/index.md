@@ -10,5 +10,6 @@ fuente canónica, regenerar adaptadores y declarar modelos por ejecución.
 <!-- FEATURE_LINKS_START -->
 
 - [Fuente unica router modelos](fuente-unica-router-modelos.md)
+- [Code Reviewer Y Sdd](code-reviewer-y-sdd.md)
 
 <!-- FEATURE_LINKS_END -->
