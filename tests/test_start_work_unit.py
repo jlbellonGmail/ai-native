@@ -15,8 +15,13 @@ WHITESPACE_RE = re.compile(r"\s+")
 
 
 def plain_output(output: str) -> str:
+    # pwsh en Linux envuelve mensajes de error largos al ancho de terminal
+    # e inserta un marcador "|" al inicio de cada linea continuada (el
+    # "gutter" del formateador de errores). Se quita antes de colapsar
+    # espacios para que el mensaje quede como una sola frase comparable.
     without_ansi = ANSI_ESCAPE_RE.sub("", output)
-    return WHITESPACE_RE.sub(" ", without_ansi).strip()
+    without_pipes = without_ansi.replace("|", " ")
+    return WHITESPACE_RE.sub(" ", without_pipes).strip()
 
 
 def powershell() -> str:
