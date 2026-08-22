@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -8,6 +9,14 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 LIB = ROOT / "scripts" / "workunit-lib.ps1"
+
+ANSI_ESCAPE_RE = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
+WHITESPACE_RE = re.compile(r"\s+")
+
+
+def plain_output(output: str) -> str:
+    without_ansi = ANSI_ESCAPE_RE.sub("", output)
+    return WHITESPACE_RE.sub(" ", without_ansi).strip()
 
 
 def powershell() -> str:
@@ -104,7 +113,7 @@ def test_get_workunit_info_feature_matches_legacy_shape(tmp_path):
 def test_get_workunit_info_feature_rejects_invalid_slug(tmp_path):
     result = dot_source(tmp_path, "Get-WorkUnitInfo -Slug 'not-numbered' -Mode Feature")
     assert result.returncode != 0
-    assert "Slug invalido" in result.stderr
+    assert "Slug invalido" in plain_output(result.stderr)
 
 
 def test_get_workunit_info_milestone_shape_and_items(tmp_path):
@@ -127,7 +136,7 @@ def test_get_workunit_info_milestone_shape_and_items(tmp_path):
 def test_get_workunit_info_milestone_rejects_numbered_slug(tmp_path):
     result = dot_source(tmp_path, "Get-WorkUnitInfo -Slug '02-mi-milestone' -Mode Milestone -Items @('02-item-a')")
     assert result.returncode != 0
-    assert "Slug de milestone invalido" in result.stderr
+    assert "Slug de milestone invalido" in plain_output(result.stderr)
 
 
 def test_get_workunit_info_milestone_reads_items_from_manifest_when_present(tmp_path):
@@ -179,7 +188,7 @@ def test_write_then_read_workunit_manifest_roundtrip(tmp_path):
 def test_read_workunit_manifest_missing_file_throws(tmp_path):
     result = dot_source(tmp_path, "Read-WorkUnitManifest -Path 'runs/milestone-demo/work-unit.json'")
     assert result.returncode != 0
-    assert "No existe el manifest" in result.stderr
+    assert "No existe el manifest" in plain_output(result.stderr)
 
 
 def test_read_workunit_manifest_rejects_wrong_mode(tmp_path):
@@ -191,7 +200,7 @@ def test_read_workunit_manifest_rejects_wrong_mode(tmp_path):
     )
     result = dot_source(tmp_path, "Read-WorkUnitManifest -Path 'runs/milestone-demo/work-unit.json'")
     assert result.returncode != 0
-    assert "mode=milestone" in result.stderr
+    assert "mode=milestone" in plain_output(result.stderr)
 
 
 # --------------------------------------------------------------------------
@@ -218,9 +227,10 @@ def test_assert_roadmap_items_transition_one_item_wrong_state_blocks_all(tmp_pat
         "-FromStates @('Pending') -ToState 'Ready'",
     )
     assert result.returncode != 0
-    assert "02-item-a" not in result.stderr.split("03-item-b")[0] or "03-item-b" in result.stderr
-    assert "invalida" in result.stderr
-    assert "Ningun item fue modificado" in result.stderr
+    stderr = plain_output(result.stderr)
+    assert "02-item-a" not in stderr.split("03-item-b")[0] or "03-item-b" in stderr
+    assert "invalida" in stderr
+    assert "Ningun item fue modificado" in stderr
 
 
 def test_assert_roadmap_items_transition_empty_list_throws(tmp_path):

@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -8,6 +9,14 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts" / "start-work-unit.ps1"
+
+ANSI_ESCAPE_RE = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
+WHITESPACE_RE = re.compile(r"\s+")
+
+
+def plain_output(output: str) -> str:
+    without_ansi = ANSI_ESCAPE_RE.sub("", output)
+    return WHITESPACE_RE.sub(" ", without_ansi).strip()
 
 
 def powershell() -> str:
@@ -84,7 +93,7 @@ def test_feature_item_already_non_pending_is_rejected(tmp_path: Path):
     result = run_file(["-Mode", "Feature", "-Slug", "02-item-a"], repo)
 
     assert result.returncode != 0
-    assert "no esta pendiente" in (result.stdout + result.stderr)
+    assert "no esta pendiente" in plain_output(result.stdout + result.stderr)
     assert not (tmp_path / "worktrees" / "02-item-a").exists()
 
 
@@ -94,7 +103,7 @@ def test_feature_rejects_items_param(tmp_path: Path):
     result = run_file(["-Mode", "Feature", "-Slug", "02-item-a", "-Items", "02-item-a"], repo)
 
     assert result.returncode != 0
-    assert "no aplica en Mode=Feature" in (result.stdout + result.stderr)
+    assert "no aplica en Mode=Feature" in plain_output(result.stdout + result.stderr)
 
 
 def test_dirty_develop_blocks_start(tmp_path: Path):
@@ -104,7 +113,7 @@ def test_dirty_develop_blocks_start(tmp_path: Path):
     result = run_file(["-Mode", "Feature", "-Slug", "02-item-a"], repo)
 
     assert result.returncode != 0
-    assert "sin commitear" in (result.stdout + result.stderr)
+    assert "sin commitear" in plain_output(result.stdout + result.stderr)
 
 
 def test_must_run_from_main_checkout_not_worktree(tmp_path: Path):
@@ -115,7 +124,7 @@ def test_must_run_from_main_checkout_not_worktree(tmp_path: Path):
     result = run_file(["-Mode", "Feature", "-Slug", "02-item-a"], other_worktree)
 
     assert result.returncode != 0
-    assert "checkout principal" in (result.stdout + result.stderr)
+    assert "checkout principal" in plain_output(result.stdout + result.stderr)
 
 
 # --------------------------------------------------------------------------
@@ -161,7 +170,7 @@ def test_milestone_item_already_claimed_by_existing_manifest_is_rejected(tmp_pat
     )
 
     assert second.returncode != 0
-    assert "ya esta reclamado" in (second.stdout + second.stderr)
+    assert "ya esta reclamado" in plain_output(second.stdout + second.stderr)
     assert not (tmp_path / "worktrees" / "milestone-dos").exists()
 
 
@@ -174,7 +183,7 @@ def test_milestone_duplicate_item_in_same_list_is_rejected(tmp_path: Path):
     )
 
     assert result.returncode != 0
-    assert "duplicados" in (result.stdout + result.stderr).lower()
+    assert "duplicados" in plain_output(result.stdout + result.stderr).lower()
 
 
 def test_milestone_item_not_in_roadmap_is_rejected(tmp_path: Path):
@@ -186,7 +195,7 @@ def test_milestone_item_not_in_roadmap_is_rejected(tmp_path: Path):
     )
 
     assert result.returncode != 0
-    assert "no existe en ROADMAP.md" in (result.stdout + result.stderr)
+    assert "no existe en ROADMAP.md" in plain_output(result.stdout + result.stderr)
     assert not (tmp_path / "worktrees" / "mi-milestone").exists()
 
 
@@ -196,4 +205,4 @@ def test_milestone_requires_items_param(tmp_path: Path):
     result = run_file(["-Mode", "Milestone", "-Slug", "mi-milestone"], repo)
 
     assert result.returncode != 0
-    assert "obligatorio en Mode=Milestone" in (result.stdout + result.stderr)
+    assert "obligatorio en Mode=Milestone" in plain_output(result.stdout + result.stderr)

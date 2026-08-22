@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import shutil
 import stat
 import subprocess
@@ -11,6 +12,14 @@ ROOT = Path(__file__).resolve().parents[1]
 READY_FOR_PR = ROOT / "scripts" / "ready-for-pr.ps1"
 START_MARKER = "<!-- FEATURE_LINKS_START -->"
 END_MARKER = "<!-- FEATURE_LINKS_END -->"
+
+ANSI_ESCAPE_RE = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
+WHITESPACE_RE = re.compile(r"\s+")
+
+
+def plain_output(output: str) -> str:
+    without_ansi = ANSI_ESCAPE_RE.sub("", output)
+    return WHITESPACE_RE.sub(" ", without_ansi).strip()
 
 SLUG = "mi-milestone"
 ITEMS = ["02-item-a", "03-item-b"]
@@ -174,9 +183,8 @@ def test_milestone_ready_for_pr_blocks_when_one_item_not_pending(tmp_path: Path)
     # (transicion valida); Assert-RoadmapItemsTransition debe rechazar
     # sin mutar nada.
     assert after == before
-    assert "invalida" in (result.stdout + result.stderr) or "Ningun item fue modificado" in (
-        result.stdout + result.stderr
-    )
+    combined = plain_output(result.stdout + result.stderr)
+    assert "invalida" in combined or "Ningun item fue modificado" in combined
 
 
 def test_milestone_pr_body_lists_every_item(tmp_path: Path):

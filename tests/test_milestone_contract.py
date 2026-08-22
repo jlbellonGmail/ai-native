@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -8,6 +9,16 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 CONTRACT = ROOT / "scripts" / "feature-contract.ps1"
+
+ANSI_ESCAPE_RE = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
+WHITESPACE_RE = re.compile(r"\s+")
+
+
+def plain_output(output: str) -> str:
+    without_ansi = ANSI_ESCAPE_RE.sub("", output)
+    return WHITESPACE_RE.sub(" ", without_ansi).strip()
+
+
 START_MARKER = "<!-- FEATURE_LINKS_START -->"
 END_MARKER = "<!-- FEATURE_LINKS_END -->"
 
@@ -116,7 +127,7 @@ def test_milestone_contract_missing_manifest_is_rejected(tmp_path: Path):
         repo,
     )
     assert result.returncode != 0
-    assert "No existe el manifest" in result.stderr
+    assert "No existe el manifest" in plain_output(result.stderr)
 
 
 def test_milestone_contract_missing_one_item_tech_doc_is_rejected(tmp_path: Path):
@@ -128,7 +139,7 @@ def test_milestone_contract_missing_one_item_tech_doc_is_rejected(tmp_path: Path
         repo,
     )
     assert result.returncode != 0
-    assert "item-b.md" in result.stderr
+    assert "item-b.md" in plain_output(result.stderr)
 
 
 def test_milestone_contract_missing_decision_is_rejected(tmp_path: Path):
@@ -140,7 +151,7 @@ def test_milestone_contract_missing_decision_is_rejected(tmp_path: Path):
         repo,
     )
     assert result.returncode != 0
-    assert "decision.md" in result.stderr
+    assert "decision.md" in plain_output(result.stderr)
 
 
 def test_milestone_contract_require_ready_roadmap(tmp_path: Path):
@@ -167,4 +178,4 @@ def test_milestone_contract_require_ready_roadmap_fails_if_one_item_pending(tmp_
         repo,
     )
     assert result.returncode != 0
-    assert "Ningun item fue modificado" in result.stderr or "invalida" in result.stderr
+    assert "Ningun item fue modificado" in plain_output(result.stderr) or "invalida" in plain_output(result.stderr)
