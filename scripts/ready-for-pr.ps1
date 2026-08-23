@@ -219,6 +219,19 @@ $auditArtifact = Get-LatestVerdictArtifact -Directory $info.RunDir -Prefix "audi
 $qaArtifact = Get-LatestVerdictArtifact -Directory $info.RunDir -Prefix "test-report"
 $codeReviewArtifact = Get-LatestVerdictArtifact -Directory $info.RunDir -Prefix "code-review"
 
+# Get-LatestVerdictArtifact devuelve `.Path` como ruta ABSOLUTA
+# (System.IO.FileInfo.FullName resuelta contra el directorio actual del
+# proceso). El cuerpo de la PR debe usar el mismo formato relativo
+# (runs/<slug>/audit-N.md) que el resto de la seccion de evidencias
+# ($info.RunDir), sin filtrar el path absoluto del filesystem de quien
+# corrio el script. Se recompone la ruta relativa a partir de
+# $info.RunDir (ya relativo) y el nombre de archivo real resuelto por
+# Get-LatestVerdictArtifact, sin tocar la firma de esa funcion ni sus
+# otros consumidores (p. ej. Assert-LatestVerdictApproved).
+$auditPath = "$($info.RunDir)/$(Split-Path -Leaf $auditArtifact.Path)"
+$qaPath = "$($info.RunDir)/$(Split-Path -Leaf $qaArtifact.Path)"
+$codeReviewPath = "$($info.RunDir)/$(Split-Path -Leaf $codeReviewArtifact.Path)"
+
 $evidenceSection = if ($Mode -eq "Milestone") {
     $itemLines = ($info.Items | ForEach-Object {
         "- $($_.Slug): docs tecnica $($_.TechnicalDoc), docs usuario $($_.UserDoc)"
@@ -238,9 +251,9 @@ $itemLines
 - Plan: $($info.RunDir)/plan.md
 - Tasks: $($info.RunDir)/tasks.md
 - Decision: $($info.Decision)
-- Auditoria: $($auditArtifact.Path)
-- QA: $($qaArtifact.Path)
-- Code review: $($codeReviewArtifact.Path)
+- Auditoria: $auditPath
+- QA: $qaPath
+- Code review: $codeReviewPath
 "@
 }
 else {
@@ -255,9 +268,9 @@ else {
 - Plan: $($info.RunDir)/plan.md
 - Tasks: $($info.RunDir)/tasks.md
 - Decision: $($info.Decision)
-- Auditoria: $($auditArtifact.Path)
-- QA: $($qaArtifact.Path)
-- Code review: $($codeReviewArtifact.Path)
+- Auditoria: $auditPath
+- QA: $qaPath
+- Code review: $codeReviewPath
 - Documentacion tecnica: $($info.TechnicalDoc)
 - Documentacion de usuario: $($info.UserDoc)
 - Indices: $($info.TechnicalIndex), $($info.UserIndex)
@@ -274,7 +287,7 @@ $evidenceSection
 
 - [ ] CI verde en GitHub Actions
 - [ ] Aprobacion HITL: si se aprueba la PR, `post-hitl-merge-gate.yml` vuelve a esperar Actions y mergea solo en verde
-- [ ] Tests reportados en $($qaArtifact.Path)
+- [ ] Tests reportados en $qaPath
 - [ ] Criterios de aceptacion cubiertos
 - [ ] Decisiones documentadas en $($info.Decision)
 - [ ] Indices de documentacion enlazan el servicio una sola vez

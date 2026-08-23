@@ -153,18 +153,34 @@ inmediatamente después de que la validación de contrato (GAP B) ya
 garantizó que el último intento de cada veredicto existe y está
 `approved`, se resuelve el path real con la función ya existente
 `Get-LatestVerdictArtifact -Directory $info.RunDir -Prefix "audit"` (y
-análogas para `test-report`/`code-review`), y se referencia
-`$($auditArtifact.Path)` / `$($qaArtifact.Path)` /
-`$($codeReviewArtifact.Path)` en el cuerpo de la PR, en vez de repetir la
-validación de estado (ya cubierta). La línea del checklist que también
-mencionaba `test-report-N.md` se corrigió por la misma razón, aunque no
-formaba parte del bloque `$evidenceSection` en sentido estricto: dejar
-ese literal habría reintroducido el mismo problema que motiva GAP C en
-otra parte del mismo cuerpo de PR.
+análogas para `test-report`/`code-review`).
 
-`Get-LatestVerdictArtifact` ya devuelve una ruta relativa consistente con
-el resto de la sección de evidencias (`runs/<slug>/...`), sin rutas
-absolutas del entorno del agente que la generó.
+**Corrección de un bug detectado en `code-review-1.md` (intento 1,
+rechazado):** `Get-LatestVerdictArtifact.Path` (en
+`scripts/feature-contract.ps1`) se construye con `$latest.File.FullName`,
+y `System.IO.FileInfo.FullName` en .NET/PowerShell **siempre** devuelve
+una ruta absoluta resuelta contra el directorio actual del proceso —
+nunca `runs/<slug>/audit-N.md`. La primera versión de este bloque
+interpolaba `$($auditArtifact.Path)` / `$($qaArtifact.Path)` /
+`$($codeReviewArtifact.Path)` directamente en el cuerpo de la PR,
+filtrando así la ruta absoluta del filesystem de quien corrió
+`ready-for-pr.ps1` (agente local o runner de CI) al cuerpo público de la
+PR en GitHub — en violación directa del caso borde de `spec.md` ("sin
+rutas absolutas del entorno del agente").
+
+La corrección deliberadamente **no** toca `Get-LatestVerdictArtifact` ni
+su firma (para no afectar a su otro consumidor,
+`Assert-LatestVerdictApproved`, que también usa `.Path` en sus mensajes
+de error): en `scripts/ready-for-pr.ps1`, inmediatamente después de
+resolver `$auditArtifact`/`$qaArtifact`/`$codeReviewArtifact`, se
+recompone una ruta relativa propia (`$auditPath`, `$qaPath`,
+`$codeReviewPath`) combinando `$info.RunDir` (ya relativo, ej.
+`runs/<slug>` o `runs/milestone-<slug>`) con el nombre de archivo real
+obtenido vía `Split-Path -Leaf $auditArtifact.Path` (ej. `audit-2.md`).
+El bloque `$evidenceSection` (Feature y Milestone) y la línea del
+checklist que menciona `test-report-N.md` referencian esas variables
+relativas (`$auditPath`, `$qaPath`, `$codeReviewPath`), nunca `.Path`
+directamente.
 
 ## Casos borde cubiertos por tests
 
@@ -179,11 +195,20 @@ absolutas del entorno del agente que la generó.
   (`test_ready_for_pr_blocks_roadmap_mutation_when_contract_fails`) y en
   Milestone con manifest de 2+ items donde falla la doc técnica de uno
   solo (`test_milestone_ready_for_pr_blocks_roadmap_mutation_when_contract_fails`).
-- **GAP C**: el body de la PR contiene el nombre de archivo real del
-  intento aprobado vigente (`audit-2.md` cuando `audit-1.md` fue
-  rechazado) y no contiene el literal `audit-N.md`, en Feature
+- **GAP C**: el body de la PR contiene la ruta relativa exacta del
+  intento aprobado vigente (`runs/<slug>/audit-2.md`, o
+  `runs/milestone-<slug>/audit-2.md` en Milestone, cuando `audit-1.md`
+  fue rechazado), no solo la subcadena `audit-2.md`, no contiene el
+  literal `audit-N.md`, no contiene el separador de unidad de disco
+  Windows (`:\`) y no contiene el path absoluto del repo temporal del
+  propio test — en Feature
   (`test_ready_for_pr_pr_body_references_real_latest_attempt`) y en
   Milestone (`test_milestone_pr_body_references_real_latest_attempt`).
+  Estas aserciones adicionales (más allá de la subcadena del nombre de
+  archivo) son las que detectan una regresión del bug de ruta absoluta
+  descripto arriba; la versión anterior de ambos tests pasaba igual con
+  el bug presente, porque `audit-2.md` también aparece al final de una
+  ruta absoluta.
 
 ## Fuera de alcance (deliberado)
 

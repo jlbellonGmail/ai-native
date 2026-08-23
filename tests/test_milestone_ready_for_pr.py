@@ -261,8 +261,20 @@ def test_milestone_pr_body_references_real_latest_attempt(tmp_path: Path):
     assert result.returncode == 0, result.stdout + result.stderr
     assert body_capture.exists()
     body = body_capture.read_text(encoding="utf-8")
-    assert "audit-2.md" in body
+    # Debe referenciar la ruta relativa exacta
+    # (runs/milestone-<slug>/audit-2.md), no solo la subcadena
+    # "audit-2.md" (esa subcadena tambien aparece al final de una ruta
+    # absoluta, asi que por si sola no detectaria una regresion del bug
+    # de GAP C donde Get-LatestVerdictArtifact.Path -- siempre absoluto,
+    # via System.IO.FileInfo.FullName -- se filtraba al body publico de
+    # la PR). El repo de este test vive bajo tmp_path, asi que si el bug
+    # reaparece el path absoluto real de ese repo temporal (con
+    # separador de unidad de disco Windows) aparece en el body.
+    assert f"runs/milestone-{SLUG}/audit-2.md" in body
     assert "audit-N.md" not in body
+    assert ":\\" not in body
+    assert str(repo) not in body
+    assert str(repo).replace("\\", "/") not in body
 
 
 def test_milestone_pr_body_lists_every_item(tmp_path: Path):
