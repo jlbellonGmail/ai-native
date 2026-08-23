@@ -1,4 +1,4 @@
-﻿# Roadmap: template
+# Roadmap: template
 
 Cada feature nueva se implementa siguiendo el circuito agéntico de
 [AGENTS.md](AGENTS.md): Analyst → Reviewer → Builder → QA → Code Reviewer
@@ -58,7 +58,8 @@ minúsculas con guiones, seguido de `—` y descripción corta en español.
 
 - [x] 00-fuente-unica-router-modelos — Fuente canonica agentica, router OpenCode y gate post-HITL listos para PR.
 - [x] 01-code-reviewer-y-sdd — Quinto agente code-reviewer-agent, SDD formal (spec+plan+tasks), contrato que valida el ultimo veredicto real y corrige bugs detectados (decision.md, retry de cierre, schemas rotos).
-- [-] 02-integridad-post-hitl-y-ready-for-pr — Vincula la aprobacion HITL a la revision vigente de la PR (rechaza aprobaciones stale tras un push posterior), hace transaccional el orden de validacion en ready-for-pr.ps1 (el contrato completo se valida antes de mutar ROADMAP.md, no despues) y referencia el archivo real del ultimo veredicto aprobado en el cuerpo de la PR en vez de un placeholder generico.
+- [x] 02-integridad-post-hitl-y-ready-for-pr — Vincula la aprobacion HITL a la revision vigente de la PR (rechaza aprobaciones stale tras un push posterior), hace transaccional el orden de validacion en ready-for-pr.ps1 (el contrato completo se valida antes de mutar ROADMAP.md, no despues) y referencia el archivo real del ultimo veredicto aprobado en el cuerpo de la PR en vez de un placeholder generico.
+
 
 
 
