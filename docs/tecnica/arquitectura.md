@@ -97,3 +97,50 @@ archivos ni la del manifest de Milestone (`work-unit.json`).
   `test_workunit_lib.py`/`test_start_work_unit.py` ni arriesgar
   compatibilidad con un manifest ya committeado en algún Milestone en
   curso.
+
+## Decisión: contexto de producto persistente y Fase CLARIFY en analyst-agent
+
+`analyst-agent` dependía de que el humano repitiera en cada pedido
+información que ya vivía en el repo, y no tenía forma explícita de
+distinguir un supuesto técnico razonable de una decisión de negocio
+inventada.
+
+- **Qué se agrega**: `docs/producto/contexto-producto.md` (plantilla
+  neutral de conocimiento funcional persistente, transversal a features,
+  leída automáticamente por `analyst-agent` cuando existe); una Política
+  de fuentes y trazabilidad con precedencia explícita de 7 niveles; una
+  Fase CLARIFY (ronda de preguntas concretas devuelta al Main Agent antes
+  de cerrar `spec.md`, resuelta en la conversación ordinaria con el
+  humano, sin crear un segundo HITL formal); secciones nuevas en
+  `spec.md` (`Identificación`, `Contexto y fuentes`, `Supuestos`,
+  `Clarificaciones realizadas`, `Decisiones pendientes bloqueantes`); un
+  gate explícito de tamaño/descomposición de Milestone (independencia,
+  cohesión, alcance, capacidad de revisión, capacidad de prueba, riesgo
+  de integración, tamaño del cambio) aplicado por `analyst-agent`
+  (autochequeo) y auditado por `reviewer-agent`; y una regla para que
+  `builder-agent` traslade a `docs/producto/contexto-producto.md` las
+  decisiones de producto estables detectadas al cerrar una feature.
+- **Por qué ahora**: mejorar la calidad de `spec.md` sin que cada pedido
+  tenga que repetir contexto ya documentado, y sin que ninguna
+  ambigüedad de negocio se resuelva por invención silenciosa de un
+  agente.
+- **Por qué este enfoque y no otro**: se evaluó adoptar GitHub Spec Kit
+  (Specify/Clarify) como herramienta, pero se descartó por agregar una
+  dependencia externa y una estructura de directorios propia que
+  duplicaría el circuito ya existente de este template; en cambio se
+  tomaron sus conceptos (clarificación explícita, contexto persistente)
+  y se integraron directamente en `analyst-agent`/`reviewer-agent`/
+  `builder-agent` y en `AGENTS.md`. Se descartó también agregar un sexto
+  agente o un nuevo `MODE` operativo para el bootstrap de contexto de
+  producto: como `analyst-agent` no tiene `Write` (ver
+  `.agentic/agents.json`), el Main Agent escribe el archivo a partir del
+  borrador que `analyst-agent` devuelve como texto, sin tocar
+  `ROADMAP.md` ni crear rama/PR para esa operación.
+- **Qué sigue igual**: no se agrega backend, base de datos, servicio
+  externo ni dependencia de build. El único HITL formal del circuito
+  sigue siendo la decisión `MERGE`/`NO MERGE` sobre la PR; Fase CLARIFY
+  es conversación ordinaria entre el Main Agent y el humano, no un
+  checkpoint nuevo. El formato de `ROADMAP.md` (`[ ]`/`[-]`/`[x]`, patrón
+  `NN-slug`) no cambia; el bloque `Referencias:` opcional es indentado y
+  no interfiere con los parsers existentes (`Get-RoadmapItemState*` en
+  `scripts/workunit-lib.ps1` matchean solo la línea del ítem).

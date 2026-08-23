@@ -215,8 +215,7 @@ terminología). No es un artefacto de una feature: vive fuera de
 - Si no existe (template recién clonado, o proyecto legacy que todavía no
   lo generó), `analyst-agent` no falla ni bloquea: sigue produciendo la
   spec con el resto de las fuentes disponibles y puede señalar en
-  "Riesgos / supuestos" que el contexto de producto todavía no está
-  formalizado.
+  "Supuestos" que el contexto de producto todavía no está formalizado.
 - Se actualiza mediante el bootstrap (ver abajo) o mediante
   `builder-agent` al cerrar una feature/milestone, cuando corresponde
   (ver "Evolución del contexto de producto").
@@ -270,7 +269,7 @@ Precedencia de fuentes, de mayor a menor autoridad:
    (`docs/tecnica/arquitectura.md` y afines).
 6. Código y tests existentes.
 7. Supuestos explícitos del propio `analyst-agent` (último recurso,
-   siempre declarados en "Riesgos / supuestos" de `spec.md`).
+   siempre declarados en "Supuestos" de `spec.md`).
 
 Qué puede inferir sin preguntar (y debe declarar como supuesto cuando
 corresponda): decisiones técnicas o convenciones ya establecidas
