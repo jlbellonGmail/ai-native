@@ -674,3 +674,84 @@ otro proyecto sin adaptarlas.
   manual del humano antes de que `scripts/ready-for-pr.ps1`,
   `scripts/wait-pr-ci.ps1` y los workflows de GitHub Actions puedan
   funcionar.
+- **Branch protection de GitHub** (Settings → Branches → Branch
+  protection rules, o vía `gh api`): configurar sobre la rama `develop`
+  los cuatro requisitos que exige el circuito para que el único HITL
+  (`AGENTS.md`, sección "Único HITL") sea efectivo: (a) exigir pull
+  request antes de mergear, (b) exigir en verde el status check `test`
+  (nombre del job actual de `.github/workflows/ci.yml`; si la feature
+  `04-ci-wiring-product-tests` renombra o separa ese job, actualizar este
+  comando con el nombre vigente antes de aplicarlo — verificar en la
+  pestaña Actions de una PR reciente), (c) exigir al menos 1 aprobación,
+  (d) descartar (dismiss) aprobaciones obsoletas cuando hay un push nuevo
+  a la PR. `enforce_admins` queda en `true`: los administradores del
+  repositorio también quedan sujetos a esta protección, sin bypass,
+  consistente con la regla dura de `AGENTS.md` ("Nunca commitear directo
+  a `develop`... ni nunca directo a `main`") — esta decisión pasó por
+  Fase CLARIFY con el humano (ver
+  `runs/05-operational-readiness-docs/decision.md`), no es un supuesto
+  unilateral. Requiere permisos de administrador sobre el repositorio y
+  un remoto GitHub ya configurado (ver bullet "Remoto GitHub" arriba).
+
+  **Advertencia — el `PUT` reemplaza, no fusiona**: el comando de abajo
+  sobrescribe por completo la configuración de branch protection vigente
+  de `develop` con el payload documentado. Si ya existen otras reglas
+  configuradas manualmente en la UI de GitHub (por ejemplo "require
+  signed commits", "require linear history", restricciones de push por
+  equipo), correr primero el comando de verificación de solo lectura
+  (`GET`, más abajo) para revisar qué hay configurado antes de
+  reemplazarlo — en particular antes de volver a correr este comando
+  para actualizar el nombre del status check.
+
+  Comando `gh api` (PowerShell; el payload en sí es idempotente —
+  reenviarlo sin cambios no duplica nada — pero reemplaza cualquier
+  configuración externa al payload, ver advertencia arriba;
+  `{owner}`/`{repo}` los resuelve `gh` automáticamente desde el remoto
+  del directorio actual, no hace falta reemplazarlos):
+
+  ```powershell
+  $branchProtection = @'
+  {
+    "required_status_checks": {
+      "strict": true,
+      "contexts": ["test"]
+    },
+    "enforce_admins": true,
+    "required_pull_request_reviews": {
+      "dismiss_stale_reviews": true,
+      "required_approving_review_count": 1
+    },
+    "restrictions": null
+  }
+  '@
+
+  # Validar el JSON localmente antes de enviarlo (no requiere credenciales):
+  $branchProtection | ConvertFrom-Json | Out-Null
+
+  $branchProtection | gh api `
+    --method PUT `
+    -H "Accept: application/vnd.github+json" `
+    repos/{owner}/{repo}/branches/develop/protection `
+    --input -
+  ```
+
+  Si la versión de la API en uso ya deprecó el campo `contexts` a favor
+  de `checks`, reemplazar `"contexts": ["test"]` por
+  `"checks": [{"context": "test"}]` dentro del mismo payload.
+
+  Verificar lo que hay configurado ANTES de re-aplicar el `PUT` (de solo
+  lectura, no destructivo):
+
+  ```powershell
+  gh api repos/{owner}/{repo}/branches/develop/protection
+  ```
+
+  Alternativa manual (si no se confía en `gh api` o no está disponible):
+  en GitHub, Settings → Branches → Add branch protection rule para
+  `develop` → activar "Require a pull request before merging" con
+  "Require approvals" = 1 y "Dismiss stale pull request approvals when
+  new commits are pushed" → activar "Require status checks to pass
+  before merging" y agregar el check `test` → activar "Include
+  administrators" (equivalente UI clásico de `enforce_admins: true`; en
+  Rulesets modernos de GitHub la etiqueta equivalente es "Do not allow
+  bypassing the above settings") → Save.
