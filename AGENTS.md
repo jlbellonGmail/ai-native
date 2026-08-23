@@ -477,11 +477,25 @@ aplica igual en Milestone que en Feature.
 
 ## CI/CD
 
-- **CI** (`.github/workflows/ci.yml`): corre `pytest` sobre `tests/`
-  (tests del circuito) en cada push/PR a `develop` o `main`. Gate
-  obligatorio antes de mergear cualquier PR (paso 7 del circuito). Se
-  amplía con los tests de producto que correspondan cuando el stack real
-  se defina — no antes.
+- **CI** (`.github/workflows/ci.yml`): declara dos jobs top-level, ambos
+  disparados por los mismos triggers (`push`/`pull_request` a `develop` y
+  `main`) y ambos **gate obligatorio con el mismo nivel de exigencia**
+  antes de mergear cualquier PR (paso 7 del circuito) — decisión
+  confirmada por el humano en Fase CLARIFY (ver
+  `runs/04-ci-wiring-product-tests/spec.md`, sección "Clarificaciones
+  realizadas"), no un supuesto de ningún agente:
+  - **`circuit-tests`**: corre `pytest` sobre `tests/` (tests del
+    circuito agéntico). Es el job que antes se llamaba `test`; cualquier
+    branch protection configurada con ese nombre viejo debe actualizarse
+    a `circuit-tests`.
+  - **`product-tests`**: placeholder deliberado mientras este template no
+    tenga stack de producto propio. Contiene un marcador explícito en el
+    propio `ci.yml` que referencia `docs/tecnica/arquitectura.md` como el
+    lugar donde documentar el stack real antes de reemplazar ese
+    placeholder por los pasos reales de build/test. Se mantiene como
+    check requerido desde ya (aunque hoy solo corra un `echo`) para que
+    branch protection no tenga que actualizarse el día que el stack real
+    llegue.
 - **Docs** (`.github/workflows/docs.yml`): se dispara al pushear a `main`
   con cambios en `docs/` o `mkdocs.yml`. Publica el sitio MkDocs a GitHub
   Pages. Público, sin gate por ahora.
