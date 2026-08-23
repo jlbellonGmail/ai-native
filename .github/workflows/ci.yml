@@ -52,4 +52,5 @@ jobs:
       # ############################################################
 
       - name: Placeholder (sin stack definido)
-        run: echo "product-tests: sin stack de producto definido todavia. Ver docs/tecnica/arquitectura.md."
+        run: |
+          echo "product-tests: sin stack de producto definido todavia. Ver docs/tecnica/arquitectura.md."
