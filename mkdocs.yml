@@ -29,6 +29,7 @@ theme:
 
 nav:
   - Inicio: index.md
+  - Producto: producto/contexto-producto.md
   - Técnica: tecnica/index.md
   - Usuario: usuario/index.md
 

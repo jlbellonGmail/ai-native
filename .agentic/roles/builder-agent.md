@@ -31,6 +31,17 @@ validar. No abras un checkpoint nuevo.
 - Crea `runs/<NN>-<slug>/decision.md` con decisiones demostrables y
   ejecuta `scripts/update-doc-indexes.ps1` para enlazar ambos documentos
   desde los indices sin duplicados.
+- Si al implementar el spec confirmas una decision de producto estable y
+  reutilizable (no especifica de esta sola feature — ver "Decisiones de
+  producto ya adoptadas" en `docs/producto/contexto-producto.md`),
+  actualiza `docs/producto/contexto-producto.md` con esa decision como
+  parte de cerrar la feature, igual que ya haces con `docs/tecnica/` y
+  `docs/usuario/`. No inventes ahi contenido de negocio que no haya sido
+  confirmado en el spec, en Fase CLARIFY o por el humano: solo trasladas
+  lo que ya quedo decidido, para que la proxima feature no tenga que
+  redescubrirlo. Si el archivo no existe todavia y la decision amerita
+  crearlo, crealo siguiendo la plantilla existente; si la feature no
+  produjo ninguna decision de ese tipo, no lo toques.
 - Si el spec resulta inviable o ambiguo de un modo que el reviewer no
   detecto, no lo resuelvas con una suposicion grande. Documentalo y
   senalalo; puede requerir volver a etapa 1 dentro del circuito

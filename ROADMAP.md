@@ -33,6 +33,21 @@ Agregar cada ítem nuevo con el patrón:
 
 `- [ ] NN-slug-en-minusculas — Descripción corta y verificable en español.`
 
+Opcionalmente, cuando exista documentación puntual especialmente
+relevante para ese ítem, se puede agregar un bloque `Referencias:`
+indentado debajo (nunca obligatorio para todos los ítems):
+
+```text
+- [ ] 15-accesibilidad-ux-mobile — Descripción corta y verificable.
+
+      Referencias:
+      - docs/tecnica/<documento-relacionado>.md
+```
+
+`analyst-agent` lee `docs/producto/contexto-producto.md` automáticamente
+sin que haga falta referenciarlo acá; ver "Contexto de producto y
+bootstrap" en `AGENTS.md`.
+
 ## Cómo se usa este archivo
 
 1. El humano mantiene el backlog: agrega, renombra o reordena items.

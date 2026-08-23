@@ -31,6 +31,22 @@ No guardar tokens en el repositorio. OpenCode Go y Zen se conectan con
 usar variables de entorno o marcas de disponibilidad documentadas en
 `.agentic/models.json`.
 
+## Contexto de producto
+
+Antes de escribir una spec, Analyst revisa por su cuenta el item del
+roadmap, `docs/producto/contexto-producto.md` (si existe), las reglas del
+proyecto y la arquitectura/codigo existente — no hace falta repetirle en
+el pedido lo que ya esta documentado. Si encuentra una decision de
+producto/negocio/UX que admite varias respuestas validas, no la inventa:
+te devuelve preguntas concretas antes de cerrar la spec (esto no es un
+nuevo punto de aprobacion formal, es una conversacion normal).
+
+Para inicializar el contexto de producto de un proyecto nuevo, basta con
+pedirlo en el chat (por ejemplo "Inicializa el contexto de producto de
+este proyecto"): Analyst investiga el repo y propone un borrador, y ese
+borrador queda escrito en `docs/producto/contexto-producto.md` sin crear
+rama ni PR.
+
 ## Despues de aprobar una PR
 
 El humano solo aprueba o rechaza. Si aprueba la PR en GitHub, el workflow

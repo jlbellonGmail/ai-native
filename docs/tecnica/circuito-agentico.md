@@ -11,6 +11,44 @@ que `audit-N.md`/`test-report-N.md`; un rechazo vuelve a `builder-agent`
 (nunca a `analyst-agent`). Ver `AGENTS.md` seccion "Circuito" para el
 detalle completo, incluido el orden numerado de pasos.
 
+## Contexto de producto, CLARIFY y bootstrap
+
+`analyst-agent` no depende solo de lo que el humano escribe en el pedido:
+antes de escribir `spec.md` inspecciona activamente el/los item/s de
+`ROADMAP.md` (con su bloque `Referencias:` opcional),
+`docs/producto/contexto-producto.md` (si existe), `AGENTS.md` y
+`.claude/rules/*.md`, `docs/tecnica/arquitectura.md` y otros docs
+tecnicos relevantes, y el codigo/tests existentes. Aplica una precedencia
+explicita de fuentes cuando dos parecen contradecirse (detalle completo
+en `AGENTS.md`, seccion "Contexto de producto y bootstrap" →
+"Política de fuentes y trazabilidad").
+
+Puede inferir sin preguntar decisiones tecnicas ya establecidas
+inequivocamente por codigo/arquitectura/stack/tests/ADR/reglas globales
+(las declara como "Supuestos" en `spec.md`). No puede inventar decisiones
+de producto, reglas de negocio, UX, seguridad, privacidad, datos,
+permisos o cualquier politica con varias respuestas validas: esas pasan
+por **Fase CLARIFY**, una ronda de preguntas concretas devuelta al Main
+Agent (que las conversa con el humano en el chat ordinario, no en un
+nuevo checkpoint formal) antes de reinvocar a `analyst-agent`. Si una
+ambiguedad material queda sin resolver, `spec.md` la deja explicita en
+"Decisiones pendientes bloqueantes" y `reviewer-agent` rechaza
+automaticamente por ese motivo. Esto no reemplaza ni duplica el unico
+HITL formal del circuito (la decision `MERGE`/`NO MERGE` sobre la PR).
+
+`docs/producto/contexto-producto.md` es conocimiento funcional
+persistente (propósito, usuarios, reglas de negocio ya adoptadas),
+transversal a todas las features. Su ausencia nunca bloquea el circuito.
+Se crea o actualiza de dos formas: (a) bootstrap — el humano pide
+inicializar el contexto de producto, el Main Agent invoca a
+`analyst-agent` (read-only) para investigar el repo y devolver un
+borrador de texto (mas preguntas CLARIFY si hacen falta), y el Main Agent
+mismo escribe el archivo con el borrador final, sin tocar `ROADMAP.md` ni
+crear rama/PR; (b) evolucion — `builder-agent` actualiza el archivo al
+cerrar una feature cuando confirma una decision de producto estable y
+reutilizable, igual que ya escribe `docs/tecnica/` y `docs/usuario/`.
+Ningun agente llena este archivo con contenido de negocio inventado.
+
 ## Fuente canónica
 
 Las reglas compartidas siguen en `AGENTS.md`. La configuración que cambia
