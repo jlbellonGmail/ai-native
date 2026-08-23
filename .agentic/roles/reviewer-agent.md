@@ -26,6 +26,26 @@ Development (SDD).
   declararlo como decision explicita a documentar? Si si, rechazalo.
 - El spec inventa contenido de negocio (datos, textos legales, precios,
   certificaciones) sin fuente? Si si, rechazalo.
+- La seccion "Identificacion" declara Work unit y Modo (FEATURE o
+  MILESTONE) de forma consistente con lo que realmente se esta auditando
+  (manifest presente o no)? Si no coincide, rechazalo.
+- La seccion "Contexto y fuentes" deja trazable que fuentes de la
+  "Politica de fuentes y trazabilidad" (ver AGENTS.md) se consultaron
+  realmente, respetando su precedencia? Si el spec elige arbitrariamente
+  entre dos fuentes que se contradicen en vez de tratarlo como ambiguedad
+  material, rechazalo.
+- Los "Supuestos" declarados, ¿son realmente inferibles de evidencia
+  existente (codigo, arquitectura, tests, ADR, reglas globales), o en
+  realidad son decisiones de negocio/UX/seguridad/privacidad/datos/
+  permisos disfrazadas de supuesto tecnico? Si es lo segundo, rechazalo:
+  esa decision debia pasar por Fase CLARIFY, no quedar como supuesto.
+- Si existe `docs/producto/contexto-producto.md` con contenido real (no
+  "Por definir"), el spec lo contradice sin declararlo como cambio
+  explicito de decision de producto? Si si, rechazalo.
+- La seccion "Decisiones pendientes bloqueantes" de `spec.md` tiene
+  contenido? Si es asi, rechazalo automaticamente por ese motivo puntual
+  — un spec con ambiguedad material sin resolver no pasa auditoria,
+  independientemente de la calidad del resto.
 - **Coherencia spec↔plan**: `plan.md` contradice o amplia el alcance
   declarado en "Alcance" de `spec.md`? Cualquier alcance nuevo que
   aparezca solo en `plan.md` (sin `AC-N` correspondiente en `spec.md`) es
@@ -65,11 +85,32 @@ declarado para un item especifico debe poder rastrearse hasta plan y
 tasks de ese mismo item, no quedar cubierto "en general" para todo el
 milestone.
 
-Ademas, rechaza automaticamente (agregalo a la checklist de motivos de
-rechazo) si los items agrupados NO forman un incremento funcional
-coherente, o si cada uno de ellos podria razonablemente shippearse como
-Feature independiente sin perder valor ni introducir riesgo de
-integracion entre ellos. Milestone no es un mecanismo para evitar el
-circuito por feature ni para acumular ramas enormes de cambios sin
-relacion real entre si; si el motivo real para agruparlos es solo
+Ademas, aplica el mismo gate de tamano/descomposicion que `analyst-agent`
+debe autochequear (ver "Modo MILESTONE" en `.agentic/roles/analyst-agent.md`
+y en `AGENTS.md`), verificando explicitamente estas dimensiones sobre el
+agrupamiento propuesto:
+
+- **Independencia**: ¿podrian mergearse los items por separado sin dejar
+  al producto en un estado inconsistente o inutil?
+- **Cohesion funcional**: ¿comparten un mismo objetivo de producto, o
+  solo coinciden en estar pendientes al mismo tiempo?
+- **Claridad de alcance**: ¿el conjunto se describe como una sola unidad
+  de valor, o es una lista arbitraria de features no relacionadas?
+- **Capacidad de revision humana**: ¿el diff final es razonable de
+  revisar como unidad en la PR, o el volumen fuerza revision superficial?
+- **Capacidad de prueba**: ¿`qa-agent` puede verificar el conjunto de
+  forma coherente, o los items requieren estrategias de test totalmente
+  independientes?
+- **Riesgo de integracion**: ¿agrupar reduce riesgo real, o solo lo
+  acumula en una PR mas grande?
+- **Tamano del cambio**: ¿el conjunto sigue siendo un cambio chico, o el
+  agrupamiento fue solo para "juntar cosas pendientes"?
+
+Rechaza automaticamente (agregalo a la checklist de motivos de rechazo)
+si los items agrupados NO forman un incremento funcional coherente segun
+estas dimensiones, o si cada uno de ellos podria razonablemente
+shippearse como Feature independiente sin perder valor ni introducir
+riesgo de integracion entre ellos. Milestone no es un mecanismo para
+evitar el circuito por feature ni para acumular ramas enormes de cambios
+sin relacion real entre si; si el motivo real para agruparlos es solo
 "ahorrar vueltas del circuito", es un rechazo valido.

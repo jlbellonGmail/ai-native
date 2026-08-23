@@ -36,6 +36,12 @@ explícitamente.
   decisiones de diseño y casos borde. Para quien mantiene el código.
 - `docs/usuario/`: un `.md` por área/feature, mismo slug, con el
   propósito y cómo usarlo. Para quien consume o administra el producto.
+- `docs/producto/contexto-producto.md`: conocimiento funcional
+  persistente del producto (propósito, usuarios, reglas de negocio ya
+  adoptadas), transversal a todas las features — no un artefacto por
+  feature. Ver "Contexto de producto y bootstrap" más abajo. Puede no
+  existir todavía (repos legacy o este mismo template): su ausencia
+  nunca bloquea el circuito.
 - `tests/`: pytest de los scripts del circuito (`scripts/*.ps1`). Se
   agrega `tests/` de producto (o la carpeta que el stack real defina)
   cuando exista algo real que testear — no antes.
@@ -70,15 +76,23 @@ deben invocar los scripts comunes. El contrato exige, según etapa:
 enlace exacto en `docs/usuario/index.md`, estado correcto de
 `ROADMAP.md`, rama `feature/<NN>-<slug>`, PR contra `develop` y CI verde.
 
-1. `analyst-agent` (read-only, subagente, sesión nueva) → produce
-   `spec.md` (QUÉ + POR QUÉ), `plan.md` (CÓMO: arquitectura afectada,
-   componentes/contratos, compatibilidad, dependencias, estrategia de
-   tests, impacto operacional) y `tasks.md` (tareas ejecutables y
-   verificables, cada una trazable a un `AC-N` de `spec.md`) —
-   Spec-Driven Development (SDD). El spec SIEMPRE debe incluir como
-   criterios de aceptación la creación de `docs/tecnica/<slug>.md`,
-   `docs/usuario/<slug>.md`, `runs/<NN>-<slug>/decision.md`, y enlaces
-   exactos en `docs/tecnica/index.md` y `docs/usuario/index.md`.
+1. `analyst-agent` (read-only, subagente, sesión nueva) → recopila
+   activamente el contexto de la work unit (ítem/s de `ROADMAP.md` y sus
+   referencias opcionales, `docs/producto/contexto-producto.md` si
+   existe, `AGENTS.md`/`.claude/rules/`, `docs/tecnica/arquitectura.md` y
+   demás documentación técnica relevante, código y tests existentes) según
+   la "Política de fuentes y trazabilidad" y aplica la "Fase CLARIFY"
+   antes de cerrar la spec (ver ambas más abajo) — no depende de que el
+   humano repita en el prompt información que ya está en el repo.
+   Produce `spec.md` (QUÉ + POR QUÉ), `plan.md` (CÓMO: arquitectura
+   afectada, componentes/contratos, compatibilidad, dependencias,
+   estrategia de tests, impacto operacional) y `tasks.md` (tareas
+   ejecutables y verificables, cada una trazable a un `AC-N` de
+   `spec.md`) — Spec-Driven Development (SDD). El spec SIEMPRE debe
+   incluir como criterios de aceptación la creación de
+   `docs/tecnica/<slug>.md`, `docs/usuario/<slug>.md`,
+   `runs/<NN>-<slug>/decision.md`, y enlaces exactos en
+   `docs/tecnica/index.md` y `docs/usuario/index.md`.
 2. `reviewer-agent` (read-only, subagente, sesión nueva) → audita
    `spec.md` + `plan.md` + `tasks.md` juntos (coherencia entre los tres y
    trazabilidad requisito→plan→tarea) y produce `audit-N.md` con
@@ -179,6 +193,140 @@ el agente se cierran, la próxima ejecución del circuito puede relanzar el
 reconciliador; la actualización remota de `ROADMAP.md` no depende de esa
 limpieza.
 
+## Contexto de producto y bootstrap
+
+Esta sección formaliza cómo `analyst-agent` deja de depender de que el
+humano reescriba en cada pedido lo que el repo ya sabe, tomando como
+referencia conceptual Spec-Driven Development (Specify/Clarify de GitHub
+Spec Kit) y los principios DORA de calidad de documentación y trabajo en
+lotes pequeños — sin adoptar la herramienta ni su estructura de
+directorios, y sin agregar un sexto agente ni un nuevo `MODE` operativo.
+
+### Contexto persistente de producto
+
+`docs/producto/contexto-producto.md` es la plantilla neutral de
+conocimiento funcional estable del producto (propósito, problema,
+usuarios, flujos, reglas de negocio ya adoptadas, restricciones,
+terminología). No es un artefacto de una feature: vive fuera de
+`runs/`, se lee automáticamente y se actualiza a través del tiempo.
+
+- `analyst-agent` lo lee siempre que exista, como una fuente más del
+  contexto de la work unit.
+- Si no existe (template recién clonado, o proyecto legacy que todavía no
+  lo generó), `analyst-agent` no falla ni bloquea: sigue produciendo la
+  spec con el resto de las fuentes disponibles y puede señalar en
+  "Riesgos / supuestos" que el contexto de producto todavía no está
+  formalizado.
+- Se actualiza mediante el bootstrap (ver abajo) o mediante
+  `builder-agent` al cerrar una feature/milestone, cuando corresponde
+  (ver "Evolución del contexto de producto").
+
+### Bootstrap de contexto de producto
+
+Instrucción humana mínima esperada, por ejemplo: "Inicializa el contexto
+de producto de este proyecto. Analiza el repositorio existente y genera
+la documentación base necesaria." No es un `MODE` nuevo del circuito ni
+requiere rama, worktree ni `runs/`: es documentación transversal, igual
+que hoy el humano mantiene a mano la sección "Propósito del producto" de
+`ROADMAP.md`.
+
+Flujo:
+
+1. El Main Agent invoca `analyst-agent` (subagente read-only, sesión
+   nueva) pidiéndole que investigue el repositorio (código, `docs/`,
+   `ROADMAP.md`, `docs/producto/contexto-producto.md` si ya existe) y el
+   pedido humano, aplicando la misma "Política de fuentes" y "Fase
+   CLARIFY" que usa para una spec. Como `analyst-agent` es read-only (no
+   tiene `Write`), en este modo no escribe ningún archivo: devuelve como
+   texto de salida un borrador completo siguiendo la plantilla de
+   `docs/producto/contexto-producto.md`, más las preguntas CLARIFY
+   pendientes si las hubiera.
+2. Si hay preguntas CLARIFY, el Main Agent se las hace al humano en la
+   conversación normal (no es el HITL formal del circuito) y, si hace
+   falta, vuelve a invocar `analyst-agent` con las respuestas.
+3. El Main Agent escribe/actualiza `docs/producto/contexto-producto.md`
+   con el borrador final. No inventa contenido de negocio (mismo límite
+   que el resto del circuito, ver "Reglas de dominio").
+4. No se toca `ROADMAP.md` ni se crea PR: el bootstrap es documentación
+   compartida, no una feature.
+
+### Política de fuentes y trazabilidad
+
+`analyst-agent` distingue explícitamente, en todo momento: hechos
+verificados, decisiones de producto existentes, restricciones existentes,
+supuestos razonables, ambigüedades materiales y decisiones no deducibles.
+Cuando dos fuentes autoritativas se contradicen de un modo que afecta el
+comportamiento esperado, no elige arbitrariamente: lo trata como
+ambigüedad material (ver Fase CLARIFY).
+
+Precedencia de fuentes, de mayor a menor autoridad:
+
+1. Instrucción o clarificación humana vigente (incluidas las respuestas
+   de una ronda CLARIFY de esta misma work unit).
+2. Reglas globales del proyecto (`AGENTS.md`, `.claude/rules/`).
+3. Ítem/s de `ROADMAP.md` seleccionados y sus referencias opcionales.
+4. `docs/producto/contexto-producto.md`.
+5. Arquitectura / ADR / documentación técnica relevante
+   (`docs/tecnica/arquitectura.md` y afines).
+6. Código y tests existentes.
+7. Supuestos explícitos del propio `analyst-agent` (último recurso,
+   siempre declarados en "Riesgos / supuestos" de `spec.md`).
+
+Qué puede inferir sin preguntar (y debe declarar como supuesto cuando
+corresponda): decisiones técnicas o convenciones ya establecidas
+inequívocamente por código, arquitectura, stack, tests, ADR, reglas
+globales o patrones existentes.
+
+Qué NO puede inventar bajo ninguna circunstancia: decisiones materiales
+sobre comportamiento de producto, reglas de negocio, experiencia de
+usuario, seguridad, privacidad, cumplimiento, datos, permisos, resultados
+funcionales, o cualquier política que admita varias decisiones válidas
+distintas. Eso siempre pasa por Fase CLARIFY.
+
+### Fase CLARIFY
+
+Equivalente conceptual a `clarify` de Spec-Driven Development, sin
+convertirse en un nuevo HITL formal del circuito (el único HITL formal
+sigue siendo la decisión `MERGE`/`NO MERGE` sobre la PR, paso 9).
+
+`analyst-agent` corre como subagente sin canal directo con el humano, así
+que la clarificación ocurre en la conversación ordinaria entre el humano
+y el Main Agent, antes de que `spec.md` quede cerrado:
+
+1. `analyst-agent` recopila el contexto disponible (ver Política de
+   fuentes) y detecta huecos.
+2. Si el hueco se resuelve con evidencia existente (código, arquitectura,
+   ADR, reglas globales, patrones), lo resuelve como supuesto explícito y
+   sigue.
+3. Si no se resuelve con evidencia y la ambigüedad es material (ver
+   arriba qué NO puede inventar), en vez de una `spec.md` cerrada,
+   devuelve al Main Agent una lista corta de preguntas concretas,
+   orientadas a una decisión puntual — nunca preguntas abiertas ni
+   genéricas.
+4. El Main Agent traslada esas preguntas al humano en la conversación
+   normal (no crea artefactos nuevos en `runs/` para esto), y reinvoca a
+   `analyst-agent` con las respuestas ya incorporadas al contexto.
+5. `spec.md` registra el resultado en "Clarificaciones realizadas"
+   (pregunta + respuesta) y, si quedara alguna ambigüedad material sin
+   resolver todavía, la deja explícita en "Decisiones pendientes
+   bloqueantes" — `reviewer-agent` rechaza automáticamente cualquier spec
+   con esa sección no vacía.
+
+Este flujo aplica igual para Feature y Milestone, y también para el
+bootstrap de contexto de producto descripto arriba.
+
+### Evolución del contexto de producto
+
+Al cerrar una feature o milestone, si una decisión tomada durante el
+trabajo es específica de esa work unit, queda en su `spec.md`/
+`decision.md`, no en `docs/producto/contexto-producto.md`. Si en cambio
+es conocimiento estable y reutilizable del producto (por ejemplo, una
+regla de negocio nueva que el negocio real confirmó), `builder-agent` la
+refleja en `docs/producto/contexto-producto.md` como parte de terminar la
+feature — mismo criterio que ya aplica hoy a `docs/tecnica/<slug>.md` y
+`docs/usuario/<slug>.md`: no es un paso aparte ni opcional cuando
+corresponde, y nunca inventa contenido de negocio no confirmado.
+
 ## Retornos permitidos
 
 - `reviewer-agent` → `analyst-agent` cuando el spec es `rejected`.
@@ -202,6 +350,18 @@ debe declararse como excepción, no ejecutarse en silencio.
 Regla dura: `ROADMAP.md` no se marca `[x]` antes del merge. Antes del
 merge solo puede quedar pendiente `[ ]` o `READY_FOR_PR` `[-]`.
 
+`ROADMAP.md` sigue siendo un mapa, no una spec: cada ítem es una línea
+`NN-slug — descripción funcional suficientemente útil`. Opcionalmente
+puede llevar, en líneas indentadas debajo (nunca exigido para todos los
+ítems), un bloque `Referencias:` con rutas a documentación especialmente
+relevante para esa work unit — ver `ROADMAP.md` para el formato exacto.
+Esas líneas no empiezan con `- [ ]`/`- [-]`/`- [x]`, así que no
+interfieren con los parsers de estado (`Get-RoadmapItemState*` en
+`scripts/workunit-lib.ps1` matchean solo la línea del ítem, no las
+siguientes). `analyst-agent` lee `docs/producto/contexto-producto.md`
+automáticamente sin que haga falta declararlo como referencia; las
+referencias explícitas son solo para precisión adicional cuando aplica.
+
 ## Modo MILESTONE
 
 El circuito descripto arriba (pasos 1-9) es el modo `Feature`: un item de
@@ -218,6 +378,19 @@ mecanismo para acumular cambios sin relacion real entre si ni para
 esquivar el circuito por feature — el `reviewer-agent` rechaza
 automaticamente un Milestone cuyos items podrian shippearse como
 Features independientes sin perder valor.
+
+**Gate de tamaño/descomposición:** antes de aprobar la spec de un
+Milestone, `analyst-agent` (al proponerlo) y `reviewer-agent` (al
+auditarlo) evalúan explícitamente independencia entre items, cohesión
+funcional real del grupo, claridad de alcance, capacidad de revisión
+humana en una sola pasada, capacidad de prueba como unidad, riesgo de
+integración entre items y tamaño del cambio resultante — no una métrica
+arbitraria de líneas de código, sino la capacidad real de comprender,
+probar, revisar e integrar el cambio como unidad. Si el Milestone
+resultaría excesivamente grande o los items no son realmente
+interdependientes, `analyst-agent` debe proponer dividirlo en unidades
+más pequeñas (Features independientes, o Milestones más chicos) en vez
+de forzar una única mega-spec.
 
 La abstraccion comun a ambos modos es el **WorkUnit**
 (`scripts/workunit-lib.ps1`, funcion `Get-WorkUnitInfo -Mode Feature` o
