@@ -197,6 +197,86 @@ def test_milestone_ready_for_pr_blocks_when_one_item_not_pending(tmp_path: Path)
     assert "invalida" in combined or "Ningun item fue modificado" in combined
 
 
+def test_milestone_ready_for_pr_blocks_roadmap_mutation_when_contract_fails(tmp_path: Path):
+    # AC-4, AC-9 (GAP B): si falta la doc tecnica de un solo item del
+    # manifest, ready-for-pr.ps1 -Mode Milestone no debe mutar ni
+    # commitear ROADMAP.md para NINGUN item, ni siquiera para el item
+    # cuyo contrato individual si estaria completo.
+    repo = make_milestone_repo(tmp_path, [f"- [ ] {item} - Item" for item in ITEMS])
+    (repo / "docs" / "tecnica" / "item-b.md").unlink()
+    git(repo, "add", "-A")
+    git(repo, "commit", "-m", "romper contrato: borrar doc tecnica de item-b")
+    bin_dir = tmp_path / "bin"
+    make_fake_gh(bin_dir)
+    env = command_env(bin_dir)
+    roadmap_before = (repo / "ROADMAP.md").read_bytes()
+    log_before = git(repo, "log", "--oneline").stdout
+
+    result = run_file(["-Mode", "Milestone", "-Slug", SLUG], repo, env)
+
+    assert result.returncode != 0
+    combined = plain_output(result.stdout + result.stderr)
+    assert "item-b.md" in combined
+    assert (repo / "ROADMAP.md").read_bytes() == roadmap_before
+    for item in ITEMS:
+        assert f"- [ ] {item}" in (repo / "ROADMAP.md").read_text(encoding="utf-8")
+    log_after = git(repo, "log", "--oneline").stdout
+    assert log_after == log_before
+
+
+def test_milestone_pr_body_references_real_latest_attempt(tmp_path: Path):
+    # AC-7, AC-10 (GAP C): con audit-1.md (rejected) + audit-2.md
+    # (approved), el body de la PR debe referenciar audit-2.md (el
+    # intento real aprobado vigente) y no el literal generico audit-N.md.
+    repo = make_milestone_repo(tmp_path, [f"- [ ] {item} - Item" for item in ITEMS])
+    run_dir = repo / "runs" / f"milestone-{SLUG}"
+    (run_dir / "audit-1.md").write_text(
+        "```yaml\nstatus: rejected\nattempt: 1\nfeedback:\n  - no\n```\n", encoding="utf-8"
+    )
+    (run_dir / "audit-2.md").write_text(
+        "```yaml\nstatus: approved\nattempt: 2\nfeedback:\n  - ok\n```\n", encoding="utf-8"
+    )
+    git(repo, "add", "-A")
+    git(repo, "commit", "-m", "agregar audit-2 aprobado")
+
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    body_capture = tmp_path / "captured-body.md"
+    if os.name != "nt":
+        pytest.skip("Captura de body de PR solo implementada para Windows en este entorno")
+    gh = bin_dir / "gh.cmd"
+    gh.write_text(
+        "@echo off\n"
+        "echo %* | findstr /C:\"pr view\" >nul && (echo no pull requests found 1>&2 & exit /b 1)\n"
+        f"for %%i in (%*) do (if /I \"%%~xi\"==\".md\" copy /Y \"%%~i\" \"{body_capture}\" >nul)\n"
+        "echo https://example.test/pull/321\n",
+        encoding="utf-8",
+    )
+    pwsh = bin_dir / "pwsh.cmd"
+    pwsh.write_text("@echo off\nexit /b 0\n", encoding="utf-8")
+
+    env = command_env(bin_dir)
+    result = run_file(["-Mode", "Milestone", "-Slug", SLUG], repo, env)
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert body_capture.exists()
+    body = body_capture.read_text(encoding="utf-8")
+    # Debe referenciar la ruta relativa exacta
+    # (runs/milestone-<slug>/audit-2.md), no solo la subcadena
+    # "audit-2.md" (esa subcadena tambien aparece al final de una ruta
+    # absoluta, asi que por si sola no detectaria una regresion del bug
+    # de GAP C donde Get-LatestVerdictArtifact.Path -- siempre absoluto,
+    # via System.IO.FileInfo.FullName -- se filtraba al body publico de
+    # la PR). El repo de este test vive bajo tmp_path, asi que si el bug
+    # reaparece el path absoluto real de ese repo temporal (con
+    # separador de unidad de disco Windows) aparece en el body.
+    assert f"runs/milestone-{SLUG}/audit-2.md" in body
+    assert "audit-N.md" not in body
+    assert ":\\" not in body
+    assert str(repo) not in body
+    assert str(repo).replace("\\", "/") not in body
+
+
 def test_milestone_pr_body_lists_every_item(tmp_path: Path):
     repo = make_milestone_repo(tmp_path, [f"- [ ] {item} - Item" for item in ITEMS])
     bin_dir = tmp_path / "bin"

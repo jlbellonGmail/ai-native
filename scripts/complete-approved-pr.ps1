@@ -197,6 +197,54 @@ function Format-Checks {
     }) -join [Environment]::NewLine)
 }
 
+function Get-LatestApprovedReviewCommit {
+    # Consulta el historial completo de reviews de la PR (incluye
+    # APPROVED/DISMISSED/CHANGES_REQUESTED/COMMENTED/PENDING de todos los
+    # revisores) via 'gh api .../reviews --paginate --slurp'. '--slurp' es
+    # necesario porque el endpoint devuelve un array JSON por pagina: sin
+    # ese flag, 'gh api --paginate' concatenaria varios arrays JSON
+    # adyacentes que no forman un unico JSON valido; con '--slurp', 'gh'
+    # envuelve cada pagina (ya de por si un array) en un array exterior,
+    # por lo que el resultado es un array de arrays que hay que aplanar.
+    # Filtra por state=APPROVED y devuelve el commit_id de la review mas
+    # reciente por 'submitted_at'. Devuelve $null si no hay ninguna
+    # APPROVED (caso borde defensivo).
+    param(
+        [Parameter(Mandatory = $true)]
+        [string] $GitHubCliPath,
+
+        [Parameter(Mandatory = $true)]
+        [string] $PrNumber
+    )
+
+    $result = Invoke-Gh -GitHubCliPath $GitHubCliPath -Arguments @(
+        "api", "repos/:owner/:repo/pulls/$PrNumber/reviews",
+        "--paginate", "--slurp"
+    )
+
+    $pages = if ([string]::IsNullOrWhiteSpace($result.Text)) {
+        @()
+    }
+    else {
+        ConvertTo-ObjectArray ($result.Text | ConvertFrom-Json)
+    }
+
+    $reviews = New-Object System.Collections.Generic.List[object]
+    foreach ($page in $pages) {
+        foreach ($review in (ConvertTo-ObjectArray $page)) {
+            [void] $reviews.Add($review)
+        }
+    }
+
+    $approved = @($reviews | Where-Object { $_.state -eq "APPROVED" })
+    if ($approved.Count -eq 0) {
+        return $null
+    }
+
+    $latest = $approved | Sort-Object { [datetime] $_.submitted_at } -Descending | Select-Object -First 1
+    return $latest.commit_id
+}
+
 function Wait-PrChecks {
     param(
         [Parameter(Mandatory = $true)]
@@ -274,7 +322,7 @@ $ghPath = Get-GitHubCliPath
 Write-Host "==> Validando aprobacion humana de PR '$prRef'..."
 $viewResult = Invoke-Gh -GitHubCliPath $ghPath -Arguments @(
     "pr", "view", $prRef,
-    "--json", "number,state,baseRefName,headRefName,url,reviewDecision"
+    "--json", "number,state,baseRefName,headRefName,url,reviewDecision,headRefOid"
 )
 $pr = $viewResult.Text | ConvertFrom-Json
 
@@ -294,7 +342,26 @@ if ($pr.reviewDecision -ne "APPROVED") {
     throw "La PR '$prRef' todavia no tiene aprobacion HITL. reviewDecision=$($pr.reviewDecision)."
 }
 
-Write-Host "==> Aprobacion HITL confirmada. Esperando checks post-aprobacion..."
+Write-Host "==> Aprobacion HITL confirmada. Verificando que siga vigente sobre el commit actual..."
+$latestApprovedCommit = Get-LatestApprovedReviewCommit -GitHubCliPath $ghPath -PrNumber $pr.number
+
+if ([string]::IsNullOrWhiteSpace($latestApprovedCommit) -or $latestApprovedCommit -ne $pr.headRefOid) {
+    $reportPath = Write-GateReport `
+        -Slug $Slug `
+        -Status "rejected" `
+        -Feedback @(
+            "La aprobacion humana mas reciente de la PR $prRef quedo obsoleta: fue emitida sobre un commit distinto del head vigente ($($pr.headRefOid)), probablemente por un push posterior a la aprobacion.",
+            "Se requiere que el humano vuelva a aprobar la revision sobre el commit vigente; esto no es una correccion de builder-agent."
+        )
+
+    if ($CommentOnFailure) {
+        Add-PrComment -GitHubCliPath $ghPath -PrRef $prRef -ReportPath $reportPath
+    }
+
+    throw "Aprobacion HITL obsoleta para '$prRef'. Feedback: $reportPath"
+}
+
+Write-Host "==> Aprobacion vigente sobre el commit actual. Esperando checks post-aprobacion..."
 $checks = Wait-PrChecks `
     -GitHubCliPath $ghPath `
     -PrRef $prRef `

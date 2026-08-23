@@ -33,6 +33,12 @@ def command_env(bin_dir: Path, mode: str, log_path: Path) -> dict[str, str]:
 
 
 def write_fake_gh(bin_dir: Path) -> None:
+    # 'headRefOid' se agrega a la respuesta de 'pr view' para todos los
+    # modos (GAP A / AC-1, AC-2). La consulta a 'gh api .../reviews
+    # --paginate --slurp' responde un array de "paginas" (cada pagina, a
+    # su vez, un array de reviews), reflejando el comportamiento real de
+    # 'gh api --paginate --slurp' contra un endpoint que devuelve un
+    # array JSON (ver docs/tecnica/integridad-post-hitl-y-ready-for-pr.md).
     bin_dir.mkdir()
     if os.name == "nt":
         gh = bin_dir / "gh.cmd"
@@ -40,9 +46,17 @@ def write_fake_gh(bin_dir: Path) -> None:
             "@echo off\n"
             "echo %*>>\"%FAKE_GH_LOG%\"\n"
             "echo %* | findstr /C:\"pr view\" >nul && (\n"
-            "  if \"%FAKE_GH_MODE%\"==\"review_required\" echo {\"number\":123,\"state\":\"OPEN\",\"baseRefName\":\"develop\",\"headRefName\":\"feature/06-patente\",\"url\":\"https://example.test/pull/123\",\"reviewDecision\":\"REVIEW_REQUIRED\"} & exit /b 0\n"
-            "  if \"%FAKE_GH_MODE%\"==\"wrong_base\" echo {\"number\":123,\"state\":\"OPEN\",\"baseRefName\":\"main\",\"headRefName\":\"feature/06-patente\",\"url\":\"https://example.test/pull/123\",\"reviewDecision\":\"APPROVED\"} & exit /b 0\n"
-            "  echo {\"number\":123,\"state\":\"OPEN\",\"baseRefName\":\"develop\",\"headRefName\":\"feature/06-patente\",\"url\":\"https://example.test/pull/123\",\"reviewDecision\":\"APPROVED\"}\n"
+            "  if \"%FAKE_GH_MODE%\"==\"review_required\" echo {\"number\":123,\"state\":\"OPEN\",\"baseRefName\":\"develop\",\"headRefName\":\"feature/06-patente\",\"url\":\"https://example.test/pull/123\",\"reviewDecision\":\"REVIEW_REQUIRED\",\"headRefOid\":\"commitA\"} & exit /b 0\n"
+            "  if \"%FAKE_GH_MODE%\"==\"wrong_base\" echo {\"number\":123,\"state\":\"OPEN\",\"baseRefName\":\"main\",\"headRefName\":\"feature/06-patente\",\"url\":\"https://example.test/pull/123\",\"reviewDecision\":\"APPROVED\",\"headRefOid\":\"commitA\"} & exit /b 0\n"
+            "  if \"%FAKE_GH_MODE%\"==\"stale_approval\" echo {\"number\":123,\"state\":\"OPEN\",\"baseRefName\":\"develop\",\"headRefName\":\"feature/06-patente\",\"url\":\"https://example.test/pull/123\",\"reviewDecision\":\"APPROVED\",\"headRefOid\":\"commitB\"} & exit /b 0\n"
+            "  if \"%FAKE_GH_MODE%\"==\"multi_review_recent_matches\" echo {\"number\":123,\"state\":\"OPEN\",\"baseRefName\":\"develop\",\"headRefName\":\"feature/06-patente\",\"url\":\"https://example.test/pull/123\",\"reviewDecision\":\"APPROVED\",\"headRefOid\":\"commitC\"} & exit /b 0\n"
+            "  echo {\"number\":123,\"state\":\"OPEN\",\"baseRefName\":\"develop\",\"headRefName\":\"feature/06-patente\",\"url\":\"https://example.test/pull/123\",\"reviewDecision\":\"APPROVED\",\"headRefOid\":\"commitA\"}\n"
+            "  exit /b 0\n"
+            ")\n"
+            "echo %* | findstr /C:\"reviews\" >nul && (\n"
+            "  if \"%FAKE_GH_MODE%\"==\"stale_approval\" echo [[{\"commit_id\":\"commitA\",\"state\":\"APPROVED\",\"submitted_at\":\"2026-08-20T00:00:00Z\"}]] & exit /b 0\n"
+            "  if \"%FAKE_GH_MODE%\"==\"multi_review_recent_matches\" echo [[{\"commit_id\":\"commitOld\",\"state\":\"APPROVED\",\"submitted_at\":\"2026-08-19T00:00:00Z\"},{\"commit_id\":\"commitC\",\"state\":\"APPROVED\",\"submitted_at\":\"2026-08-21T00:00:00Z\"}]] & exit /b 0\n"
+            "  echo [[{\"commit_id\":\"commitA\",\"state\":\"APPROVED\",\"submitted_at\":\"2026-08-20T00:00:00Z\"}]]\n"
             "  exit /b 0\n"
             ")\n"
             "echo %* | findstr /C:\"pr checks\" >nul && (\n"
@@ -63,9 +77,15 @@ def write_fake_gh(bin_dir: Path) -> None:
             "echo \"$*\" >> \"$FAKE_GH_LOG\"\n"
             "case \"$*\" in\n"
             "  *'pr view'*)\n"
-            "    if [ \"$FAKE_GH_MODE\" = 'review_required' ]; then echo '{\"number\":123,\"state\":\"OPEN\",\"baseRefName\":\"develop\",\"headRefName\":\"feature/06-patente\",\"url\":\"https://example.test/pull/123\",\"reviewDecision\":\"REVIEW_REQUIRED\"}'; exit 0; fi\n"
-            "    if [ \"$FAKE_GH_MODE\" = 'wrong_base' ]; then echo '{\"number\":123,\"state\":\"OPEN\",\"baseRefName\":\"main\",\"headRefName\":\"feature/06-patente\",\"url\":\"https://example.test/pull/123\",\"reviewDecision\":\"APPROVED\"}'; exit 0; fi\n"
-            "    echo '{\"number\":123,\"state\":\"OPEN\",\"baseRefName\":\"develop\",\"headRefName\":\"feature/06-patente\",\"url\":\"https://example.test/pull/123\",\"reviewDecision\":\"APPROVED\"}'; exit 0;;\n"
+            "    if [ \"$FAKE_GH_MODE\" = 'review_required' ]; then echo '{\"number\":123,\"state\":\"OPEN\",\"baseRefName\":\"develop\",\"headRefName\":\"feature/06-patente\",\"url\":\"https://example.test/pull/123\",\"reviewDecision\":\"REVIEW_REQUIRED\",\"headRefOid\":\"commitA\"}'; exit 0; fi\n"
+            "    if [ \"$FAKE_GH_MODE\" = 'wrong_base' ]; then echo '{\"number\":123,\"state\":\"OPEN\",\"baseRefName\":\"main\",\"headRefName\":\"feature/06-patente\",\"url\":\"https://example.test/pull/123\",\"reviewDecision\":\"APPROVED\",\"headRefOid\":\"commitA\"}'; exit 0; fi\n"
+            "    if [ \"$FAKE_GH_MODE\" = 'stale_approval' ]; then echo '{\"number\":123,\"state\":\"OPEN\",\"baseRefName\":\"develop\",\"headRefName\":\"feature/06-patente\",\"url\":\"https://example.test/pull/123\",\"reviewDecision\":\"APPROVED\",\"headRefOid\":\"commitB\"}'; exit 0; fi\n"
+            "    if [ \"$FAKE_GH_MODE\" = 'multi_review_recent_matches' ]; then echo '{\"number\":123,\"state\":\"OPEN\",\"baseRefName\":\"develop\",\"headRefName\":\"feature/06-patente\",\"url\":\"https://example.test/pull/123\",\"reviewDecision\":\"APPROVED\",\"headRefOid\":\"commitC\"}'; exit 0; fi\n"
+            "    echo '{\"number\":123,\"state\":\"OPEN\",\"baseRefName\":\"develop\",\"headRefName\":\"feature/06-patente\",\"url\":\"https://example.test/pull/123\",\"reviewDecision\":\"APPROVED\",\"headRefOid\":\"commitA\"}'; exit 0;;\n"
+            "  *'reviews'*)\n"
+            "    if [ \"$FAKE_GH_MODE\" = 'stale_approval' ]; then echo '[[{\"commit_id\":\"commitA\",\"state\":\"APPROVED\",\"submitted_at\":\"2026-08-20T00:00:00Z\"}]]'; exit 0; fi\n"
+            "    if [ \"$FAKE_GH_MODE\" = 'multi_review_recent_matches' ]; then echo '[[{\"commit_id\":\"commitOld\",\"state\":\"APPROVED\",\"submitted_at\":\"2026-08-19T00:00:00Z\"},{\"commit_id\":\"commitC\",\"state\":\"APPROVED\",\"submitted_at\":\"2026-08-21T00:00:00Z\"}]]'; exit 0; fi\n"
+            "    echo '[[{\"commit_id\":\"commitA\",\"state\":\"APPROVED\",\"submitted_at\":\"2026-08-20T00:00:00Z\"}]]'; exit 0;;\n"
             "  *'pr checks'*)\n"
             "    if [ \"$FAKE_GH_MODE\" = 'checks_fail' ]; then echo '[{\"bucket\":\"fail\",\"completedAt\":\"2026-08-21T01:00:00Z\",\"description\":\"\",\"event\":\"pull_request\",\"link\":\"https://example.test/check\",\"name\":\"pytest\",\"startedAt\":\"2026-08-21T00:59:00Z\",\"state\":\"FAILURE\",\"workflow\":\"CI\"}]'; exit 1; fi\n"
             "    echo '[{\"bucket\":\"pass\",\"completedAt\":\"2026-08-21T01:00:00Z\",\"description\":\"\",\"event\":\"pull_request\",\"link\":\"https://example.test/check\",\"name\":\"pytest\",\"startedAt\":\"2026-08-21T00:59:00Z\",\"state\":\"SUCCESS\",\"workflow\":\"CI\"}]'; exit 0;;\n"
@@ -174,6 +194,39 @@ def test_complete_approved_pr_blocks_wrong_base_branch(tmp_path: Path):
     log = log_path.read_text(encoding="utf-8")
     assert "pr checks" not in log
     assert "pr merge" not in log
+
+
+def test_complete_approved_pr_rejects_stale_approval(tmp_path: Path):
+    # AC-1, AC-8: la ultima review APPROVED fue emitida sobre 'commitA',
+    # pero el head vigente de la PR es 'commitB' (push posterior a la
+    # aprobacion). El gate debe rechazar sin mergear.
+    repo, bin_dir, log_path = make_repo(tmp_path)
+
+    result = run_gate(repo, bin_dir, log_path, "stale_approval")
+
+    assert result.returncode != 0
+    log = log_path.read_text(encoding="utf-8")
+    assert "pr merge" not in log
+    report = reports(repo)[0].read_text(encoding="utf-8")
+    assert report.startswith("status: rejected")
+    assert "obsoleta" in report.lower()
+    assert "nueva" in report.lower() or "vuelva a aprobar" in report.lower()
+
+
+def test_complete_approved_pr_uses_most_recent_approved_review(tmp_path: Path):
+    # AC-2, AC-8: dos reviews APPROVED con commit_id y submitted_at
+    # distintos; la mas reciente por submitted_at coincide con el head
+    # vigente. El gate debe proceder (no rechazar) usando esa mas reciente,
+    # ignorando la mas vieja que no coincide.
+    repo, bin_dir, log_path = make_repo(tmp_path)
+
+    result = run_gate(repo, bin_dir, log_path, "multi_review_recent_matches")
+
+    assert result.returncode == 0, result.stderr + result.stdout
+    log = log_path.read_text(encoding="utf-8")
+    assert "pr merge 123 --merge --delete-branch" in log
+    report = reports(repo)[0].read_text(encoding="utf-8")
+    assert report.startswith("status: approved")
 
 
 def test_complete_approved_pr_is_rerunnable_after_checks_turn_green(tmp_path: Path):

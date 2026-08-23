@@ -132,6 +132,16 @@ if ($Mode -eq "Milestone") {
     }
 
     $readyItems = @($items | Where-Object { (Get-RoadmapItemStateName -Content $roadmap -ItemSlug $_) -eq "Ready" })
+
+    # GAP B: el contrato completo (decision.md, docs tecnica/usuario,
+    # enlaces de indice, ultimo veredicto aprobado de auditoria/QA/code
+    # review para TODOS los items del manifest) se valida antes de mutar
+    # o commitear ROADMAP.md, en cualquiera de las dos ramas (incluida la
+    # rama "todos ya Ready", que igual puede seguir hacia push/creacion de
+    # PR mas adelante en el script). Se invoca sin -RequireReadyRoadmap:
+    # ese switch se sigue exigiendo despues de la mutacion, sin cambios.
+    Assert-WorkUnitContract -Slug $Slug -Mode Milestone -Title $info.Title
+
     if ($readyItems.Count -eq $items.Count) {
         Write-Host "==> Todos los items del milestone '$Slug' ya estan en READY_FOR_PR."
     }
@@ -158,6 +168,12 @@ else {
     if ($roadmap -match "(?m)^- \[x\] $escapedSlug\b") {
         throw "$Slug ya figura como [x]. No se puede marcar READY_FOR_PR despues del cierre."
     }
+
+    # GAP B: mismo criterio que en Milestone (simetrico, ver observacion 2
+    # de audit-1.md): la validacion completa del contrato corre antes de
+    # cualquier mutacion/commit de ROADMAP.md, incluida la rama "ya esta
+    # en READY_FOR_PR" (que igual puede seguir hacia push/creacion de PR).
+    Assert-FeatureContract -Slug $Slug -Title $info.Title
 
     if ($roadmap -match "(?m)^- \[-\] $escapedSlug\b") {
         Write-Host "==> $Slug ya esta en READY_FOR_PR."
@@ -194,6 +210,28 @@ if ($null -ne $existingPr) {
     exit 0
 }
 
+# GAP C: la validacion de contrato ya corrida arriba (con o sin
+# -RequireReadyRoadmap) garantiza que el ultimo intento de cada veredicto
+# existe y esta approved, asi que aca solo resolvemos el path real (no
+# repetimos la validacion de estado) para no referenciar el literal
+# generico "-N.md" en el cuerpo de la PR.
+$auditArtifact = Get-LatestVerdictArtifact -Directory $info.RunDir -Prefix "audit"
+$qaArtifact = Get-LatestVerdictArtifact -Directory $info.RunDir -Prefix "test-report"
+$codeReviewArtifact = Get-LatestVerdictArtifact -Directory $info.RunDir -Prefix "code-review"
+
+# Get-LatestVerdictArtifact devuelve `.Path` como ruta ABSOLUTA
+# (System.IO.FileInfo.FullName resuelta contra el directorio actual del
+# proceso). El cuerpo de la PR debe usar el mismo formato relativo
+# (runs/<slug>/audit-N.md) que el resto de la seccion de evidencias
+# ($info.RunDir), sin filtrar el path absoluto del filesystem de quien
+# corrio el script. Se recompone la ruta relativa a partir de
+# $info.RunDir (ya relativo) y el nombre de archivo real resuelto por
+# Get-LatestVerdictArtifact, sin tocar la firma de esa funcion ni sus
+# otros consumidores (p. ej. Assert-LatestVerdictApproved).
+$auditPath = "$($info.RunDir)/$(Split-Path -Leaf $auditArtifact.Path)"
+$qaPath = "$($info.RunDir)/$(Split-Path -Leaf $qaArtifact.Path)"
+$codeReviewPath = "$($info.RunDir)/$(Split-Path -Leaf $codeReviewArtifact.Path)"
+
 $evidenceSection = if ($Mode -eq "Milestone") {
     $itemLines = ($info.Items | ForEach-Object {
         "- $($_.Slug): docs tecnica $($_.TechnicalDoc), docs usuario $($_.UserDoc)"
@@ -213,9 +251,9 @@ $itemLines
 - Plan: $($info.RunDir)/plan.md
 - Tasks: $($info.RunDir)/tasks.md
 - Decision: $($info.Decision)
-- Auditoria: $($info.RunDir)/audit-N.md
-- QA: $($info.RunDir)/test-report-N.md
-- Code review: $($info.RunDir)/code-review-N.md
+- Auditoria: $auditPath
+- QA: $qaPath
+- Code review: $codeReviewPath
 "@
 }
 else {
@@ -230,9 +268,9 @@ else {
 - Plan: $($info.RunDir)/plan.md
 - Tasks: $($info.RunDir)/tasks.md
 - Decision: $($info.Decision)
-- Auditoria: $($info.RunDir)/audit-N.md
-- QA: $($info.RunDir)/test-report-N.md
-- Code review: $($info.RunDir)/code-review-N.md
+- Auditoria: $auditPath
+- QA: $qaPath
+- Code review: $codeReviewPath
 - Documentacion tecnica: $($info.TechnicalDoc)
 - Documentacion de usuario: $($info.UserDoc)
 - Indices: $($info.TechnicalIndex), $($info.UserIndex)
@@ -249,7 +287,7 @@ $evidenceSection
 
 - [ ] CI verde en GitHub Actions
 - [ ] Aprobacion HITL: si se aprueba la PR, `post-hitl-merge-gate.yml` vuelve a esperar Actions y mergea solo en verde
-- [ ] Tests reportados en $($info.RunDir)/test-report-N.md
+- [ ] Tests reportados en $qaPath
 - [ ] Criterios de aceptacion cubiertos
 - [ ] Decisiones documentadas en $($info.Decision)
 - [ ] Indices de documentacion enlazan el servicio una sola vez

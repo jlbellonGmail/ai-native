@@ -579,6 +579,111 @@ def test_ready_for_pr_blocks_real_gh_error(tmp_path: Path):
     assert "auth failed" in result.stderr
 
 
+def test_ready_for_pr_blocks_roadmap_mutation_when_contract_fails(tmp_path: Path):
+    # AC-3, AC-9 (GAP B): si el contrato completo falla (decision.md
+    # faltante), ready-for-pr.ps1 no debe mutar ni commitear ROADMAP.md.
+    repo, slug, title, env = prepare_ready_repo(tmp_path, "missing_then_create")
+    (repo / "runs" / slug / "decision.md").unlink()
+    git(repo, "add", "-A")
+    git(repo, "commit", "-m", "romper contrato: borrar decision.md")
+
+    roadmap_before = (repo / "ROADMAP.md").read_bytes()
+    log_before = git(repo, "log", "--oneline").stdout
+
+    result = run_file(READY_FOR_PR, [slug, title], repo, env)
+
+    assert result.returncode != 0
+    assert "decision.md" in result.stderr
+    assert (repo / "ROADMAP.md").read_bytes() == roadmap_before
+    assert "- [ ] 99-demo-feature" in (repo / "ROADMAP.md").read_text(encoding="utf-8")
+    log_after = git(repo, "log", "--oneline").stdout
+    assert log_after == log_before
+
+
+def capture_pr_body_bin_dir(bin_dir: Path, body_capture: Path) -> None:
+    # Variante de make_fake_tools('missing_then_create') que ademas
+    # vuelca el contenido del '--body-file' pasado a 'gh pr create' a un
+    # archivo aparte, siguiendo el patron FAKE_GH_LOG de
+    # test_complete_approved_pr_script.py (T-16).
+    bin_dir.mkdir(exist_ok=True)
+    if os.name == "nt":
+        gh = bin_dir / "gh.cmd"
+        gh.write_text(
+            "@echo off\n"
+            "echo %* | findstr /C:\"pr view\" >nul && (echo no pull requests found 1>&2 & exit /b 1)\n"
+            f"for %%i in (%*) do (if /I \"%%~xi\"==\".md\" copy /Y \"%%~i\" \"{body_capture}\" >nul)\n"
+            "echo https://example.test/pull/123\n",
+            encoding="utf-8",
+        )
+        pwsh = bin_dir / "pwsh.cmd"
+        pwsh.write_text("@echo off\nexit /b 0\n", encoding="utf-8")
+    else:
+        gh = bin_dir / "gh"
+        gh.write_text(
+            "#!/bin/sh\n"
+            "case \"$*\" in *'pr view'*) echo 'no pull requests found' >&2; exit 1;; esac\n"
+            "prev=\"\"\n"
+            "for arg in \"$@\"; do\n"
+            "  if [ \"$prev\" = \"--body-file\" ]; then cp \"$arg\" \"" + str(body_capture) + "\"; fi\n"
+            "  prev=\"$arg\"\n"
+            "done\n"
+            "echo 'https://example.test/pull/123'\n",
+            encoding="utf-8",
+        )
+        gh.chmod(gh.stat().st_mode | stat.S_IXUSR)
+        pwsh = bin_dir / "pwsh"
+        pwsh.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+        pwsh.chmod(pwsh.stat().st_mode | stat.S_IXUSR)
+
+
+def test_ready_for_pr_pr_body_references_real_latest_attempt(tmp_path: Path):
+    # AC-6, AC-10 (GAP C): con audit-1.md (rejected) + audit-2.md
+    # (approved), el body de la PR debe referenciar audit-2.md (el
+    # intento real aprobado vigente) y no el literal generico audit-N.md.
+    repo, slug, title = make_contract_repo(tmp_path, "99-demo-feature", "Demo feature")
+    remote = tmp_path / "origin.git"
+    subprocess.run(["git", "init", "--bare", str(remote)], cwd=tmp_path, check=True)
+    git(repo, "remote", "add", "origin", str(remote))
+    (repo / "runs" / slug / "audit-1.md").write_text(verdict_block("rejected", 1), encoding="utf-8")
+    (repo / "runs" / slug / "audit-2.md").write_text(verdict_block("approved", 2), encoding="utf-8")
+    run_ps(
+        f". '{CONTRACT}'; "
+        "New-DecisionFile -Slug '99-demo-feature' -Title 'Demo feature' "
+        "-Decisions @('Decision demostrable')",
+        repo,
+    )
+    run_file(UPDATE_INDEXES, [slug, title], repo)
+    git(repo, "add", ".")
+    git(repo, "commit", "-m", "feature ready")
+    git(repo, "push", "-u", "origin", "feature/99-demo-feature")
+
+    bin_dir = tmp_path / "bin"
+    body_capture = tmp_path / "captured-body.md"
+    if os.name != "nt":
+        pytest.skip("Captura de body de PR solo implementada para Windows en este entorno")
+    capture_pr_body_bin_dir(bin_dir, body_capture)
+    env = git_env(bin_dir)
+
+    result = run_file(READY_FOR_PR, [slug, title], repo, env)
+
+    assert result.returncode == 0, result.stderr
+    assert body_capture.exists()
+    body = body_capture.read_text(encoding="utf-8")
+    # Debe referenciar la ruta relativa exacta (runs/<slug>/audit-2.md),
+    # no solo la subcadena "audit-2.md" (esa subcadena tambien aparece al
+    # final de una ruta absoluta, asi que por si sola no detectaria una
+    # regresion del bug de GAP C donde Get-LatestVerdictArtifact.Path
+    # -- System.IO.FileInfo.FullName, siempre absoluto -- se filtraba al
+    # body publico de la PR). El repo de este test vive bajo tmp_path, asi
+    # que si el bug reaparece el path absoluto real de ese repo temporal
+    # (con separador de unidad de disco Windows) aparece en el body.
+    assert f"runs/{slug}/audit-2.md" in body
+    assert "audit-N.md" not in body
+    assert ":\\" not in body
+    assert str(repo) not in body
+    assert str(repo).replace("\\", "/") not in body
+
+
 def test_workflow_yaml_is_valid():
     workflow = ROOT / ".github" / "workflows" / "post-merge-close-feature.yml"
     content = workflow.read_text(encoding="utf-8")
