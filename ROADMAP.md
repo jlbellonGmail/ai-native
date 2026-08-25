@@ -76,7 +76,7 @@ minúsculas con guiones, seguido de `—` y descripción corta en español.
 - [x] 02-integridad-post-hitl-y-ready-for-pr — Vincula la aprobacion HITL a la revision vigente de la PR (rechaza aprobaciones stale tras un push posterior), hace transaccional el orden de validacion en ready-for-pr.ps1 (el contrato completo se valida antes de mutar ROADMAP.md, no despues) y referencia el archivo real del ultimo veredicto aprobado en el cuerpo de la PR en vez de un placeholder generico.
 - [x] 03-adopcion-proyecto-existente — Guia de adopcion del circuito en un proyecto existente: checklist de colisiones (.agentic/, scripts/, runs/, docs/tecnica/, docs/usuario/, AGENTS.md, los 4 workflows de .github/workflows/) con estrategia de merge para cada caso, y script opcional que detecte colisiones en un repo destino.
 - [x] 04-ci-wiring-product-tests — Separa .github/workflows/ci.yml en un job circuit-tests (el pytest actual del circuito, siempre obligatorio) y un job product-tests con un marcador claro para agregar trivialmente el build/test real del stack de cada proyecto.
-- [-] 05-operational-readiness-docs — Checklist de branch protection de GitHub en la seccion "Setup manual" de AGENTS.md (require PR, status check, approval, dismiss stale approvals) con comandos gh exactos, y nota de troubleshooting sobre bloqueos de local-feature-reconcile.ps1/ready-for-pr.ps1 por EDR agresivo en Windows.
+- [x] 05-operational-readiness-docs — Checklist de branch protection de GitHub en la seccion "Setup manual" de AGENTS.md (require PR, status check, approval, dismiss stale approvals) con comandos gh exactos, y nota de troubleshooting sobre bloqueos de local-feature-reconcile.ps1/ready-for-pr.ps1 por EDR agresivo en Windows.
 
 
 
@@ -87,4 +87,5 @@ minúsculas con guiones, seguido de `—` y descripción corta en español.
 =======
 
 >>>>>>> origin/develop
+
 
