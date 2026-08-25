@@ -1,73 +1,71 @@
 {
-    "$schema":  "https://opencode.ai/config.json",
-    "instructions":  [
-                         "AGENTS.md",
-                         ".claude/rules/*.md"
-                     ],
-    "model":  "opencode-go/kimi-k2.7-code",
-    "agent":  {
-                  "analyst-agent":  {
-                                        "description":  "Analiza un pedido de feature y produce una spec tecnica clara y accionable. Read-only. Se usa siempre en sesion nueva, como subagente.",
-                                        "mode":  "subagent",
-                                        "model":  "opencode-go/kimi-k2.7-code",
-                                        "prompt":  "{file:./.agentic/roles/analyst-agent.md}",
-                                        "reasoningEffort":  "high",
-                                        "permission":  {
-                                                           "edit":  "deny",
-                                                           "bash":  "deny",
-                                                           "webfetch":  "deny"
-                                                       }
-                                    },
-                  "builder-agent":  {
-                                        "description":  "Implementa la feature a partir de un spec.md aprobado. Write, corre siempre dentro de su propio git worktree, como subagente.",
-                                        "mode":  "subagent",
-                                        "model":  "opencode-go/kimi-k2.7-code",
-                                        "prompt":  "{file:./.agentic/roles/builder-agent.md}",
-                                        "reasoningEffort":  "high",
-                                        "permission":  {
-                                                           "edit":  "allow",
-                                                           "bash":  "allow"
-                                                       }
-                                    },
-                  "code-reviewer-agent":  {
-                                              "description":  "Audita el diff final (codigo, tests, scripts, config, docs tecnicas) despues de que qa-agent aprueba. Read-only. Se usa siempre en sesion nueva, como subagente.",
-                                              "mode":  "subagent",
-                                              "model":  "opencode-go/kimi-k2.7-code",
-                                              "prompt":  "{file:./.agentic/roles/code-reviewer-agent.md}",
-                                              "reasoningEffort":  "high",
-                                              "permission":  {
-                                                                 "edit":  "deny",
-                                                                 "bash":  "deny",
-                                                                 "webfetch":  "deny"
-                                                             }
-                                          },
-                  "qa-agent":  {
-                                   "description":  "Testea la implementacion del builder-agent contra el spec aprobado. Write (solo tests), mismo worktree, como subagente.",
-                                   "mode":  "subagent",
-                                   "model":  "opencode-go/mimo-v2.5-pro",
-                                   "prompt":  "{file:./.agentic/roles/qa-agent.md}",
-                                   "reasoningEffort":  "medium",
-                                   "permission":  {
-                                                      "edit":  "allow",
-                                                      "bash":  "allow"
-                                                  }
-                               },
-                  "reviewer-agent":  {
-                                         "description":  "Audita un spec.md producido por analyst-agent antes de que pase a implementacion. Read-only. Se usa siempre en sesion nueva, como subagente.",
-                                         "mode":  "subagent",
-                                         "model":  "opencode-go/kimi-k2.7-code",
-                                         "prompt":  "{file:./.agentic/roles/reviewer-agent.md}",
-                                         "reasoningEffort":  "high",
-                                         "permission":  {
-                                                            "edit":  "deny",
-                                                            "bash":  "deny",
-                                                            "webfetch":  "deny"
-                                                        }
-                                     }
-              },
-    "mcp":  {
-                "servers":  {
-
-                            }
-            }
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": [
+    "AGENTS.md",
+    ".claude/rules/*.md"
+  ],
+  "model": "opencode-go/kimi-k2.7-code",
+  "agent": {
+    "analyst-agent": {
+      "description": "Analiza un pedido de feature y produce una spec tecnica clara y accionable. Read-only. Se usa siempre en sesion nueva, como subagente.",
+      "mode": "subagent",
+      "model": "opencode-go/kimi-k2.7-code",
+      "prompt": "{file:./.agentic/roles/analyst-agent.md}",
+      "reasoningEffort": "high",
+      "permission": {
+        "edit": "deny",
+        "bash": "deny",
+        "webfetch": "deny"
+      }
+    },
+    "builder-agent": {
+      "description": "Implementa la feature a partir de un spec.md aprobado. Write, corre siempre dentro de su propio git worktree, como subagente.",
+      "mode": "subagent",
+      "model": "opencode-go/kimi-k2.7-code",
+      "prompt": "{file:./.agentic/roles/builder-agent.md}",
+      "reasoningEffort": "high",
+      "permission": {
+        "edit": "allow",
+        "bash": "allow"
+      }
+    },
+    "code-reviewer-agent": {
+      "description": "Audita el diff final (codigo, tests, scripts, config, docs tecnicas) despues de que qa-agent aprueba. Read-only. Se usa siempre en sesion nueva, como subagente.",
+      "mode": "subagent",
+      "model": "opencode-go/kimi-k2.7-code",
+      "prompt": "{file:./.agentic/roles/code-reviewer-agent.md}",
+      "reasoningEffort": "high",
+      "permission": {
+        "edit": "deny",
+        "bash": "deny",
+        "webfetch": "deny"
+      }
+    },
+    "qa-agent": {
+      "description": "Testea la implementacion del builder-agent contra el spec aprobado. Write (solo tests), mismo worktree, como subagente.",
+      "mode": "subagent",
+      "model": "opencode-go/mimo-v2.5-pro",
+      "prompt": "{file:./.agentic/roles/qa-agent.md}",
+      "reasoningEffort": "medium",
+      "permission": {
+        "edit": "allow",
+        "bash": "allow"
+      }
+    },
+    "reviewer-agent": {
+      "description": "Audita un spec.md producido por analyst-agent antes de que pase a implementacion. Read-only. Se usa siempre en sesion nueva, como subagente.",
+      "mode": "subagent",
+      "model": "opencode-go/kimi-k2.7-code",
+      "prompt": "{file:./.agentic/roles/reviewer-agent.md}",
+      "reasoningEffort": "high",
+      "permission": {
+        "edit": "deny",
+        "bash": "deny",
+        "webfetch": "deny"
+      }
+    }
+  },
+  "mcp": {
+    "servers": {}
+  }
 }

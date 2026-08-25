@@ -25,6 +25,10 @@ jobs:
       - name: Tests (pytest)
         run: pytest -v
 
+      - name: Validar adaptadores agenticos
+        run: pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts/sync-agentic-adapters.ps1 -Check
+        continue-on-error: true
+
       # Cuando el proyecto real defina su stack de producto (frontend,
       # backend, etc.), agregar aquí los pasos de instalación y test que
       # correspondan (npm ci / npm test, etc.). No hay nada de eso
