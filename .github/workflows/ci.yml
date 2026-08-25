@@ -7,7 +7,7 @@ on:
     branches: [develop, main]
 
 jobs:
-  test:
+  circuit-tests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -33,3 +33,10 @@ jobs:
       # backend, etc.), agregar aquí los pasos de instalación y test que
       # correspondan (npm ci / npm test, etc.). No hay nada de eso
       # todavía en este template.
+
+      # Product tests placeholder - gate obligatorio per AGENTS.mda a pesar
+      # de que hoy solo corra un placeholder, se mantiene como check
+      # requerido para que branch protection no tenga que actualizarse
+      # el día que el stack real llegue.
+      - name: Product tests (placeholder)
+        run: echo "product-tests: sin stack de producto definido. Ver docs/tecnica/arquitectura.md."

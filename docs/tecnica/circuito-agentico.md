@@ -138,3 +138,45 @@ Si todos los checks relevantes quedan en verde, el gate ejecuta
 lo sigue haciendo `post-merge-close-feature.yml` mediante
 `scripts/close-feature.ps1`; la limpieza local queda en manos del
 reconciliador local que observa `origin/develop`.
+
+## Troubleshooting: EDR/antivirus agresivo bloquea el reconciliador local (Windows)
+
+**Síntoma**: `ready-for-pr.ps1` lanza
+`local-feature-reconcile.ps1 -StartBackground` como proceso de
+PowerShell en segundo plano (`Start-Process ... -WindowStyle Hidden`,
+ver `scripts/local-feature-reconcile.ps1`). En máquinas Windows con
+software de seguridad (EDR/antivirus) agresivo, ese proceso de fondo
+puede quedar bloqueado, terminado abruptamente o impedido de completar
+sus operaciones de archivo sobre el worktree de la feature.
+
+**Causa**: el EDR interfiere con el proceso PowerShell que corre en
+background (comportamiento típico de heurísticas que tratan procesos
+`powershell.exe` sin ventana visible como sospechosos), no con git, con
+GitHub Actions ni con el estado remoto de `ROADMAP.md`.
+
+**Alcance del problema**: es exclusivamente local a la máquina del
+operador. No corrompe el estado de git, no afecta el CI de la PR, ni el
+gate post-HITL, ni el cierre remoto de `ROADMAP.md` en `develop` (esos
+tres corren en GitHub Actions, independientes de este proceso local). El
+único efecto es que el worktree/rama local de la feature puede no
+limpiarse automáticamente cuando corresponde.
+
+**Solución**: reubicar el worktree en un path nuevo, forzando la
+remoción del bloqueado:
+
+```powershell
+git worktree remove --force <path-del-worktree-bloqueado>
+git worktree add <path-nuevo> <rama-de-la-feature>
+```
+
+`git worktree remove --force` descarta cualquier cambio sin commitear en
+ese worktree — revisar `git status` ahí antes de forzar, si el worktree
+sigue siendo accesible. El estado del reconciliador
+(`<git-common-dir>/feature-reconcilers/`, ver
+`Get-FeatureStateDir` en `scripts/feature-contract.ps1`) vive fuera de
+cualquier worktree, así que no hace falta matar el proceso bloqueado
+antes de remover el worktree. Después de recrear el worktree en el path
+nuevo, se puede relanzar el reconciliador corriendo de nuevo
+`scripts/ready-for-pr.ps1` (o directamente
+`scripts/local-feature-reconcile.ps1 -Slug <slug> -StartBackground`)
+desde ahí.

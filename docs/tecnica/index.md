@@ -17,5 +17,8 @@ canónica multiherramienta, generación de adaptadores y router de modelos.
 - [Code Reviewer Y Sdd](code-reviewer-y-sdd.md)
 - [Ejemplo Completo](ejemplo-completo.md)
 - [Integridad Post Hitl Y Ready For Pr](integridad-post-hitl-y-ready-for-pr.md)
+- [Adopcion de proyecto existente](adopcion-proyecto-existente.md)
+- [CI wiring product tests](ci-wiring-product-tests.md)
+- [Operational Readiness Docs](operational-readiness-docs.md)
 
 <!-- FEATURE_LINKS_END -->
