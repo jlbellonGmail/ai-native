@@ -1,5 +1,6 @@
 param(
-    [switch] $Check
+    [switch] $Check,
+    [switch] $AutoFix
 )
 
 $ErrorActionPreference = "Stop"
@@ -463,10 +464,77 @@ foreach ($problem in (Sync-Skills -Root $root -Check:$Check)) {
 }
 
 if ($problems.Count -gt 0) {
-    foreach ($problem in $problems) {
-        [Console]::Error.WriteLine($problem)
+    if ($AutoFix) {
+        Write-Host "Modo Auto-Fix activado. Reparando problemas detectados..." -ForegroundColor Yellow
+
+        foreach ($problem in $problems) {
+            switch -regex ($problem) {
+                "^Falta adaptador generado: (.+)" {
+                    $relativePath = $Matches[1]
+                    $fullPath = Join-Path $root $relativePath
+                    
+                    switch -regex ($relativePath) {
+                        "CLAUDE.md" {
+                            $agents = Read-JsonFile (Join-Path $root ".agentic/agents.json")
+                            $mcp = Read-JsonFile (Join-Path $root ".agentic/mcp.json")
+                            $generated = @{}
+                            Add-GeneratedFile -Generated $generated -RelativePath "CLAUDE.md" -Content ("@AGENTS.md" + [Environment]::NewLine)
+                            Write-Or-CheckFile -Root $root -RelativePath "CLAUDE.md" -ExpectedContent $generated["CLAUDE.md"] -Check:$false
+                        }
+                        ".mcp.json" {
+                            $mcp = Read-JsonFile (Join-Path $root ".agentic/mcp.json")
+                            Write-Or-CheckFile -Root $root -RelativePath ".mcp.json" -ExpectedContent (ConvertTo-ClaudeMcpJson -Mcp $mcp) -Check:$false
+                        }
+                        "opencode.json" {
+                            $agents = Read-JsonFile (Join-Path $root ".agentic/agents.json")
+                            $mcp = Read-JsonFile (Join-Path $root ".agentic/mcp.json")
+                            Write-Or-CheckFile -Root $root -RelativePath "opencode.json" -ExpectedContent (ConvertTo-OpenCodeConfig -Agents $agents -Mcp $mcp) -Check:$false
+                        }
+                        ".codex/config.toml" {
+                            $agents = Read-JsonFile (Join-Path $root ".agentic/agents.json")
+                            $mcp = Read-JsonFile (Join-Path $root ".agentic/mcp.json")
+                            Write-Or-CheckFile -Root $root -RelativePath ".codex/config.toml" -ExpectedContent (ConvertTo-CodexConfig -Agents $agents -Mcp $mcp) -Check:$false
+                        }
+                        default {
+                            Write-Host "  - No se pudo auto-fix para: $problem (tipo desconocido)" -ForegroundColor DarkYellow
+                        }
+                    }
+                }
+                "^Existe adaptador legacy no canonico: (.+)" {
+                    $legacyPath = $Matches[1]
+                    if (Test-Path -LiteralPath $legacyPath) {
+                        Remove-Item -LiteralPath $legacyPath -Force
+                        Write-Host "  - Removido legacy: $legacyPath" -ForegroundColor DarkYellow
+                    }
+                }
+                "^Skill mirror divergente: (.+)" {
+                    $relativePath = $Matches[1]
+                    $targetRoot = Join-Path $Root ".claude/skills"
+                    $source = Join-Path $root ".agents/skills/$relativePath"
+                    if (Test-Path -LiteralPath $source) {
+                        $parent = Split-Path -Parent $targetRoot
+                        if (-not (Test-Path -LiteralPath $parent -PathType Container)) {
+                            New-Item -ItemType Directory -Path $parent | Out-Null
+                        }
+                        Copy-Item -LiteralPath $source.FullName -Destination $targetRoot -Force
+                        Write-Host "  - Sincronizado skill: $relativePath" -ForegroundColor DarkYellow
+                    }
+                }
+                default {
+                    Write-Host "  - Problema no reconocido para Auto-Fix: $problem" -ForegroundColor DarkYellow
+                }
+            }
+        }
+
+        Write-Host "Auto-Fix completado. Vuelva a ejecutar sin -AutoFix para validar." -ForegroundColor Green
+        exit 0
     }
-    exit 1
+    else {
+        foreach ($problem in $problems) {
+            [Console]::Error.WriteLine($problem)
+        }
+        exit 1
+    }
 }
 
 if ($Check) {
