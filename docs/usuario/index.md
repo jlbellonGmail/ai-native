@@ -13,5 +13,6 @@ fuente canónica, regenerar adaptadores y declarar modelos por ejecución.
 - [Code Reviewer Y Sdd](code-reviewer-y-sdd.md)
 - [Integridad Post Hitl Y Ready For Pr](integridad-post-hitl-y-ready-for-pr.md)
 - [Adopcion de proyecto existente](adopcion-proyecto-existente.md)
+- [CI wiring product tests](ci-wiring-product-tests.md)
 
 <!-- FEATURE_LINKS_END -->
