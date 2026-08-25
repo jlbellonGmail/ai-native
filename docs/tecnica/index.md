@@ -18,5 +18,6 @@ canónica multiherramienta, generación de adaptadores y router de modelos.
 - [Integridad Post Hitl Y Ready For Pr](integridad-post-hitl-y-ready-for-pr.md)
 - [Adopcion de proyecto existente](adopcion-proyecto-existente.md)
 - [CI wiring product tests](ci-wiring-product-tests.md)
+- [Operational Readiness Docs](operational-readiness-docs.md)
 
 <!-- FEATURE_LINKS_END -->
