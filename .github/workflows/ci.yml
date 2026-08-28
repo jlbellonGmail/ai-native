@@ -34,4 +34,4 @@ jobs:
       # requerido para que branch protection no tenga que actualizarse
       # el dia que el stack real llegue.
       - name: Product tests (placeholder)
-        run: echo "product-tests: sin stack de producto definido. Ver docs/tecnica/arquitectura.md."
+        run: 'echo "product-tests: sin stack de producto definido. Ver docs/tecnica/arquitectura.md."'
