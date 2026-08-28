@@ -3,13 +3,21 @@
 ## Status
 
 ```text
-Status: IN_PROGRESS
+Status: FORMALLY_CLOSED / HITL_APPROVED
 Parent Program: AI-NATIVE ENTERPRISE-10-10-V1
-Parent Status: GLOBALLY CLOSED
+Parent Status: CLOSED / NOT_REOPENED
 Parent Final Governance Commit: 02a67b0
 Parent Governance Score: 10 / 10
-Readiness Audit Decision: READY_WITH_CONDITIONS
-Readiness Score: 7.4 / 10
+Initial Readiness Audit Decision: READY_WITH_CONDITIONS
+Initial Readiness Score: 7.4 / 10
+H1-H8 Status: FORMALLY_CLOSED / HITL_APPROVED
+H8 Adoption Readiness: READY_FOR_FIRST_PROJECT
+H8 Readiness Score: 91 / 100
+Post-H8 Professional Readiness Audit: READY_FOR_CONTROLLED_FIRST_PROJECT_WITH_GAPS
+Post-H8 Professional Readiness Score: 8.8 / 10 (88 / 100)
+ENTERPRISE-10-10-V2: NOT_CREATED
+H9: NOT_CREATED / NOT_OPENED
+First real application: NOT_STARTED
 Purpose: Convert governance-ready ecosystem into adoption-ready project baseline
 ```
 
@@ -19,7 +27,7 @@ Purpose: Convert governance-ready ecosystem into adoption-ready project baseline
 
 `AI-NATIVE ENTERPRISE-10-10-V1` was globally closed with a governance score of `10 / 10`.
 
-A subsequent read-only readiness audit determined that the ecosystem is strong in governance, structure, documentation, contracts, validators and architectural intent, but not yet a low-risk production baseline for real client projects.
+The initial read-only readiness audit determined that the ecosystem was strong in governance, structure, documentation, contracts, validators and architectural intent, but not yet a low-risk production baseline for real client projects.
 
 The readiness decision was:
 
@@ -28,6 +36,8 @@ READY_WITH_CONDITIONS
 ```
 
 This means the ecosystem can be used for a controlled real pilot, MVP or first internal/client project, but it requires a focused hardening layer before being treated as production-ready.
+
+After H1-H8, `AI-NATIVE HARDENING-V1.1` is formally closed with HITL approval. H8 confirmed `READY_FOR_FIRST_PROJECT` with readiness score `91/100`. A later professional readiness audit is advisory for pre-first-project planning: `READY_FOR_CONTROLLED_FIRST_PROJECT_WITH_GAPS`, score `8.8/10` (`88/100`). It does not reopen `ENTERPRISE-10-10-V1`, create `ENTERPRISE-10-10-V2`, open `H9`, or start the first real application.
 
 ---
 
@@ -338,6 +348,22 @@ ai-template/examples/reference-app/observability/
 
 ## H4 — Executable Testing Profiles
 
+Status:
+
+```text
+[x] CLOSED
+Closed locally at: 2026-07-02
+Closed formally at: 2026-07-03
+Product repo: ai-template
+Product scope: executable testing profiles for template and generated projects
+Governance archive: governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H4/
+Next eligible: H5 — Real Evaluation Runs
+H5 opened: NO
+HITL: APPROVED
+HITL approved at: 2026-07-03
+Push: NOT_PUSHED_BY_POLICY
+```
+
 ### Objective
 
 Convert testing readiness contracts into executable project testing profiles.
@@ -383,9 +409,44 @@ ai-template/examples/reference-app/tests/
 
 `H4` is closed only when testing moves from contract-only to executable baseline evidence.
 
+### Closure Evidence
+
+* `ai-template` executable testing profiles were committed as `24e29b3`.
+* Testing profiles include contract, coverage, mutation smoke, load smoke,
+  performance smoke and chaos smoke profiles.
+* Generated projects include testing profile catalog, local validator, smoke
+  runner and user documentation.
+* `ai-template/templates/project/` was evaluated and updated with matching
+  testing profile assets.
+* A real generated project smoke was created under
+  `C:\tmp\ai-native-h4-smoke-codex`, validated and removed.
+* Local validators passed in `ai-template`.
+* HITL approval was granted on 2026-07-03.
+* H1-H3 were not reopened.
+* H5-H8 were not opened.
+* `ENTERPRISE-10-10-V1` was not reopened.
+* `ENTERPRISE-10-10-V2` was not created.
+
 ---
 
 ## H5 — Real Evaluation Runs
+
+Status:
+
+```text
+[x] CLOSED
+Closed locally at: 2026-07-03
+Formally closed at: 2026-07-03
+Product repo: ai-knowledge
+Product scope: local controlled evaluation runner and score report
+Product commit: cba745a
+Governance archive: governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H5/
+Next eligible: H6 — Target Repository Security Validation
+H6 opened: NO
+HITL: APPROVED
+HITL approved at: 2026-07-03
+Push: NOT_PUSHED_BY_POLICY
+```
 
 ### Objective
 
@@ -429,6 +490,24 @@ ai-knowledge/scripts/run-evaluation.mjs
 ### Closure Condition
 
 `H5` is closed only when evaluation has at least one real executable path or clearly documented controlled run.
+
+### Closure Evidence
+
+* `ai-knowledge` real evaluation runs were committed as `cba745a`.
+* `scripts/run-evaluation.mjs` executes `bench-prompt-grounding` using controlled
+  fixture data.
+* `evaluation/runs/enterprise-10-10/bench-prompt-grounding-controlled/score-report.json`
+  is a machine-readable score report with `decision: PASS` and score `1.00`.
+* `scripts/validate-real-evaluation-runs.mjs` validates the report against
+  benchmark, dataset, scoring rubric, quality gates and evidence policy.
+* Quality gates reference the real report path, run command and validator.
+* Results are explicitly not governance-only evidence.
+* `ai-template/templates/project/` was evaluated as NOT_APPLICABLE because H5
+  does not affect generated-project behavior.
+* H1-H4 were not reopened.
+* H6-H8 were not opened.
+* Push was not executed by explicit policy.
+* HITL approval was granted on 2026-07-03.
 
 ---
 
@@ -476,6 +555,32 @@ ai-template/docs/security/SECURITY-BOOTSTRAP.md
 
 `H6` is closed only when target repo security validation is repeatable and auditable.
 
+### Local Closure Status
+
+Status: FORMALLY_CLOSED
+HITL: APPROVED
+HITL approved at: 2026-07-06
+Push: NOT_PUSHED_BY_POLICY
+Governance archive: governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H6/
+Next eligible: H7 — First Client Project Playbook
+H7: NOT_OPENED
+H8: NOT_OPENED
+
+Closure evidence:
+
+* Target repository security checklist added under governance.
+* `ai-foundation` target repository security validation procedure, contract and
+  validator added.
+* `ai-template` security bootstrap guidance added for factory docs, generated
+  scaffold and project template assets.
+* Dependency Review, Dependabot, SBOM and attestation evidence requirements are
+  explicit.
+* Local validation does not claim remote controls as PASS.
+* No remotes, credentials, GitHub settings, workflows, push or PR were modified.
+* H1-H5 remain closed.
+* H7-H8 were not opened.
+* HITL approval was granted on 2026-07-06.
+
 ---
 
 ## H7 — First Client Project Playbook
@@ -521,6 +626,31 @@ ai-template/docs/onboarding/FIRST-PROJECT.md
 ### Closure Condition
 
 `H7` is closed only when the first project path is operationally clear.
+
+### Local Closure Status
+
+Status: FORMALLY_CLOSED
+HITL: APPROVED
+HITL approved at: 2026-07-06
+Push: NOT_PUSHED_BY_POLICY
+Governance archive: governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H7/
+Next eligible: H8 — Adoption Readiness Final Audit
+H8: NOT_OPENED
+
+Closure evidence:
+
+* First Client Project Playbook added in `ai-knowledge`.
+* First project onboarding reference added in `ai-template`.
+* Governance playbook record added.
+* Playbook contract and validators added.
+* The playbook covers intake, readiness, SDD, delivery, evidence, Inspector,
+  local closure and HITL final review.
+* The playbook references H1 SDD, H2 generator, H3 observability, H4 testing,
+  H5 evaluation and H6 target repository security validation.
+* MVP/pilot path is distinguished from production-critical use.
+* H1-H6 remain formally closed.
+* H8 was not opened.
+* HITL approval was granted on 2026-07-06.
 
 ---
 
@@ -574,6 +704,30 @@ governance/SESSION-CONTEXT.md
 
 `H8` is closed only when the ecosystem has a final adoption readiness decision.
 
+### Local Closure Status
+
+Status: FORMALLY_CLOSED
+HITL: APPROVED
+HITL approved at: 2026-07-07
+Push: NOT_PUSHED_BY_POLICY
+Governance archive: governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H8/
+Adoption readiness: READY_FOR_FIRST_PROJECT
+Readiness score: 91/100
+Recommended next action: Start first controlled real project from ai-template
+after H8 HITL approval.
+
+Closure evidence:
+
+* H1-H7 are formally closed with HITL approval.
+* Final audit distinguishes governance, validation and runtime evidence.
+* Final decision is evidence-based.
+* Product repositories remained clean and unchanged for H8.
+* Adoption risks and remaining gaps are documented.
+* `ENTERPRISE-10-10-V1` was not reopened.
+* `ENTERPRISE-10-10-V2` was not created.
+* Push was not executed by policy.
+* HITL approval was granted on 2026-07-07.
+
 ---
 
 ## 5. Target Outcome
@@ -582,8 +736,16 @@ Expected final state:
 
 ```text
 AI-NATIVE HARDENING-V1.1: CLOSED
-Adoption Readiness: ADOPTION_READY or READY_FOR_FIRST_PROJECT
-Recommended next action: Start first controlled real project from ai-template
+Closure: FORMALLY_CLOSED / HITL_APPROVED
+H1-H8: FORMALLY_CLOSED / HITL_APPROVED
+Adoption Readiness: READY_FOR_FIRST_PROJECT
+Readiness Score: 91/100
+Post-H8 Professional Readiness Audit: READY_FOR_CONTROLLED_FIRST_PROJECT_WITH_GAPS / 8.8/10
+ENTERPRISE-10-10-V1: CLOSED / NOT_REOPENED
+ENTERPRISE-10-10-V2: NOT_CREATED
+H9: NOT_CREATED / NOT_OPENED
+First real application: NOT_STARTED
+Recommended next action: Start first controlled real project from ai-template when explicitly initiated
 ```
 
 ---

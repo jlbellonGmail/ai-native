@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "p0-t2-spec-approval.v1",
+  "taskId": "P0-T2",
+  "artifact": "Audit-Safe Script Mode Specification",
+  "decision": "APPROVED",
+  "status": "P0_T2_SPEC_APPROVED_FORMALLY_ACCEPTED",
+  "approvedAt": "2026-07-17",
+  "acceptedSpecCommit": "f077fe0",
+  "approvalScope": "SPECIFICATION_ONLY",
+  "hitl": {
+    "required": true,
+    "approved": true,
+    "recordedFromExplicitUserInstruction": true
+  },
+  "implementation": {
+    "status": "NOT_STARTED",
+    "approvedByThisDecision": false
+  },
+  "negativeScope": {
+    "productScriptsModified": false,
+    "packageLevelScriptsExecuted": false,
+    "h1ThroughH8Reopened": false,
+    "p0T1Reopened": false,
+    "h9Opened": false,
+    "enterprise1010V2Created": false,
+    "firstRealApplicationStarted": false,
+    "productionCriticalReadinessDeclared": false,
+    "professional10Of10Declared": false,
+    "pushExecuted": false
+  },
+  "nextEligible": "P0-T2_AUDIT_SAFE_SCRIPT_MODE_IMPLEMENTATION"
+}

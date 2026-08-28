@@ -1,0 +1,27 @@
+{
+  "program": "AI-NATIVE-HARDENING-V1.1",
+  "task": "H5",
+  "name": "Real Evaluation Runs",
+  "status": "FORMALLY_CLOSED",
+  "hitl": {
+    "required": true,
+    "approved": true,
+    "approved_at": "2026-07-03"
+  },
+  "productRepo": "ai-knowledge",
+  "productCommit": "cba745a",
+  "run": {
+    "command": "node scripts/run-evaluation.mjs --benchmark bench-prompt-grounding",
+    "report": "evaluation/runs/enterprise-10-10/bench-prompt-grounding-controlled/score-report.json",
+    "validator": "node scripts/validate-real-evaluation-runs.mjs",
+    "mode": "local-controlled-fixture",
+    "score": 1,
+    "decision": "PASS"
+  },
+  "scopeControl": {
+    "h1ThroughH4Reopened": false,
+    "h6Opened": false,
+    "push": "NOT_PUSHED_BY_POLICY",
+    "aiTemplateProjectImpact": "NOT_APPLICABLE"
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "program": "AI-NATIVE-HARDENING-V1.1",
+  "task": "H4",
+  "name": "Executable Testing Profiles",
+  "status": "CLOSED",
+  "hitl": {
+    "required": true,
+    "approved": true,
+    "approved_at": "2026-07-03"
+  },
+  "product_commits": {
+    "ai-template": "24e29b3",
+    "ai-foundation": null,
+    "ai-knowledge": null
+  },
+  "scope": {
+    "executable_testing_profiles": true,
+    "generated_project_testing_profiles": true,
+    "project_template_baseline_updated": true,
+    "real_evaluation_runs": false,
+    "target_repo_security": false,
+    "first_client_playbook": false,
+    "final_adoption_audit": false
+  },
+  "profiles": [
+    "contract-smoke",
+    "coverage-smoke",
+    "mutation-smoke",
+    "load-smoke",
+    "performance-smoke",
+    "chaos-smoke"
+  ],
+  "safety": {
+    "local_only": true,
+    "requires_network": false,
+    "requires_secrets": false,
+    "mutates_external_state": false,
+    "destructive_chaos": false
+  },
+  "validation": {
+    "ai_template_testing_profiles": "PASS",
+    "ai_template_structure": "PASS",
+    "create_ai_native_app": "PASS",
+    "generated_project_smoke": "PASS",
+    "temporary_smoke_project_cleaned": true,
+    "remote_ci": "NOT_RUN"
+  },
+  "push": "NOT_PUSHED_BY_POLICY",
+  "next_task": {
+    "id": "H5",
+    "name": "Real Evaluation Runs",
+    "opened": false
+  },
+  "enterprise_10_10_v1_reopened": false,
+  "enterprise_10_10_v2_created": false
+}

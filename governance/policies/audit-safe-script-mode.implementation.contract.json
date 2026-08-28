@@ -1,0 +1,66 @@
+{
+  "schemaVersion": "audit-safe-script-mode.implementation.v1",
+  "taskId": "P0-T2",
+  "status": "IMPLEMENTATION_APPROVED_FORMALLY_ACCEPTED",
+  "approvedSpecification": {
+    "path": "specs/p0-t2-audit-safe-script-mode/spec.md",
+    "contract": "specs/p0-t2-audit-safe-script-mode/audit-safe-script-mode.contract.json",
+    "acceptedCommit": "f077fe0"
+  },
+  "implementation": {
+    "policy": "governance/policies/AUDIT-SAFE-SCRIPT-MODE.md",
+    "cli": "scripts/audit-safe-script-mode.mjs",
+    "validator": "scripts/validate-audit-safe-script-mode.mjs"
+  },
+  "supportedClasses": [
+    "STATIC_ONLY",
+    "DIRECT_VALIDATOR",
+    "CONTROLLED_DYNAMIC",
+    "PACKAGE_LEVEL",
+    "INSTALL_OR_LIFECYCLE",
+    "GENERATOR",
+    "NETWORK_OR_SECRET",
+    "DESTRUCTIVE",
+    "UNKNOWN"
+  ],
+  "resultStates": [
+    "PASS",
+    "FAIL",
+    "BLOCKED",
+    "NOT_RUN",
+    "NOT_APPLICABLE",
+    "CONTEXTUAL_NON_BLOCKING"
+  ],
+  "blockedByDefault": [
+    "PACKAGE_LEVEL",
+    "INSTALL_OR_LIFECYCLE",
+    "NETWORK_OR_SECRET",
+    "DESTRUCTIVE",
+    "UNKNOWN"
+  ],
+  "executionPolicy": {
+    "packageLevelScripts": "BLOCKED_BY_DEFAULT",
+    "installLifecycleSetupBootstrap": "BLOCKED_BY_DEFAULT",
+    "generatorWithoutDryRun": "BLOCKED",
+    "directExecutionShell": false,
+    "requiresExplicitExecuteFlag": true,
+    "requiresExpectedSideEffectsNone": true,
+    "allowlistMetadata": "RECORDED_UNSAFE_EXECUTION_STILL_BLOCKED_IN_V1",
+    "workingTreeMutationWhenNone": "FAIL"
+  },
+  "repositoryCompatibility": {
+    "rootGovernance": "SUPPORTED",
+    "aiFoundation": "SUPPORTED",
+    "aiKnowledge": "SUPPORTED_WITHOUT_ROOT_PACKAGE_JSON",
+    "aiTemplate": "SUPPORTED"
+  },
+  "validationCommand": "node scripts/validate-audit-safe-script-mode.mjs",
+  "closure": {
+    "localState": "P0-T2_IMPLEMENTATION_CLOSED_LOCALLY",
+    "formalState": "P0-T2_IMPLEMENTATION_APPROVED_FORMALLY_ACCEPTED",
+    "acceptedImplementationCommit": "78e3214",
+    "humanApproval": "FORMALLY_ACCEPTED",
+    "hitlApprovedAt": "2026-07-17",
+    "push": "NOT_PUSHED_BY_POLICY"
+  }
+}

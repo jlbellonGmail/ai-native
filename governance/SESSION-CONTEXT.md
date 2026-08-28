@@ -1943,3 +1943,748 @@ Restricciones vigentes:
 * no abrir H4 sin instruccion explicita separada
 * no reabrir ENTERPRISE-10-10-V1
 * no crear ENTERPRISE-10-10-V2
+
+---
+
+## Ultima ejecucion valida
+
+Tipo:
+AI-NATIVE-HARDENING-V1.1 H4
+
+Estado:
+EXECUTABLE TESTING PROFILES HITL APPROVED
+
+Repositorio producto impactado:
+
+* ai-template
+
+Commits producto:
+
+* ai-template H4 product commit: `24e29b3`
+
+Validado:
+
+* H1 - SDD Package permanece cerrada.
+* H2 - Project Generator / create-ai-native-app permanece cerrada con HITL aprobado.
+* H3 - Runtime Observability Wiring permanece cerrada con HITL aprobado.
+* H4 - Executable Testing Profiles fue ejecutada en rama feature local.
+* Se agregaron perfiles `contract-smoke`, `coverage-smoke`, `mutation-smoke`,
+  `load-smoke`, `performance-smoke` y `chaos-smoke`.
+* El proyecto generado incluye catalogo, validador, smoke runner y documentacion
+  para perfiles ejecutables locales.
+* `ai-template/templates/project/` fue evaluado y actualizado con el baseline H4.
+* Smoke real generado en `C:\tmp\ai-native-h4-smoke-codex`, validado y eliminado.
+* `ai-foundation` permanecio sin cambios H4.
+* `ai-knowledge` permanecio sin cambios H4.
+* H5 - Real Evaluation Runs no fue abierta.
+* H5-H8 no fueron ejecutadas.
+* ENTERPRISE-10-10-V1 permanece cerrado.
+* ENTERPRISE-10-10-V2 no fue creado.
+* Push no ejecutado por instruccion explicita: NOT_PUSHED_BY_POLICY.
+* HITL aprobado humanamente el 2026-07-03.
+
+Evidencia disponible:
+
+* specs/hardening-v1.1-h4-executable-testing-profiles/
+* governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H4/
+
+Restricciones vigentes:
+
+* H5 - Real Evaluation Runs queda no abierta
+* no abrir H5 sin instruccion explicita separada
+* no reabrir ENTERPRISE-10-10-V1
+* no crear ENTERPRISE-10-10-V2
+
+---
+
+## Ultima ejecucion valida
+
+Tipo:
+AI-NATIVE-HARDENING-V1.1 H4 HITL APPROVAL
+
+Estado:
+HITL APPROVED
+
+Validado:
+
+* H4 - Executable Testing Profiles fue aprobado humanamente para cierre formal.
+* Commits confirmados:
+  * root/governance local closure: `b49a725`
+  * ai-template: `24e29b3`
+  * ai-foundation: sin cambios H4
+  * ai-knowledge: sin cambios H4
+* Validaciones H4 reportadas como PASS.
+* Inspector H4: `APPROVED_WITH_CONTEXTUAL_NON_BLOCKING_ITEMS`.
+* Unico hallazgo contextual: CI/PR remoto no ejecutado porque no hubo push por politica/instruccion explicita.
+* Push permanece `NOT_PUSHED_BY_POLICY`.
+* H5 - Real Evaluation Runs no fue abierta.
+* H5-H8 no fueron ejecutadas.
+* ENTERPRISE-10-10-V1 permanece cerrado.
+* ENTERPRISE-10-10-V2 no fue creado.
+
+Restricciones vigentes:
+
+* H5 - Real Evaluation Runs queda como proxima tarea elegible, no abierta
+* no abrir H5 sin instruccion explicita separada
+* no reabrir ENTERPRISE-10-10-V1
+* no crear ENTERPRISE-10-10-V2
+
+---
+
+## Ultima ejecucion valida
+
+Tipo:
+AI-NATIVE-HARDENING-V1.1 H5
+
+Estado:
+REAL EVALUATION RUNS CLOSED LOCALLY / HITL REQUIRED
+
+Repositorio producto impactado:
+
+* ai-knowledge
+
+Commits producto:
+
+* ai-knowledge H5 product commit: `cba745a`
+
+Validado:
+
+* H1 - SDD Package permanece cerrada con HITL aprobado.
+* H2 - Project Generator / create-ai-native-app permanece cerrada con HITL aprobado.
+* H3 - Runtime Observability Wiring permanece cerrada con HITL aprobado.
+* H4 - Executable Testing Profiles permanece cerrada con HITL aprobado.
+* H5 - Real Evaluation Runs fue ejecutada en rama feature local.
+* Se agrego `scripts/run-evaluation.mjs`.
+* Se agrego `scripts/validate-real-evaluation-runs.mjs`.
+* Se genero reporte machine-readable en
+  `ai-knowledge/evaluation/runs/enterprise-10-10/bench-prompt-grounding-controlled/score-report.json`.
+* La corrida controlada `bench-prompt-grounding` obtuvo `PASS` con score `1.00`.
+* Quality gates referencian el reporte real, comando de corrida y validador.
+* La evidencia rechaza governance archive, summary markdown y unchecked JSON como evidencia unica.
+* `ai-template/templates/project/` fue evaluado como NOT_APPLICABLE para H5.
+* `ai-foundation` permanecio sin cambios H5.
+* `ai-template` permanecio sin cambios H5.
+* H6-H8 no fueron ejecutadas ni abiertas.
+* ENTERPRISE-10-10-V1 permanece cerrado.
+* ENTERPRISE-10-10-V2 no fue creado.
+* Push no ejecutado por instruccion explicita: NOT_PUSHED_BY_POLICY.
+* HITL queda requerido para cierre formal H5.
+
+Evidencia disponible:
+
+* specs/hardening-v1.1-h5-real-evaluation-runs/
+* governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H5/
+
+Restricciones vigentes:
+
+* H6 - Target Repository Security Validation queda como proxima tarea elegible, no abierta
+* no abrir H6 sin instruccion explicita separada
+* no reabrir ENTERPRISE-10-10-V1
+* no crear ENTERPRISE-10-10-V2
+
+---
+
+## Ultima ejecucion valida
+
+Tipo:
+AI-NATIVE-HARDENING-V1.1 H5 HITL APPROVAL
+
+Estado:
+REAL EVALUATION RUNS FORMALLY CLOSED / HITL APPROVED
+
+Repositorio producto impactado:
+
+* N/A - aprobacion governance-only
+
+Commits base:
+
+* ai-knowledge H5 product commit: `cba745a`
+* root/governance H5 local closure commit: `20b8cd9`
+
+Validado:
+
+* H5 estaba `CLOSED_LOCALLY / HITL_REQUIRED` antes de la aprobacion formal.
+* El usuario otorgo aprobacion humana explicita el 2026-07-03.
+* H5 queda `FORMALLY_CLOSED / HITL_APPROVED`.
+* H6 queda `NOT_OPENED`.
+* Push no ejecutado por instruccion explicita: `NOT_PUSHED_BY_POLICY`.
+
+Evidencia disponible:
+
+* governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H5/
+
+Restricciones vigentes:
+
+* H6 - Target Repository Security Validation queda como proxima tarea elegible, no abierta
+* no abrir H6 sin instruccion explicita separada
+* no hacer push sin instruccion explicita
+
+---
+
+## Ultima ejecucion valida
+
+Tipo:
+AI-NATIVE-HARDENING-V1.1 H6
+
+Estado:
+TARGET REPOSITORY SECURITY VALIDATION CLOSED LOCALLY / HITL REQUIRED
+
+Repositorio producto impactado:
+
+* ai-foundation
+* ai-template
+
+Commits producto:
+
+* ai-foundation H6 product commit: `74611a7`
+* ai-template H6 product commit: `cf3bf9c`
+* ai-knowledge H6 product commit: N/A
+
+Validado:
+
+* H6 - Target Repository Security Validation fue recuperada quirurgicamente tras
+  corte por creditos.
+* Instruction gate y discovery H6 ya habian pasado antes del corte.
+* H6 fue descubierta desde el roadmap local como Target Repository Security
+  Validation.
+* `governance/security/TARGET-REPO-SECURITY-CHECKLIST.md` define evidencia
+  auditable para repositorios destino.
+* `ai-foundation` agrega procedimiento, contrato y validador para seguridad de
+  repositorio destino.
+* `ai-template` agrega bootstrap de seguridad para docs factory, scaffold
+  generado y project template.
+* Dependency Review, Dependabot, SBOM y attestations requieren evidencia del
+  repositorio destino.
+* No se tratan supuestos remotos como PASS local.
+* Smoke temporal H6 en `C:\tmp` fue eliminado durante recovery.
+* `ai-knowledge` permanecio sin cambios H6.
+* H1-H5 permanecen cerradas.
+* H7-H8 no fueron abiertas.
+* ENTERPRISE-10-10-V1 permanece cerrado.
+* ENTERPRISE-10-10-V2 no fue creado.
+* Push no ejecutado por instruccion explicita: NOT_PUSHED_BY_POLICY.
+* HITL queda requerido para cierre formal H6.
+
+Evidencia disponible:
+
+* specs/hardening-v1.1-h6-target-repo-security-validation/
+* governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H6/
+
+Restricciones vigentes:
+
+* H7 - First Client Project Playbook queda como proxima tarea elegible, no abierta
+* no abrir H7 sin instruccion explicita separada
+* no hacer push sin instruccion explicita
+
+---
+
+## Ultima ejecucion valida
+
+Tipo:
+AI-NATIVE P0-T2 AUDIT-SAFE SCRIPT MODE IMPLEMENTATION
+
+Estado:
+P0-T2_IMPLEMENTATION_CLOSED_LOCALLY / HITL_REQUIRED
+
+Repositorio producto impactado:
+
+* N/A - implementacion governance/root solamente
+
+Repositorio governance impactado:
+
+* root/governance
+
+Validado:
+
+* La especificacion P0-T2 permanece `APPROVED / FORMALLY_ACCEPTED`.
+* Commit de especificacion aceptado: `f077fe0`.
+* Commit de aprobacion de especificacion: `70fadaa`.
+* Se implemento Audit-Safe Script Mode como CLI directo de Node.
+* Se agrego validador directo de implementacion.
+* Se agrego politica governance y contrato machine-readable.
+* La implementacion clasifica comandos antes de ejecutar.
+* Package-level scripts quedan bloqueados por defecto.
+* Install/lifecycle/setup/bootstrap/prepare quedan bloqueados por defecto.
+* Generator sin dry-run queda bloqueado; dry-run queda clasificado sin ejecutar.
+* Ejecucion directa requiere `--execute --expected-side-effects none`.
+* El modo captura baseline/final git state y detecta mutaciones del working tree.
+* `node scripts\validate-audit-safe-script-mode.mjs` reporto PASS.
+* ai-foundation permanece sin cambios en HEAD `74611a7`.
+* ai-knowledge permanece sin cambios en HEAD `8582290`.
+* ai-template permanece sin cambios en HEAD `01b0971`.
+* No se modificaron scripts productivos.
+* No se ejecutaron scripts package-level.
+* No se abrio H9.
+* `ENTERPRISE-10-10-V2` no fue creado.
+* Primera aplicacion real no fue iniciada.
+* No se declaro produccion critica.
+* No se declaro 10/10 profesional.
+* No se hizo push.
+* HITL queda requerido para cierre formal de la implementacion P0-T2.
+
+Evidencia disponible:
+
+* `scripts/audit-safe-script-mode.mjs`
+* `scripts/validate-audit-safe-script-mode.mjs`
+* `governance/policies/AUDIT-SAFE-SCRIPT-MODE.md`
+* `governance/policies/audit-safe-script-mode.implementation.contract.json`
+* `governance/execution/archive/AI-NATIVE-HARDENING-V1.1/P0-T2-IMPLEMENTATION/`
+
+Restricciones vigentes:
+
+* no registrar HITL APPROVED para P0-T2 implementation sin aprobacion humana explicita
+* no abrir H9
+* no crear ENTERPRISE-10-10-V2
+* no iniciar primera aplicacion real
+* no declarar produccion critica
+* no declarar 10/10 profesional
+* no hacer push sin instruccion explicita
+
+---
+
+## Ultima ejecucion valida
+
+Tipo:
+AI-NATIVE P0-T2 AUDIT-SAFE SCRIPT MODE IMPLEMENTATION HITL APPROVAL
+
+Estado:
+P0-T2_IMPLEMENTATION_APPROVED / FORMALLY_ACCEPTED
+
+Repositorio producto impactado:
+
+* N/A - aprobacion governance-only
+
+Repositorio governance impactado:
+
+* root/governance
+
+Commits aceptados:
+
+* P0-T2 specification commit: `f077fe0`
+* P0-T2 specification approval commit: `70fadaa`
+* P0-T2 implementation commit: `78e3214`
+
+Validado:
+
+* El usuario otorgo aprobacion humana explicita el 2026-07-17 para la implementacion P0-T2.
+* P0-T2 Implementation queda `APPROVED / FORMALLY_ACCEPTED`.
+* La especificacion P0-T2 permanece `APPROVED / FORMALLY_ACCEPTED`.
+* `node scripts\validate-audit-safe-script-mode.mjs` reporto PASS.
+* `node sdd\validation\validate-sdd-package.mjs` reporto PASS en `ai-knowledge`.
+* Contratos JSON P0-T2 parsearon correctamente.
+* Commit de implementacion `78e3214` fue verificado con diff real.
+* ai-foundation permanece sin cambios en HEAD `74611a7`.
+* ai-knowledge permanece sin cambios en HEAD `8582290`.
+* ai-template permanece sin cambios en HEAD `01b0971`.
+* No se modificaron scripts productivos.
+* No se ejecutaron scripts package-level.
+* No se abrio H9.
+* `ENTERPRISE-10-10-V2` no fue creado.
+* Primera aplicacion real no fue iniciada.
+* No se declaro produccion critica.
+* No se declaro 10/10 profesional.
+* No se hizo push.
+
+Evidencia disponible:
+
+* `governance/execution/current/`
+* `governance/execution/archive/AI-NATIVE-HARDENING-V1.1/P0-T2-IMPLEMENTATION/`
+* `governance/execution/archive/AI-NATIVE-HARDENING-V1.1/P0-T2-IMPLEMENTATION/p0-t2-implementation-approval.contract.json`
+* `governance/policies/audit-safe-script-mode.implementation.contract.json`
+
+Restricciones vigentes:
+
+* no abrir H9
+* no crear ENTERPRISE-10-10-V2
+* no iniciar primera aplicacion real salvo instruccion explicita separada
+* no declarar produccion critica
+* no declarar 10/10 profesional
+* no hacer push sin instruccion explicita
+
+---
+
+## Ultima ejecucion valida
+
+Tipo:
+AI-NATIVE PRE-FIRST-PROJECT READINESS CLEANUP P0-T1 HITL APPROVAL
+
+Estado:
+GOVERNANCE CONSISTENCY FORMALLY_ACCEPTED / HITL_APPROVED
+
+Repositorio producto impactado:
+
+* N/A - aprobacion governance-only
+
+Commit aceptado:
+
+* root/governance P0-T1 commit: `cb151a5`
+* mensaje: `docs(governance): align hardening readiness status`
+
+Validado:
+
+* El usuario otorgo aprobacion humana explicita el 2026-07-13.
+* P0-T1 queda `APPROVED / FORMALLY_ACCEPTED`.
+* HARDENING-V1.1 queda `FORMALLY_CLOSED / HITL_APPROVED`.
+* H8 permanece `READY_FOR_FIRST_PROJECT`.
+* Professional Readiness Audit queda registrado como `READY_FOR_CONTROLLED_FIRST_PROJECT_WITH_GAPS / 8.8/10`.
+* ENTERPRISE-10-10-V1 permanece `CLOSED / NOT_REOPENED`.
+* ENTERPRISE-10-10-V2 permanece `NOT_CREATED`.
+* H9 permanece `NOT_CREATED / NOT_OPENED`.
+* Primera aplicacion real permanece `NOT_STARTED`.
+* ai-foundation, ai-knowledge y ai-template permanecieron sin cambios.
+* Push no ejecutado por instruccion explicita: `NOT_PUSHED_BY_POLICY`.
+
+Evidencia aceptada:
+
+* Instruction Gate PASS.
+* Root git diff --check PASS.
+* roadmap-status.json JSON parse PASS.
+* Product repos clean.
+* Product HEADs sin cambios: ai-foundation `74611a7`, ai-knowledge `8582290`, ai-template `01b0971`.
+* No se ejecutaron pnpm package-level scripts.
+* Nota LF-to-CRLF aceptada como no bloqueante.
+
+Restricciones vigentes:
+
+* P0-T2 - Audit-Safe Script Mode queda como proxima tarea elegible, no iniciada.
+* no iniciar P0-T2 sin instruccion explicita separada
+* no abrir H9
+* no crear ENTERPRISE-10-10-V2
+* no iniciar primera aplicacion real
+* no hacer push sin instruccion explicita
+
+---
+
+## Ultima ejecucion valida
+
+Tipo:
+AI-NATIVE P0-T2 AUDIT-SAFE SCRIPT MODE SPECIFICATION
+
+Estado:
+P0-T2_SPEC_CLOSED_LOCALLY / HITL_REQUIRED
+
+Repositorio producto impactado:
+
+* N/A - especificacion y governance solamente
+
+Repositorio governance impactado:
+
+* root/governance
+
+Validado:
+
+* Se creo la especificacion SDD de P0-T2 - Audit-Safe Script Mode.
+* Se creo contrato machine-readable en
+  `specs/p0-t2-audit-safe-script-mode/audit-safe-script-mode.contract.json`.
+* La especificacion define comportamiento canonico, politica package-level,
+  lifecycle hooks, aislamiento de efectos secundarios, working trees,
+  dependencias, cleanup, contrato de entrada/salida, estados, evidencia,
+  validaciones, criterios de aceptacion, bloqueo y cierre.
+* P0-T2 implementacion permanece `NOT_STARTED`.
+* P0-T1 permanece `APPROVED / FORMALLY_ACCEPTED`.
+* H1-H8 permanecen formalmente cerradas.
+* H9 permanece `NOT_CREATED / NOT_OPENED`.
+* `ENTERPRISE-10-10-V2` permanece `NOT_CREATED`.
+* Primera aplicacion real permanece `NOT_STARTED`.
+* No se modificaron scripts productivos.
+* No se ejecutaron scripts package-level.
+* No se hizo push.
+* HITL queda requerido para aprobar la especificacion antes de implementar P0-T2.
+
+Evidencia disponible:
+
+* `specs/p0-t2-audit-safe-script-mode/`
+* `governance/execution/archive/AI-NATIVE-HARDENING-V1.1/P0-T2-SPEC/`
+
+Restricciones vigentes:
+
+* no implementar P0-T2 hasta aprobacion HITL de la especificacion
+* no abrir H9
+* no crear ENTERPRISE-10-10-V2
+* no iniciar primera aplicacion real
+* no declarar produccion critica
+* no declarar 10/10 profesional
+* no hacer push sin instruccion explicita
+
+---
+
+## Ultima ejecucion valida
+
+Tipo:
+AI-NATIVE P0-T2 AUDIT-SAFE SCRIPT MODE SPECIFICATION HITL APPROVAL
+
+Estado:
+P0-T2_SPEC_APPROVED / FORMALLY_ACCEPTED
+
+Repositorio producto impactado:
+
+* N/A - aprobacion governance-only
+
+Repositorio governance impactado:
+
+* root/governance
+
+Commit de especificacion aceptado:
+
+* `f077fe0 docs(specs): define P0-T2 audit-safe script mode`
+
+Validado:
+
+* El usuario otorgo aprobacion humana explicita el 2026-07-17 para la especificacion P0-T2.
+* P0-T2 Specification queda `APPROVED / FORMALLY_ACCEPTED`.
+* HITL required: `true`.
+* HITL approved: `true`.
+* P0-T2 implementacion permanece `NOT_STARTED`.
+* P0-T1 permanece `APPROVED / FORMALLY_ACCEPTED`.
+* H1-H8 permanecen formalmente cerradas.
+* H9 permanece `NOT_CREATED / NOT_OPENED`.
+* `ENTERPRISE-10-10-V2` permanece `NOT_CREATED`.
+* Primera aplicacion real permanece `NOT_STARTED`.
+* No se modificaron scripts productivos.
+* No se ejecutaron scripts package-level.
+* No se hizo push.
+
+Evidencia disponible:
+
+* `specs/p0-t2-audit-safe-script-mode/`
+* `governance/execution/archive/AI-NATIVE-HARDENING-V1.1/P0-T2-SPEC/`
+
+Restricciones vigentes:
+
+* siguiente accion elegible: implementar P0-T2 - Audit-Safe Script Mode
+* no iniciar implementacion P0-T2 dentro de esta aprobacion
+* no abrir H9
+* no crear ENTERPRISE-10-10-V2
+* no iniciar primera aplicacion real
+* no declarar produccion critica
+* no declarar 10/10 profesional
+* no hacer push sin instruccion explicita
+
+---
+
+## Ultima ejecucion valida
+
+Tipo:
+AI-NATIVE-HARDENING-V1.1 H8 HITL APPROVAL
+
+Estado:
+ADOPTION READINESS FINAL AUDIT FORMALLY CLOSED / HITL APPROVED
+
+Repositorio producto impactado:
+
+* N/A - aprobacion governance-only
+
+Commits base:
+
+* root/governance H8 local closure commit: `8dc849a`
+* ai-foundation evidence HEAD: `74611a7`
+* ai-knowledge evidence HEAD: `8582290`
+* ai-template evidence HEAD: `01b0971`
+
+Validado:
+
+* H8 estaba `CLOSED_LOCALLY / HITL_REQUIRED` antes de la aprobacion formal.
+* El usuario otorgo aprobacion humana explicita el 2026-07-07.
+* H8 queda `FORMALLY_CLOSED / HITL_APPROVED`.
+* Adoption readiness permanece `READY_FOR_FIRST_PROJECT`.
+* Readiness score permanece `91/100`.
+* H1-H7 permanecen formalmente cerradas con HITL aprobado.
+* ENTERPRISE-10-10-V1 permanece cerrado.
+* ENTERPRISE-10-10-V2 no fue creado.
+* ai-foundation, ai-knowledge y ai-template permanecieron sin cambios H8.
+* Push no ejecutado por instruccion explicita: `NOT_PUSHED_BY_POLICY`.
+
+Evidencia disponible:
+
+* governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H8/
+
+Restricciones vigentes:
+
+* primer proyecto real controlado debe seguir H7 playbook y condiciones H8
+* no hacer push sin instruccion explicita
+
+---
+
+## Ultima ejecucion valida
+
+Tipo:
+AI-NATIVE-HARDENING-V1.1 H8
+
+Estado:
+ADOPTION READINESS FINAL AUDIT CLOSED LOCALLY / HITL REQUIRED
+
+Repositorio producto impactado:
+
+* N/A - auditoria governance-only
+
+Commits base:
+
+* root/governance H7 approval commit: `c35fada`
+* ai-foundation evidence HEAD: `74611a7`
+* ai-knowledge evidence HEAD: `8582290`
+* ai-template evidence HEAD: `01b0971`
+
+Validado:
+
+* H1-H7 permanecen formalmente cerradas con HITL aprobado.
+* H8 - Adoption Readiness Final Audit fue ejecutada en rama feature local.
+* Decision final de adopcion: `READY_FOR_FIRST_PROJECT`.
+* Readiness score: `91/100`.
+* La auditoria distingue evidencia governance, validation y runtime.
+* Se documentaron gaps reales y condiciones para primer proyecto cliente.
+* ai-foundation, ai-knowledge y ai-template permanecieron sin cambios H8.
+* ENTERPRISE-10-10-V1 permanece cerrado.
+* ENTERPRISE-10-10-V2 no fue creado.
+* Push no ejecutado por instruccion explicita: `NOT_PUSHED_BY_POLICY`.
+* HITL queda requerido para cierre formal H8.
+
+Evidencia disponible:
+
+* governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H8/
+
+Restricciones vigentes:
+
+* no registrar HITL APPROVED para H8 sin aprobacion humana explicita
+* no iniciar primer proyecto cliente sin cierre formal H8 o instruccion explicita
+* no hacer push sin instruccion explicita
+
+---
+
+## Ultima ejecucion valida
+
+Tipo:
+AI-NATIVE-HARDENING-V1.1 H7 HITL APPROVAL
+
+Estado:
+FIRST CLIENT PROJECT PLAYBOOK FORMALLY CLOSED / HITL APPROVED
+
+Repositorio producto impactado:
+
+* N/A - aprobacion governance-only
+
+Commits base:
+
+* root/governance H7 local closure commit: `31b9d8e`
+* ai-knowledge H7 product commit: `8582290`
+* ai-template H7 product commit: `01b0971`
+* ai-foundation H7 product commit: N/A
+
+Validado:
+
+* H7 estaba `CLOSED_LOCALLY / HITL_REQUIRED` antes de la aprobacion formal.
+* El usuario otorgo aprobacion humana explicita el 2026-07-06.
+* H7 queda `FORMALLY_CLOSED / HITL_APPROVED`.
+* H8 queda `NOT_OPENED`.
+* H1-H6 permanecen formalmente cerradas con HITL aprobado.
+* `ENTERPRISE-10-10-V1` permanece cerrado.
+* `ENTERPRISE-10-10-V2` no fue creado.
+* ai-foundation, ai-knowledge y ai-template permanecieron sin cambios nuevos.
+* Push no ejecutado por instruccion explicita: `NOT_PUSHED_BY_POLICY`.
+
+Evidencia disponible:
+
+* governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H7/
+
+Restricciones vigentes:
+
+* H8 - Adoption Readiness Final Audit queda como proxima tarea elegible, no abierta
+* no abrir H8 sin instruccion explicita separada
+* no hacer push sin instruccion explicita
+
+---
+
+## Ultima ejecucion valida
+
+Tipo:
+AI-NATIVE-HARDENING-V1.1 H7
+
+Estado:
+FIRST CLIENT PROJECT PLAYBOOK CLOSED LOCALLY / HITL REQUIRED
+
+Recovery:
+
+* Ejecucion recuperada despues de bloqueo por usage limit / creditos.
+* Se continuo desde cambios parciales H7 sin reimplementar desde cero.
+
+Repositorio producto impactado:
+
+* ai-knowledge
+* ai-template
+
+Commits producto:
+
+* ai-knowledge H7 product commit: `8582290`
+* ai-template H7 product commit: `01b0971`
+* ai-foundation H7 product commit: N/A
+
+Validado:
+
+* H1-H6 permanecen formalmente cerradas con HITL aprobado.
+* H7 - First Client Project Playbook fue ejecutada en rama feature local.
+* `ai-knowledge` agrega playbook canonico, contrato y validador.
+* `ai-template` agrega onboarding del primer proyecto y validador.
+* El playbook cubre intake, readiness, SDD, delivery, evidencia, Inspector,
+  cierre local, HITL final, bloqueos y escalamiento.
+* El playbook referencia H1 SDD, H2 generator, H3 observability, H4 testing,
+  H5 evaluation y H6 target repository security validation.
+* MVP/pilot queda separado de uso production-critical.
+* `ai-foundation` permanecio sin cambios H7.
+* H8 no fue abierta.
+* ENTERPRISE-10-10-V1 permanece cerrado.
+* ENTERPRISE-10-10-V2 no fue creado.
+* Push no ejecutado por instruccion explicita: NOT_PUSHED_BY_POLICY.
+* HITL queda requerido para cierre formal H7.
+
+Evidencia disponible:
+
+* specs/hardening-v1.1-h7-first-client-project-playbook/
+* governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H7/
+
+Restricciones vigentes:
+
+* H8 - Adoption Readiness Final Audit queda como proxima tarea elegible, no abierta
+* no abrir H8 sin instruccion explicita separada
+* no hacer push sin instruccion explicita
+* no registrar HITL APPROVED para H7 sin aprobacion humana explicita
+* no registrar HITL APPROVED para H6 sin aprobacion humana explicita
+
+---
+
+## Ultima ejecucion valida
+
+Tipo:
+AI-NATIVE-HARDENING-V1.1 H6 HITL APPROVAL
+
+Estado:
+TARGET REPOSITORY SECURITY VALIDATION FORMALLY CLOSED / HITL APPROVED
+
+Repositorio producto impactado:
+
+* N/A - aprobacion governance-only
+
+Commits base:
+
+* root/governance H6 local closure commit: `4205028`
+* ai-foundation H6 product commit: `74611a7`
+* ai-template H6 product commit: `cf3bf9c`
+* ai-knowledge H6 product commit: N/A
+
+Validado:
+
+* H6 estaba `CLOSED_LOCALLY / HITL_REQUIRED` antes de la aprobacion formal.
+* El usuario otorgo aprobacion humana explicita el 2026-07-06.
+* H6 queda `FORMALLY_CLOSED / HITL_APPROVED`.
+* H7 queda `NOT_OPENED`.
+* H8 queda `NOT_OPENED`.
+* ai-foundation, ai-knowledge y ai-template permanecieron sin cambios nuevos.
+* Push no ejecutado por instruccion explicita: `NOT_PUSHED_BY_POLICY`.
+
+Evidencia disponible:
+
+* governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H6/
+
+Restricciones vigentes:
+
+* H7 - First Client Project Playbook queda como proxima tarea elegible, no abierta
+* no abrir H7 sin instruccion explicita separada
+* no hacer push sin instruccion explicita

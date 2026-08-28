@@ -1,0 +1,45 @@
+{
+  "program": "AI-NATIVE-HARDENING-V1.1",
+  "task": "H7",
+  "name": "First Client Project Playbook",
+  "status": "FORMALLY_CLOSED",
+  "hitl": {
+    "required": true,
+    "approved": true,
+    "approved_at": "2026-07-06"
+  },
+  "productRepos": {
+    "ai-knowledge": {
+      "commit": "8582290",
+      "validator": "node scripts/validate-first-client-project-playbook.mjs"
+    },
+    "ai-template": {
+      "commit": "01b0971",
+      "validator": "node scripts/validate-first-project-onboarding.mjs"
+    },
+    "ai-foundation": {
+      "commit": null,
+      "change": "NO_H7_CHANGES"
+    }
+  },
+  "scopeControl": {
+    "h1ThroughH6Reopened": false,
+    "h8Opened": false,
+    "enterprise1010V1Reopened": false,
+    "enterprise1010V2Created": false,
+    "push": "NOT_PUSHED_BY_POLICY",
+    "remoteCredentialsModified": false,
+    "versionFilesModified": false,
+    "hitlApprovedByAgent": false
+  },
+  "validation": {
+    "recoveryGate": "PASS",
+    "playbookValidator": "PASS",
+    "onboardingValidator": "PASS",
+    "jsonParse": "PASS",
+    "sddValidator": "PASS",
+    "structureValidators": "PASS",
+    "diffCheck": "PASS",
+    "inspector": "PASS"
+  }
+}

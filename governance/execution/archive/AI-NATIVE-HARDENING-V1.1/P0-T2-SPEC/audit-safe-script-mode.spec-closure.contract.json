@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "p0-t2-spec-closure.v1",
+  "taskId": "P0-T2",
+  "artifact": "Audit-Safe Script Mode Specification",
+  "status": "P0_T2_SPEC_APPROVED_FORMALLY_ACCEPTED",
+  "implementationStatus": "NOT_STARTED",
+  "hitl": {
+    "required": true,
+    "approved": true,
+    "approvedAt": "2026-07-17",
+    "acceptedSpecCommit": "f077fe0"
+  },
+  "changedRepositories": {
+    "rootGovernance": true,
+    "aiFoundation": false,
+    "aiKnowledge": false,
+    "aiTemplate": false
+  },
+  "negativeScope": {
+    "productScriptsModified": false,
+    "packageLevelScriptsExecuted": false,
+    "h9Opened": false,
+    "enterprise1010V2Created": false,
+    "firstRealApplicationStarted": false,
+    "pushExecuted": false
+  },
+  "specArtifacts": [
+    "specs/p0-t2-audit-safe-script-mode/spec.md",
+    "specs/p0-t2-audit-safe-script-mode/plan.md",
+    "specs/p0-t2-audit-safe-script-mode/tasks.md",
+    "specs/p0-t2-audit-safe-script-mode/verification.md",
+    "specs/p0-t2-audit-safe-script-mode/inspector.md",
+    "specs/p0-t2-audit-safe-script-mode/audit-safe-script-mode.contract.json"
+  ]
+}

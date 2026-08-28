@@ -1,0 +1,42 @@
+{
+  "program": "AI-NATIVE-HARDENING-V1.1",
+  "task": "H6",
+  "name": "Target Repository Security Validation",
+  "status": "FORMALLY_CLOSED",
+  "hitl": {
+    "required": true,
+    "approved": true,
+    "approved_at": "2026-07-06"
+  },
+  "productRepos": {
+    "ai-foundation": {
+      "commit": "74611a7",
+      "validator": "node scripts/validate-target-repo-security.mjs"
+    },
+    "ai-template": {
+      "commit": "cf3bf9c",
+      "validator": "node scripts/validate-security-bootstrap.mjs"
+    },
+    "ai-knowledge": {
+      "commit": null,
+      "change": "NO_H6_CHANGES"
+    }
+  },
+  "scopeControl": {
+    "h1ThroughH5Reopened": false,
+    "h7Opened": false,
+    "h8Opened": false,
+    "push": "NOT_PUSHED_BY_POLICY",
+    "remoteCredentialsModified": false,
+    "remoteAssumptionsTreatedAsPass": false,
+    "versionFilesModified": false
+  },
+  "validation": {
+    "diffCheck": "PASS",
+    "jsonParse": "PASS",
+    "targetRepoSecurityValidator": "PASS",
+    "securityBootstrapValidator": "PASS",
+    "generatedProjectValidator": "PASS",
+    "sddValidator": "PASS"
+  }
+}

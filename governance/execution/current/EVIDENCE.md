@@ -1,27 +1,74 @@
 # EVIDENCE
 
-Current evidence points to:
+## Governance Evidence
+
+* `governance/SESSION-CONTEXT.md`
+* `governance/roadmaps/AI-NATIVE-HARDENING-V1.1-ROADMAP.md`
+* `governance/execution/current/`
+* `governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H8/`
+* `governance/execution/archive/AI-NATIVE-HARDENING-V1.1/P0-T2-SPEC/`
+* `governance/execution/archive/AI-NATIVE-HARDENING-V1.1/P0-T2-IMPLEMENTATION/`
+
+## Specification And Approval Evidence
 
 ```text
-governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H2/
+P0-T2 specification: APPROVED / FORMALLY_ACCEPTED
+Accepted spec commit: f077fe0
+Specification approval commit: 70fadaa
+Implementation approval: APPROVED / FORMALLY_ACCEPTED
+Accepted implementation commit: 78e3214
 ```
 
-HITL approval:
+## Implementation Evidence
+
+* `scripts/audit-safe-script-mode.mjs`
+* `scripts/validate-audit-safe-script-mode.mjs`
+* `governance/policies/AUDIT-SAFE-SCRIPT-MODE.md`
+* `governance/policies/audit-safe-script-mode.implementation.contract.json`
+
+The implementation provides:
+
+* package script inventory without package-level execution
+* command classification before execution
+* default blocking for lifecycle/install/setup/bootstrap, package-level,
+  destructive, network/secret and unknown commands
+* dry-run recognition for generator commands
+* direct `node` execution only through explicit `--execute`
+* baseline and final git state capture
+* working-tree mutation detection when side effects are declared as `none`
+
+## Product Repository Evidence
+
+`ai-foundation` evidence HEAD:
 
 ```text
-H2: HITL APPROVED
-Approved at: 2026-07-01
-H3 opened: NO
+74611a7
 ```
 
-Engram post-task:
+`ai-knowledge` evidence HEAD:
 
 ```text
-SAVED #81
+8582290
 ```
 
-Push:
+`ai-template` evidence HEAD:
 
 ```text
-CONTEXTUAL_NON_BLOCKING
+01b0971
+```
+
+## HITL
+
+```text
+P0-T2 implementation: APPROVED / FORMALLY_ACCEPTED
+Human approval required: true
+Human approval recorded: true
+HITL approved at: 2026-07-17
+Accepted implementation commit: 78e3214
+```
+
+## Push
+
+```text
+NOT_PUSHED_BY_POLICY
 ```

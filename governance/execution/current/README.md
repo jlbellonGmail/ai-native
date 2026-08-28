@@ -1,26 +1,41 @@
-# H3 - Runtime Observability Wiring
+# P0-T2 - Audit-Safe Script Mode Implementation
 
-Current execution snapshot for `AI-NATIVE HARDENING-V1.1`.
+Current execution snapshot for post-H8 pre-first-project readiness work.
 
 Status:
 
 ```text
-H3: HITL_APPROVED
-HITL approved at: 2026-07-02
-H4 opened: NO
+P0-T2 specification: APPROVED / FORMALLY_ACCEPTED
+P0-T2 implementation: APPROVED / FORMALLY_ACCEPTED
+HITL required: true
+HITL approved: true
+HITL approved at: 2026-07-17
+Accepted spec commit: f077fe0
+Specification approval commit: 70fadaa
+Accepted implementation commit: 78e3214
+Push: NOT_PUSHED_BY_POLICY
 ```
 
 Scope:
 
-* recover interrupted H3 execution after usage-limit cut
-* verify `ai-foundation` runtime observability commit `ef6a740`
-* close `ai-template` generated-app runtime observability wiring
-* archive H3 governance evidence
-* record H3 HITL approval
-* leave H4 as the next eligible task only
+* record formal HITL approval of the P0-T2 implementation
+* accept implementation commit `78e3214`
+* preserve the accepted specification commit `f077fe0`
+* preserve the specification approval commit `70fadaa`
+* keep product repositories unchanged
+* archive approval evidence
 
 Non-goals:
 
-* H4-H8 execution
-* reopening `ENTERPRISE-10-10-V1`
+* reimplementing P0-T2
+* modifying the P0-T2 specification
+* modifying productive package scripts
+* executing package-level scripts
+* running install, setup, bootstrap, prepare or lifecycle commands
+* opening H9
 * creating `ENTERPRISE-10-10-V2`
+* starting the first real application
+* reopening H1-H8 or P0-T1
+* declaring production-critical readiness
+* declaring professional 10/10 readiness
+* push, PR or remote mutation

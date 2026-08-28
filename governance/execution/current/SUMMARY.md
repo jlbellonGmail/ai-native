@@ -1,18 +1,36 @@
 # SUMMARY
 
-H2 - Project Generator / create-ai-native-app is HITL approved.
+P0-T2 - Audit-Safe Script Mode implementation is formally accepted by HITL.
 
 Result:
 
-* Generator implemented in `ai-template`.
-* Generated project baseline validated.
-* Smoke test PASS.
-* H3-H8 not opened.
-* `ENTERPRISE-10-10-V1` remains closed.
-* `ENTERPRISE-10-10-V2` was not created.
+* The approved specification at commit `f077fe0` was implemented in
+  root/governance only.
+* The P0-T2 specification remains `APPROVED / FORMALLY_ACCEPTED`.
+* P0-T2 implementation is `APPROVED / FORMALLY_ACCEPTED`.
+* HITL required: `true`.
+* HITL approved: `true`.
+* HITL approved at: `2026-07-17`.
+* Accepted implementation commit: `78e3214`.
+* Product repositories remain unchanged.
+* No package-level scripts were executed.
+* No productive package scripts were modified.
+* H1-H8 remain formally closed.
+* P0-T1 remains approved and formally accepted.
+* H9 remains not opened.
+* `ENTERPRISE-10-10-V2` remains not created.
+* The first real application remains not started.
+* Push was not executed.
 
-Next eligible task in a separate execution:
+Implemented artifacts:
 
-* H3 - Runtime Observability Wiring
+* `scripts/audit-safe-script-mode.mjs`
+* `scripts/validate-audit-safe-script-mode.mjs`
+* `governance/policies/AUDIT-SAFE-SCRIPT-MODE.md`
+* `governance/policies/audit-safe-script-mode.implementation.contract.json`
 
-H3 is not opened by this execution.
+Next action state:
+
+* P0-T2 implementation: `APPROVED / FORMALLY_ACCEPTED`
+* Next eligible action: first controlled real project initiation only when
+  explicitly requested
