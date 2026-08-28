@@ -29,9 +29,32 @@ jobs:
         run: pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/sync-agentic-adapters.ps1 -Check
         continue-on-error: true
 
-      # Product tests placeholder - gate obligatorio per AGENTS.md a pesar
-      # de que hoy solo corra un placeholder, se mantiene como check
-      # requerido para que branch protection no tenga que actualizarse
-      # el dia que el stack real llegue.
-      - name: Product tests (placeholder)
-        run: 'echo "product-tests: sin stack de producto definido. Ver docs/tecnica/arquitectura.md."'
+  product-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # ############################################################
+      # PLACEHOLDER: build/test del stack de producto.
+      #
+      # Este template no tiene stack de producto propio todavia (ver
+      # seccion "Stack" en AGENTS.md). Cuando el proyecto real que nazca
+      # de este template defina su stack (frontend, backend, etc.):
+      #
+      #   1. Documentar esa decision primero en
+      #      docs/tecnica/arquitectura.md.
+      #   2. Reemplazar POR COMPLETO el step placeholder de abajo
+      #      (`Placeholder (sin stack definido)`) por los pasos reales
+      #      de instalacion y test de ese stack (por ejemplo
+      #      actions/setup-node + npm ci + npm test). No agregar los
+      #      pasos reales al lado del placeholder: se reemplaza, no se
+      #      acumula.
+      #
+      # Este job es gate obligatorio igual que circuit-tests (ver
+      # seccion "CI/CD" de AGENTS.md), aunque hoy solo corra un
+      # placeholder que siempre pasa.
+      # ############################################################
+
+      - name: Placeholder (sin stack definido)
+        run: |
+          echo "product-tests: sin stack de producto definido todavia. Ver docs/tecnica/arquitectura.md."
