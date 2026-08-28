@@ -26,17 +26,17 @@ jobs:
         run: pytest -v
 
       - name: Validar adaptadores agenticos
-        run: pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts/sync-agentic-adapters.ps1 -Check
+        run: pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\sync-agentic-adapters.ps1 -Check
         continue-on-error: true
 
       # Cuando el proyecto real defina su stack de producto (frontend,
-      # backend, etc.), agregar aquí los pasos de instalación y test que
+      # backend, etc.), agregar aqui los pasos de instalacion y test que
       # correspondan (npm ci / npm test, etc.). No hay nada de eso
-      # todavía en este template.
+      # todavia en este template.
 
-      # Product tests placeholder - gate obligatorio per AGENTS.mda a pesar
+      # Product tests placeholder - gate obligatorio per AGENTS.md a pesar
       # de que hoy solo corra un placeholder, se mantiene como check
       # requerido para que branch protection no tenga que actualizarse
-      # el día que el stack real llegue.
+      # el dia que el stack real llegue.
       - name: Product tests (placeholder)
         run: echo "product-tests: sin stack de producto definido. Ver docs/tecnica/arquitectura.md."
