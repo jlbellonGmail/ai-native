@@ -21,6 +21,7 @@ The generator produces:
 * Base `package.json` with local validation.
 * AI configuration and canonical SDD reference.
 * Runtime observability wiring with local/no-op defaults.
+* Executable testing profiles with local smoke defaults.
 * App, service, docs and validation directories.
 * A generated project validator.
 
@@ -33,7 +34,7 @@ Specify -> Plan -> Implement -> Verify
 Out of scope for H2:
 
 * Remote observability collector deployment.
-* Executable testing profile hardening.
+* Production-grade testing infrastructure or remote CI setup.
 * Real evaluation runs.
 * Target repository security validation.
 * First client project playbook.

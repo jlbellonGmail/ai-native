@@ -14,6 +14,7 @@ node scripts/validate-performance-testing.mjs
 node scripts/validate-chaos-testing.mjs
 node scripts/validate-coverage-validation.mjs
 node scripts/validate-testing-audit-final.mjs
+node scripts/validate-testing-profiles.mjs
 node scripts/validate-legacy-inventory.mjs
 ```
 
@@ -40,6 +41,9 @@ W6-T6 coverage validation governance is defined in `coverage-validation.md` and
 
 W6-T7 testing audit final is defined in `testing-audit-final.md` and
 `testing-audit-final.contract.json`.
+
+H4 executable testing profiles are defined in `testing-profiles.md` and
+`testing/profiles/testing-profiles.json`.
 
 W8-T1 legacy inventory is defined in `_deprecated/2026-06-11/legacy-inventory.md`
 and `_deprecated/2026-06-11/legacy-inventory.contract.json`.

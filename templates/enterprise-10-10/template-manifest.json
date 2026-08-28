@@ -17,7 +17,7 @@
       "repairs": ["W3-T1", "W3-T2", "W3-T3", "W3-T4", "W3-T5", "W3-T6", "W3-T7"],
       "targetRepo": "ai-knowledge",
       "files": [
-        "evaluations/enterprise-10-10/evaluation-program.json",
+        "evaluation/enterprise-10-10/evaluation-program.json",
         "scripts/validate-enterprise-evaluation.mjs"
       ]
     },

@@ -75,3 +75,12 @@ complete.
 
 The W6-T7 contract lives in `testing-audit-final.contract.json`; the
 human-readable testing audit final rules live in `testing-audit-final.md`.
+
+## H4 Executable Testing Profiles
+
+H4 turns the W6 readiness model into local executable project profiles.
+Generated projects receive a profile catalog, validator and smoke runner for
+contract, coverage, mutation, load, performance and chaos smoke checks.
+
+The H4 profile catalog lives in `testing/profiles/testing-profiles.json`; the
+human-readable rules live in `testing-profiles.md`.

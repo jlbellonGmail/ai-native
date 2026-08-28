@@ -22,6 +22,19 @@
     "defaultMode": "noop",
     "exportsRemotelyByDefault": false
   },
+  "testingProfiles": {
+    "task": "AI-NATIVE-HARDENING-V1.1/H4",
+    "catalog": "testing/profiles/testing-profiles.json",
+    "validator": "scripts/validate-testing-profiles.mjs",
+    "smokeCommand": "npm run test:profiles",
+    "defaultExecution": "local"
+  },
+  "securityValidation": {
+    "task": "AI-NATIVE-HARDENING-V1.1/H6",
+    "guide": "docs/security/SECURITY-BOOTSTRAP.md",
+    "remoteControlsRequireTargetEvidence": true,
+    "localValidationIsRemotePass": false
+  },
   "validation": {
     "command": "npm run validate",
     "validator": "scripts/validate-ai-native-project.mjs"

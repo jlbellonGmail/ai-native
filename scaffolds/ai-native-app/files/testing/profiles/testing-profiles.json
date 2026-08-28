@@ -1,0 +1,95 @@
+{
+  "schemaVersion": "testing-profiles.v1",
+  "roadmapTask": "AI-NATIVE-HARDENING-V1.1/H4",
+  "description": "Local executable testing profiles for AI-Native generated projects.",
+  "defaultCommand": "npm run test:profiles",
+  "safety": {
+    "localOnly": true,
+    "requiresNetwork": false,
+    "requiresSecrets": false,
+    "mutatesExternalState": false,
+    "maxSmokeOperations": 32
+  },
+  "profiles": [
+    {
+      "id": "contract-smoke",
+      "category": "contract",
+      "command": "npm run test:profiles -- --profile contract-smoke",
+      "required": true,
+      "execution": "local",
+      "evidence": "operation wrapper success and failure behavior"
+    },
+    {
+      "id": "coverage-smoke",
+      "category": "coverage",
+      "command": "npm run test:profiles -- --profile coverage-smoke",
+      "required": true,
+      "execution": "local",
+      "evidence": "all smoke scenarios are mapped to profile IDs"
+    },
+    {
+      "id": "mutation-smoke",
+      "category": "mutation",
+      "command": "npm run test:profiles -- --profile mutation-smoke",
+      "required": true,
+      "execution": "local",
+      "evidence": "deterministic boundary mutant is killed by fixture"
+    },
+    {
+      "id": "load-smoke",
+      "category": "load",
+      "command": "npm run test:profiles -- --profile load-smoke",
+      "required": true,
+      "execution": "local",
+      "evidence": "bounded concurrent local operations complete"
+    },
+    {
+      "id": "performance-smoke",
+      "category": "performance",
+      "command": "npm run test:profiles -- --profile performance-smoke",
+      "required": true,
+      "execution": "local",
+      "evidence": "deterministic operation loop stays within local budget"
+    },
+    {
+      "id": "chaos-smoke",
+      "category": "chaos",
+      "command": "npm run test:profiles -- --profile chaos-smoke",
+      "required": true,
+      "execution": "local",
+      "evidence": "simulated dependency failure is contained and observed"
+    }
+  ],
+  "matrix": [
+    {
+      "profile": "contract-smoke",
+      "safeForLocalValidate": true,
+      "safeForCi": true
+    },
+    {
+      "profile": "coverage-smoke",
+      "safeForLocalValidate": true,
+      "safeForCi": true
+    },
+    {
+      "profile": "mutation-smoke",
+      "safeForLocalValidate": true,
+      "safeForCi": true
+    },
+    {
+      "profile": "load-smoke",
+      "safeForLocalValidate": true,
+      "safeForCi": true
+    },
+    {
+      "profile": "performance-smoke",
+      "safeForLocalValidate": true,
+      "safeForCi": true
+    },
+    {
+      "profile": "chaos-smoke",
+      "safeForLocalValidate": true,
+      "safeForCi": true
+    }
+  ]
+}
