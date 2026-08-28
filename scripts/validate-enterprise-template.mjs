@@ -1,10 +1,14 @@
 import { readFile } from "node:fs/promises";
+import { existsSync } from "node:fs";
+import { join } from "node:path";
+
+const root = process.cwd();
 
 const manifest = JSON.parse(
-  await readFile(new URL("../templates/enterprise-10-10/template-manifest.json", import.meta.url), "utf8")
+  await readFile(join(root, "templates/enterprise-10-10/template-manifest.json"), "utf8")
 );
 const structure = JSON.parse(
-  await readFile(new URL("../manifests/enterprise-10-10-structure.json", import.meta.url), "utf8")
+  await readFile(join(root, "manifests/enterprise-10-10-structure.json"), "utf8")
 );
 
 function assert(condition, message) {
@@ -19,12 +23,36 @@ assert(structure.generators.some((generator) => generator.id === "create-ai-nati
 
 const repairedTasks = new Set(manifest.templates.flatMap((template) => template.repairs));
 for (const task of ["W1-T7", "W2-T1", "W2-T8", "W3-T1", "W3-T7"]) {
-  assert(repairedTasks.has(task), `manifest must include ${task}`);
+  assert(repairedTasks.has(task), "manifest must include " + task);
 }
 
 for (const template of manifest.templates) {
   assert(template.id && template.targetRepo, "each template needs id and targetRepo");
-  assert(Array.isArray(template.files) && template.files.length > 0, `template ${template.id} must list files`);
+  assert(Array.isArray(template.files) && template.files.length > 0, "template " + template.id + " must list files");
+
+  // Validate each repair is a valid task ID format (e.g., W1-T7, W2-T1)
+  const taskPattern = /^W\d+-T\d+$/;
+  for (const repair of template.repairs) {
+    assert(taskPattern.test(repair), "invalid repair task format: " + repair);
+  }
 }
 
+// Validate template-to-repo mappings are consistent
+  // Note: multiple templates can target the same repo (e.g., observability + security)
+  const validTemplateIds = new Set();
+  for (const template of manifest.templates) {
+    validTemplateIds.add(template.id);
+  }
+  assert(validTemplateIds.size === manifest.templates.length, "duplicate template IDs in manifest");
+
+// Validate that all target repos have corresponding foundation/knowledge files
+  for (const template of manifest.templates) {
+    for (const file of template.files) {
+      // ai-foundation and ai-knowledge are sibling repos, not inside ai-template
+      const fullPath = join(root, "..", template.targetRepo, file);
+      assert(existsSync(fullPath), "template " + template.id + " references file " + file + " not found in " + template.targetRepo);
+    }
+  }
+
 console.log("ENTERPRISE-10-10 ai-template validation PASS");
+console.log("Template-to-repo mappings validated");

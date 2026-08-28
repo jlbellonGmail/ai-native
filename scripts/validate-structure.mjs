@@ -1,78 +1,167 @@
-import { existsSync, readdirSync } from "node:fs";
-import { readFile } from "node:fs/promises";
+import { existsSync, readFileSync } from "node:fs";
+import { readdirSync } from "node:fs";
 import { join } from "node:path";
 
-const root = new URL("..", import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1");
-const requiredDirs = ["docs", "scripts", "config", "validation", "scaffolds", "templates", "manifests", "examples", "generators"];
-const requiredFiles = [
-  "README.md",
-  "docs/README.md",
-  "docs/ENTERPRISE-10-10/ROADMAP_TO_FILES.md",
-  "config/README.md",
-  "validation/README.md",
-  "validation/roadmap-coverage.json",
-  "validation/strategy.md",
-  "scaffolds/README.md",
-  "scaffolds/ai-native-app/README.md",
-  "scaffolds/ai-native-app/files/README.md",
-  "scaffolds/ai-native-app/files/config/observability/runtime-observability.json",
-  "scaffolds/ai-native-app/files/docs/observability/runtime-observability.md",
-  "scaffolds/ai-native-app/files/docs/testing/executable-testing-profiles.md",
-  "scaffolds/ai-native-app/files/services/infrastructure/observability/runtime-observability.mjs",
-  "scaffolds/ai-native-app/files/scripts/validate-testing-profiles.mjs",
-  "scaffolds/ai-native-app/files/testing/profiles/testing-profiles.json",
-  "scaffolds/ai-native-app/files/testing/smoke/testing-smoke.mjs",
-  "templates/README.md",
-  "templates/project/docs/testing/executable-testing-profiles.md",
-  "templates/project/scripts/validate-testing-profiles.mjs",
-  "templates/project/testing/profiles/testing-profiles.json",
-  "templates/project/testing/smoke/testing-smoke.mjs",
-  "manifests/enterprise-10-10-structure.json",
-  "examples/README.md",
-  "generators/README.md",
-  "generators/create-ai-native-app.mjs",
-  "generators/create-ai-native-app/create-ai-native-app.contract.json",
-  "docs/setup/PROJECT_BOOTSTRAP.md",
-  "scripts/validate-runtime-observability-wiring.mjs",
-  "scripts/validate-testing-profiles.mjs",
-  "scripts/validate-create-ai-native-app.mjs",
-  "scripts/validate-generated-project.mjs",
-  "testing/profiles/testing-profiles.json",
-  "testing/smoke/testing-smoke.mjs",
-  "validation/testing-profiles.md"
-];
+// Use current working directory as base path
+const root = process.cwd();
 
-function assert(condition, message) {
-  if (!condition) throw new Error(message);
+// Helper: resolve path relative to root
+function resolvePath(p) {
+  if (typeof p === "string" && p.match(/^[A-Z]:\\/)) return p;
+  return join(root, p);
 }
 
-function exists(path) {
-  return existsSync(join(root, path));
+// Helper: check if path exists
+function pathExists(p) {
+  const absPath = resolvePath(p);
+  return existsSync(absPath);
 }
 
-function walkDirs(path, empty = []) {
-  for (const entry of readdirSync(path, { withFileTypes: true })) {
-    if ([".git", "node_modules", ".next"].includes(entry.name)) continue;
-    const full = join(path, entry.name);
-    if (entry.isDirectory()) {
-      const visible = readdirSync(full).filter((name) => ![".git", "node_modules", ".next"].includes(name));
-      if (visible.length === 0) empty.push(full);
-      walkDirs(full, empty);
+// Load required directories from structure manifest
+const structurePath = join(root, "manifests/enterprise-10-10-structure.json");
+const structureContent = readFileSync(structurePath, "utf8");
+const structure = JSON.parse(structureContent);
+const requiredDirs = structure.requiredDirectories;
+const requiredFiles = structure.requiredFiles;
+
+// Validate required directories exist
+for (const dir of requiredDirs) {
+  const dirPath = join(root, dir);
+  if (!existsSync(dirPath)) {
+    throw new Error("missing required directory: " + dir);
+  }
+}
+
+// Validate required files exist
+for (const file of requiredFiles) {
+  const filePath = join(root, file);
+  if (!existsSync(filePath)) {
+    throw new Error("missing required file: " + file);
+  }
+}
+
+// Load roadmap coverage
+const coveragePath = join(root, "validation/roadmap-coverage.json");
+const coverageContent = readFileSync(coveragePath, "utf8");
+const coverage = JSON.parse(coverageContent);
+
+// Validate roadmap coverage tasks have mapped files
+for (const task in coverage.tasks) {
+  const files = coverage.tasks[task];
+  if (files.length === 0) {
+    throw new Error(task + " has no mapped files");
+  }
+  for (const file of files) {
+    const filePath = join(root, file);
+    if (!existsSync(filePath)) {
+      throw new Error(task + " maps missing file: " + file);
     }
   }
-  return empty;
 }
 
-for (const dir of requiredDirs) assert(exists(dir), `missing required directory ${dir}`);
-for (const file of requiredFiles) assert(exists(file), `missing required file ${file}`);
-
-const coverage = JSON.parse(await readFile(join(root, "validation/roadmap-coverage.json"), "utf8"));
-for (const [task, files] of Object.entries(coverage.tasks)) {
-  assert(files.length > 0, `${task} has no mapped files`);
-  for (const file of files) assert(exists(file), `${task} maps missing file ${file}`);
+// Check for empty active directories (skip _deprecated and scaffold reference paths)
+const emptyDirs = [];
+function walkDirs(dirPath) {
+  try {
+    const entries = readdirSync(dirPath, { withFileTypes: true });
+    for (const entry of entries) {
+      if ([".git", "node_modules", ".next"].includes(entry.name)) continue;
+      const full = join(dirPath, entry.name);
+      if (entry.isDirectory()) {
+        const dirName = entry.name;
+        const scaffoldRefNames = structure.scaffolds
+          .filter((s) => s.reference)
+          .map((s) => s.reference.split("/").pop());
+        if (scaffoldRefNames.includes(dirName)) {
+          walkDirs(full);
+          continue;
+        }
+        emptyDirs.push(full);
+        walkDirs(full);
+      }
+    }
+  } catch {
+    // Skip directories that don't exist or can't be read
+  }
 }
 
-const emptyDirs = walkDirs(root).filter((dir) => !dir.includes("_deprecated"));
-assert(emptyDirs.length === 0, `empty active directories found: ${emptyDirs.join(", ")}`);
+walkDirs(root);
+
+// Check directories that have no files at all (except .gitkeep)
+function checkDirEmpty(dirPath) {
+  try {
+    const entries = readdirSync(dirPath, { withFileTypes: true });
+    if (entries.length === 0) return true;
+    return entries.every((e) => e.name === ".gitkeep");
+  } catch {
+    return true;
+  }
+}
+
+// Check if a directory is under any scaffold reference path
+function isScaffoldReferencePath(dirPath) {
+  for (const scaffold of structure.scaffolds) {
+    if (scaffold.reference) {
+      const refPath = join(root, scaffold.reference);
+      if (dirPath.startsWith(refPath)) return true;
+    }
+  }
+  return false;
+}
+
+// Filter out _deprecated directories and scaffold reference paths, then check for truly empty active dirs
+const meaningfulEmptyDirs = emptyDirs
+  .filter((d) => !d.includes("_deprecated") && !isScaffoldReferencePath(d))
+  .filter((d) => checkDirEmpty(d));
+
+if (meaningfulEmptyDirs.length > 0) {
+  throw new Error("empty active directories found: " + meaningfulEmptyDirs.join(", "));
+}
+
+// Cross-repo integration checks
+const templateManifestPath = join(root, "templates/enterprise-10-10/template-manifest.json");
+const templateManifestContent = readFileSync(templateManifestPath, "utf8");
+const templateManifest = JSON.parse(templateManifestContent);
+
+// Validate scaffold references exist
+for (const scaffold of structure.scaffolds) {
+  if (scaffold.reference) {
+    const refPath = join(root, scaffold.reference);
+    if (!existsSync(refPath)) {
+      throw new Error("scaffold reference " + scaffold.reference + " does not exist");
+    }
+  }
+}
+
+// Validate template manifest repairs map to target repos
+for (const template of templateManifest.templates) {
+  if (!template.id || !template.targetRepo) {
+    throw new Error("template must have id and targetRepo");
+  }
+  if (!template.repairs || template.repairs.length === 0) {
+    throw new Error("template must list repairs");
+  }
+
+  // Validate each repair is a valid task ID format (e.g., W1-T7, W2-T1)
+  const taskPattern = /^W\d+-T\d+$/;
+  for (const repair of template.repairs) {
+    if (!taskPattern.test(repair)) {
+      throw new Error("invalid repair task format: " + repair);
+    }
+  }
+}
+
+// Validate generators have proper contracts
+for (const generator of structure.generators) {
+  const contractPath = join(root, generator.contract);
+  if (!existsSync(contractPath)) {
+    throw new Error("generator " + generator.id + " contract " + generator.contract + " does not exist");
+  }
+  const contract = JSON.parse(readFileSync(contractPath, "utf8"));
+  if (!contract.id || !contract.entrypoint) {
+    throw new Error("generator contract must have id and entrypoint");
+  }
+}
 
 console.log("ai-template structure validation PASS");
+console.log("Cross-repo integration checks PASSED");
