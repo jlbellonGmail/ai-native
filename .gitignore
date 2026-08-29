@@ -29,3 +29,8 @@ site/
 # OS
 .DS_Store
 Thumbs.db
+
+# PID files residuales de procesos en background del circuito
+# (ej. local-feature-reconcile.ps1 -StartBackground)
+*-pid.txt
+*.pid
