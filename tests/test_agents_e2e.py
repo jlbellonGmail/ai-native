@@ -14,7 +14,7 @@ from pathlib import Path
 
 
 # Project root is the template repo root
-PROJECT_ROOT = Path(".").resolve()
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 
 def _run_powershell(command: str) -> tuple:
@@ -24,7 +24,7 @@ def _run_powershell(command: str) -> tuple:
         capture_output=True,
         text=True,
         cwd=str(PROJECT_ROOT),
-        timeout=120000,
+        timeout=120,
     )
     return result.returncode, result.stdout, result.stderr
 
@@ -159,7 +159,7 @@ class TestCircuitIntegration:
             capture_output=True,
             text=True,
             cwd=str(PROJECT_ROOT),
-            timeout=60000,
+            timeout=60,
         )
         # pytest deberí­a ejecutarse sin error crí­tico
         assert result.returncode == 0, \
@@ -176,7 +176,7 @@ class TestCircuitIntegration:
             capture_output=True,
             text=True,
             cwd=str(PROJECT_ROOT),
-            timeout=60000,
+            timeout=60,
         )
         # Count collected tests from output
         output = result.stdout

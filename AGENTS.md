@@ -692,11 +692,13 @@ otro proyecto sin adaptarlas.
   protection rules, o vía `gh api`): configurar sobre la rama `develop`
   los cuatro requisitos que exige el circuito para que el único HITL
   (`AGENTS.md`, sección "Único HITL") sea efectivo: (a) exigir pull
-  request antes de mergear, (b) exigir en verde el status check `test`
-  (nombre del job actual de `.github/workflows/ci.yml`; si la feature
-  `04-ci-wiring-product-tests` renombra o separa ese job, actualizar este
-  comando con el nombre vigente antes de aplicarlo — verificar en la
-  pestaña Actions de una PR reciente), (c) exigir al menos 1 aprobación,
+  request antes de mergear, (b) exigir en verde el status check
+  `circuit-tests` (nombre del job en `.github/workflows/ci.yml` desde la
+  feature `04-ci-wiring-product-tests`, que separó el job antes llamado
+  `test` en `circuit-tests` + `product-tests`; si un cambio futuro vuelve
+  a renombrar o separar jobs, actualizar este comando con el nombre
+  vigente antes de aplicarlo — verificar en la pestaña Actions de una PR
+  reciente), (c) exigir al menos 1 aprobación,
   (d) descartar (dismiss) aprobaciones obsoletas cuando hay un push nuevo
   a la PR. `enforce_admins` queda en `true`: los administradores del
   repositorio también quedan sujetos a esta protección, sin bypass,
@@ -728,7 +730,7 @@ otro proyecto sin adaptarlas.
   {
     "required_status_checks": {
       "strict": true,
-      "contexts": ["test"]
+      "contexts": ["circuit-tests"]
     },
     "enforce_admins": true,
     "required_pull_request_reviews": {
@@ -750,8 +752,8 @@ otro proyecto sin adaptarlas.
   ```
 
   Si la versión de la API en uso ya deprecó el campo `contexts` a favor
-  de `checks`, reemplazar `"contexts": ["test"]` por
-  `"checks": [{"context": "test"}]` dentro del mismo payload.
+  de `checks`, reemplazar `"contexts": ["circuit-tests"]` por
+  `"checks": [{"context": "circuit-tests"}]` dentro del mismo payload.
 
   Verificar lo que hay configurado ANTES de re-aplicar el `PUT` (de solo
   lectura, no destructivo):
@@ -765,7 +767,30 @@ otro proyecto sin adaptarlas.
   `develop` → activar "Require a pull request before merging" con
   "Require approvals" = 1 y "Dismiss stale pull request approvals when
   new commits are pushed" → activar "Require status checks to pass
-  before merging" y agregar el check `test` → activar "Include
+  before merging" y agregar el check `circuit-tests` → activar "Include
   administrators" (equivalente UI clásico de `enforce_admins: true`; en
   Rulesets modernos de GitHub la etiqueta equivalente es "Do not allow
   bypassing the above settings") → Save.
+
+  **Limitación conocida verificada en este repositorio**: tanto
+  `branches/develop/protection` como `repos/.../rulesets` devuelven hoy
+  `403 Upgrade to GitHub Pro or make this repository public to enable
+  this feature` contra este repo — es privado y el plan actual de GitHub
+  no permite activar ninguna de las dos formas de protección de rama.
+  Esto significa que, **mientras el repo siga privado en este plan, la
+  regla "nunca commitear directo a `develop`" es solo una convención
+  documentada, no un control técnico**: nada impide hoy que un commit
+  (humano o de un agente) aterrice directo en `develop` sin pasar por
+  PR. Esto ya ocurrió en la práctica (ver historial de `develop` de
+  agosto de 2026: una serie de commits directos con mensajes como "template
+  10/10" introdujeron un `Dockerfile` roto, dos scripts huérfanos con
+  errores de sintaxis y una carpeta `runs/` con una feature ficticia no
+  registrada en `ROADMAP.md`, todo limpiado recién en PRs posteriores).
+  Dos caminos para cerrar esto de verdad, ambos a decidir por el humano
+  (no algo que un agente deba resolver unilateralmente): (a) subir el
+  repositorio a GitHub Pro, o (b) hacerlo público. Hasta que se tome esa
+  decisión, la mitigación disponible es puramente de proceso: todo
+  agente que opere sobre este repo debe tratar la regla como no
+  negociable igual, y cualquier humano que revise el repo debería correr
+  periódicamente `git log --first-parent develop --oneline` para
+  detectar commits que no sean merges de PR.
