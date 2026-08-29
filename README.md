@@ -42,10 +42,29 @@ pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\ready-for-pr.ps1 -Mode F
 # Post-merge close → ROADMAP.md [ ] → [x] automático
 ```
 
+## 💻 Compatibilidad de plataforma
+
+El motor del circuito (`scripts/*.ps1`) es PowerShell **por decisión
+explícita**, no por descuido — ver "Decisión: motor de scripts en
+PowerShell, plataforma primaria Windows" en `docs/tecnica/arquitectura.md`.
+
+- La mayoría de los scripts corren igual en Windows, macOS o Linux con
+  **PowerShell 7 (`pwsh`)**: `brew install --cask powershell` (macOS) o
+  el paquete `powershell` de Microsoft para `apt`/`dnf` (Linux).
+- Excepción: el reconciliador local
+  (`scripts/local-feature-reconcile.ps1`, invocado por
+  `ready-for-pr.ps1`/`complete-approved-pr.ps1` para limpiar
+  worktree/rama tras un merge) usa `Start-Process -WindowStyle Hidden` y
+  en un punto llama directo a `powershell.exe`. Solo está validado en
+  Windows. Si no arranca en tu plataforma, no bloquea el circuito: es
+  limpieza local de conveniencia (CI, el gate post-HITL y el cierre
+  remoto de `ROADMAP.md` corren en GitHub Actions, no dependen de esto).
+  Alternativa manual: `git worktree remove` + `git branch -d`.
+
 ## 📁 Estructura importante
 
 - `.agentic/` - Configuración de roles, modelos y schemas JSON
-- `scripts/` - Motor ejecutable (9 scripts PowerShell)
+- `scripts/` - Motor ejecutable (14 scripts PowerShell)
 - `tests/` - 196+ tests de validación estructural
 - `docs/producto/contexto-producto.md` - Conocimiento funcional persistente
 - `docs/tecnica/` - Decisiones de diseño e implementación

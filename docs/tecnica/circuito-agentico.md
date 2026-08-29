@@ -180,3 +180,27 @@ nuevo, se puede relanzar el reconciliador corriendo de nuevo
 `scripts/ready-for-pr.ps1` (o directamente
 `scripts/local-feature-reconcile.ps1 -Slug <slug> -StartBackground`)
 desde ahí.
+
+**Nota — mismo síntoma bajo `pytest tests/`**: `tests/test_local_reconciler_scripts.py`
+(`test_start_reconciler_in_main_checkout`, `test_start_reconciler_from_linked_worktree`,
+`test_start_reconciler_replaces_stale_lock`) lanzan el mismo
+`local-feature-reconcile.ps1 -StartBackground` a través de
+`subprocess.run` de Python y a veces fallan con "no arranco en 60s". Se
+investigó a fondo (reproducción manual fuera de pytest, con y sin
+`CREATE_NO_WINDOW`, con y sin `CREATE_BREAKAWAY_FROM_JOB`, reemplazando
+`Start-Process` por `Win32_Process.Create` vía WMI): el proceso hijo no
+arranca lento, sino que es terminado en 1-2s de forma silenciosa
+(logs vacíos, sin excepción de PowerShell) únicamente cuando el proceso
+padre en la cadena es `python.exe`. La misma invocación lanzada
+directamente desde una terminal (PowerShell o `bash.exe`, sin Python de
+por medio) sobrevive sin problema. Esto es consistente con una
+heurística de seguridad que trata "proceso Python lanzando PowerShell
+oculto con `-EncodedCommand`" como patrón sospechoso, independientemente
+de la técnica de lanzamiento usada. No es un bug del script ni de los
+tests: el uso real del circuito (`ready-for-pr.ps1` corrido por un
+humano o por un agente vía shell) no pasa por Python en ningún punto de
+esa cadena, y estos tests ya están excluidos de CI
+(`pytestmark` con `os.name != "nt"`, y el CI del repo corre en
+`ubuntu-latest`). Si aparecen en rojo corriendo `pytest` localmente en
+Windows, es este problema conocido, no una regresión — confirmarlo
+comparando con una corrida manual del mismo comando fuera de `pytest`.

@@ -144,3 +144,51 @@ inventada.
   `NN-slug`) no cambia; el bloque `Referencias:` opcional es indentado y
   no interfiere con los parsers existentes (`Get-RoadmapItemState*` en
   `scripts/workunit-lib.ps1` matchean solo la línea del ítem).
+
+## Decisión: motor de scripts en PowerShell, plataforma primaria Windows
+
+El motor ejecutable del circuito (`scripts/*.ps1`) está escrito en
+PowerShell desde el origen del template. Esto es una decisión explícita,
+no un descuido a corregir: no hay ningún plan de reescribir el motor en
+otro lenguaje. Lo que sí queda documentado acá es el alcance real de su
+portabilidad, porque no es uniforme entre scripts.
+
+- **Qué se agrega**: esta sección deja constancia de la decisión y del
+  estado real de compatibilidad multiplataforma, sin cambiar código.
+- **Por qué PowerShell y no otro lenguaje**: PowerShell Core (`pwsh`) es
+  multiplataforma (Windows, macOS, Linux) desde PowerShell 6, provee
+  objetos tipados en vez de solo texto (útil para JSON de `.agentic/*`),
+  y evita mezclar dos lenguajes de scripting distintos (uno para
+  Windows, otro para Unix) para el mismo motor. La mayoría de los
+  scripts (`sync-agentic-adapters.ps1`, `feature-contract.ps1`,
+  `workunit-lib.ps1`, `start-work-unit.ps1`, `ready-for-pr.ps1` en su
+  lógica principal, `wait-pr-ci.ps1`, `close-feature.ps1`,
+  `resolve-agentic-model.ps1`) solo usan cmdlets estándar de PowerShell
+  más `git`/`gh` como procesos externos, y corren igual bajo `pwsh` en
+  Windows, macOS o Linux.
+- **Excepción real y honesta**: `scripts/local-feature-reconcile.ps1`
+  (el reconciliador local que limpia worktree/rama tras el cierre
+  remoto de una feature, ver "Troubleshooting" en
+  `docs/tecnica/circuito-agentico.md`) usa
+  `Start-Process -WindowStyle Hidden` para lanzarse a sí mismo en
+  background, y prioriza `powershell.exe` (Windows PowerShell 5.1) sobre
+  `pwsh`, con fallback a `pwsh` si `powershell.exe` no existe.
+  `scripts/complete-approved-pr.ps1` (que invoca ese mismo reconciliador
+  después de un merge aprobado) todavía llama directo a `powershell.exe`
+  sin ese fallback. Ninguna de las dos rutas fue validada en macOS o
+  Linux.
+- **Qué necesita un usuario en Mac/Linux**: instalar PowerShell 7
+  (`brew install --cask powershell` en macOS, o el paquete `powershell`
+  de Microsoft para `apt`/`dnf` en Linux) cubre todos los scripts salvo
+  el reconciliador local. Si el reconciliador local no arranca o se
+  comporta distinto en su plataforma, no bloquea el circuito: es
+  limpieza de conveniencia puramente local (worktree/rama), no afecta
+  CI, el gate post-HITL ni el cierre remoto de `ROADMAP.md` (los tres
+  corren en GitHub Actions). La alternativa manual es
+  `git worktree remove` + `git branch -d` sobre la feature ya mergeada.
+- **Qué sigue igual**: no se reemplaza PowerShell por otro lenguaje. No
+  se agrega backend, base de datos, servicio externo ni dependencia de
+  build. Adaptar `local-feature-reconcile.ps1`/`complete-approved-pr.ps1`
+  para macOS/Linux (o unificar el orden de preferencia `pwsh` vs.
+  `powershell.exe` entre ambos) queda pendiente como trabajo futuro, no
+  resuelto por esta decisión.
