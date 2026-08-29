@@ -119,6 +119,23 @@ def test_check_detects_generated_adapter_divergence(tmp_path: Path):
     assert "divergente" in check.stderr
 
 
+def test_check_detects_opencode_json_divergence(tmp_path: Path):
+    repo = make_agentic_repo(tmp_path)
+    result = run_sync(repo)
+    assert result.returncode == 0, result.stderr
+
+    opencode_path = repo / "opencode.json"
+    opencode = json.loads(opencode_path.read_text(encoding="utf-8"))
+    opencode["model"] = "manual-edit-not-in-agentic-source"
+    opencode_path.write_text(json.dumps(opencode, indent=2), encoding="utf-8")
+
+    check = run_sync(repo, "-Check")
+
+    assert check.returncode != 0
+    assert "opencode.json" in check.stderr
+    assert "divergente" in check.stderr
+
+
 def test_check_detects_legacy_prompt_adapters(tmp_path: Path):
     repo = make_agentic_repo(tmp_path)
     result = run_sync(repo)
