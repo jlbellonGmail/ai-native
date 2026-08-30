@@ -459,7 +459,10 @@ aplica igual en Milestone que en Feature.
   `../worktrees/<slug>/` — esto habilita correr varios circuitos en
   paralelo sin pisarse
 - Nunca commitear directo a `develop` (salvo el cierre automatizado de
-  `ROADMAP.md`, ver paso 9) ni nunca directo a `main`
+  `ROADMAP.md`, ver paso 9, y salvo el revert/restauración automática de
+  `.github/workflows/guard-develop-branch.yml` cuando detecta un push
+  directo no permitido — ver "Setup manual", "Limitación conocida
+  verificada en este repositorio") ni nunca directo a `main`
 - La PR hacia `develop` se crea automáticamente después de QA aprobado.
 - El humano no abre la PR ni hace checkpoints previos: solo decide
   `MERGE` o `NO MERGE` con la PR y sus evidencias a la vista.
@@ -776,21 +779,44 @@ otro proyecto sin adaptarlas.
   `branches/develop/protection` como `repos/.../rulesets` devuelven hoy
   `403 Upgrade to GitHub Pro or make this repository public to enable
   this feature` contra este repo — es privado y el plan actual de GitHub
-  no permite activar ninguna de las dos formas de protección de rama.
-  Esto significa que, **mientras el repo siga privado en este plan, la
-  regla "nunca commitear directo a `develop`" es solo una convención
-  documentada, no un control técnico**: nada impide hoy que un commit
-  (humano o de un agente) aterrice directo en `develop` sin pasar por
-  PR. Esto ya ocurrió en la práctica (ver historial de `develop` de
-  agosto de 2026: una serie de commits directos con mensajes como "template
-  10/10" introdujeron un `Dockerfile` roto, dos scripts huérfanos con
-  errores de sintaxis y una carpeta `runs/` con una feature ficticia no
-  registrada en `ROADMAP.md`, todo limpiado recién en PRs posteriores).
-  Dos caminos para cerrar esto de verdad, ambos a decidir por el humano
-  (no algo que un agente deba resolver unilateralmente): (a) subir el
-  repositorio a GitHub Pro, o (b) hacerlo público. Hasta que se tome esa
-  decisión, la mitigación disponible es puramente de proceso: todo
-  agente que opere sobre este repo debe tratar la regla como no
-  negociable igual, y cualquier humano que revise el repo debería correr
-  periódicamente `git log --first-parent develop --oneline` para
-  detectar commits que no sean merges de PR.
+  no permite activar ninguna de las dos formas de protección de rama
+  **nativa** (preventiva: bloquea el push antes de que ocurra). Esto ya
+  ocurrió en la práctica (ver historial de `develop` de agosto de 2026:
+  una serie de commits directos con mensajes como "template 10/10"
+  introdujeron un `Dockerfile` roto, dos scripts huérfanos con errores de
+  sintaxis y una carpeta `runs/` con una feature ficticia no registrada
+  en `ROADMAP.md`, todo limpiado recién en PRs posteriores). Dos caminos
+  para tener protección **nativa** de verdad, ambos a decidir por el
+  humano (no algo que un agente deba resolver unilateralmente): (a)
+  subir el repositorio a GitHub Pro, o (b) hacerlo público.
+
+  Mientras esa decisión no se tome, `.github/workflows/guard-develop-branch.yml`
+  (ver `docs/tecnica/arquitectura.md`, decisión "Enforcement técnico de
+  `develop` sin branch protection nativa") es la mitigación **técnica**
+  disponible — no de proceso ni de disciplina humana: reacciona a
+  cualquier push a `develop` cuyos commits no estén asociados a una PR
+  mergeada contra `develop`, lo revierte automáticamente (o restaura el
+  estado previo si fue un force-push) y deja evidencia auditable (issue
+  + run en rojo). Es reactivo, no preventivo — el push directo ocurre, y
+  el workflow lo revierte después, con una ventana breve en la que
+  `develop` queda momentáneamente en el estado no permitido — y tiene un
+  límite conocido: si un force-push ocurre y el commit previo ya fue
+  recolectado por `git gc` antes de que el workflow corra, la
+  restauración automática no es posible (el workflow lo deja explícito
+  en el issue que crea en vez de fallar en silencio). Sigue siendo
+  válido que cualquier humano que revise el repo pueda correr
+  periódicamente `git log --first-parent develop --oneline` como
+  verificación adicional, pero ya no es la única línea de defensa.
+
+  **Aprobación HITL de esta mitigación (remediación de baseline
+  `audit-framework-v1.1.0`, hallazgo F-004 CRITICAL)**: el humano aceptó
+  explícitamente este control técnico compensatorio —detecta y revierte
+  automáticamente pushes directos a `develop`, con evidencia auditable—
+  como suficiente mientras la protección preventiva nativa de GitHub no
+  esté disponible, dejando constancia expresa de que **no es
+  equivalente a branch protection preventiva**, de que **existe una
+  ventana reactiva breve** entre el push directo y su reversión, y de
+  que la limitación conocida (force-push + `git gc` antes de que el
+  workflow corra) permanece documentada arriba. F-004 queda **cerrado
+  candidato a verificación** en la reauditoría independiente pendiente,
+  no declarado 100% resuelto de forma preventiva.

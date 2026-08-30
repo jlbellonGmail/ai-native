@@ -55,6 +55,13 @@ def test_product_tests_job_has_placeholder_marker():
     assert "docs/tecnica/arquitectura.md" in product_block
 
 
+def test_validar_adaptadores_agenticos_is_a_real_gate():
+    content = _read_ci_workflow()
+    circuit_block = _job_block(content, "circuit-tests")
+    assert "sync-agentic-adapters.ps1 -Check" in circuit_block
+    assert "continue-on-error" not in circuit_block
+
+
 def test_both_jobs_share_same_workflow_triggers():
     content = _read_ci_workflow()
     # El bloque `on:` es único a nivel de workflow (no hay overrides por
