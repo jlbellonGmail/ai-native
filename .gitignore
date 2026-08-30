@@ -34,3 +34,8 @@ Thumbs.db
 # (ej. local-feature-reconcile.ps1 -StartBackground)
 *-pid.txt
 *.pid
+
+# Headroom - archivos locales de runtime/wrapping
+**/.headroom_wrap_marker.json
+**/.headroom_wrap_owners.json
+**/.headroom_wrap_settings.lock
