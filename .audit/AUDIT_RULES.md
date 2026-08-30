@@ -2,7 +2,7 @@
 
 # Audit Execution Rules
 
-**Versión:** 1.0
+**Versión:** 1.1
 **Estado:** Activo
 **Complementa:** `QUALITY_SCORE.md`
 
@@ -840,6 +840,28 @@ La aplicabilidad debe determinarse por:
 * riesgo;
 * contrato.
 
+## Plataforma específica
+
+Un proyecto no debe perder puntos por estar diseñado para una plataforma específica
+cuando esa restricción:
+
+* está declarada explícitamente;
+* es coherente con el propósito del proyecto;
+* no contradice una promesa de portabilidad mayor;
+* no introduce dependencias accidentales adicionales.
+
+Ejemplo:
+
+Un template declarado como `Windows + PowerShell` no debe penalizarse simplemente
+por no ser multiplataforma.
+
+Sí puede existir penalización cuando la dependencia de plataforma:
+
+* no está documentada;
+* contradice el alcance declarado;
+* depende de rutas, usuarios o máquinas concretas;
+* impide reproducir el flujo prometido dentro de la plataforma soportada.
+
 ---
 
 # 29. Uso de N/A
@@ -938,6 +960,16 @@ Problema real de impacto limitado.
 ## SUGGESTION
 
 Mejora no necesaria para cumplimiento.
+
+Una `SUGGESTION`:
+
+* nunca resta puntos;
+* nunca activa un Quality Gate;
+* nunca bloquea 100/100;
+* nunca forma parte del camino obligatorio a 100/100.
+
+Si un hallazgo reduce puntuación o impide alcanzar 100/100, debe clasificarse con
+una severidad puntuable adecuada y no como `SUGGESTION`.
 
 ---
 
@@ -1200,6 +1232,49 @@ Puede considerar:
 
 No debe exigir un modelo de branching particular sin fundamento.
 
+## Objetivo de control de integración
+
+La evaluación de protección de ramas debe centrarse en el objetivo de control,
+no en exigir una funcionalidad comercial concreta de una plataforma.
+
+Si la plataforma no permite branch protection nativa por limitaciones de plan,
+el auditor debe comprobar si existe un control técnico alternativo verificable
+que logre de forma suficientemente equivalente el objetivo esperado.
+
+Ejemplos de controles alternativos posibles:
+
+* gate técnico previo al merge;
+* workflow que rechaza integraciones no autorizadas;
+* automatización que impide o revierte cambios fuera del circuito;
+* mecanismo equivalente verificable.
+
+Una regla exclusivamente documental o basada sólo en disciplina humana no
+equivale a enforcement técnico completo.
+
+El auditor no debe convertir automáticamente en requisito:
+
+* pagar un plan superior;
+* hacer público un repositorio;
+* cambiar de proveedor;
+
+si el objetivo de control puede satisfacerse profesionalmente por otro medio.
+
+## Versionado y releases no ejercidos
+
+Cuando el proyecto declare versionado o releases como capacidad **actual y
+obligatoria**, pero nunca haya ejecutado el flujo real, la falta de evidencia
+de ejecución puede reducir el criterio correspondiente.
+
+En ese caso:
+
+* la pérdida debe quedar asociada al criterio y a un hallazgo puntuable;
+* no puede clasificarse simultáneamente como `SUGGESTION`;
+* el camino a 100/100 debe indicar la verificación real necesaria para recuperar
+  esos puntos.
+
+Si el release está declarado únicamente como capacidad futura, prospectiva o de
+ROADMAP, su falta de ejecución no debe penalizar la versión actual.
+
 ---
 
 # 46. Historial Git
@@ -1239,6 +1314,21 @@ evidencia
 ```
 
 cuando sea relevante.
+
+## Licencia y términos de reutilización
+
+La ausencia de un archivo `LICENSE` no debe penalizarse automáticamente.
+
+Debe evaluarse el contexto:
+
+* si el repositorio se distribuye externamente o públicamente, los términos de
+  reutilización pueden ser necesarios;
+* si el contrato del proyecto exige una licencia, su ausencia es puntuable;
+* si el repositorio es privado, interno o personal y no promete distribución,
+  la ausencia de `LICENSE` no constituye por sí sola un defecto.
+
+Si existe incertidumbre real sobre derechos de reutilización dentro del alcance
+declarado, el auditor debe explicar el riesgo concreto antes de descontar puntos.
 
 ---
 
@@ -1521,6 +1611,15 @@ Debe quedar separada del camino a 100.
 
 Esto evita que el objetivo 100/100 se convierta en una lista infinita.
 
+Regla de consistencia:
+
+```text
+SUGGESTION = 0 puntos perdidos = 0 puntos recuperables obligatorios
+```
+
+Si una mejora es necesaria para recuperar aunque sea una fracción de punto,
+entonces no es una `SUGGESTION`.
+
 ---
 
 # 64. Camino a 100
@@ -1537,6 +1636,28 @@ hallazgo
 La corrección debe corresponder exactamente al descuento.
 
 No inventar trabajos adicionales para “merecer” recuperar los puntos.
+
+El camino obligatorio a 100/100 debe cubrir **todos** los puntos perdidos.
+
+Antes de emitir el informe debe comprobarse:
+
+```text
+puntos obtenidos
++
+puntos recuperables obligatorios
+=
+puntos aplicables
+```
+
+antes de aplicar normalización por N/A.
+
+Si el resultado proyectado queda por debajo de 100/100:
+
+* el camino a 100 está incompleto;
+* debe identificarse qué criterio sigue perdiendo puntos;
+* no puede presentarse como un plan completo a 100.
+
+Ninguna pérdida puede quedar escondida bajo una mejora opcional.
 
 ---
 
@@ -1556,6 +1677,26 @@ comparar salida
 ```
 
 Una corrección sin criterio de aceptación es incompleta.
+
+## Validación de asociaciones
+
+Antes de cerrar la matriz de puntuación, el auditor debe revisar que cada
+asociación:
+
+```text
+HALLAZGO ↔ CRITERIO
+```
+
+sea materialmente correcta.
+
+Está prohibido asociar un hallazgo a un criterio únicamente para justificar una
+pérdida de puntos.
+
+Si un criterio está por debajo de 100 %, debe poder demostrarse exactamente qué
+hallazgo o condición explica la pérdida.
+
+Si un hallazgo no afecta materialmente a un criterio, debe eliminarse esa
+asociación.
 
 ---
 
@@ -1906,6 +2047,26 @@ Cuando la auditoría genere evidencia persistente debe almacenarse preferentemen
 
 según la convención definida por el framework.
 
+Para auditorías asociadas a un commit debe utilizarse la convención:
+
+```text
+YYYY-MM-DD-<short-commit>-<slug>/
+```
+
+El `<slug>` debe ser breve, descriptivo y estable.
+
+Ejemplo:
+
+```text
+2026-08-29-a12b34c-framework-auditoria/
+```
+
+Si no existe commit identificable puede utilizarse:
+
+```text
+YYYY-MM-DD-WORKTREE/
+```
+
 Los archivos de evidencia no deben modificar el comportamiento del proyecto.
 
 ---
@@ -1918,12 +2079,33 @@ Los informes deben almacenarse preferentemente en:
 .audit/reports/
 ```
 
+Para auditorías asociadas a un commit debe utilizarse:
+
+```text
+AUDIT-YYYY-MM-DD-<short-commit>-<slug>.md
+```
+
+Ejemplo:
+
+```text
+AUDIT-2026-08-29-a12b34c-framework-auditoria.md
+```
+
+Si no existe commit identificable:
+
+```text
+AUDIT-YYYY-MM-DD-WORKTREE.md
+```
+
 Un informe debe referenciar:
 
 * commit;
 * estándar;
 * perfil;
 * evidencia.
+
+El informe y su carpeta de evidencia deben utilizar el mismo identificador base
+si pertenecen a la misma auditoría.
 
 ---
 
@@ -1952,6 +2134,25 @@ El auditor debe aplicar exactamente:
 7. score final.
 
 No modificar manualmente la nota final por “sensación general”.
+
+Antes de emitir el resultado debe ejecutar una validación de consistencia:
+
+```text
+[ ] Toda pérdida de puntos tiene causa identificada
+[ ] Todo hallazgo puntuable está asociado a un criterio materialmente relacionado
+[ ] Ninguna SUGGESTION resta puntos
+[ ] Ninguna SUGGESTION bloquea 100/100
+[ ] Todos los puntos perdidos aparecen en el camino obligatorio a 100
+[ ] El camino proyectado alcanza exactamente los puntos aplicables
+[ ] Los N/A están justificados
+[ ] Los Quality Gates se derivan de hallazgos reales
+```
+
+Si cualquiera de estas comprobaciones falla, el informe debe marcarse:
+
+`INCONSISTENTE — REQUIERE CORRECCIÓN`
+
+y no debe utilizarse como baseline oficial hasta corregir la inconsistencia.
 
 ---
 

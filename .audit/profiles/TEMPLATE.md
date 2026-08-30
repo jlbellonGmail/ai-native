@@ -2,7 +2,7 @@
 
 # Audit Profile — TEMPLATE
 
-**Versión:** 1.0
+**Versión:** 1.1
 **Estado:** Activo
 **Tipo de proyecto:** Template reutilizable
 **Depende de:**
@@ -357,6 +357,19 @@ your-company
 
 si están definidos como placeholders.
 
+Tampoco debe considerarse residuo automáticamente una referencia histórica o
+ambiental conservada deliberadamente como evidencia, troubleshooting o trazabilidad,
+si:
+
+* está claramente contextualizada;
+* no contiene secretos;
+* no se propaga al proyecto generado;
+* no induce al consumidor a configuraciones incorrectas;
+* su conservación aporta valor verificable.
+
+La evaluación debe centrarse en el riesgo real de contaminación del template,
+no en la mera existencia de nombres o rutas históricas dentro de evidencia legítima.
+
 ---
 
 ## Q2.3 — Configuración y personalización claras
@@ -409,6 +422,26 @@ salvo que el template esté explícitamente diseñado para ese entorno.
 Si existe una dependencia obligatoria de plataforma debe estar documentada.
 
 La portabilidad significa adecuación al alcance declarado, no necesariamente compatibilidad universal.
+
+Un template no pierde puntos por utilizar de forma intencional una plataforma,
+sistema operativo, shell o proveedor específico cuando:
+
+* forma parte del alcance declarado;
+* la decisión es técnicamente coherente;
+* los prerrequisitos están documentados;
+* el flujo prometido es reproducible dentro del entorno soportado;
+* no existe una promesa contradictoria de compatibilidad más amplia.
+
+Ejemplo:
+
+```text
+Template Windows + PowerShell
+```
+
+puede obtener puntuación completa si funciona correctamente en ese alcance.
+
+Sí debe penalizarse la dependencia accidental de una máquina, usuario, ruta local,
+configuración oculta o entorno no declarado.
 
 ---
 
@@ -756,6 +789,22 @@ static analysis
 
 No deben agregarse controles sin valor sólo para puntuar.
 
+La ausencia de una herramienta concreta, por ejemplo:
+
+```text
+PSScriptAnalyzer
+markdownlint
+ShellCheck
+Dependabot
+```
+
+no constituye por sí sola un defecto.
+
+Para descontar puntos debe demostrarse que existe una necesidad real de control
+no cubierta por mecanismos equivalentes o que el propio contrato exige ese control.
+
+El auditor debe evaluar la cobertura efectiva del riesgo, no una checklist de herramientas.
+
 ---
 
 ## Q5.2 — Estrategia de pruebas
@@ -957,6 +1006,29 @@ configuración que debe aplicar el consumidor
 
 Si no puede automatizarse, debe documentarse claramente.
 
+La puntuación debe centrarse en el **objetivo de control de integración**, no en
+exigir una funcionalidad comercial concreta del proveedor.
+
+Si la protección nativa de ramas no está disponible por limitaciones del plan,
+puede aceptarse un control técnico alternativo suficientemente equivalente,
+siempre que sea:
+
+* verificable;
+* difícil de omitir accidentalmente;
+* coherente con el flujo declarado;
+* capaz de detectar o impedir integraciones no autorizadas cuando corresponda.
+
+Una regla exclusivamente documental o basada sólo en disciplina humana no equivale
+a enforcement técnico completo.
+
+No debe convertirse automáticamente en requisito para 100/100:
+
+* pagar un plan superior;
+* hacer público el repositorio;
+* migrar de proveedor;
+
+si el objetivo de control puede satisfacerse profesionalmente por otro mecanismo.
+
 ---
 
 # 20. Configuración GitHub no portable automáticamente
@@ -980,6 +1052,10 @@ Si son obligatorios para el contrato del template debe existir un mecanismo razo
 * o guiar explícitamente su aplicación.
 
 No debe asumirse que se heredan.
+
+Cuando un control remoto no pueda aplicarse por una limitación externa del proveedor,
+el auditor debe evaluar primero si existe un mecanismo alternativo que satisfaga el
+mismo objetivo antes de descontar puntos por la ausencia del control nativo.
 
 ---
 
@@ -1035,6 +1111,27 @@ Debe poder responderse:
 
 cuando la trazabilidad sea relevante.
 
+Debe distinguirse entre:
+
+### Capacidad actual y obligatoria
+
+Si el template declara que el flujo de release/versionado ya forma parte de su
+operación actual, la puntuación completa requiere evidencia proporcional de que
+ese flujo fue ejercido realmente cuando sea seguro y razonablemente verificable.
+
+Si nunca se ejecutó y por ello no puede demostrarse su funcionamiento, la pérdida
+de puntos debe asociarse explícitamente a Q6.4 mediante un hallazgo puntuable.
+
+No puede clasificarse simultáneamente como `SUGGESTION`.
+
+### Capacidad futura o prospectiva
+
+Si el release está documentado como mecanismo previsto para una etapa futura,
+ROADMAP o primera liberación aún no realizada, su ausencia de ejecución no debe
+penalizar automáticamente el estado actual.
+
+El auditor debe evaluar el contrato real, no anticipar obligaciones futuras.
+
 ---
 
 ## Q6.5 — Build y artefactos
@@ -1084,9 +1181,23 @@ Puede regenerar o migrar proyectos.
 
 La base permanece vinculada.
 
-La estrategia elegida debe estar clara.
+La estrategia elegida debe estar suficientemente clara para que el consumidor
+entienda qué ocurre después de crear el proyecto.
 
-Si es `snapshot`, no debe penalizarse la ausencia de sincronización futura.
+No es obligatorio utilizar literalmente las etiquetas:
+
+```text
+snapshot
+updatable
+generator
+managed
+```
+
+si el comportamiento y las expectativas de actualización ya quedan inequívocamente
+definidos por la documentación y el mecanismo real.
+
+Si es `snapshot`, explícita o inequívocamente por contrato, no debe penalizarse
+la ausencia de sincronización futura.
 
 ---
 
@@ -1189,11 +1300,25 @@ Debe comprobarse razonablemente:
 * dependencias necesarias;
 * dependencias no utilizadas;
 * pinning cuando corresponda;
-* lockfiles;
+* lockfiles cuando aporten reproducibilidad real;
 * proceso de actualización;
 * vulnerabilidades relevantes.
 
 Un template no debe transmitir dependencias innecesarias a todos sus consumidores.
+
+La ausencia de:
+
+```text
+lockfile
+Dependabot
+Renovate
+bot equivalente
+```
+
+no constituye por sí sola un defecto.
+
+Para descontar puntos debe existir un riesgo objetivo no cubierto por otro mecanismo
+razonable de mantenimiento, reproducibilidad o actualización.
 
 ---
 
@@ -1266,7 +1391,18 @@ Para templates destinados a distribución externa debe estar claro bajo qué con
 
 La ausencia de licencia puede ser relevante si genera incertidumbre real sobre reutilización.
 
-Para un repositorio estrictamente interno puede no tener la misma importancia.
+Para un repositorio estrictamente interno, privado o personal que no promete
+redistribución externa, la ausencia de `LICENSE` no constituye por sí sola un defecto
+ni debe restar puntos automáticamente.
+
+Sólo debe penalizarse cuando:
+
+* el contrato exige una licencia;
+* existe distribución externa o pública;
+* los consumidores necesitan derechos claros de reutilización;
+* existe una incertidumbre jurídica material dentro del alcance auditado.
+
+El auditor debe evaluar el riesgo concreto, no la mera ausencia del archivo.
 
 ---
 
@@ -1774,7 +1910,7 @@ Debe justificarse por costo/beneficio.
 
 # 50. Actualización de dependencias
 
-Debe existir algún mecanismo razonable para evitar que el template quede congelado indefinidamente con dependencias obsoletas cuando el riesgo lo justifique.
+Debe existir algún mecanismo razonable para evitar que el template quede congelado indefinidamente con dependencias obsoletas **cuando el riesgo lo justifique**.
 
 Puede ser:
 
@@ -1786,6 +1922,15 @@ release process
 ```
 
 No se exige una herramienta concreta.
+
+La ausencia de un bot de actualización no debe penalizarse si:
+
+* la superficie de dependencias es pequeña;
+* existe mantenimiento manual razonable;
+* no hay evidencia de obsolescencia o vulnerabilidad relevante;
+* el contrato no exige automatización.
+
+La evaluación debe basarse en riesgo y mantenibilidad reales.
 
 ---
 
@@ -1910,7 +2055,10 @@ crear proyecto
 → independizarse del template
 ```
 
-debe estar claro.
+debe estar suficientemente claro para el consumidor.
+
+No es obligatorio que el repositorio utilice la palabra `snapshot` si la mecánica
+de adopción y la ausencia de sincronización posterior están inequívocamente descritas.
 
 No debe exigirse capacidad de upgrade posterior.
 
@@ -2552,6 +2700,15 @@ Si una condición aplicable no puede verificarse:
 `100/100 PROHIBIDO`
 
 hasta disponer de evidencia suficiente.
+
+Estas condiciones deben interpretarse conforme a `QUALITY_SCORE.md` y
+`AUDIT_RULES.md`.
+
+Una `SUGGESTION` nunca puede utilizarse para bloquear 100/100.
+
+Si una condición de esta lista impide alcanzar 100/100, entonces debe corresponder
+a un criterio aplicable que realmente pierde puntos o a una condición obligatoria
+de evidencia/confianza definida por el estándar.
 
 ---
 
