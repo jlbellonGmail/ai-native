@@ -2,7 +2,7 @@
 
 # Prompt Maestro de Auditoría
 
-**Versión:** 1.0
+**Versión:** 1.1
 **Estado:** Activo
 **Framework:** `.audit/`
 
@@ -68,6 +68,24 @@ Para esta auditoría utiliza:
 ```text
 PERFIL = TEMPLATE
 ```
+
+Debes cargar **exactamente un perfil**.
+
+Para esta auditoría:
+
+```text
+ACTIVO: .audit/profiles/TEMPLATE.md
+IGNORAR: cualquier otro archivo de .audit/profiles/
+```
+
+Un perfil con:
+
+```text
+Estado: NO IMPLEMENTADO
+```
+
+no puede seleccionarse ni introducir requisitos, penalizaciones o recomendaciones
+en esta auditoría.
 
 Estos archivos constituyen el contrato de evaluación.
 
@@ -173,6 +191,17 @@ Durante la auditoría inicial está prohibido:
 Debes evaluar el estado actual.
 
 Las correcciones se realizarán posteriormente en una etapa separada.
+
+La única escritura permitida durante la auditoría es la generación de artefactos
+de auditoría dentro de:
+
+```text
+.audit/evidence/
+.audit/reports/
+.audit/history/
+```
+
+cuando el framework lo requiera.
 
 ---
 
@@ -419,6 +448,22 @@ No presupongas que alguno de estos problemas existe.
 
 Debes buscar evidencia.
 
+Esta lista no es una checklist de herramientas obligatorias.
+
+No penalices automáticamente por ausencia de:
+
+```text
+multiplataforma
+LICENSE
+Dependabot
+lockfile
+linter específico
+branch protection nativa de pago
+```
+
+La pérdida de puntos sólo procede cuando el estándar, el perfil, el contrato o un
+riesgo objetivo material lo justifican.
+
 ---
 
 # 16. Prueba de consumidor nuevo
@@ -506,6 +551,16 @@ NO VERIFICADO
 
 No asumas que una protección existe porque está documentada.
 
+Cuando una capacidad nativa de la plataforma no esté disponible por limitaciones
+del plan o proveedor, evalúa primero el **objetivo de control**.
+
+No penalices automáticamente por no pagar un plan superior, hacer público el
+repositorio o cambiar de proveedor si existe un control técnico alternativo
+verificable y suficientemente equivalente.
+
+Una regla puramente documental o dependiente sólo de disciplina humana no equivale
+a enforcement técnico completo.
+
 ---
 
 # 19. CI/CD
@@ -578,6 +633,18 @@ Evalúa:
 * estrategia de actualización.
 
 No declares vulnerable una dependencia simplemente porque sea antigua.
+
+No conviertas en requisito automático:
+
+```text
+lockfile
+Dependabot
+Renovate
+pinning exacto
+```
+
+Evalúa si existe un riesgo real de reproducibilidad, mantenimiento o seguridad no
+cubierto por mecanismos equivalentes.
 
 ---
 
@@ -749,6 +816,18 @@ Los puntos se descuentan mediante los criterios de `QUALITY_SCORE.md`.
 
 No apliques una penalización matemática adicional simplemente por la severidad.
 
+Regla obligatoria:
+
+```text
+SUGGESTION = 0 puntos perdidos
+SUGGESTION = 0 Quality Gates
+SUGGESTION = no bloquea 100/100
+SUGGESTION = fuera del camino obligatorio a 100
+```
+
+Si un problema reduce puntos o impide alcanzar 100/100, no puede clasificarse
+como `SUGGESTION`.
+
 ---
 
 # 30. Causas raíz
@@ -782,6 +861,20 @@ AUSENTE  = 0 %
 ```
 
 Utiliza porcentajes intermedios únicamente cuando exista una medición objetiva que los justifique matemáticamente.
+
+Todo subcriterio con puntuación inferior al 100 % debe tener una causa explícita
+y materialmente relacionada.
+
+Debe poder reconstruirse:
+
+```text
+CRITERIO
+→ HALLAZGO/CONDICIÓN
+→ EVIDENCIA
+→ PUNTOS PERDIDOS
+```
+
+No asocies hallazgos a criterios sólo para justificar descuentos.
 
 ---
 
@@ -829,9 +922,32 @@ Después calcula:
 3. normalización N/A;
 4. score bruto;
 5. Quality Gates;
-6. score final.
+6. score final;
+7. puntos recuperables obligatorios.
 
 No ajustes la nota según sensación general.
+
+Antes de emitir el informe ejecuta obligatoriamente esta validación:
+
+```text
+[ ] Toda pérdida de puntos tiene causa identificada
+[ ] Todo hallazgo puntuable está materialmente relacionado con su criterio
+[ ] Ninguna SUGGESTION resta puntos
+[ ] Ninguna SUGGESTION activa gates
+[ ] Ninguna SUGGESTION bloquea 100/100
+[ ] Todos los puntos perdidos aparecen en el camino obligatorio a 100
+[ ] Puntos obtenidos + puntos recuperables obligatorios = puntos aplicables
+[ ] Los N/A están justificados
+[ ] Los Quality Gates derivan de hallazgos reales
+```
+
+Si alguna condición falla, el informe debe marcarse:
+
+```text
+INCONSISTENTE — REQUIERE CORRECCIÓN
+```
+
+y no debe registrarse como baseline oficial hasta corregir la inconsistencia.
 
 ---
 
@@ -858,7 +974,35 @@ utiliza el más restrictivo.
 
 ---
 
-# 35. Segunda pasada obligatoria para 100
+# 35. Versionado y releases: evidencia actual versus futura
+
+Cuando el repositorio documente un flujo de versionado o release, determina primero
+si es:
+
+```text
+ACTUAL Y OBLIGATORIO
+```
+
+o:
+
+```text
+FUTURO / PROSPECTIVO / ROADMAP
+```
+
+Si es actual y obligatorio, la ausencia de una ejecución real puede reducir Q6.4
+cuando la evidencia requerida no exista.
+
+En ese caso debe existir un hallazgo puntuable y el camino a 100 debe incluir la
+verificación real necesaria.
+
+No puede clasificarse simultáneamente como `SUGGESTION`.
+
+Si es únicamente futuro o prospectivo, no penalices el estado actual por no haber
+sido ejercido todavía.
+
+---
+
+# 36. Segunda pasada obligatoria para 100
 
 Si el cálculo provisional produce:
 
@@ -894,7 +1038,7 @@ No inventes problemas para evitar otorgarlo.
 
 ---
 
-# 36. Nivel de confianza
+# 37. Nivel de confianza
 
 Asigna:
 
@@ -920,7 +1064,7 @@ Confianza: ALTA
 
 ---
 
-# 37. Informe obligatorio
+# 38. Informe obligatorio
 
 Genera un informe completo con esta estructura exacta.
 
@@ -966,6 +1110,14 @@ TEMPLATE DE REFERENCIA 100/100
 ```
 
 Incluye un resumen ejecutivo breve.
+
+Indica además:
+
+```text
+Consistencia metodológica: PASS / FAIL
+```
+
+Si es `FAIL`, el informe no puede utilizarse como baseline oficial.
 
 ---
 
@@ -1076,6 +1228,9 @@ Las mejoras opcionales:
 
 ```text
 NO RESTAN PUNTOS
+NO ACTIVAN QUALITY GATES
+NO BLOQUEAN 100/100
+NO FORMAN PARTE DEL CAMINO OBLIGATORIO A 100
 ```
 
 ---
@@ -1124,6 +1279,24 @@ Si existe un gate, especifica además qué hallazgo debe cerrarse para eliminarl
 
 La suma debe ser matemáticamente exacta.
 
+Debe cumplirse, antes de normalización:
+
+```text
+puntos obtenidos
++
+puntos recuperables obligatorios
+=
+puntos aplicables
+```
+
+Si el camino proyectado no alcanza exactamente 100/100 normalizado, el camino a
+100 está incompleto.
+
+Identifica qué subcriterio sigue perdiendo puntos y corrige el informe antes de
+cerrarlo.
+
+No presentes como opcional ningún trabajo que sea necesario para recuperar puntos.
+
 ---
 
 ## O. PLAN DE REMEDIACIÓN
@@ -1150,7 +1323,9 @@ Puntos recuperables
 Verificación
 ```
 
-No incluyas SUGGESTION dentro del camino obligatorio a 100.
+No incluyas `SUGGESTION` dentro del camino obligatorio a 100.
+
+Toda acción con puntos recuperables debe corresponder a un hallazgo puntuable.
 
 ---
 
@@ -1186,7 +1361,7 @@ Justifica la respuesta exclusivamente mediante la auditoría.
 
 ---
 
-# 38. Archivo del informe
+# 39. Archivo del informe
 
 Cuando tengas permiso para generar archivos, guarda el informe en:
 
@@ -1194,7 +1369,7 @@ Cuando tengas permiso para generar archivos, guarda el informe en:
 .audit/reports/
 ```
 
-Utiliza preferentemente:
+Utiliza obligatoriamente para auditorías asociadas a un commit:
 
 ```text
 AUDIT-YYYY-MM-DD-<short-commit>-<slug>.md
@@ -1216,13 +1391,36 @@ No sobrescribas silenciosamente informes anteriores.
 
 ---
 
-# 39. Evidencia
+# 40. Evidencia
 
-Cuando genere valor conservar resultados reproducibles en:
+Cuando genere valor conserva resultados reproducibles en:
 
 ```text
 .audit/evidence/
 ```
+
+Para una auditoría asociada a un commit utiliza:
+
+```text
+.audit/evidence/YYYY-MM-DD-<short-commit>-<slug>/
+```
+
+Ejemplo:
+
+```text
+.audit/evidence/2026-08-29-a12b34c-framework-auditoria/
+```
+
+El `<slug>` debe ser breve, descriptivo y estable.
+
+Si no existe commit identificable:
+
+```text
+.audit/evidence/YYYY-MM-DD-WORKTREE/
+```
+
+La carpeta de evidencia y el informe deben compartir el mismo identificador base
+cuando pertenecen a la misma auditoría.
 
 No copies salidas gigantes innecesariamente dentro del informe.
 
@@ -1230,7 +1428,7 @@ Referencia los archivos de evidencia.
 
 ---
 
-# 40. Prohibiciones
+# 41. Prohibiciones
 
 Está expresamente prohibido:
 
@@ -1253,7 +1451,7 @@ Está expresamente prohibido:
 
 ---
 
-# 41. Regla de corrección mínima
+# 42. Regla de corrección mínima
 
 Cuando detectes un problema:
 
@@ -1268,7 +1466,7 @@ No aproveches la auditoría para introducir:
 
 ---
 
-# 42. Regla de suficiencia
+# 43. Regla de suficiencia
 
 Si el repositorio cumple correctamente un requisito mediante una solución distinta a la que tú utilizarías:
 
@@ -1288,7 +1486,7 @@ no preferencias personales.
 
 ---
 
-# 43. Regla de cierre
+# 44. Regla de cierre
 
 No concluyas simplemente:
 
@@ -1317,7 +1515,7 @@ cómo demostrar que quedó corregido
 
 ---
 
-# 44. Inicio
+# 45. Inicio
 
 Comienza ahora.
 

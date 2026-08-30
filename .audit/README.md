@@ -2,7 +2,7 @@
 
 # Audit Framework
 
-**Versión del framework:** 1.0
+**Versión del framework:** 1.1
 **Estado:** Activo
 
 ---
@@ -34,12 +34,16 @@ Toda evaluación debe seguir esta relación:
 
 ```text
 CRITERIO
+→ HALLAZGO / CONDICIÓN
 → EVIDENCIA
-→ HALLAZGO
-→ PUNTUACIÓN
+→ PUNTOS PERDIDOS
 → CORRECCIÓN
 → VERIFICACIÓN
 ```
+
+Toda pérdida de puntos debe tener una causa identificable y materialmente relacionada.
+
+Una `SUGGESTION` nunca resta puntos, nunca activa Quality Gates y nunca bloquea 100/100.
 
 Un proyecto sólo puede alcanzar `100/100` cuando cumple las condiciones definidas por el estándar y existe evidencia suficiente para justificarlo.
 
@@ -191,7 +195,7 @@ Contiene informes completos de auditoría.
 Ejemplo:
 
 ```text
-AUDIT-2026-08-29.md
+AUDIT-2026-08-29-a12b34c-framework-auditoria.md
 ```
 
 Cada informe debe identificar como mínimo:
@@ -244,6 +248,16 @@ Estos archivos constituyen el contrato de evaluación.
 
 El auditor no debe modificar sus reglas durante una auditoría activa para favorecer o perjudicar al proyecto.
 
+Además, toda auditoría debe respetar estas reglas de consistencia:
+
+```text
+SUGGESTION = 0 puntos perdidos
+SUGGESTION = 0 Quality Gates
+SUGGESTION = no bloquea 100/100
+```
+
+Si una ausencia o problema reduce puntuación, debe clasificarse mediante una severidad puntuable adecuada.
+
 ---
 
 # 6. Orden de lectura obligatorio
@@ -291,7 +305,9 @@ Los demás archivos de .audit/profiles/ deben ignorarse completamente
 y no pueden introducir requisitos, penalizaciones ni recomendaciones
 en la auditoría actual.
 
-Un perfil con Estado: NO IMPLEMENTADO nunca puede seleccionarse.
+Un perfil con `Estado: NO IMPLEMENTADO` nunca puede seleccionarse.
+
+Tampoco puede introducir requisitos, penalizaciones o recomendaciones en la auditoría actual.
 
 ---
 
@@ -309,18 +325,31 @@ Este perfil evalúa especialmente:
 * limpieza;
 * ausencia de residuos;
 * bootstrap;
-* portabilidad;
+* portabilidad dentro del alcance declarado;
 * documentación;
 * tests;
 * regresión;
 * Git;
 * CI/CD;
-* releases;
+* releases cuando apliquen al contrato actual;
 * seguridad;
 * automatización;
 * agentes;
 * fuentes únicas de verdad;
-* comportamiento del proyecto generado.
+* comportamiento del proyecto generado cuando corresponda.
+
+No exige automáticamente:
+
+```text
+multiplataforma
+LICENSE
+Dependabot
+lockfile
+linter específico
+branch protection nativa de pago
+```
+
+La evaluación debe basarse en contexto, contrato y riesgo objetivo.
 
 ---
 
@@ -431,6 +460,8 @@ CONSOLIDAR HALLAZGOS
 IDENTIFICAR CAUSAS RAÍZ
      ↓
 PUNTUAR
+     ↓
+VALIDAR CONSISTENCIA MATEMÁTICA
      ↓
 APLICAR QUALITY GATES
      ↓
@@ -681,6 +712,14 @@ NO VERIFICADO
 
 Cada hallazgo puntuable debe estar relacionado con un criterio.
 
+Regla obligatoria:
+
+```text
+SUGGESTION = mejora opcional
+SUGGESTION = 0 puntos recuperables obligatorios
+SUGGESTION = fuera del camino obligatorio a 100
+```
+
 ---
 
 # 23. Causas raíz
@@ -736,6 +775,19 @@ Score esperado: 100
 
 No debe atribuirse más recuperación de puntos que la pérdida real.
 
+Antes de normalizar por N/A debe cumplirse exactamente:
+
+```text
+puntos obtenidos
++
+puntos recuperables obligatorios
+=
+puntos aplicables
+```
+
+Si el plan proyectado no llega matemáticamente a 100/100, el camino a 100 está incompleto
+y el informe debe corregirse antes de utilizarse como baseline oficial.
+
 ---
 
 # 26. Evidencia persistente
@@ -746,10 +798,16 @@ Cuando sea útil conservar resultados de comandos o verificaciones, deben almace
 .audit/evidence/
 ```
 
-La convención concreta se definirá en:
+La convención concreta se define en:
 
 ```text
 .audit/evidence/README.md
+```
+
+Para auditorías asociadas a un commit, la forma general es:
+
+```text
+.audit/evidence/YYYY-MM-DD-<short-commit>-<slug>/
 ```
 
 La evidencia no debe alterar el comportamiento del proyecto.
@@ -764,11 +822,19 @@ Los informes deben almacenarse en:
 .audit/reports/
 ```
 
-La convención concreta se definirá en:
+La convención concreta se define en:
 
 ```text
 .audit/reports/README.md
 ```
+
+Para auditorías asociadas a un commit, la forma general es:
+
+```text
+AUDIT-YYYY-MM-DD-<short-commit>-<slug>.md
+```
+
+El informe y su carpeta de evidencia deben compartir el mismo identificador base.
 
 Cada auditoría debe producir un informe independiente.
 
@@ -810,6 +876,14 @@ Una vez aplicadas correcciones:
 No debe asumirse que corregir un archivo recupera automáticamente los puntos.
 
 La corrección debe verificarse.
+
+Una auditoría marcada:
+
+```text
+INCONSISTENTE — REQUIERE CORRECCIÓN
+```
+
+no debe registrarse como baseline oficial hasta corregir la inconsistencia metodológica.
 
 ---
 
@@ -895,10 +969,11 @@ Los componentes principales deben estar versionados.
 Ejemplo:
 
 ```text
-QUALITY_SCORE: 1.0
-AUDIT_RULES: 1.0
-TEMPLATE PROFILE: 1.0
-AUDIT_FRAMEWORK: 1.0
+QUALITY_SCORE: 1.1
+AUDIT_RULES: 1.1
+TEMPLATE PROFILE: 1.1
+AUDIT_PROMPT: 1.1
+AUDIT_FRAMEWORK: 1.1
 ```
 
 Un informe debe registrar qué versiones utilizó.
@@ -915,11 +990,16 @@ El proceso correcto es:
 
 ```text
 detectar ambigüedad
-→ finalizar o invalidar auditoría
+→ finalizar, marcar provisional o invalidar auditoría
 → corregir framework
 → versionar
 → ejecutar nueva auditoría
 ```
+
+Una auditoría piloto puede utilizarse específicamente para descubrir ambigüedades del framework.
+
+En ese caso, su score puede conservarse como evidencia histórica, pero no debe tratarse como baseline oficial
+si la metodología utilizada resultó inconsistente.
 
 ---
 
@@ -964,6 +1044,12 @@ No automatizar por automatizar.
 
 Un control que puede ignorarse accidentalmente no protege realmente.
 
+### Objetivo de control antes que proveedor
+
+La evaluación debe valorar si el riesgo está controlado de forma verificable.
+
+No debe exigir automáticamente una funcionalidad comercial concreta cuando exista un mecanismo técnico alternativo equivalente.
+
 ### Transparencia
 
 Cada punto debe poder explicarse.
@@ -999,6 +1085,10 @@ Otro auditor debería poder llegar a una conclusión sustancialmente equivalente
              ↓
 ┌──────────────────────────┐
 │ Calcular score           │
+└────────────┬─────────────┘
+             ↓
+┌──────────────────────────┐
+│ Validar consistencia     │
 └────────────┬─────────────┘
              ↓
 ┌──────────────────────────┐
@@ -1055,13 +1145,32 @@ Componentes fundamentales:
 [x] QUALITY_SCORE.md
 [x] AUDIT_RULES.md
 [x] profiles/TEMPLATE.md
-[ ] AUDIT_PROMPT.md
-[ ] evidence/README.md
-[ ] reports/README.md
-[ ] history/README.md
+[x] AUDIT_PROMPT.md
+[x] evidence/README.md
+[x] reports/README.md
+[x] history/README.md
+```
+
+Versiones activas principales:
+
+```text
+QUALITY_SCORE: 1.1
+AUDIT_RULES: 1.1
+TEMPLATE PROFILE: 1.1
+AUDIT_PROMPT: 1.1
+AUDIT_FRAMEWORK: 1.1
 ```
 
 Los perfiles adicionales deben incorporarse sólo cuando exista una necesidad real.
+
+Si existen placeholders como:
+
+```text
+profiles/APPLICATION.md
+profiles/LIBRARY.md
+```
+
+con `Estado: NO IMPLEMENTADO`, deben ignorarse completamente hasta su implementación y activación.
 
 ---
 

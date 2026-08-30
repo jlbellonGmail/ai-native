@@ -2,7 +2,7 @@
 
 # Quality Score Standard
 
-**Versión:** 1.0
+**Versión:** 1.1
 **Estado:** Activo
 **Puntuación máxima:** 100 puntos
 
@@ -546,6 +546,13 @@ La puntuación exacta dependerá de la evidencia restante.
 
 No debe asignarse automáticamente 0 si existe evidencia parcial razonable.
 
+Si un elemento `NO VERIFICADO` provoca una pérdida de puntuación porque la
+verificación es necesaria para demostrar cumplimiento, debe reflejarse en el
+criterio correspondiente.
+
+No debe clasificarse simultáneamente como `SUGGESTION` si está reduciendo puntos
+o impidiendo alcanzar 100/100.
+
 ---
 
 # 17. Criterios N/A
@@ -673,6 +680,17 @@ Defecto real de bajo impacto.
 Mejora opcional.
 
 Una `SUGGESTION` no resta puntos.
+
+Una `SUGGESTION`:
+
+- nunca resta puntos;
+- nunca activa un Quality Gate;
+- nunca puede utilizarse como justificación de una pérdida de puntuación;
+- nunca puede formar parte del camino obligatorio a 100/100;
+- nunca puede impedir obtener 100/100.
+
+Si una ausencia o problema reduce puntuación, entonces no puede clasificarse como
+`SUGGESTION`; debe clasificarse con una severidad puntuable adecuada.
 
 ---
 
@@ -1015,6 +1033,19 @@ Score actual:
 
 Proponer seis mejoras de `+3` cada una.
 
+El camino obligatorio a 100/100 debe explicar la recuperación de TODOS los
+puntos perdidos.
+
+Debe cumplirse exactamente:
+
+`puntos actuales + puntos recuperables obligatorios = puntos aplicables`
+
+antes de normalización.
+
+Si el plan de remediación proyectado no alcanza matemáticamente 100/100, el
+"Camino a 100" es incompleto y la auditoría debe marcarse como inconsistente
+hasta corregirlo.
+
 ---
 
 # 35. Integridad matemática
@@ -1075,8 +1106,8 @@ Repositorio: example-template
 Branch: develop
 Commit: a12b34c
 Tag: N/A
-Quality Score Standard: 1.0
-Perfil: TEMPLATE 1.0
+Quality Score Standard: 1.1
+Perfil: TEMPLATE 1.1
 ```
 
 Esto permite repetir posteriormente la evaluación exacta.
@@ -1131,7 +1162,25 @@ Requerido cuando cambien:
 
 ---
 
-# 40. Regla final
+# 40. Regla de consistencia entre hallazgos y puntuación
+
+Todo criterio con puntuación inferior al 100 % debe tener una causa identificable.
+
+Cada pérdida de puntos debe poder relacionarse con:
+
+`CRITERIO → HALLAZGO/CONDICIÓN → EVIDENCIA → PUNTOS PERDIDOS`
+
+Está prohibido:
+
+- descontar puntos sin identificar la causa;
+- recuperar puntos mediante un hallazgo que no explica toda la pérdida;
+- asociar un hallazgo a un criterio que no tenga relación material con él;
+- declarar un camino a 100 que deje subcriterios parcialmente puntuados sin
+  explicar cómo recuperan sus puntos.
+
+---
+
+# 41. Regla final
 
 El objetivo de este estándar no es conseguir que todos los proyectos obtengan 100/100.
 
@@ -1140,4 +1189,3 @@ El objetivo es que un proyecto sólo obtenga 100/100 cuando exista evidencia suf
 La puntuación debe ser consecuencia de la calidad.
 
 Nunca la calidad una consecuencia de la puntuación.
-
