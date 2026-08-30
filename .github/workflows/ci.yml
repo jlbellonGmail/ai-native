@@ -27,7 +27,6 @@ jobs:
 
       - name: Validar adaptadores agenticos
         run: pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/sync-agentic-adapters.ps1 -Check
-        continue-on-error: true
 
   product-tests:
     runs-on: ubuntu-latest

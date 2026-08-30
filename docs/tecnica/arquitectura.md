@@ -192,3 +192,101 @@ portabilidad, porque no es uniforme entre scripts.
   para macOS/Linux (o unificar el orden de preferencia `pwsh` vs.
   `powershell.exe` entre ambos) queda pendiente como trabajo futuro, no
   resuelto por esta decisión.
+
+## Decisión: modelo de evolución del template es `snapshot`, no sincronizado
+
+Cuando un proyecto real adopta o clona este template (ver
+`docs/tecnica/adopcion-proyecto-existente.md`), el resultado es una copia
+independiente: ese proyecto evoluciona por su cuenta desde ese momento y
+no existe ningún mecanismo, automático ni manual, que vuelva a sincronizar
+cambios posteriores del template origen hacia los proyectos que ya lo
+adoptaron, ni en sentido inverso.
+
+- **Qué se agrega**: esta sección deja constancia explícita del modelo de
+  evolución real (`snapshot`), sin agregar código ni mecanismo nuevo.
+- **Por qué ahora**: el comportamiento ya era el diseño real desde el
+  origen del template (no hay remote `upstream`, subtree, submódulo, ni
+  workflow de sync en este repo ni en la guía de adopción), pero no
+  estaba declarado en ningún lugar de forma inequívoca — quedaba implícito
+  en la redacción de `docs/tecnica/adopcion-proyecto-existente.md`.
+- **Por qué este enfoque y no otro**: se evaluó (solo como contraste, no
+  como trabajo a implementar) un modelo de sincronización continua
+  (`git subtree`/`submodule`/un workflow que compare contra el template
+  origen), pero un modelo `snapshot` es consistente con el resto del
+  diseño: `AGENTS.md` ya asume que cada proyecto real customiza
+  "Stack", "Estructura del repo" y "Propósito del producto" con contenido
+  propio no reversible a una plantilla genérica, y
+  `docs/tecnica/adopcion-proyecto-existente.md` ya describe fusión manual
+  sección por sección, no un mecanismo automático repetible.
+- **Qué sigue igual**: no se crea ningún mecanismo nuevo de actualización
+  o sincronización entre este template y los proyectos que ya lo
+  adoptaron. Si un proyecto real quiere traer una mejora posterior del
+  template (por ejemplo, un script nuevo en `scripts/`), es responsabilidad
+  manual de ese equipo, con la misma estrategia de fusión de
+  `docs/tecnica/adopcion-proyecto-existente.md`, no un `pull`/`merge`
+  automático contra este repositorio.
+
+## Decisión: enforcement técnico de `develop` sin branch protection nativa
+
+`AGENTS.md` (sección "Setup manual" → "Branch protection de GitHub")
+documenta que este repositorio, privado, recibe `403 Upgrade to GitHub
+Pro or make this repository public to enable this feature` tanto en
+`branches/{branch}/protection` como en `repos/.../rulesets` — ninguna
+branch protection nativa de GitHub está disponible hoy contra `develop`
+sin cambiar de plan o hacer público el repositorio, ambas decisiones
+explícitamente fuera del alcance de cualquier agente.
+
+- **Qué se agrega**: `.github/workflows/guard-develop-branch.yml`, un
+  workflow disparado por cualquier `push` a `develop`. Para cada commit
+  introducido por el push, consulta
+  `GET /repos/{owner}/{repo}/commits/{sha}/pulls` (API de GitHub, no
+  requiere branch protection) y verifica si el commit está asociado a
+  una PR mergeada con `base.ref == develop`. Si algún commit no lo está
+  (push directo) o si el push fue forzado (`github.event.forced`), el
+  workflow: (a) revierte automáticamente los commits sin PR asociada con
+  `git revert` (o restaura `develop` al estado previo al force-push si
+  el commit anterior sigue siendo alcanzable), empujando la corrección
+  de vuelta a `develop`; (b) deja evidencia auditable — abre un issue
+  con el detalle del incidente y termina el run en rojo; y (c) si el
+  revert automático entra en conflicto, o el commit previo al
+  force-push ya no es alcanzable, no fuerza ningún estado: aborta,
+  dejamos `develop` como quedó, y el issue lo marca como intervención
+  manual inmediata requerida.
+- **Por qué ahora**: es el único hallazgo `CRITICAL` de la auditoría
+  baseline oficial (`AUDIT-2026-08-30-34773af-baseline-v1-1`, F-004): sin
+  branch protection nativa, la regla "nunca commitear directo a
+  `develop`" de `AGENTS.md` era solo convención documentada, sin ningún
+  control técnico — y eso ya ocurrió en la práctica (ver el mismo
+  `AGENTS.md`, historial de `develop` de agosto de 2026).
+- **Por qué este enfoque y no otro**: GitHub no ofrece, en un repositorio
+  privado de este plan, ningún equivalente a branch protection o
+  rulesets vía API ni vía UI — se confirmó con `gh api
+  repos/{owner}/{repo}/branches/develop/protection` y `.../rulesets`
+  antes de implementar esta decisión. La alternativa real disponible es
+  reactiva, no preventiva: como el `GITHUB_TOKEN` del propio repositorio
+  sí puede empujar a `develop` (nada lo bloquea), un workflow puede
+  detectar el estado no permitido después del hecho y revertirlo de
+  forma automática y auditable, que es la definición de "enforcement
+  técnicamente equivalente" que exige la remediación de F-004 cuando la
+  prevención nativa no está disponible. Se descartó notificar sin
+  revertir (no cierra el hallazgo, un push directo seguiría
+  "pegado" en `develop`) y se descartó documentación/disciplina humana
+  sola (ya demostrado insuficiente por el historial citado arriba).
+- **Qué sigue igual**: no reemplaza a la branch protection nativa si en
+  algún momento el repositorio pasa a GitHub Pro o se hace público — esa
+  sigue siendo la vía preferida y preventiva (bloquea el push antes de
+  que ocurra) en vez de reactiva (revierte después). Este workflow no
+  previene el push directo en sí — GitHub no ofrece ese control aquí—
+  solo garantiza que el estado no permitido no persista en `develop` sin
+  quedar revertido y documentado. Los push realizados con el
+  `GITHUB_TOKEN` del propio repositorio (por ejemplo el cierre automático
+  de `ROADMAP.md` en `post-merge-close-feature.yml`) no disparan este
+  workflow — GitHub no genera un nuevo evento de workflow para pushes
+  autenticados con `GITHUB_TOKEN` — por lo que no hace falta (ni se
+  intenta) una excepción explícita para ese caso dentro del workflow más
+  allá del chequeo defensivo `github.actor != 'github-actions[bot]'` ya
+  incluido. Límite conocido y no resuelto: si un force-push ocurre y el
+  commit previo ya fue recolectado por `git gc` antes de que el workflow
+  corra, la restauración automática no es posible (el workflow lo
+  detecta y lo deja explícito en el issue que crea, en vez de fallar en
+  silencio).

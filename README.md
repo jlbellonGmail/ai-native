@@ -65,7 +65,7 @@ PowerShell, plataforma primaria Windows" en `docs/tecnica/arquitectura.md`.
 
 - `.agentic/` - Configuración de roles, modelos y schemas JSON
 - `scripts/` - Motor ejecutable (14 scripts PowerShell)
-- `tests/` - 196+ tests de validación estructural
+- `tests/` - tests de validación estructural del circuito (correr `pytest -v tests/` para el número y detalle actuales)
 - `docs/producto/contexto-producto.md` - Conocimiento funcional persistente
 - `docs/tecnica/` - Decisiones de diseño e implementación
 - `docs/usuario/` - Guía de uso y propósito
