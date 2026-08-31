@@ -58,6 +58,12 @@ def test_guard_workflow_declares_least_privilege_permissions():
     content = _read_guard_workflow()
     assert "contents: write" in content
     assert "issues: write" in content
+    # Requerido por `gh api repos/.../commits/$sha/pulls`: sin este
+    # permiso, GitHub Actions devuelve 403 "Resource not accessible by
+    # integration" al consultar las PR asociadas a cada commit (fallo
+    # real confirmado en ejecucion), y el guard no puede clasificar
+    # ningun push como legitimo o directo.
+    assert "pull-requests: read" in content
 
 
 def test_guard_workflow_has_concurrency_group():

@@ -49,6 +49,7 @@ on:
 permissions:
   contents: write
   issues: write
+  pull-requests: read
 
 concurrency:
   group: guard-develop-branch
