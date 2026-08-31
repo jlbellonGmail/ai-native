@@ -452,28 +452,75 @@ aplica igual en Milestone que en Feature.
 
 ## Git
 
-- Rama base de trabajo diario: `develop`
-- Rama de producción: `main` — solo recibe merges desde `develop` vía PR,
-  cuando se decide hacer un release (no en cada feature)
+El ciclo de vida de las ramas de este repositorio tiene dos etapas
+estables: el **estado inicial del template** (antes de la primera
+release) y el **estado posterior a la primera release**. Ambas son
+comportamiento correcto y esperado del template — no una etapa
+"provisional" que haya que resolver. La sección "Primera release y
+creación de `main`" describe el evento que conecta una etapa con la
+otra.
+
+### Estado inicial del template
+
+- `develop` es la rama de integración y de trabajo diario. El circuito
+  de features/milestones opera enteramente sobre ella desde el momento
+  en que se adopta el template.
+- `main` puede no existir todavía: su creación está condicionada a que
+  el humano apruebe una primera release, evento descrito abajo. Un
+  template (o un proyecto real nacido de él) sin releases aprobadas
+  aún, y por lo tanto sin rama `main`, cumple correctamente su
+  contrato — no es un defecto ni un paso de adopción incompleto.
 - Cada feature: `feature/<NN>-<slug>`, en su propio `git worktree` bajo
   `../worktrees/<slug>/` — esto habilita correr varios circuitos en
-  paralelo sin pisarse
+  paralelo sin pisarse.
 - Nunca commitear directo a `develop` (salvo el cierre automatizado de
   `ROADMAP.md`, ver paso 9, y salvo el revert/restauración automática de
   `.github/workflows/guard-develop-branch.yml` cuando detecta un push
   directo no permitido — ver "Setup manual", "Limitación conocida
-  verificada en este repositorio") ni nunca directo a `main`
+  verificada en este repositorio").
 - La PR hacia `develop` se crea automáticamente después de QA aprobado.
 - El humano no abre la PR ni hace checkpoints previos: solo decide
   `MERGE` o `NO MERGE` con la PR y sus evidencias a la vista.
 
+### Primera release y creación de `main`
+
+`main` se crea una única vez, exclusivamente cuando el humano decide y
+aprueba una release del proyecto real (no en cada feature, no
+automáticamente, y ningún agente del circuito la crea ni decide
+cuándo hacerlo). Es un evento manual, con esta secuencia:
+
+1. El humano identifica el commit exacto de `develop` que aprueba como
+   release.
+2. Se crea la rama `main` a partir de ese commit exacto.
+3. Se publica/pushea `main` al remoto por primera vez.
+4. A partir de ese momento rige el "Estado posterior a la primera
+   release" (abajo).
+
+### Estado posterior a la primera release
+
+- `main` es la rama estable de producción: recibe únicamente releases
+  aprobadas desde `develop` vía PR. Nunca se trabaja directamente sobre
+  `main`, con el mismo criterio que ya rige para `develop` en la etapa
+  inicial.
+- Nunca commitear directo a `main`, con el mismo mecanismo de
+  enforcement que protege a `develop` (ver "Setup manual").
+- `develop` sigue siendo la rama de integración y de trabajo diario
+  para toda feature/milestone nueva; las releases hacia `main` son un
+  evento posterior y separado, no un reemplazo del flujo por feature.
+
 ## Versionado (tags)
 
-- Cada release a `main` se marca con un tag `vX.Y.Z` (SemVer:
-  major.minor.patch), pusheado por el humano después de mergear a `main`
-  (`git tag vX.Y.Z && git push origin vX.Y.Z`).
-- Los agentes nunca crean tags — es una decisión del humano, en el momento
-  de release hacia `main`.
+- Cada release se marca con un tag `vX.Y.Z` (SemVer: major.minor.patch)
+  sobre `main`, pusheado por el humano en el mismo evento que crea o
+  actualiza `main` (`git tag vX.Y.Z && git push origin vX.Y.Z`) — ver
+  "Git", sección "Primera release y creación de `main`".
+- Los agentes nunca crean tags — es una decisión exclusivamente humana,
+  en el momento de cada release.
+- El primer tag se crea junto con la primera release, en el mismo
+  evento que crea `main`. En el estado inicial del template (ver "Git",
+  sección "Estado inicial del template"), antes de la primera release,
+  no hay ningún tag — es la misma etapa descrita ahí para `main`, no un
+  caso aparte.
 - El mecanismo de despliegue (si el proyecto real lo define) depende del
   hosting elegido; documentarlo como decisión explícita en
   `docs/tecnica/arquitectura.md` cuando exista.
@@ -501,7 +548,13 @@ aplica igual en Milestone que en Feature.
     llegue.
 - **Docs** (`.github/workflows/docs.yml`): se dispara al pushear a `main`
   con cambios en `docs/` o `mkdocs.yml`. Publica el sitio MkDocs a GitHub
-  Pages. Público, sin gate por ahora.
+  Pages. Público, sin gate por ahora. Sigue el mismo ciclo de vida
+  definido en "Git": en el estado inicial del template, antes de que
+  exista `main`, este workflow no tiene ningún evento que lo dispare —
+  es la misma etapa descrita ahí, no un caso aparte. Queda operativo
+  desde la primera release que publique `main` con cambios en
+  `docs/`/`mkdocs.yml`, siempre que además esté completada la
+  configuración manual de GitHub Pages (ver "Setup manual").
 - **Post-merge close** (`.github/workflows/post-merge-close-feature.yml`):
   ver paso 9 del circuito.
 - **Post-HITL merge gate**
@@ -682,15 +735,27 @@ otro proyecto sin adaptarlas.
 ## Setup manual (una sola vez, no automatizable)
 
 - **GitHub Pages** (Settings → Pages → Source): elegir "GitHub Actions".
-  Necesario para que `docs.yml` pueda publicar el sitio MkDocs.
-- **Rama `develop`**: se crea a partir de `main` al adoptar este circuito
-  en un repo nuevo. Quedan sincronizadas hasta la primera feature nueva.
+  Necesario para que `docs.yml` pueda publicar el sitio MkDocs. Puede
+  configurarse en cualquier etapa del ciclo de vida descrito en "Git",
+  pero solo tiene efecto observable a partir de la primera release que
+  publique `main` con cambios en `docs/`/`mkdocs.yml` (ver "Git",
+  sección "Primera release y creación de `main`"): configurarlo durante
+  el estado inicial del template es un paso válido sin efecto
+  observable hasta ese evento, no un error.
+- **Rama `develop`**: es la rama de trabajo habitual desde el momento de
+  adoptar este circuito en un repo nuevo, correspondiente al "Estado
+  inicial del template" descrito en "Git". No depende de que exista
+  `main`: la creación de `main` es un evento posterior, condicionado a
+  la primera release (ver "Git", sección "Primera release y creación de
+  `main`"), y no hace falta anticiparla para trabajar sobre `develop`.
 - **Remoto GitHub**: este template no asume que ya existe un repositorio
   remoto. Crear el repo en GitHub, agregar el remoto (`git remote add
-  origin <url>`) y hacer el primer push de `main` y `develop` es un paso
-  manual del humano antes de que `scripts/ready-for-pr.ps1`,
+  origin <url>`) y hacer el primer push de `develop` es un paso manual
+  del humano antes de que `scripts/ready-for-pr.ps1`,
   `scripts/wait-pr-ci.ps1` y los workflows de GitHub Actions puedan
-  funcionar.
+  funcionar. El primer push de `main` es un paso aparte, que ocurre
+  únicamente como parte del evento "Primera release y creación de
+  `main`" descrito en "Git" — no antes.
 - **Branch protection de GitHub** (Settings → Branches → Branch
   protection rules, o vía `gh api`): configurar sobre la rama `develop`
   los cuatro requisitos que exige el circuito para que el único HITL
@@ -706,7 +771,8 @@ otro proyecto sin adaptarlas.
   a la PR. `enforce_admins` queda en `true`: los administradores del
   repositorio también quedan sujetos a esta protección, sin bypass,
   consistente con la regla dura de `AGENTS.md` ("Nunca commitear directo
-  a `develop`... ni nunca directo a `main`") — esta decisión pasó por
+  a `develop`... ni, una vez que exista, nunca directo a `main`") — esta
+  decisión pasó por
   Fase CLARIFY con el humano (ver
   `runs/05-operational-readiness-docs/decision.md`), no es un supuesto
   unilateral. Requiere permisos de administrador sobre el repositorio y
