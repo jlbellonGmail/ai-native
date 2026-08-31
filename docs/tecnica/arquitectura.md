@@ -290,3 +290,65 @@ explícitamente fuera del alcance de cualquier agente.
   corra, la restauración automática no es posible (el workflow lo
   detecta y lo deja explícito en el issue que crea, en vez de fallar en
   silencio).
+
+## Decisión: ciclo de vida de `main` — creación condicionada a la primera release
+
+`AGENTS.md` (sección "Git") define el ciclo de vida de las ramas de este
+repositorio en dos etapas estables: un **estado inicial del template**,
+en el que `develop` es la única rama de trabajo y `main` puede no
+existir, y un **estado posterior a la primera release**, en el que
+`main` ya existe y funciona como rama estable de producción. Ambas
+etapas son comportamiento correcto y esperado por diseño — ninguna es
+una etapa "provisional" que haya que resolver. Esta sección documenta
+por qué el modelo se define así, como ciclo de vida y no como una
+descripción fija del estado de una única etapa.
+
+- **Qué se agrega**: esta sección documenta el modelo de ciclo de vida
+  completo, sin crear la rama `main` ni cambiar ningún workflow, script
+  ni configuración. `main` se crea una única vez, exclusivamente cuando
+  el humano decide y aprueba una release del proyecto real construido
+  sobre este template: se identifica el commit exacto de `develop` que
+  se aprueba, se crea `main` a partir de ese commit, y se publica/pushea
+  por primera vez. Desde ese evento en adelante, `main` solo recibe
+  releases aprobadas desde `develop` vía PR — nunca se trabaja
+  directamente sobre ella, con el mismo criterio que ya rige para
+  `develop` en la etapa inicial. Ningún agente del circuito crea `main`
+  ni decide cuándo hacerlo: es exclusivamente una decisión humana, fuera
+  del circuito por feature.
+- **Por qué ahora**: una revisión de consistencia del flujo Git detectó
+  que `AGENTS.md` describía `main` únicamente como si ya existiera, sin
+  reconocer en ningún lugar que su creación es un evento condicionado a
+  una release aprobada, ni que el estado inicial del template (sin
+  `main`) es igualmente válido. Esta corrección documenta ambas etapas
+  del ciclo de vida como comportamiento estable, de modo que la
+  documentación siga siendo verdadera tanto antes como después de que
+  `main` exista.
+- **Por qué este enfoque y no otro**: se evaluó crear `main` de
+  inmediato (por ejemplo, desde el estado vigente de `develop` en el
+  momento de esta decisión) para eliminar de una sola vez cualquier
+  ambigüedad sobre su existencia, pero se descartó: crear una rama de
+  "producción" sin que medie una decisión real de release sería
+  anticipar una decisión que, por diseño de este template (`AGENTS.md`,
+  sección "Versionado (tags)"), es exclusivamente humana y vinculada a
+  un commit aprobado concreto, no a un estado arbitrario de `develop`
+  tomado solo para tener algo que publicar. Documentar el ciclo de vida
+  completo — incluyendo el evento que crea `main` — es la corrección
+  mínima suficiente; crear `main` sin una release real que la respalde
+  generaría una rama de producción sin contenido de producción real
+  detrás, lo cual sería peor que dejarla para el momento en que
+  corresponda por diseño.
+- **Qué sigue igual**: `develop` sigue siendo la rama de integración y de
+  trabajo diario para toda feature/milestone, en cualquiera de las dos
+  etapas del ciclo de vida; ningún workflow, script ni test del circuito
+  por feature/milestone cambia. `docs.yml` (publicación de MkDocs a
+  GitHub Pages, disparado por `push` a `main`) y la configuración de
+  GitHub Pages siguen el mismo ciclo de vida: sin ejecución posible
+  mientras `main` no exista, y operativos desde la release que primero
+  publique `main` con cambios en `docs/`/`mkdocs.yml` — eso es
+  consecuencia directa de este mismo modelo, no un defecto en ninguna de
+  las dos etapas. No se crea ningún mecanismo nuevo de sincronización
+  entre `develop` y `main`: el modelo del template sigue siendo
+  `snapshot` (ver "Decisión: modelo de evolución del template es
+  `snapshot`, no sincronizado" arriba); una vez que `main` exista, la
+  relación entre ambas ramas sigue siendo exclusivamente vía PR de
+  release humana, no un mecanismo automático adicional.
