@@ -57,3 +57,27 @@ jobs:
       - name: Placeholder (sin stack definido)
         run: |
           echo "product-tests: sin stack de producto definido todavia. Ver docs/tecnica/arquitectura.md."
+
+  # Gate obligatorio igual que circuit-tests y product-tests (ver AGENTS.md,
+  # seccion "CI/CD"): corre tests/test_local_reconciler_scripts.py, que el
+  # pytestmark del propio archivo salta en circuit-tests (ubuntu-latest)
+  # porque ejercita Start-Process -WindowStyle Hidden de PowerShell 5.1
+  # Desktop, especifico de Windows. Sin continue-on-error: si esta suite
+  # falla, el job queda rojo y bloquea el merge.
+  local-reconciler-tests:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: requirements-dev.txt
+
+      - name: Instalar dependencias
+        run: pip install -r requirements-dev.txt
+
+      - name: Tests del reconciliador local (pytest, Windows)
+        run: pytest -v tests/test_local_reconciler_scripts.py

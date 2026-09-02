@@ -194,13 +194,26 @@ arranca lento, sino que es terminado en 1-2s de forma silenciosa
 padre en la cadena es `python.exe`. La misma invocación lanzada
 directamente desde una terminal (PowerShell o `bash.exe`, sin Python de
 por medio) sobrevive sin problema. Esto es consistente con una
-heurística de seguridad que trata "proceso Python lanzando PowerShell
+heurística de seguridad de un EDR/antivirus local específico que trata
+"proceso Python lanzando PowerShell
 oculto con `-EncodedCommand`" como patrón sospechoso, independientemente
 de la técnica de lanzamiento usada. No es un bug del script ni de los
 tests: el uso real del circuito (`ready-for-pr.ps1` corrido por un
 humano o por un agente vía shell) no pasa por Python en ningún punto de
-esa cadena, y estos tests ya están excluidos de CI
-(`pytestmark` con `os.name != "nt"`, y el CI del repo corre en
-`ubuntu-latest`). Si aparecen en rojo corriendo `pytest` localmente en
-Windows, es este problema conocido, no una regresión — confirmarlo
-comparando con una corrida manual del mismo comando fuera de `pytest`.
+esa cadena.
+
+El job `circuit-tests` (`ubuntu-latest`) de `.github/workflows/ci.yml`
+sigue sin correr estos 7 tests: el `pytestmark` del propio archivo los
+salta con `os.name != "nt"`, y ese job corre en Linux. Para no depender
+únicamente de una corrida manual en una máquina Windows potencialmente
+afectada por el problema de EDR descripto arriba, el job
+`local-reconciler-tests` (`windows-latest`, gate obligatorio igual que
+`circuit-tests`/`product-tests`, sin `continue-on-error` — ver
+AGENTS.md, sección "CI/CD") corre específicamente
+`pytest tests/test_local_reconciler_scripts.py` en un runner Windows
+limpio de GitHub Actions, sin el EDR de terceros que causa el síntoma
+descripto arriba. Si esos 7 tests aparecen en rojo corriendo `pytest`
+localmente en Windows pero pasan en `local-reconciler-tests`, es este
+problema conocido, no una regresión — confirmarlo comparando ambos
+resultados y, si hace falta, con una corrida manual del mismo comando
+fuera de `pytest`.

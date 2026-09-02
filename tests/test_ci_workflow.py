@@ -73,3 +73,32 @@ def test_both_jobs_share_same_workflow_triggers():
     product_block = _job_block(content, "product-tests")
     assert "if:" not in circuit_block
     assert "if:" not in product_block
+
+
+def test_ci_workflow_declares_local_reconciler_tests_job():
+    content = _read_ci_workflow()
+    assert "local-reconciler-tests:" in content
+
+
+def test_local_reconciler_tests_job_runs_on_windows():
+    content = _read_ci_workflow()
+    reconciler_block = _job_block(content, "local-reconciler-tests")
+    assert "runs-on: windows-latest" in reconciler_block
+
+
+def test_local_reconciler_tests_job_runs_the_specific_suite():
+    content = _read_ci_workflow()
+    reconciler_block = _job_block(content, "local-reconciler-tests")
+    assert "pytest -v tests/test_local_reconciler_scripts.py" in reconciler_block
+
+
+def test_local_reconciler_tests_job_is_a_real_blocking_gate():
+    """F-003 (reauditoria final v1.1): el job debe quedar rojo si la suite
+    falla, sin `continue-on-error` ni ningun mecanismo equivalente que
+    convierta un fallo real en exito aparente."""
+    content = _read_ci_workflow()
+    reconciler_block = _job_block(content, "local-reconciler-tests")
+    assert "continue-on-error" not in reconciler_block
+    assert "|| true" not in reconciler_block
+    assert "exit 0" not in reconciler_block
+    assert "if: always()" not in reconciler_block
