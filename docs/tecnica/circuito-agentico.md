@@ -217,3 +217,52 @@ localmente en Windows pero pasan en `local-reconciler-tests`, es este
 problema conocido, no una regresión — confirmarlo comparando ambos
 resultados y, si hace falta, con una corrida manual del mismo comando
 fuera de `pytest`.
+
+## Bug real corregido: `local-reconciler-tests` fallaba en GitHub Actions windows-latest (no era EDR)
+
+**Síntoma observado** (run `33580980427`): 3 de los 7 tests de
+`tests/test_local_reconciler_scripts.py`
+(`test_start_reconciler_in_main_checkout`,
+`test_start_reconciler_from_linked_worktree`,
+`test_start_reconciler_replaces_stale_lock`) fallaban en el propio job
+`local-reconciler-tests` (`windows-latest`), sin ningún EDR de terceros
+de por medio. `start_reconciler()` devolvía exit 0 pero, pasados 60s, no
+existían ni el log ni el lock del reconciliador.
+
+**Causa raíz real**: `Start-LocalReconciler`
+(`scripts/local-feature-reconcile.ps1`) lanzaba el proceso de fondo con
+`Start-Process -WindowStyle Hidden -RedirectStandardOutput ...
+-RedirectStandardError ...`. `-WindowStyle` (incluso `Hidden`) requiere
+una window station/desktop interactivo para crear la ventana. Los
+runners de GitHub Actions `windows-latest` ejecutan los steps del job en
+una sesión no interactiva (Session 0, sin desktop), donde
+`Start-Process` con `-WindowStyle Hidden` combinado con redirección de
+stdio lanza una excepción (`InvalidOperationException` /
+`PlatformNotSupportedException` según la versión de .NET). Esa excepción
+caía en el `catch` de `Start-LocalReconciler`, que solo hacía
+`Write-Warning` sin fijar un código de salida distinto de cero — el
+bloque `if ($StartBackground) { Start-LocalReconciler; exit 0 }`
+terminaba igual en `exit 0` aunque el proceso hijo nunca hubiera
+arrancado. Esto es independiente del problema de EDR documentado arriba
+(que afecta máquinas locales con seguridad de terceros): ambos síntomas
+son similares ("no arrancó a tiempo") pero tienen causas distintas.
+
+**Corrección aplicada**:
+
+1. `-WindowStyle Hidden` → `-NoNewWindow`. `-NoNewWindow` no depende de
+   ninguna window station y es compatible con
+   `-RedirectStandardOutput`/`-RedirectStandardError` tanto en sesiones
+   interactivas como no interactivas — funciona igual en un desktop
+   local que en Session 0 de un runner de GitHub Actions.
+2. Fail-safe: `Start-LocalReconciler` ya no asume éxito solo porque
+   `Start-Process` no lanzó una excepción. Después de lanzar el proceso,
+   confirma durante hasta 2 segundos que el PID devuelto sigue vivo
+   (`Get-Process -Id ...`) antes de escribir el lock. Si el proceso no
+   sigue vivo, o si `Start-Process` lanza una excepción, la función
+   termina con `exit 1` en vez de `exit 0` — un fallo real de arranque ya
+   no se reporta como éxito silencioso. Los llamadores existentes
+   (`ready-for-pr.ps1`) no revisan ese código de salida para la rama
+   `-StartBackground`: es intencionalmente best-effort y no bloquea la
+   creación de la PR, pero ahora un fallo de arranque queda visible en
+   los logs (`Write-Warning`) y en el código de salida del script para
+   quien lo invoque directamente o desde `pytest`.
