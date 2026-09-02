@@ -181,42 +181,38 @@ nuevo, se puede relanzar el reconciliador corriendo de nuevo
 `scripts/local-feature-reconcile.ps1 -Slug <slug> -StartBackground`)
 desde ahí.
 
-**Nota — mismo síntoma bajo `pytest tests/`**: `tests/test_local_reconciler_scripts.py`
+**Nota — mismo síntoma bajo `pytest tests/`, causa distinta (corregida)**:
+`tests/test_local_reconciler_scripts.py`
 (`test_start_reconciler_in_main_checkout`, `test_start_reconciler_from_linked_worktree`,
-`test_start_reconciler_replaces_stale_lock`) lanzan el mismo
-`local-feature-reconcile.ps1 -StartBackground` a través de
-`subprocess.run` de Python y a veces fallan con "no arranco en 60s". Se
-investigó a fondo (reproducción manual fuera de pytest, con y sin
-`CREATE_NO_WINDOW`, con y sin `CREATE_BREAKAWAY_FROM_JOB`, reemplazando
-`Start-Process` por `Win32_Process.Create` vía WMI): el proceso hijo no
-arranca lento, sino que es terminado en 1-2s de forma silenciosa
-(logs vacíos, sin excepción de PowerShell) únicamente cuando el proceso
-padre en la cadena es `python.exe`. La misma invocación lanzada
-directamente desde una terminal (PowerShell o `bash.exe`, sin Python de
-por medio) sobrevive sin problema. Esto es consistente con una
-heurística de seguridad de un EDR/antivirus local específico que trata
-"proceso Python lanzando PowerShell
-oculto con `-EncodedCommand`" como patrón sospechoso, independientemente
-de la técnica de lanzamiento usada. No es un bug del script ni de los
-tests: el uso real del circuito (`ready-for-pr.ps1` corrido por un
-humano o por un agente vía shell) no pasa por Python en ningún punto de
-esa cadena.
+`test_start_reconciler_replaces_stale_lock`) a veces fallaban con "no
+arranco en 60s". Una hipótesis anterior en esta misma sección atribuía
+esto a un EDR local interfiriendo con "Python lanzando PowerShell
+oculto" — **esa hipótesis quedó descartada** para el caso de estos tests
+específicamente: se reprodujo el mismo fallo en runs limpios de GitHub
+Actions `windows-latest` (`33580980427`, `33583676654`) sin ningún EDR
+de terceros (`Get-MpComputerStatus` confirmó `RealTimeProtectionEnabled:
+False` y sin detecciones), y un diagnóstico forense agregado
+temporalmente al job (run `33585370715`) demostró que el reconciliador
+**sí arrancaba y corría correctamente**: el log de cada test mostraba
+"Reconciliador local activo para 99-demo" segundos después de iniciar, y
+el proceso seguía haciendo `git fetch` hasta su timeout normal. La causa
+real era un falso negativo en el propio *test harness* — ver "Bug real
+corregido" más abajo, segunda parte, ya corregida.
 
 El job `circuit-tests` (`ubuntu-latest`) de `.github/workflows/ci.yml`
 sigue sin correr estos 7 tests: el `pytestmark` del propio archivo los
-salta con `os.name != "nt"`, y ese job corre en Linux. Para no depender
-únicamente de una corrida manual en una máquina Windows potencialmente
-afectada por el problema de EDR descripto arriba, el job
+salta con `os.name != "nt"`, y ese job corre en Linux. El job
 `local-reconciler-tests` (`windows-latest`, gate obligatorio igual que
 `circuit-tests`/`product-tests`, sin `continue-on-error` — ver
 AGENTS.md, sección "CI/CD") corre específicamente
 `pytest tests/test_local_reconciler_scripts.py` en un runner Windows
-limpio de GitHub Actions, sin el EDR de terceros que causa el síntoma
-descripto arriba. Si esos 7 tests aparecen en rojo corriendo `pytest`
-localmente en Windows pero pasan en `local-reconciler-tests`, es este
-problema conocido, no una regresión — confirmarlo comparando ambos
-resultados y, si hace falta, con una corrida manual del mismo comando
-fuera de `pytest`.
+limpio de GitHub Actions. La hipótesis de EDR local descripta arriba en
+esta misma sección sigue siendo válida como explicación para el
+escenario de uso real (`ready-for-pr.ps1` corrido por un humano o un
+agente en su propia máquina, con Python en la cadena de lanzamiento del
+reconciliador) — no fue descartada en general, solo como explicación de
+los fallos de esta suite de tests, que ya no dependen de ese mecanismo
+(ver más abajo).
 
 ## Bug real corregido: `local-reconciler-tests` fallaba en GitHub Actions windows-latest (no era EDR)
 
@@ -266,3 +262,59 @@ son similares ("no arrancó a tiempo") pero tienen causas distintas.
    creación de la PR, pero ahora un fallo de arranque queda visible en
    los logs (`Write-Warning`) y en el código de salida del script para
    quien lo invoque directamente o desde `pytest`.
+
+**Esta corrección era necesaria pero no suficiente**: con `-NoNewWindow`
+ya en `origin` (commit `fc6af4d`), los mismos 3 tests siguieron fallando
+igual en un run posterior (`33583676654`). La causa raíz completa tenía
+una segunda parte, en el propio test, no en el script — ver abajo.
+
+## Segunda causa real: falso negativo en `wait_for_reconciler_running()` / `process_alive()` (test harness, no el script)
+
+**Síntoma**: mismos 3 tests, mismo mensaje "no arranco en 60s
+(log/lock ausentes)", incluso después de aplicar `-NoNewWindow` + el
+fail-safe de arriba.
+
+**Diagnóstico**: se agregó temporalmente al job `local-reconciler-tests`
+un step que, sin enmascarar el exit code real de `pytest`, volcaba tras
+cada corrida los procesos `powershell`/`pwsh` vivos, el árbol de
+`.../main/.git/feature-reconcilers/` bajo el temp de pytest con el
+contenido de cada log, y el estado/detecciones de Windows Defender (run
+`33585370715`). Evidencia: `99-demo.log` existía y contenía
+`"Reconciliador local activo para 99-demo"` pocos segundos después de
+arrancar cada test, y el proceso seguía haciendo `git fetch` hasta su
+timeout normal — es decir, `Start-LocalReconciler` funcionaba
+correctamente de punta a punta. `Get-MpComputerStatus` mostró
+`RealTimeProtectionEnabled: False` y sin detecciones: Windows Defender
+tampoco era la causa.
+
+**Causa raíz real**: `wait_for_reconciler_running()` (en
+`tests/test_local_reconciler_scripts.py`) declaraba "no arrancó" en base
+al predicado `process_alive()`, que lanzaba un proceso
+`powershell.exe -NoProfile -Command "Get-Process -Id <pid> ..."` **nuevo,
+como subproceso de Python, en cada uno de hasta 60 reintentos** (uno por
+segundo) para verificar si el PID seguía vivo. Ese mecanismo demostró
+dar falsos negativos —el proceso reconciliador estaba objetivamente vivo
+y corriendo (ver log de arriba) mientras esta comprobación externa
+reportaba que no lo encontraba— tanto en runners limpios de GitHub
+Actions como, retrospectivamente, en la máquina de desarrollo local (lo
+que también pone en duda que la interferencia de EDR local fuera la
+explicación completa de los fallos locales previos de esta suite
+específica, más allá del escenario real de `ready-for-pr.ps1` descripto
+arriba). El bug estaba en el *harness de test*, no en
+`local-feature-reconcile.ps1`.
+
+**Corrección aplicada**: `process_alive()` ya no lanza ningún proceso
+externo. Usa `ctypes` para llamar directamente a las funciones Win32
+`OpenProcess` (con `PROCESS_QUERY_LIMITED_INFORMATION`) y
+`GetExitCodeProcess`, comparando contra `STILL_ACTIVE` (259) — la misma
+técnica que usa internamente el propio `.NET`/PowerShell, sin la
+sobrecarga ni la fragilidad de lanzar y parsear la salida de un proceso
+`powershell.exe` nuevo en un loop ajustado a intervalos de un segundo.
+La condición de arranque (`started()` dentro de
+`wait_for_reconciler_running`) sigue exigiendo evidencia real y
+específica del contrato: el archivo `.pid` debe existir, su contenido
+debe ser un PID numérico válido, y ese PID debe estar genuinamente vivo
+según el sistema operativo — no se relajó ni se removió ninguna
+comprobación, solo se reemplazó el mecanismo poco fiable de la última
+comprobación (verificación de vida del proceso) por uno nativo y
+determinístico.

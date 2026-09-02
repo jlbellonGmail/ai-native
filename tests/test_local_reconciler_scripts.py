@@ -1,3 +1,4 @@
+import ctypes
 import os
 import shutil
 import subprocess
@@ -121,10 +122,35 @@ def lock_path(main: Path, slug: str) -> Path:
     return state_dir(main) / f"{slug}.pid"
 
 
+PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
+STILL_ACTIVE = 259
+
+
 def process_alive(pid: int) -> bool:
-    query = f"if (Get-Process -Id {pid} -ErrorAction SilentlyContinue) {{ 'yes' }} else {{ 'no' }}"
-    result = run([powershell(), "-NoProfile", "-Command", query], Path(os.getcwd()))
-    return result.stdout.strip() == "yes"
+    """Comprueba si `pid` sigue vivo vía Win32 (OpenProcess/GetExitCodeProcess)
+    directamente desde ctypes, en vez de lanzar `powershell.exe -Command
+    "Get-Process -Id ..."` como subproceso. Lanzar un proceso PowerShell
+    nuevo por cada verificacion (potencialmente decenas de veces por
+    segundo durante `wait_for_reconciler_running`) demostro dar falsos
+    negativos poco fiables tanto en maquinas locales como en runners
+    limpios de GitHub Actions windows-latest sin ningun EDR de por medio
+    (ver docs/tecnica/circuito-agentico.md, seccion "Bug real corregido"):
+    el reconciliador arrancaba y corria correctamente (log con contenido
+    real, proceso vivo y haciendo fetch) mientras esta comprobacion
+    reportaba "no arranco". La consulta nativa vía OpenProcess no depende
+    de lanzar ni parsear salida de un proceso externo.
+    """
+    kernel32 = ctypes.windll.kernel32
+    handle = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
+    if not handle:
+        return False
+    try:
+        exit_code = ctypes.c_ulong()
+        if not kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)):
+            return False
+        return exit_code.value == STILL_ACTIVE
+    finally:
+        kernel32.CloseHandle(handle)
 
 
 def kill_pid(pid: int) -> None:

@@ -36,6 +36,25 @@ def _job_block(content: str, job_name: str) -> str:
     return content[start:end]
 
 
+def _without_comment_lines(block: str) -> str:
+    """Descarta líneas cuyo contenido (sin indentación) empieza con `#`.
+
+    Los checks de "gate real" de este módulo buscan substrings como
+    `continue-on-error` o `exit 0` en el texto crudo del job. Sin esto,
+    un comentario YAML o un comentario PowerShell/shell dentro de un
+    bloque `run: |` que simplemente *mencione* esos textos (por ejemplo,
+    para explicar por qué el job NO los usa) produce un falso positivo:
+    la aserción "no está" falla aunque la configuración real no tenga
+    ese anti-patrón. Ignorar líneas comentadas sigue detectando un
+    `continue-on-error`/`|| true`/`exit 0`/`if: always()` real, porque
+    esos solo cuentan como configuración o código ejecutable cuando no
+    están comentados.
+    """
+    return "\n".join(
+        line for line in block.splitlines() if not line.strip().startswith("#")
+    )
+
+
 def test_ci_workflow_declares_circuit_tests_and_product_tests_jobs():
     content = _read_ci_workflow()
     assert "circuit-tests:" in content
@@ -59,7 +78,7 @@ def test_validar_adaptadores_agenticos_is_a_real_gate():
     content = _read_ci_workflow()
     circuit_block = _job_block(content, "circuit-tests")
     assert "sync-agentic-adapters.ps1 -Check" in circuit_block
-    assert "continue-on-error" not in circuit_block
+    assert "continue-on-error" not in _without_comment_lines(circuit_block)
 
 
 def test_both_jobs_share_same_workflow_triggers():
@@ -69,8 +88,8 @@ def test_both_jobs_share_same_workflow_triggers():
     # `if:` propio que los excluya de algún evento.
     assert "on:\n  push:\n    branches: [develop, main]" in content
     assert "pull_request:\n    branches: [develop, main]" in content
-    circuit_block = _job_block(content, "circuit-tests")
-    product_block = _job_block(content, "product-tests")
+    circuit_block = _without_comment_lines(_job_block(content, "circuit-tests"))
+    product_block = _without_comment_lines(_job_block(content, "product-tests"))
     assert "if:" not in circuit_block
     assert "if:" not in product_block
 
@@ -95,9 +114,16 @@ def test_local_reconciler_tests_job_runs_the_specific_suite():
 def test_local_reconciler_tests_job_is_a_real_blocking_gate():
     """F-003 (reauditoria final v1.1): el job debe quedar rojo si la suite
     falla, sin `continue-on-error` ni ningun mecanismo equivalente que
-    convierta un fallo real en exito aparente."""
+    convierta un fallo real en exito aparente.
+
+    Ignora líneas comentadas (YAML o PowerShell/shell dentro de un
+    `run: |`) antes de buscar estos substrings: un comentario que
+    simplemente *mencione* uno de estos anti-patrones (por ejemplo, para
+    explicar que el job no lo usa) no es la configuración real del job.
+    Ver `_without_comment_lines`.
+    """
     content = _read_ci_workflow()
-    reconciler_block = _job_block(content, "local-reconciler-tests")
+    reconciler_block = _without_comment_lines(_job_block(content, "local-reconciler-tests"))
     assert "continue-on-error" not in reconciler_block
     assert "|| true" not in reconciler_block
     assert "exit 0" not in reconciler_block
