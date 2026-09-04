@@ -85,19 +85,49 @@ function Start-LocalReconciler {
 
     Write-Host "==> Iniciando reconciliador local para $Slug. Log: $logPath"
     try {
+        # -NoNewWindow en vez de -WindowStyle Hidden: -WindowStyle requiere una
+        # window station/desktop interactivo para crear (incluso oculta) una
+        # ventana. En sesiones no interactivas (Session 0), como el runner de
+        # GitHub Actions windows-latest que ejecuta los jobs como servicio sin
+        # desktop, Start-Process con -WindowStyle Hidden + redireccion de
+        # stdio lanza una excepcion. -NoNewWindow no depende de ninguna window
+        # station y es compatible con -RedirectStandardOutput/Error tanto en
+        # sesiones interactivas como no interactivas.
         $created = Start-Process `
             -FilePath $powershell.Source `
             -ArgumentList $arguments `
             -WorkingDirectory $mainRoot `
             -RedirectStandardOutput $logPath `
             -RedirectStandardError $errorLogPath `
-            -WindowStyle Hidden `
+            -NoNewWindow `
             -PassThru
+
+        # Fail-safe: Start-Process puede devolver un objeto de proceso valido
+        # (sin lanzar excepcion) aunque el hijo muera de inmediato -- por
+        # ejemplo por un fallo de binding de parametros al decodificar
+        # -EncodedCommand. No alcanza con "Start-Process no tiro error" para
+        # declarar exito: hay que confirmar una senal minima real de arranque
+        # (el proceso sigue vivo) antes de escribir el lock y terminar en 0.
+        $deadline = (Get-Date).AddSeconds(2)
+        $alive = $false
+        do {
+            if (Get-Process -Id $created.Id -ErrorAction SilentlyContinue) {
+                $alive = $true
+                break
+            }
+            Start-Sleep -Milliseconds 100
+        } while ((Get-Date) -lt $deadline)
+
+        if (-not $alive) {
+            throw "El proceso del reconciliador (PID $($created.Id)) no sigue vivo tras iniciarse; revisar $errorLogPath."
+        }
+
         Set-Content -LiteralPath $lockPath -Value $created.Id -Encoding ASCII
     }
     catch {
         Write-Warning "No pude iniciar el reconciliador local: $($_.Exception.Message)"
-        Write-Warning "Esto no bloquea la PR: el cierre remoto lo realiza GitHub Actions y la limpieza local se reconciliara en la proxima ejecucion."
+        Write-Warning "Esto no bloquea la PR: el cierre remoto lo realiza GitHub Actions y la limpieza local se reconciliara en la proxima ejecucion (o corriendo manualmente 'local-feature-reconcile.ps1 -StartBackground')."
+        exit 1
     }
 }
 

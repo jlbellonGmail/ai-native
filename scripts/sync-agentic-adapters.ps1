@@ -27,13 +27,116 @@ function Read-JsonFile {
     return (Get-Content -LiteralPath $Path -Raw -Encoding UTF8 | ConvertFrom-Json)
 }
 
+function ConvertTo-JsonStringLiteral {
+    param(
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [string] $Value
+    )
+
+    $builder = New-Object System.Text.StringBuilder
+    [void] $builder.Append('"')
+    foreach ($ch in $Value.ToCharArray()) {
+        switch ($ch) {
+            '"' { [void] $builder.Append('\"'); continue }
+            '\' { [void] $builder.Append('\\'); continue }
+            "`b" { [void] $builder.Append('\b'); continue }
+            "`f" { [void] $builder.Append('\f'); continue }
+            "`n" { [void] $builder.Append('\n'); continue }
+            "`r" { [void] $builder.Append('\r'); continue }
+            "`t" { [void] $builder.Append('\t'); continue }
+            default {
+                if ([int] $ch -lt 0x20) {
+                    [void] $builder.Append(('\u{0:x4}' -f [int] $ch))
+                }
+                else {
+                    [void] $builder.Append($ch)
+                }
+            }
+        }
+    }
+    [void] $builder.Append('"')
+    return $builder.ToString()
+}
+
+function ConvertTo-CanonicalJsonValue {
+    param(
+        [AllowNull()]
+        [object] $Value,
+
+        [int] $Depth = 0
+    )
+
+    $indent = "  " * $Depth
+    $childIndent = "  " * ($Depth + 1)
+
+    if ($null -eq $Value) {
+        return "null"
+    }
+
+    if ($Value -is [bool]) {
+        return $(if ($Value) { "true" } else { "false" })
+    }
+
+    if ($Value -is [string]) {
+        return ConvertTo-JsonStringLiteral $Value
+    }
+
+    if ($Value -is [int] -or $Value -is [long] -or $Value -is [double] -or $Value -is [decimal] -or $Value -is [float]) {
+        return $Value.ToString([System.Globalization.CultureInfo]::InvariantCulture)
+    }
+
+    if ($Value -is [System.Collections.IDictionary]) {
+        $keys = @($Value.Keys)
+        if ($keys.Count -eq 0) {
+            return "{}"
+        }
+        $entries = foreach ($key in $keys) {
+            $childJson = ConvertTo-CanonicalJsonValue -Value $Value[$key] -Depth ($Depth + 1)
+            "$childIndent$(ConvertTo-JsonStringLiteral $key): $childJson"
+        }
+        return "{" + [Environment]::NewLine + ($entries -join ("," + [Environment]::NewLine)) + [Environment]::NewLine + "$indent}"
+    }
+
+    if ($Value -is [System.Management.Automation.PSCustomObject]) {
+        $properties = @($Value.PSObject.Properties)
+        if ($properties.Count -eq 0) {
+            return "{}"
+        }
+        $entries = foreach ($property in $properties) {
+            $childJson = ConvertTo-CanonicalJsonValue -Value $property.Value -Depth ($Depth + 1)
+            "$childIndent$(ConvertTo-JsonStringLiteral $property.Name): $childJson"
+        }
+        return "{" + [Environment]::NewLine + ($entries -join ("," + [Environment]::NewLine)) + [Environment]::NewLine + "$indent}"
+    }
+
+    if ($Value -is [System.Collections.IEnumerable]) {
+        $items = @($Value)
+        if ($items.Count -eq 0) {
+            return "[]"
+        }
+        $entries = foreach ($item in $items) {
+            $childJson = ConvertTo-CanonicalJsonValue -Value $item -Depth ($Depth + 1)
+            "$childIndent$childJson"
+        }
+        return "[" + [Environment]::NewLine + ($entries -join ("," + [Environment]::NewLine)) + [Environment]::NewLine + "$indent]"
+    }
+
+    throw "Tipo no soportado para serializacion JSON canonica: $($Value.GetType().FullName)"
+}
+
 function ConvertTo-CanonicalJson {
     param(
         [Parameter(Mandatory = $true)]
         [object] $Value
     )
 
-    return (($Value | ConvertTo-Json -Depth 100) + [Environment]::NewLine)
+    # Serializador propio en vez de ConvertTo-Json: ConvertTo-Json difiere en
+    # indentacion, espaciado y formato de objetos/arrays vacios entre
+    # PowerShell Desktop (5.1) y Core (7.x), lo que produce falsos positivos
+    # deterministas-por-edicion en `-Check`. Este serializador es identico en
+    # ambas ediciones porque no depende de ConvertTo-Json en absoluto.
+    return (ConvertTo-CanonicalJsonValue -Value $Value -Depth 0) + [Environment]::NewLine
 }
 
 function ConvertTo-TomlString {

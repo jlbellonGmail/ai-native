@@ -67,6 +67,30 @@ def test_product_tests_is_placeholder(workflow_file: str):
     assert "arquitectura.md" in content.lower(), "debe referenciar docs/tecnica/arquitectura.md"
 
 
+@pytest.mark.parametrize("workflow_file", ["ci.yml"])
+def test_ci_has_local_reconciler_tests_job(workflow_file: str):
+    """CI debe tener el job local-reconciler-tests (F-003, gate obligatorio)."""
+    content = _read_workflow(workflow_file)
+    assert "local-reconciler-tests:" in content, "CI debe tener job 'local-reconciler-tests'"
+
+
+@pytest.mark.parametrize("workflow_file", ["ci.yml"])
+def test_local_reconciler_tests_is_blocking(workflow_file: str):
+    """local-reconciler-tests no debe tener la clave YAML `continue-on-error:`
+    ni mecanismo equivalente que convierta un fallo real en exito aparente
+    (F-003). Ignora comentarios (lineas que empiezan con '#'): el propio
+    ci.yml documenta en prosa que NO usa continue-on-error, lo que
+    contendria la sub-cadena literal sin ser la clave YAML real."""
+    content = _read_workflow(workflow_file)
+    non_comment_lines = [
+        line for line in content.splitlines() if not line.strip().startswith("#")
+    ]
+    assert not any("continue-on-error:" in line for line in non_comment_lines), (
+        "local-reconciler-tests debe ser gate obligatorio bloqueante, "
+        "sin la clave YAML continue-on-error:"
+    )
+
+
 @pytest.mark.parametrize("workflow_file", ["post-hitl-merge-gate.yml"])
 def test_post_hitl_gate_has_human_check(workflow_file: str):
     """post-hitl-merge-gate debe verificar aprobacion humana."""

@@ -126,14 +126,14 @@ enlace exacto en `docs/usuario/index.md`, estado correcto de
 6. Si `code-reviewer-agent` aprueba → actualizar `ROADMAP.md` al estado
    `[-] READY_FOR_PR` para esa feature, sin marcar `[x]`, y commitear ese
    cambio en la rama de la feature. Script recomendado:
-   `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\ready-for-pr.ps1 <NN>-<slug>`.
+   `pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\ready-for-pr.ps1 <NN>-<slug>`.
 7. Push de la rama de feature y creación automatizada de PR hacia
    `develop` (`gh pr create`). La PR debe incluir evidencias completas:
    resumen de cambios, resultados de tests, auditoría, code review,
    checklist de aceptación, riesgos y enlaces a spec/plan/tasks/docs.
 8. Verificar que el CI de la PR corre en verde antes de pedir decisión
    humana. Script recomendado:
-   `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\wait-pr-ci.ps1`.
+   `pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\wait-pr-ci.ps1`.
 9. **Único HITL:** el humano revisa la PR y sus evidencias completas y
    decide `MERGE` o `NO MERGE`.
    - Si decide `NO MERGE` → vuelve a 3 con observaciones concretas para
@@ -516,36 +516,55 @@ cuándo hacerlo). Es un evento manual, con esta secuencia:
   "Git", sección "Primera release y creación de `main`".
 - Los agentes nunca crean tags — es una decisión exclusivamente humana,
   en el momento de cada release.
-- El primer tag se crea junto con la primera release, en el mismo
-  evento que crea `main`. En el estado inicial del template (ver "Git",
-  sección "Estado inicial del template"), antes de la primera release,
-  no hay ningún tag — es la misma etapa descrita ahí para `main`, no un
-  caso aparte.
+- El primer tag de release del producto se crea junto con la primera
+  release, en el mismo evento que crea `main`. En el estado inicial del
+  template (ver "Git", sección "Estado inicial del template"), antes de
+  la primera release, no hay ningún tag de release del producto — es la
+  misma etapa descrita ahí para `main`, no un caso aparte. Esto no
+  incluye tags/releases propios del framework `.audit/` (por ejemplo
+  `audit-framework-vX.Y.Z`), que ese framework versiona de forma
+  independiente y están fuera del alcance de esta sección.
 - El mecanismo de despliegue (si el proyecto real lo define) depende del
   hosting elegido; documentarlo como decisión explícita en
   `docs/tecnica/arquitectura.md` cuando exista.
 
 ## CI/CD
 
-- **CI** (`.github/workflows/ci.yml`): declara dos jobs top-level, ambos
-  disparados por los mismos triggers (`push`/`pull_request` a `develop` y
-  `main`) y ambos **gate obligatorio con el mismo nivel de exigencia**
-  antes de mergear cualquier PR (paso 7 del circuito) — decisión
-  confirmada por el humano en Fase CLARIFY (ver
-  `runs/04-ci-wiring-product-tests/spec.md`, sección "Clarificaciones
-  realizadas"), no un supuesto de ningún agente:
-  - **`circuit-tests`**: corre `pytest` sobre `tests/` (tests del
-    circuito agéntico). Es el job que antes se llamaba `test`; cualquier
-    branch protection configurada con ese nombre viejo debe actualizarse
-    a `circuit-tests`.
-  - **`product-tests`**: placeholder deliberado mientras este template no
-    tenga stack de producto propio. Contiene un marcador explícito en el
-    propio `ci.yml` que referencia `docs/tecnica/arquitectura.md` como el
-    lugar donde documentar el stack real antes de reemplazar ese
-    placeholder por los pasos reales de build/test. Se mantiene como
-    check requerido desde ya (aunque hoy solo corra un `echo`) para que
-    branch protection no tenga que actualizarse el día que el stack real
-    llegue.
+- **CI** (`.github/workflows/ci.yml`): declara tres jobs top-level,
+  todos disparados por los mismos triggers (`push`/`pull_request` a
+  `develop` y `main`) y los tres **gate obligatorio con el mismo nivel
+  de exigencia** antes de mergear cualquier PR (paso 7 del circuito) —
+  para `circuit-tests`/`product-tests` es decisión confirmada por el
+  humano en Fase CLARIFY (ver `runs/04-ci-wiring-product-tests/spec.md`,
+  sección "Clarificaciones realizadas"); para `local-reconciler-tests`
+  es decisión explícita del humano al cerrar F-003 de la reauditoría
+  final v1.1 (ningún `continue-on-error` ni mecanismo equivalente que
+  convierta un fallo real en éxito aparente):
+  - **`circuit-tests`** (`ubuntu-latest`): corre `pytest` sobre `tests/`
+    (tests del circuito agéntico). Es el job que antes se llamaba
+    `test`; cualquier branch protection configurada con ese nombre viejo
+    debe actualizarse a `circuit-tests`.
+  - **`product-tests`** (`ubuntu-latest`): placeholder deliberado
+    mientras este template no tenga stack de producto propio. Contiene
+    un marcador explícito en el propio `ci.yml` que referencia
+    `docs/tecnica/arquitectura.md` como el lugar donde documentar el
+    stack real antes de reemplazar ese placeholder por los pasos reales
+    de build/test. Se mantiene como check requerido desde ya (aunque hoy
+    solo corra un `echo`) para que branch protection no tenga que
+    actualizarse el día que el stack real llegue.
+  - **`local-reconciler-tests`** (`windows-latest`): corre
+    específicamente `tests/test_local_reconciler_scripts.py` (el
+    `pytestmark` de ese archivo lo salta en `circuit-tests` porque
+    ejercita `Start-Process -WindowStyle Hidden` de PowerShell 5.1
+    Desktop, mecanismo Windows-only). Si esa suite falla, el job queda
+    rojo y bloquea el merge igual que `circuit-tests`/`product-tests`;
+    no tiene `continue-on-error` ni ningún otro mecanismo que oculte un
+    fallo real. Da evidencia ejecutable real, verificable por un
+    tercero desde la pestaña Actions, de que esa suite pasa en un
+    entorno Windows limpio sin depender de que un operador la corra
+    localmente en una máquina con EDR/antivirus agresivo (ver
+    `docs/tecnica/circuito-agentico.md`, sección "Troubleshooting:
+    EDR/antivirus agresivo bloquea el reconciliador local (Windows)").
 - **Docs** (`.github/workflows/docs.yml`): se dispara al pushear a `main`
   con cambios en `docs/` o `mkdocs.yml`. Publica el sitio MkDocs a GitHub
   Pages. Público, sin gate por ahora. Sigue el mismo ciclo de vida
@@ -574,8 +593,14 @@ cuándo hacerlo). Es un evento manual, con esta secuencia:
 
 ## Herramientas locales requeridas
 
-- Windows PowerShell (`powershell.exe`) para los scripts de automatización
-  en `scripts/*.ps1`.
+- PowerShell 7 (`pwsh`) para los scripts de automatización en
+  `scripts/*.ps1` — intérprete canónico del proyecto, consistente con
+  `README.md` y con `ci.yml`. Excepción: el reconciliador local
+  (`scripts/local-feature-reconcile.ps1`) usa `Start-Process
+  -WindowStyle Hidden` y en un punto llama directo a `powershell.exe`
+  (Windows PowerShell 5.1 Desktop); esa es una dependencia Windows-only
+  explícita, no el intérprete general del proyecto — ver "Compatibilidad
+  de plataforma" en `README.md`.
 - Git (`git`) para ramas, worktrees, commits, push y verificación de merge.
 - GitHub CLI (`gh`) instalado, en `PATH` y autenticado para crear PRs,
   consultar estado de PR mergeada y esperar checks de CI.
@@ -630,8 +655,8 @@ viven en `.agentic/agents.json`; el router OpenCode vive en
 Después de editar `.agentic/`, regenerar y validar adaptadores:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\sync-agentic-adapters.ps1
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\sync-agentic-adapters.ps1 -Check
+pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\sync-agentic-adapters.ps1
+pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\sync-agentic-adapters.ps1 -Check
 ```
 
 No editar manualmente archivos generados en `.claude/agents/*.md`,
@@ -678,7 +703,7 @@ circuito siguen viviendo en este `AGENTS.md`, para evitar duplicación.
 Para resolver modelos OpenCode antes de iniciar una etapa, usar:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\resolve-agentic-model.ps1 `
+pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\resolve-agentic-model.ps1 `
   -Role analyst-agent `
   -Feature <NN>-<slug>
 ```
