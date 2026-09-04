@@ -87,9 +87,50 @@ def push_remote_roadmap(main: Path, entries: dict[str, str]) -> None:
     git(main, "push", "origin", "develop")
 
 
+def run_capture_to_files(
+    command: list[str], cwd: Path, tmp_path: Path, name: str
+) -> subprocess.CompletedProcess[str]:
+    """Como `run()`, pero redirige stdout/stderr del proceso lanzado a archivos
+    reales en vez de PIPE (`capture_output=True`).
+
+    Necesario para el launcher `-StartBackground`: ese proceso lanza a su vez
+    un reconciliador de fondo vía `Start-Process` en PowerShell, que -- a
+    diferencia de `subprocess.Popen` de Python (>=3.7, que restringe la
+    herencia de handles solo a los explicitos vía
+    PROC_THREAD_ATTRIBUTE_HANDLE_LIST) -- no restringe que handles hereda: con
+    `capture_output=True` el nieto termina heredando tambien el extremo de
+    escritura del pipe stdout/stderr que Python le paso al launcher, aunque su
+    propia salida vaya a archivos. Ese duplicado mantiene el pipe sin EOF
+    hasta que el nieto termina (hasta `MaxMinutes` despues), bloqueando
+    innecesariamente `subprocess.run()`/`communicate()` mucho despues de que
+    el launcher ya devolvio el control. Redirigiendo a archivos reales no hay
+    pipe que el nieto pueda mantener abierto: Python solo espera a que el
+    proceso launcher termine (via su handle de proceso), no a un EOF de pipe.
+    """
+    out_path = tmp_path / f"{name}.launcher.out.log"
+    err_path = tmp_path / f"{name}.launcher.err.log"
+    with open(out_path, "wb") as out_f, open(err_path, "wb") as err_f:
+        result = subprocess.run(
+            command,
+            cwd=cwd,
+            env=command_env(),
+            stdout=out_f,
+            stderr=err_f,
+            check=False,
+            creationflags=CREATE_NO_WINDOW,
+        )
+    return subprocess.CompletedProcess(
+        command,
+        result.returncode,
+        out_path.read_text(encoding="utf-8", errors="replace"),
+        err_path.read_text(encoding="utf-8", errors="replace"),
+    )
+
+
 def start_reconciler(
     cwd: Path,
     slug: str,
+    tmp_path: Path,
     worktree_dir: Path | None = None,
     poll_seconds: int = 1,
     max_minutes: int = 2,
@@ -111,7 +152,7 @@ def start_reconciler(
     ]
     if worktree_dir is not None:
         command.extend(["-WorktreeDir", str(worktree_dir)])
-    return run(command, cwd)
+    return run_capture_to_files(command, cwd, tmp_path, slug)
 
 
 def state_dir(main: Path) -> Path:
@@ -222,7 +263,7 @@ def branch_exists(main: Path, branch: str) -> bool:
 
 def test_start_reconciler_in_main_checkout(tmp_path, cleanup_reconcilers):
     _, main = make_repo(tmp_path)
-    result = start_reconciler(main, SLUG, worktree_dir=tmp_path / "no-matter")
+    result = start_reconciler(main, SLUG, tmp_path, worktree_dir=tmp_path / "no-matter")
     assert result.returncode == 0, result.stdout + result.stderr
     wait_for_reconciler_running(main, SLUG)
     wait_until(
@@ -237,7 +278,7 @@ def test_start_reconciler_from_linked_worktree(tmp_path, cleanup_reconcilers):
     _, main = make_repo(tmp_path)
     worktree = make_worktree(main, tmp_path, "wt-demo", SLUG)
     assert (worktree / ".git").is_file()
-    result = start_reconciler(worktree, SLUG)
+    result = start_reconciler(worktree, SLUG, tmp_path)
     assert result.returncode == 0, result.stdout + result.stderr
     wait_for_reconciler_running(main, SLUG)
     assert (state_dir(main) / f"{SLUG}.log").exists()
@@ -257,7 +298,7 @@ def test_start_reconciler_does_not_duplicate_while_running(tmp_path, cleanup_rec
         lock = lock_path(main, SLUG)
         lock.parent.mkdir(parents=True, exist_ok=True)
         lock.write_text(str(sleeper.pid), encoding="ascii")
-        result = start_reconciler(main, SLUG)
+        result = start_reconciler(main, SLUG, tmp_path)
         assert result.returncode == 0, result.stdout + result.stderr
         assert "Ya existe un reconciliador local" in result.stdout
         assert lock.read_text(encoding="ascii").strip() == str(sleeper.pid)
@@ -271,7 +312,7 @@ def test_start_reconciler_replaces_stale_lock(tmp_path, cleanup_reconcilers):
     lock = lock_path(main, SLUG)
     lock.parent.mkdir(parents=True, exist_ok=True)
     lock.write_text("400000001", encoding="ascii")
-    result = start_reconciler(main, SLUG, worktree_dir=tmp_path / "no-matter")
+    result = start_reconciler(main, SLUG, tmp_path, worktree_dir=tmp_path / "no-matter")
     assert result.returncode == 0, result.stdout + result.stderr
     pid = wait_for_reconciler_running(main, SLUG)
     assert int(lock.read_text(encoding="ascii").strip()) == pid
@@ -281,7 +322,7 @@ def test_reconciler_cleans_worktree_and_branch_when_remote_closed(tmp_path, clea
     _, main = make_repo(tmp_path)
     worktree = make_worktree(main, tmp_path, "wt-demo", SLUG)
     push_remote_roadmap(main, {SLUG: "x"})
-    result = start_reconciler(worktree, SLUG)
+    result = start_reconciler(worktree, SLUG, tmp_path)
     assert result.returncode == 0, result.stdout + result.stderr
     wait_for_reconciler_finished(main, SLUG)
     assert not worktree.exists()
@@ -297,7 +338,7 @@ def test_reconciler_cleans_only_target_worktree_and_branch(tmp_path, cleanup_rec
     alpha = make_worktree(main, tmp_path, "wt-alpha", "98-alpha")
     beta = make_worktree(main, tmp_path, "wt-beta", "97-beta")
     push_remote_roadmap(main, {"98-alpha": "x", "97-beta": " "})
-    result = start_reconciler(alpha, "98-alpha")
+    result = start_reconciler(alpha, "98-alpha", tmp_path)
     assert result.returncode == 0, result.stdout + result.stderr
     wait_for_reconciler_finished(main, "98-alpha")
     assert not alpha.exists()
@@ -311,7 +352,7 @@ def test_reconciler_never_removes_dirty_worktree(tmp_path, cleanup_reconcilers):
     worktree = make_worktree(main, tmp_path, "wt-demo", SLUG)
     (worktree / "draft.txt").write_text("trabajo no confirmado", encoding="utf-8")
     push_remote_roadmap(main, {SLUG: "x"})
-    result = start_reconciler(worktree, SLUG)
+    result = start_reconciler(worktree, SLUG, tmp_path)
     assert result.returncode == 0, result.stdout + result.stderr
     wait_for_reconciler_finished(main, SLUG)
     assert worktree.exists()
@@ -319,3 +360,25 @@ def test_reconciler_never_removes_dirty_worktree(tmp_path, cleanup_reconcilers):
     assert branch_exists(main, BRANCH)
     error_log = (state_dir(main) / f"{SLUG}.err.log").read_text(encoding="utf-8", errors="replace")
     assert error_log.strip() != ""
+
+
+def test_start_reconciler_returns_quickly(tmp_path, cleanup_reconcilers):
+    """Regresion: start_reconciler() debe retornar en cuanto el launcher
+    confirma el arranque del reconciliador de fondo (~2s), no quedar
+    bloqueado hasta que ese reconciliador de fondo termine (hasta
+    max_minutes despues). Ver run_capture_to_files() para el mecanismo:
+    con capture_output=True (PIPE) el reconciliador de fondo hereda el
+    extremo de escritura del pipe stdout/stderr del launcher y lo mantiene
+    abierto hasta que el termina, bloqueando subprocess.run() de forma
+    artificial.
+    """
+    _, main = make_repo(tmp_path)
+    start = time.monotonic()
+    result = start_reconciler(main, SLUG, tmp_path, worktree_dir=tmp_path / "no-matter", max_minutes=2)
+    elapsed = time.monotonic() - start
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert elapsed < 10, (
+        f"start_reconciler() tardo {elapsed:.1f}s en retornar (limite 10s); "
+        "esto indica que quedo bloqueado esperando al reconciliador de "
+        "fondo en vez de retornar en cuanto el launcher confirmo el arranque."
+    )
