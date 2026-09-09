@@ -24,21 +24,35 @@ pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\sync-agentic-adapters.ps
 # 2. Validar estructura y tests
 pytest -v tests/
 
-# 3. Marcar feature READY_FOR_PR y crear PR
-pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\ready-for-pr.ps1 -Mode Feature -Slug 01-mi-feature
+# 3. Agregar tu primera feature al backlog: editar ROADMAP.md, sección
+#    "Backlog", y agregar una línea con el patrón
+#    `- [ ] 01-mi-feature — Descripción corta y verificable.` Luego
+#    commitear ese cambio en develop (o pushearlo si develop es remoto).
+
+# 4. Arrancar la work unit: crea la rama feature/01-mi-feature y su
+#    worktree en ../worktrees/01-mi-feature/ (debe correrse desde el
+#    checkout principal de develop, con el árbol de trabajo limpio)
+pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\start-work-unit.ps1 -Mode Feature -Slug 01-mi-feature
 ```
 
 ## 📋 PASO 3: Flujo completo
 
 ```bash
-# El circuito fluye automáticamente:
-# Analyst-agent → spec.md, plan.md, tasks.md
-# Reviewer-agent → audit verificación
-# Builder-agent → código + documentación
-# QA-agent → tests + validación de contrato
-# Code-Reviewer-agent → revisión final diff
-# HITL humano → aprobacion MERGE/NO MERGE en GitHub
-# Post-HITL gate → merge automático si checks verdes
+# Dentro del worktree creado en el PASO 2, el circuito corre como
+# subagentes en sesión nueva, en este orden — cada uno produce su
+# artefacto en runs/01-mi-feature/ antes de que el siguiente empiece:
+# Analyst-agent    → spec.md, plan.md, tasks.md
+# Reviewer-agent   → audit-N.md (approved/rejected sobre spec+plan+tasks)
+# Builder-agent    → código + docs/tecnica + docs/usuario + decision.md
+# QA-agent         → test-report-N.md (pytest real + contrato completo)
+# Code-Reviewer    → code-review-N.md sobre el diff final
+
+# Recién cuando code-review aprueba, se marca READY_FOR_PR y se crea la PR:
+pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\ready-for-pr.ps1 -Mode Feature -Slug 01-mi-feature
+
+# HITL humano → único punto de decisión: MERGE o NO MERGE sobre la PR
+# Merge → lo ejecuta el humano (directo en GitHub, o vía el gate
+#         post-HITL si aprobó con una GitHub Review formal)
 # Post-merge close → ROADMAP.md [ ] → [x] automático
 ```
 
