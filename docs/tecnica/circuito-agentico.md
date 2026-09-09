@@ -139,6 +139,20 @@ lo sigue haciendo `post-merge-close-feature.yml` mediante
 `scripts/close-feature.ps1`; la limpieza local queda en manos del
 reconciliador local que observa `origin/develop`.
 
+**Este gate es la automatización recomendada, no el único mecanismo de
+merge permitido.** Requiere `reviewDecision=APPROVED` (una GitHub Review
+formal) para disparar el workflow que lo invoca
+(`pull_request_review: submitted`). El único HITL definido en
+`AGENTS.md` (paso 9) exige que un humano decida y ejecute el merge sobre
+una PR real, no que exista necesariamente ese objeto de Review: si el
+humano mergea la PR directamente desde GitHub después de verificar CI y
+evidencias (paso 8 del circuito), esa decisión también satisface el
+único HITL — simplemente este workflow no tiene evento que lo dispare en
+ese caso, porque nunca hubo una Review formal que lo activara. Lo que
+`guard-develop-branch.yml` sí exige siempre, sin excepción, es que el
+commit llegue a `develop` a través de una PR mergeada y no de un push
+directo.
+
 ## Troubleshooting: EDR/antivirus agresivo bloquea el reconciliador local (Windows)
 
 **Síntoma**: `ready-for-pr.ps1` lanza

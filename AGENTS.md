@@ -154,6 +154,25 @@ enlace exacto en `docs/usuario/index.md`, estado correcto de
      el circuito sin pedir otro checkpoint humano.
    - Si esos checks post-HITL quedan verdes → el gate mergea la PR a
      `develop`. No se marca `[x]` antes del merge.
+   - **Mecanismo de merge:** lo único que exige el único HITL es que un
+     humano decida `MERGE`/`NO MERGE` sobre la PR y que esa decisión sea
+     la que efectivamente ejecuta el merge — no exige un objeto GitHub
+     Review con estado `APPROVED` como único mecanismo válido. En la
+     práctica esto puede materializarse de dos formas: (a) el humano
+     aprueba la PR con una GitHub Review, lo que dispara
+     `post-hitl-merge-gate.yml` / `complete-approved-pr.ps1` como
+     automatización recomendada — vuelve a esperar CI en verde
+     inmediatamente antes de mergear y deja `post-hitl-gate-N.md` como
+     evidencia adicional; o (b) el humano mergea la PR directamente desde
+     GitHub (botón "Merge pull request") una vez que ya verificó CI verde
+     y evidencias completas en el paso 8, sin pasar por esa automatización.
+     Ambas formas son válidas y cumplen el único HITL: en ambas, un
+     humano —nunca un agente— es quien decide y ejecuta el merge sobre
+     una PR real. `complete-approved-pr.ps1` es la automatización
+     disponible para el camino (a), no el único mecanismo permitido de
+     merge; lo que sí es innegociable, y lo hace cumplir
+     `guard-develop-branch.yml`, es que ningún commit llegue a `develop`
+     fuera de una PR mergeada.
 10. **Cierre automático post-merge remoto:** GitHub Actions dispara
    `.github/workflows/post-merge-close-feature.yml` cuando una PR hacia
    `develop` se cierra como mergeada. El workflow corre código confiable
@@ -482,6 +501,47 @@ otra.
 - El humano no abre la PR ni hace checkpoints previos: solo decide
   `MERGE` o `NO MERGE` con la PR y sus evidencias a la vista.
 
+### Ramas `chore/*` (fuera del circuito SDD)
+
+`feature/<NN>-<slug>` y `milestone/<slug>` son las ramas del circuito
+SDD descrito en "Workflow del proyecto": existen porque hay un ítem de
+`ROADMAP.md` detrás. `chore/<slug-descriptivo>` es la convención para
+trabajo de gobernanza del propio repositorio que no nace de un ítem de
+`ROADMAP.md` — por ejemplo, remediación de hallazgos de auditoría sobre
+`.audit/`, ajustes al propio circuito agéntico (`AGENTS.md`,
+`.agentic/`, `scripts/*.ps1`) o mantenimiento de CI/CD. El nombre exacto
+después de `chore/` es libre y descriptivo (sin el prefijo `NN-` de
+`ROADMAP.md`, porque no referencia un ítem del backlog).
+
+Por qué queda fuera del circuito de 5 agentes: "Workflow del proyecto"
+dice explícitamente *"esto define cómo se ejecuta cualquier feature en
+este repo"* y todo el circuito está indexado por ítems de `ROADMAP.md`
+(`spec.md`/`plan.md`/`tasks.md`/`audit-N.md`/`test-report-N.md`/
+`code-review-N.md` en `runs/<NN>-<slug>/`). Una rama `chore/*` no tiene
+ítem de `ROADMAP.md` que indexar, así que no genera esos artefactos ni
+pasa por `analyst-agent`/`reviewer-agent`/`builder-agent`/`qa-agent`/
+`code-reviewer-agent`.
+
+Lo que sí sigue aplicando sin excepción a `chore/*`, porque no depende
+del circuito SDD sino del enforcement general de la rama `develop` (ver
+"Estado inicial del template" arriba): el cambio llega a `develop`
+exclusivamente vía PR — nunca con push directo, protegido por
+`guard-develop-branch.yml` igual que cualquier otra rama — y el único
+HITL sigue siendo el humano quien decide y ejecuta el merge (ver paso 9
+de "Workflow del proyecto" y su bullet "Mecanismo de merge").
+
+Coherencia con los gates automatizados: `post-hitl-merge-gate.yml` y
+`post-merge-close-feature.yml` reconocen únicamente `^feature/NN-slug$`
+y `^milestone/slug$` por diseño — para `chore/*` (o cualquier otra rama
+que no matchee ese patrón) ambos workflows detectan que no aplica y
+terminan sin ejecutar merge automático ni cierre automático de
+`ROADMAP.md`, dejándolo explícito en su log. No es una condición de
+fallo: es el comportamiento esperado para una rama que nunca tuvo un
+ítem de `ROADMAP.md` que cerrar. En consecuencia, una PR `chore/*` la
+mergea el humano directamente desde GitHub, y si esa PR llegara a tocar
+`ROADMAP.md` (no es su propósito habitual), esa actualización también
+queda a cargo del humano, no de la automatización.
+
 ### Primera release y creación de `main`
 
 `main` se crea una única vez, exclusivamente cuando el humano decide y
@@ -587,7 +647,11 @@ cuándo hacerlo). Es un evento manual, con esta secuencia:
   `scripts/complete-approved-pr.ps1` consultando `gh pr view` en vivo, no
   el evento de GitHub. Invoca `scripts/complete-approved-pr.ps1`, espera
   checks post-aprobación, mergea solo si están verdes y devuelve feedback
-  a builder si fallan.
+  a builder si fallan. Es la automatización recomendada para ejecutar el
+  merge después de una GitHub Review de aprobación — no es el único
+  mecanismo de merge permitido por el único HITL (ver paso 9, bullet
+  "Mecanismo de merge"): si el humano mergea directamente desde GitHub,
+  este workflow simplemente no tiene evento que lo dispare.
 - **Release**: pendiente (ver sección Versionado). No hay `Dockerfile` ni
   `release.yml` todavía — se agregan cuando el stack real los requiera.
 
