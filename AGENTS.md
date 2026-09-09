@@ -47,6 +47,30 @@ explícitamente.
   cuando exista algo real que testear — no antes.
 - `scripts/`: motor ejecutable del circuito agéntico (`scripts/*.ps1`,
   ver más abajo). No hay scripts operativos de producto todavía.
+- `STATUS.md`: punto de reentrada operativo en la raíz del repo — ver
+  "Reentrada operativa (STATUS.md)" más abajo.
+
+## Reentrada operativa (STATUS.md)
+
+`STATUS.md`, en la raíz del repo, resume el estado operativo actual
+(rama estable/de integración, trabajo activo, qué se hizo, qué falta,
+evidencia de Git/GitHub, próximo paso exacto) para que cualquier agente o
+el humano puedan retomar sin releer todo el historial.
+
+- Todo agente debe leer `STATUS.md` + `AGENTS.md` + `ROADMAP.md` + el
+  estado real de Git (`git status`, `git log`, `git branch -vv`) al
+  arrancar sesión.
+- Si la tarea depende de GitHub, debe verificar también PR/CI/Actions
+  reales (`gh pr list`, `gh run list`), no solo lo que diga `STATUS.md`.
+- Antes de finalizar, bloquearse, pedir HITL o devolver control al
+  usuario, debe actualizar `STATUS.md` con el estado resultante.
+- `STATUS.md` no reemplaza `ROADMAP.md`, `runs/`, Git, PR, CI ni la
+  evidencia del repo — es un resumen derivado, no la fuente de verdad.
+  Si `STATUS.md` contradice la evidencia real, prevalece la evidencia
+  real y `STATUS.md` debe corregirse.
+- Si existen ramas o worktrees activos, `STATUS.md` debe reflejarlos.
+  Ramas históricas ya cerradas/mergeadas no se presentan como trabajo
+  activo.
 
 ## Workflow del proyecto — circuito agéntico sin HITL intermedio
 
