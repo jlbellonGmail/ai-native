@@ -1,7 +1,8 @@
 # Fundamentos v2 y compatibilidad
 
-Estado: diseño de Fase 00; motor ejecutable v1 vigente. No es una release
-v2.0.0 ni implementa ASSESS. Intención: preparar evolución autónoma y
+Estado: diseño de Fase 00; motor ejecutable v1 vigente y SDD adaptativo
+habilitado de forma opt-in desde Fase 02. No es una release v2.0.0.
+Intención: preparar evolución autónoma y
 proporcional preservando los activos probados de v1.1.0.
 Normativa: `PRINCIPLES.md`. Evidencia del bootstrap:
 `.audit/evidence/2026-09-13-fundamentos-v2/propuesta.md`.
@@ -70,7 +71,7 @@ Toda sustitución exige igual cobertura de invariantes y mejora medida.
 | CI, tests y guard-develop | Conservar | Regresión y enforcement real; limitaciones documentadas, 06/12 |
 | .audit y evidencias históricas | Conservar | Evaluación independiente, no modificar estándar para aprobar, 06/17 |
 | Cinco etapas cognitivas fijas | Simplificar | Separar capacidad de cantidad de invocaciones; demostrar calidad, 03 |
-| spec/plan/tasks universales | Hacer adaptativo | Intención siempre; profundidad según riesgo, 02 |
+| spec/plan/tasks universales | Hacer adaptativo | Intención siempre; profundidad según riesgo, materializado en 02 |
 | feature-contract rígido | Hacer adaptativo | Evidencia suficiente con compatibilidad v1, 05 |
 | Router/fallback y model-routing.jsonl | Hacer adaptativo | Conservar trazabilidad; enrutar por tarea/riesgo/costo, 08 |
 | Bucle Builder→QA→Code Reviewer | Reemplazar gradualmente | CONVERGENCE verificable sin perder independencia, 04 |
@@ -117,9 +118,10 @@ no exige que un rol pertenezca a una herramienta particular.
 | STANDARD | Spec formal ligera, planificación suficiente, implementación, tests, review/convergence | Diseñar materialización en 02 |
 | FULL | Spec, plan, tasks si aportan valor, decisiones, riesgos, clarificación, análisis, implementación, verification, convergence y gates adicionales | Diseñar materialización en 02 |
 
-ASSESS determinará profundidad con evidencia en Fase 01; aquí no hay algoritmo
-ni umbrales de clasificación ejecutables. Hasta la habilitación de 02/05 se
-cumple el contrato SDD v1, aunque el cambio parezca LIGHT.
+ASSESS determina profundidad con evidencia en Fase 01. Fase 02 la materializa
+con `scripts/materialize-sdd.ps1`: traduce la salida a LIGHT/STANDARD/FULL sin
+duplicar la clasificación. El contrato SDD v1 sigue siendo obligatorio para
+el circuito vigente hasta que una fase posterior adapte formalmente su gate.
 
 CONVERGENCE significa coherencia suficiente entre objetivo, especificación,
 implementación, tests, documentación, decisiones y riesgos aplicables. Flujo:
