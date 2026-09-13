@@ -1,29 +1,25 @@
 # Estado operativo
 
 Versión: v2.0.0
-Estado general: F05 terminada y mergeada; F01–F04 cerradas.
-Última fase funcional terminada: F05 — contrato adaptativo de evidencias.
-Siguiente fase: F06 — tests, CI y `.audit`.
-
-## Qué ya funciona
-
-El contrato adaptativo consume `sdd.json`, mantiene SUMMARY como entrada humana,
-diferencia LIGHT/STANDARD/FULL, preserva legacy y valida convergencia JSON.
+Estado general: F06 terminada y mergeada; F01–F06 cerradas.
+Última fase funcional terminada: F06 — tests, CI y `.audit`.
+Siguiente fase: F07 — agentic evals.
 
 ## Evidencia real
 
-PR #42 mergeada contra `develop`; CI verde en `circuit-tests`,
-`local-reconciler-tests` y `product-tests`. Run: `runs/v2.0.0/10-evidencias-adaptativas/SUMMARY.md`.
+PR #46 mergeada contra `develop` (`43cbf9b`). CI de la PR y de `develop`
+verde en `circuit-tests`, `local-reconciler-tests` y `product-tests`.
+Run: `runs/v2.0.0/11-tests-ci-audit/SUMMARY.md`.
 
 ## Qué sigue
 
-F06 queda pendiente y no fue iniciada. No se iniciaron fases posteriores.
+F07 queda pendiente y no fue iniciada. No se iniciaron F09 ni F11.
+F08 espera evidencia de F07; F10 espera la política relevante de seguridad
+si las capacidades externas afectan permisos o confianza.
 
 ## Incidencias
 
-La suite local completa tuvo tres timeouts preexistentes del reconciliador Windows;
-la suite focalizada F05 (44 pruebas) y CI remoto quedaron verdes.
-
-## Detalle
-
-[SUMMARY de F05](runs/v2.0.0/10-evidencias-adaptativas/SUMMARY.md)
+Los timeouts locales históricos del reconciliador Windows se diagnosticaron
+como dependencia del árbol de procesos del host; CI Windows es la fuente
+determinística y quedó verde. Las advertencias de Node.js 20 en Actions no
+bloquean la ejecución.
