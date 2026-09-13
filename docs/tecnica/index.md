@@ -25,6 +25,6 @@ una calificación subjetiva.
 - [Adopcion de proyecto existente](adopcion-proyecto-existente.md)
 - [CI wiring product tests](ci-wiring-product-tests.md)
 - [Operational Readiness Docs](operational-readiness-docs.md)
-- [ASSESS: motor adaptativo](assess-motor-adaptativo.md)
+- [Assess Motor Adaptativo](assess-motor-adaptativo.md)
 
 <!-- FEATURE_LINKS_END -->
