@@ -19,5 +19,6 @@ fuente canónica, regenerar adaptadores y declarar modelos por ejecución.
 - [SDD Adaptativo](sdd-adaptativo.md)
 - [Arquitectura de roles](arquitectura-roles.md)
 - [Convergence autónoma Builder-Reviewer](convergence.md)
+- [Evidencias adaptativas](evidencias-adaptativas.md)
 
 <!-- FEATURE_LINKS_END -->
