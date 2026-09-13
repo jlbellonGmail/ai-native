@@ -320,9 +320,16 @@ try {
     $root = Get-RepositoryRoot
     $models = Read-JsonFile (Join-Path $root ".agentic/models.json")
 
+    # Los nombres históricos siguen aceptándose como interfaz de migración,
+    # pero se resuelven siempre a un rol canónico por capacidad.
+    $requestedRole = $Role
+    $aliasProperty = $models.roleAliases.PSObject.Properties[$Role]
+    if ($null -ne $aliasProperty) {
+        $Role = [string]$aliasProperty.Value
+    }
     $roleProperty = $models.roles.PSObject.Properties[$Role]
     if ($null -eq $roleProperty) {
-        throw "Rol desconocido: $Role"
+        throw "Rol desconocido: $requestedRole"
     }
     $roleConfig = $roleProperty.Value
 

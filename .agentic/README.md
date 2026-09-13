@@ -3,11 +3,11 @@
 `.agentic/` contiene la configuracion canonica del circuito agentico que
 no pertenece a una herramienta concreta.
 
-- `agents.json`: metadatos por rol (`analyst-agent`, `reviewer-agent`,
-  `builder-agent`, `qa-agent`, `code-reviewer-agent`), modelos por
-  herramienta y permisos de adaptador. Referencia
+- `agents.json`: roles canónicos `planner`, `builder` y `reviewer`, sus
+  capacidades, modelos por herramienta y permisos de adaptador. Referencia
   `./schemas/agents.schema.json` via `$schema`.
-- `roles/*.md`: definicion funcional canonica de cada rol.
+- `roles/*.md`: definición funcional canónica de cada rol. Los aliases
+  históricos se mantienen sólo en el router para migración.
 - `models.json`: router minimo de modelos para OpenCode, allowlists,
   credenciales esperadas y fallbacks autorizados. Referencia
   `./schemas/models.schema.json` via `$schema`.

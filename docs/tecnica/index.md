@@ -27,5 +27,6 @@ una calificación subjetiva.
 - [Operational Readiness Docs](operational-readiness-docs.md)
 - [Assess Motor Adaptativo](assess-motor-adaptativo.md)
 - [SDD Adaptativo](sdd-adaptativo.md)
+- [Arquitectura de roles](arquitectura-roles.md)
 
 <!-- FEATURE_LINKS_END -->

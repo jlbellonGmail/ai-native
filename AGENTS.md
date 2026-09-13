@@ -1,5 +1,20 @@
 # Proyecto: template
 
+## Roles canónicos (F03)
+
+La arquitectura conceptual tiene tres roles definidos por capacidad:
+**Planner** interpreta intención, consume ASSESS y planifica SDD; **Builder**
+materializa cambios y evidencia sin autoaprobarse; **Reviewer** valida de forma
+independiente y reúne spec review, QA y code review según riesgo. Los modelos,
+proveedores y herramientas son adaptadores intercambiables. Los nombres
+históricos `analyst-agent`, `qa-agent` y `code-reviewer-agent` sólo existen como
+aliases de migración en el router y artefactos v1.1; no son roles canónicos.
+
+ASSESS y `materialize-sdd.ps1` siguen siendo determinísticos: clasifican riesgo
+y profundidad LIGHT/STANDARD/FULL; los roles consumen esa salida y no la
+reimplementan. Formato, archivos, estados, tests, CI y lifecycle permanecen en
+scripts/gates. La coordinación iterativa de convergencia pertenece a F04.
+
 ## Transición a v2: vigencia y dirección
 
 Leer también [CONSTITUTION.md](CONSTITUTION.md), fuente de principios normativos.
