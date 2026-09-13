@@ -1,45 +1,31 @@
 # Estado operativo
 
-Versión: v2.0.0  
-Estado general: F03 terminada; F01, F02 y T01 cerradas.  
-Última fase funcional terminada: F03 — Arquitectura de roles.  
-Intervención transversal: T01 — normalización documental, terminada.  
-Siguiente fase: F04 — CONVERGENCE.  
+Versión: v2.0.0
+Estado general: F04 terminada y mergeada; F01, F02, F03 y T01 cerradas.
+Última fase funcional terminada: F04 — CONVERGENCE.
+Siguiente fase: F05 — contrato adaptativo de evidencias.
 
 ## Qué ya funciona
 
-El circuito agéntico, el SDD adaptativo LIGHT/STANDARD/FULL, la validación
-determinística y la documentación por unidad siguen operativos.
+El circuito agéntico, SDD LIGHT/STANDARD/FULL, convergencia Builder ↔
+Reviewer, validación determinística y documentación por unidad siguen
+operativos.
 
 ## Qué sigue
 
-Iniciar `09-convergence` cuando corresponda.
+Iniciar `10-evidencias-adaptativas` cuando corresponda; F05 permanece
+pendiente y no fue iniciada.
 
 ## Problemas abiertos
 
-Ninguno dentro de T01. La protección preventiva nativa de ramas depende del
+Ninguno dentro de F04. La protección preventiva nativa de ramas depende del
 plan de GitHub y permanece documentada como limitación de plataforma.
 
 ## Próximo paso
 
-Preparar F04 desde `develop`; F03 ya está mergeada y cerrada (PR #34).
+Preparar F05 desde `develop`; F04 fue mergeada mediante PR #39 y cerrada por
+el workflow post-merge.
 
 ## Detalle
 
-[SUMMARY de F03](runs/v2.0.0/08-arquitectura-roles/SUMMARY.md)
-
-<!-- STATUS:AUTO:BEGIN -->
-
-## Estado verificado automáticamente
-
-- Actualizado: 2026-09-13T18:36:58Z
-- Rama: feature/v2.0.0-08-arquitectura-roles
-- HEAD: 038d61b (038d61bb1f87466421e1657d75319e28a9ab11f6)
-- Remoto: refs/remotes/origin/develop
-- Working tree: dirty
-- Worktrees: C:/Proyectos/template (develop); C:/Proyectos/worktrees/v2.0.0-08-arquitectura-roles (feature/v2.0.0-08-arquitectura-roles)
-- PR activa: sin PR
-- CI: sin CI
-- Última release: {"name":"v1.1.0 — Roadmap → Analyst → Spec Reviewer → Builder → QA → Code Reviewer → .audit → HITL → PR","publishedAt":"2026-09-13T02:03:08Z","tagName":"v1.1.0"}
-
-<!-- STATUS:AUTO:END -->
+[SUMMARY de F04](runs/v2.0.0/09-convergence/SUMMARY.md)
