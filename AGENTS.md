@@ -15,6 +15,16 @@ y profundidad LIGHT/STANDARD/FULL; los roles consumen esa salida y no la
 reimplementan. Formato, archivos, estados, tests, CI y lifecycle permanecen en
 scripts/gates. La coordinación iterativa de convergencia pertenece a F04.
 
+### Convergencia F04
+
+La coordinación normal es Builder → validación determinística → Reviewer →
+feedback estructurado → Builder. `scripts/convergence.ps1` consume ASSESS y
+la profundidad SDD sin reclasificarlos; registra findings, progreso y un
+presupuesto proporcional LIGHT/STANDARD/FULL. Builder no puede aprobarse a sí
+mismo y Reviewer valida siempre el estado vigente. Planner sólo reingresa si
+Reviewer marca una decisión material, ambigüedad, contradicción o cambio de
+alcance; los bloqueos externos y fallos técnicos terminan de forma segura.
+
 ## Transición a v2: vigencia y dirección
 
 Leer también [CONSTITUTION.md](CONSTITUTION.md), fuente de principios normativos.
