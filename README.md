@@ -3,6 +3,10 @@
 Bienvenido al template AI-Native con circuito agente completo. Sigue estos 3 pasos
 para tener tu proyecto operativo en menos de 5 minutos.
 
+> ¿Estás retomando un repo que ya usa este template? Antes de seguir estos
+> pasos, leé `STATUS.md` (raíz del repo) para el estado operativo actual —
+> ver `AGENTS.md`, sección "Reentrada operativa (STATUS.md)".
+
 ## 🚀 PASO 1: Clonar y configurar
 
 ```bash
