@@ -186,5 +186,5 @@ if ($Mode -eq "Milestone") {
 Write-Host ""
 Write-Host "==> Proximo paso: correr analyst-agent en sesion nueva, dentro de $worktreeDir,"
 Write-Host "    leyendo AGENTS.md (seccion Modo MILESTONE si $Mode -eq 'Milestone') para producir runs/$(
-    if ($Mode -eq 'Milestone') { "milestone-$Slug" } else { $Slug }
+    if ($Mode -eq 'Milestone') { "milestone-$Slug" } else { if ([string]::IsNullOrWhiteSpace($Version)) { $Slug } else { "$Version/$Slug" } }
 )/spec.md."

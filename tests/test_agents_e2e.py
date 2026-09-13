@@ -79,22 +79,16 @@ def work_unit_schema():
 class TestAgentStructure:
     """Verify the agent structure is complete and valid."""
 
-    def test_agents_json_has_all_5_roles(self, agents_json):
-        """agents.json debe tener los 5 roles definidos: analyst, reviewer, builder, qa, code-reviewer."""
-        expected_roles = [
-            "analyst-agent",
-            "reviewer-agent",
-            "builder-agent",
-            "qa-agent",
-            "code-reviewer-agent",
-        ]
+    def test_agents_json_has_three_canonical_roles(self, agents_json):
+        """agents.json define Planner, Builder y Reviewer por capacidades."""
+        expected_roles = ["planner", "builder", "reviewer"]
         for role in expected_roles:
             assert role in agents_json.get("roles", {}), f"Falta el rol '{role}' en agents.json"
 
     def test_agents_json_has_prompt_paths(self, agents_json):
         """Cada rol debe tener path de prompt canonico."""
         roles = agents_json.get("roles", {})
-        for role_name in ["analyst-agent", "reviewer-agent", "builder-agent", "qa-agent", "code-reviewer-agent"]:
+        for role_name in ["planner", "reviewer", "builder"]:
             assert role_name in roles, f"Rol {role_name} no encontrado"
             role = roles[role_name]
             assert "prompt" in role, f"Rol {role_name} debe tener field 'prompt'"

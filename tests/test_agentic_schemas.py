@@ -32,7 +32,7 @@ def test_agents_schema_rejects_role_without_description():
     schema = load_json(SCHEMAS_DIR / "agents.schema.json")
     document = load_json(ROOT / ".agentic" / "agents.json")
     broken = copy.deepcopy(document)
-    del broken["roles"]["analyst-agent"]["description"]
+    del broken["roles"]["planner"]["description"]
 
     with pytest.raises(ValidationError):
         validate(instance=broken, schema=schema)
@@ -42,7 +42,7 @@ def test_agents_schema_rejects_unknown_field_inside_claude_block():
     schema = load_json(SCHEMAS_DIR / "agents.schema.json")
     document = load_json(ROOT / ".agentic" / "agents.json")
     broken = copy.deepcopy(document)
-    broken["roles"]["analyst-agent"]["claude"]["unexpectedField"] = "nope"
+    broken["roles"]["planner"]["claude"]["unexpectedField"] = "nope"
 
     with pytest.raises(ValidationError):
         validate(instance=broken, schema=schema)
@@ -76,7 +76,7 @@ def test_models_schema_rejects_role_fallback_without_variant():
     schema = load_json(SCHEMAS_DIR / "models.schema.json")
     document = load_json(ROOT / ".agentic" / "models.json")
     broken = copy.deepcopy(document)
-    del broken["roles"]["qa-agent"]["fallback"][0]["variant"]
+    del broken["roles"]["reviewer"]["fallback"][0]["variant"]
 
     with pytest.raises(ValidationError):
         validate(instance=broken, schema=schema)

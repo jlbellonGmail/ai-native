@@ -104,15 +104,15 @@ def test_default_model_uses_role_default(tmp_path: Path):
     result = run_router(
         repo,
         "-Role",
-        "qa-agent",
+        "reviewer",
         "-EvidencePath",
         str(repo / "evidence.jsonl"),
         env=command_env(AGENTIC_OPENCODE_GO_READY="1"),
     )
     payload = output_json(result)
 
-    assert payload["model_ref"] == "opencode-go/mimo-v2.5-pro"
-    assert payload["variant"] == "medium"
+    assert payload["model_ref"] == "opencode-go/kimi-k2.7-code"
+    assert payload["variant"] == "high"
     assert payload["model_selection_origin"] == "role-default"
 
 
