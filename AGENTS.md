@@ -999,3 +999,9 @@ otro proyecto sin adaptarlas.
   workflow corra) permanece documentada arriba. F-004 queda **cerrado
   candidato a verificación** en la reauditoría independiente pendiente,
   no declarado 100% resuelto de forma preventiva.
+Comandos canónicos para mantener y comprobar el bloque automático:
+
+powershell -ExecutionPolicy Bypass -File scripts/update-status.ps1
+powershell -ExecutionPolicy Bypass -File scripts/check-status.ps1
+
+update-status.ps1 actualiza únicamente el bloque STATUS:AUTO:BEGIN/END; el agente mantiene las secciones manuales. check-status.ps1 valida coherencia contra Git y, cuando está disponible, GitHub real. Antes de devolver control se deben ejecutar ambos. No se integran escrituras dentro de scripts transaccionales de worktree/ROADMAP para evitar efectos laterales; tampoco se ejecuta el check como gate de CI porque el checkout efímero y el contexto de Actions no representan necesariamente el estado operativo local.
