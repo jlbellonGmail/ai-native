@@ -47,14 +47,14 @@ modifican worktrees ajenos.
 
 ## Estado verificado automáticamente
 
-- Actualizado: 2026-09-13T04:15:55Z
+- Actualizado: 2026-09-13T04:21:07Z
 - Rama: chore/fundamentos-v2
-- HEAD: bc8b883 (bc8b883d99dc0f6eff1b20d54ce80e814a2e7549)
+- HEAD: 9985e0b (9985e0bd14b653f4df163e28de48f72a208ce3b2)
 - Remoto: refs/remotes/origin/develop
 - Working tree: dirty
 - Worktrees: C:/Proyectos/template (chore/cierre-pipeline-secuencial); C:/Proyectos/worktrees/fundamentos-v2 (chore/fundamentos-v2)
-- PR activa: sin PR
-- CI: sin CI
+- PR activa: {"number":30,"title":"Establecer fundamentos v2 y compatibilidad","url":"https://github.com/jlbellonGmail/template/pull/30"}
+- CI: {"conclusion":"success","headSha":"9985e0bd14b653f4df163e28de48f72a208ce3b2","name":"CI","status":"completed","url":"https://github.com/jlbellonGmail/template/actions/runs/34737533092"}
 - Última release: {"name":"v1.1.0 — Roadmap → Analyst → Spec Reviewer → Builder → QA → Code Reviewer → .audit → HITL → PR","publishedAt":"2026-09-13T02:03:08Z","tagName":"v1.1.0"}
 
 <!-- STATUS:AUTO:END -->
