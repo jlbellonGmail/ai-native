@@ -89,7 +89,10 @@ function Start-LocalReconciler {
         # no hay window station disponible y se usa -NoNewWindow.
         $startParams = @{
             FilePath = $powershell.Source
-            ArgumentList = $arguments
+            # Windows PowerShell 5.1 rechaza arrays con valores vacios al
+            # bindear Start-Process. El launcher ya calculo todos los
+            # parametros; una cadena unica conserva el orden sin nulls.
+            ArgumentList = ($arguments | Where-Object { $null -ne $_ -and $_ -ne "" }) -join " "
             WorkingDirectory = $mainRoot
             RedirectStandardOutput = $logPath
             RedirectStandardError = $errorLogPath
