@@ -11,6 +11,8 @@ param(
     [ValidateSet("Feature", "Milestone")]
     [string] $Mode = "Feature",
 
+    [string] $Version = "",
+
     [switch] $SkipLocalCleanup
 )
 
@@ -270,7 +272,8 @@ function Remove-LocalFeatureArtifacts {
 }
 
 if ([string]::IsNullOrWhiteSpace($Branch)) {
-    $Branch = if ($Mode -eq "Milestone") { "milestone/$Slug" } else { "feature/$Slug" }
+    $versionPrefix = if ([string]::IsNullOrWhiteSpace($Version)) { "" } else { "$Version-" }
+    $Branch = if ($Mode -eq "Milestone") { "milestone/$versionPrefix$Slug" } else { "feature/$versionPrefix$Slug" }
 }
 
 $baseBranch = "develop"
@@ -280,7 +283,9 @@ $repoRoot = [System.IO.Path]::GetFullPath($repoRoot)
 
 if ([string]::IsNullOrWhiteSpace($WorktreeDir)) {
     $worktreesRoot = Join-Path (Split-Path -Parent $repoRoot) "worktrees"
-    $WorktreeDir = Join-Path $worktreesRoot $Slug
+    $worktreePrefix = if ([string]::IsNullOrWhiteSpace($Version)) { "" } else { "$Version-" }
+    $worktreeName = "$worktreePrefix$Slug"
+    $WorktreeDir = Join-Path $worktreesRoot $worktreeName
 }
 
 $WorktreeDir = [System.IO.Path]::GetFullPath($WorktreeDir)

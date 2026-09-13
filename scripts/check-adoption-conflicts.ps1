@@ -45,7 +45,7 @@ if (-not $targetItem.PSIsContainer) {
 # Tabla interna de rutas conocidas por elemento del checklist, alineada
 # manualmente con docs/tecnica/adopcion-proyecto-existente.md. Este
 # script NO parsea ese Markdown: la lista se mantiene a mano (ver
-# "Supuestos" de runs/03-adopcion-proyecto-existente/spec.md).
+# "Supuestos" de runs/v1.1.0/03-adopcion-proyecto-existente/spec.md).
 $knownPaths = [ordered]@{
     ".agentic/" = @(
         ".agentic"

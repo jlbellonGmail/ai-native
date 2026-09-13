@@ -6,7 +6,7 @@ configurar branch protection real de GitHub sobre `develop`, y una nota
 de troubleshooting para un bloqueo local conocido en Windows con
 EDR/antivirus agresivo. No toca código de producto (no existe), ni
 `scripts/*.ps1`, ni `.github/workflows/*.yml`. Ver
-`runs/05-operational-readiness-docs/spec.md`, `plan.md` y `tasks.md` para
+`runs/v1.1.0/05-operational-readiness-docs/spec.md`, `plan.md` y `tasks.md` para
 el detalle completo de criterios de aceptación (`AC-N`) y tareas.
 
 ## Branch protection de GitHub (`AGENTS.md`, sección "Setup manual")
@@ -42,7 +42,7 @@ explícito de esta feature.
 El ítem de `ROADMAP.md` que originó esta feature solo pedía 4 requisitos
 (PR obligatoria, status check en verde, 1 aprobación, dismiss stale
 approvals); no especificaba `enforce_admins`. El intento 1 de esta spec
-(ver `runs/05-operational-readiness-docs/audit-1.md`) dejó ese valor en
+(ver `runs/v1.1.0/05-operational-readiness-docs/audit-1.md`) dejó ese valor en
 `false` como "supuesto conservador", y `reviewer-agent` lo rechazó
 correctamente: es una decisión de seguridad/permisos que admite dos
 respuestas válidas, no un detalle técnico inferible sin más de evidencia
@@ -54,7 +54,7 @@ lo que esa regla prohíbe.
 
 La corrección pasó por Fase CLARIFY real con el humano (ver
 `spec.md`, sección "Clarificaciones realizadas", y
-`runs/05-operational-readiness-docs/decision.md`):
+`runs/v1.1.0/05-operational-readiness-docs/decision.md`):
 
 - **Pregunta**: ¿`enforce_admins` debe ser `true` o `false`?
 - **Respuesta**: `true`. Los administradores también quedan sujetos a la
@@ -181,5 +181,5 @@ local (Windows)" de ese archivo. Puntos de diseño relevantes:
   procedimiento manual, no un cambio de comportamiento de esos scripts.
 - Un mecanismo automático que detecte o repare bloqueos de EDR.
 
-Ver `runs/05-operational-readiness-docs/spec.md` (sección "Explícitamente
+Ver `runs/v1.1.0/05-operational-readiness-docs/spec.md` (sección "Explícitamente
 NO incluye") para el detalle completo.

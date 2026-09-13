@@ -1,58 +1,45 @@
-# Estado operativo del Template
+# Estado operativo
 
-## Contexto de trabajo
+Versión: v2.0.0  
+Estado general: T01 terminada; F01 y F02 cerradas.  
+Última fase funcional terminada: F02 — SDD adaptativo.  
+Intervención transversal: T01 — normalización documental, terminada.  
+Siguiente fase: F03 — Arquitectura de roles.  
 
-- Versión/base: evolución hacia TEMPLATE v2.0.0 desde la estable congelada
-  v1.1.0; no se publica una release en este bootstrap.
-- Fase: 01 — ASSESS / motor adaptativo (`06-assess-motor-adaptativo`).
-- Estado de coordinación: RUNNING. Etapa: implementación, QA y revisión final
-  completados localmente; pendiente commit, PR y CI.
-- Completado: evaluador determinista de riesgo/profundidad, fallo cerrado,
-  JSONL auditable, tests, documentación, índices y artefactos SDD.
-- Pendiente: commit/push, crear PR contra `develop`, esperar CI y corregir
-  cualquier fallo propio del alcance.
-- Bloqueos del alcance actual: ninguno identificado. El checkout principal
-  contiene cambios ajenos que se preservan; el trabajo usa aislamiento propio.
-- Último checkpoint: contrato Feature aprobado, adaptadores sincronizados y
-  evidencia de ASSESS en `runs/06-assess-motor-adaptativo/`.
-- Siguiente acción exacta: revisar diff final, commitear, publicar PR y esperar
-  todos los checks; detener sólo ante decisión humana MERGE/NO MERGE.
+## Qué ya funciona
 
-## Fuentes para retomar
+El circuito agéntico, el SDD adaptativo LIGHT/STANDARD/FULL, la validación
+determinística y la documentación por unidad siguen operativos.
 
-- [Principios](PRINCIPLES.md), [reglas de operación](AGENTS.md),
-  [dirección y backlog](ROADMAP.md).
-- [Fundamentos técnicos](docs/tecnica/fundamentos-v2.md) y
-  [procedimiento temporal](docs/usuario/fundamentos-v2.md).
-- [Baseline verificada](.audit/evidence/2026-09-13-fundamentos-v2/baseline.md) y
-  [propuesta aprobada](.audit/evidence/2026-09-13-fundamentos-v2/propuesta.md).
+## Qué sigue
 
-Rama, worktree, HEAD, PR, CI y release observados pertenecen únicamente al
-bloque AUTO. No mantener otra tabla manual con esos valores. Es una fotografía
-fechada: prevalecen Git/GitHub reales y los reportes de cada revisión, incluidos
-los cambios posteriores a su actualización. Al retomar leer AGENTS/ROADMAP,
-verificar Git y PR/CI, y refrescar con update-status/check-status; no perseguir
-el SHA del commit que contendrá este archivo.
+Iniciar `08-arquitectura-roles` cuando corresponda.
 
-La Fase 00 usa una PR de gobernanza chore: el humano decide y ejecuta merge
-sobre la PR real con CI verde. Su integración se deriva de GitHub MERGED,
-sin cierre automático Feature ni marca nueva [x]. Después del merge, retomar
-el primer ítem pendiente v2 con las precondiciones de aislamiento documentadas.
-Las ramas históricas integradas no son trabajo activo; no se eliminan ni se
-modifican worktrees ajenos.
+## Problemas abiertos
+
+Ninguno dentro de T01. La protección preventiva nativa de ramas depende del
+plan de GitHub y permanece documentada como limitación de plataforma.
+
+## Próximo paso
+
+Ejecutar el arranque versionado de F03 desde `develop`.
+
+## Detalle
+
+[SUMMARY de T01](runs/v2.0.0/T01-normalizacion-documental/SUMMARY.md)
 
 <!-- STATUS:AUTO:BEGIN -->
 
 ## Estado verificado automáticamente
 
-- Actualizado: 2026-09-13T05:43:24Z
-- Rama: feature/06-assess-motor-adaptativo
-- HEAD: f179c10 (f179c1041d5bc654762f1fe10931aee3855d860d)
+- Actualizado: 2026-09-13T16:16:40Z
+- Rama: maintenance/v2.0.0-T01-normalizacion-documental
+- HEAD: b337966 (b3379667787aee3f53be40d51a9af559ef139a60)
 - Remoto: refs/remotes/origin/develop
 - Working tree: dirty
-- Worktrees: C:/Proyectos/template (develop); C:/Proyectos/worktrees/06-assess-motor-adaptativo (feature/06-assess-motor-adaptativo)
-- PR activa: {"number":31,"title":"Assess Motor Adaptativo","url":"https://github.com/jlbellonGmail/template/pull/31"}
-- CI: {"conclusion":"failure","headSha":"f179c1041d5bc654762f1fe10931aee3855d860d","name":"Post-HITL merge gate","status":"completed","url":"https://github.com/jlbellonGmail/template/actions/runs/34740822977"}
+- Worktrees: C:/Proyectos/template (develop); C:/Proyectos/worktrees/v2.0.0-T01-normalizacion-documental (maintenance/v2.0.0-T01-normalizacion-documental)
+- PR activa: sin PR
+- CI: sin CI
 - Última release: {"name":"v1.1.0 — Roadmap → Analyst → Spec Reviewer → Builder → QA → Code Reviewer → .audit → HITL → PR","publishedAt":"2026-09-13T02:03:08Z","tagName":"v1.1.0"}
 
 <!-- STATUS:AUTO:END -->

@@ -1,10 +1,15 @@
-# Fundamentos v2 y compatibilidad
+# Fundamentos técnicos v2 y compatibilidad
+
+Este documento conserva únicamente decisiones técnicas, matriz de
+compatibilidad y criterios verificables. Los principios permanentes viven en
+[CONSTITUTION](../../CONSTITUTION.md); la operación en [AGENTS](../../AGENTS.md);
+el backlog en [ROADMAP](../../ROADMAP.md) y el estado en [STATUS](../../STATUS.md).
 
 Estado: diseño de Fase 00; motor ejecutable v1 vigente y SDD adaptativo
 habilitado de forma opt-in desde Fase 02. No es una release v2.0.0.
 Intención: preparar evolución autónoma y
 proporcional preservando los activos probados de v1.1.0.
-Normativa: `PRINCIPLES.md`. Evidencia del bootstrap:
+Normativa: `CONSTITUTION.md`. Evidencia del bootstrap:
 `.audit/evidence/2026-09-13-fundamentos-v2/propuesta.md`.
 
 ## Responsabilidades y autoridad
@@ -12,7 +17,7 @@ Normativa: `PRINCIPLES.md`. Evidencia del bootstrap:
 | Fuente | Responsabilidad exclusiva | No debe contener |
 | --- | --- | --- |
 | AGENTS.md | Comportamiento persistente, arranque y workflow vigente | Backlog ni fotografía manual de Git |
-| PRINCIPLES.md | Invariantes normativos y criterios de decisión estables | Procedimientos o estados de ejecución |
+| CONSTITUTION.md | Invariantes normativos y criterios de decisión estables | Procedimientos o estados de ejecución |
 | ROADMAP.md | Dirección y unidades de trabajo con estado de integración | Specs completas o logs |
 | STATUS.md | Reentrada, checkpoint, pendiente y siguiente acción | Evidencia primaria o segundo inventario manual de Git |
 | SDD en runs/ | Intención, alcance, aceptación y decisiones de la unidad | Reglas globales duplicadas |
@@ -23,7 +28,7 @@ Normativa: `PRINCIPLES.md`. Evidencia del bootstrap:
 | .audit/ | Evaluación global independiente y evidencia según su estándar | Sustituto del Reviewer del cambio o autoasignación de puntaje |
 | docs/producto/ | Conocimiento funcional persistente confirmado | Supuestos de negocio presentados como hechos |
 
-La precedencia de fuentes de AGENTS sigue vigente. PRINCIPLES integra las
+La precedencia de fuentes de AGENTS sigue vigente. CONSTITUTION integra las
 reglas globales; el diseño futuro no contradice ni desactiva contratos actuales.
 Ante conflicto material no resuelto con evidencia, el orquestador registra la
 decisión pendiente. Las herramientas disponibles en una sesión no equivalen a

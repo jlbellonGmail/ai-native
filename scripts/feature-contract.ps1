@@ -1,4 +1,4 @@
-﻿$ErrorActionPreference = "Stop"
+$ErrorActionPreference = "Stop"
 . (Join-Path $PSScriptRoot "workunit-lib.ps1")
 
 function Get-RepositoryRoot {
@@ -47,10 +47,12 @@ function Get-FeatureInfo {
         [Parameter(Mandatory = $true)]
         [string] $Slug,
 
-        [string] $Title = ""
+    [string] $Title = "",
+
+    [string] $Version = ""
     )
 
-    return Get-WorkUnitInfo -Slug $Slug -Title $Title -Mode Feature
+    return Get-WorkUnitInfo -Slug $Slug -Title $Title -Mode Feature -Version $Version
 }
 
 function Assert-NonEmptyFile {
@@ -75,7 +77,7 @@ function Get-LatestVerdictArtifact {
     # (audit-N.md, test-report-N.md, code-review-N.md): selecciona el de
     # mayor numero ENTERO real, parsea el bloque ```yaml del veredicto, y
     # valida su forma. Lanza excepciones con diagnostico identificable
-    # (ver AC-15 de runs/01-code-reviewer-y-sdd/spec.md).
+    # (ver AC-15 de runs/v1.1.0/01-code-reviewer-y-sdd/spec.md).
     param(
         [Parameter(Mandatory = $true)]
         [string] $Directory,
@@ -338,11 +340,13 @@ function New-DecisionFile {
         [Parameter(Mandatory = $true)]
         [string] $Title,
 
+        [string] $Version = "",
+
         [Parameter(Mandatory = $true)]
         [string[]] $Decisions
     )
 
-    $info = Get-FeatureInfo -Slug $Slug -Title $Title
+    $info = Get-FeatureInfo -Slug $Slug -Title $Title -Version $Version
     if (-not (Test-Path -LiteralPath $info.RunDir -PathType Container)) {
         New-Item -ItemType Directory -Path $info.RunDir | Out-Null
     }
@@ -398,10 +402,12 @@ function Assert-FeatureContract {
 
         [string] $Title = "",
 
-        [switch] $RequireReadyRoadmap
+    [string] $Version = "",
+
+    [switch] $RequireReadyRoadmap
     )
 
-    Assert-WorkUnitContract -Slug $Slug -Title $Title -Mode Feature -RequireReadyRoadmap:$RequireReadyRoadmap
+    Assert-WorkUnitContract -Slug $Slug -Title $Title -Version $Version -Mode Feature -RequireReadyRoadmap:$RequireReadyRoadmap
 }
 
 function Assert-WorkUnitContract {
@@ -412,13 +418,15 @@ function Assert-WorkUnitContract {
         [ValidateSet("Feature", "Milestone")]
         [string] $Mode = "Feature",
 
-        [string] $Title = "",
+    [string] $Title = "",
+
+    [string] $Version = "",
 
         [switch] $RequireReadyRoadmap
     )
 
     if ($Mode -eq "Feature") {
-        $info = Get-WorkUnitInfo -Slug $Slug -Title $Title -Mode Feature
+        $info = Get-WorkUnitInfo -Slug $Slug -Title $Title -Mode Feature -Version $Version
         Assert-NonEmptyFile $info.Decision
         Assert-NonEmptyFile "$($info.RunDir)/spec.md"
         Assert-NonEmptyFile "$($info.RunDir)/plan.md"
@@ -452,7 +460,7 @@ function Assert-WorkUnitContract {
     # nivel de work unit, mas docs+indices por cada item individual.
     $manifestPath = "runs/milestone-$Slug/work-unit.json"
     $manifest = Read-WorkUnitManifest -Path $manifestPath
-    $info = Get-WorkUnitInfo -Slug $Slug -Title $Title -Mode Milestone -Items $manifest.Items
+    $info = Get-WorkUnitInfo -Slug $Slug -Title $Title -Mode Milestone -Items $manifest.Items -Version $Version
 
     Assert-NonEmptyFile $info.Decision
     Assert-NonEmptyFile "$($info.RunDir)/spec.md"

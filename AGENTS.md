@@ -2,10 +2,10 @@
 
 ## Transición a v2: vigencia y dirección
 
-Leer también [PRINCIPLES.md](PRINCIPLES.md), fuente de principios normativos.
-La Fase 00 establece el [diseño v2](docs/tecnica/fundamentos-v2.md) y su
-[procedimiento temporal](docs/usuario/fundamentos-v2.md). ROADMAP dirige el
-trabajo; STATUS resume la reentrada sin sustituir evidencia real.
+Leer también [CONSTITUTION.md](CONSTITUTION.md), fuente de principios normativos.
+La Fase 00 dejó el diseño técnico v2 en [fundamentos-v2](docs/tecnica/fundamentos-v2.md).
+CONSTITUTION contiene los principios; ROADMAP dirige el trabajo y STATUS
+resume la reentrada sin sustituir evidencia real.
 
 El motor de cinco agentes, sus contratos y los scripts descritos abajo siguen
 vigentes para Feature/Milestone. La Fase 02 agrega SDD adaptativo opt-in:
@@ -45,6 +45,13 @@ agente debe asumir tecnología, framework o dependencia no declarada
 explícitamente.
 
 ## Estructura del repo
+
+Las unidades nuevas pueden declarar identidad completa con
+`start-work-unit.ps1 -Version v2.0.0 -Mode Feature -Slug 08-arquitectura-roles`.
+Eso produce `feature/v2.0.0-08-arquitectura-roles`, el worktree
+`../worktrees/v2.0.0-08-arquitectura-roles/` y el run
+`runs/v2.0.0/08-arquitectura-roles/`. La omisión de `-Version` conserva la
+interfaz legacy para unidades históricas.
 
 - `runs/`: artefactos por feature (`spec.md`, `plan.md`, `tasks.md`,
   `audit-N.md`, `test-report-N.md`, `code-review-N.md`, `decision.md`, y
@@ -644,7 +651,7 @@ cuándo hacerlo). Es un evento manual, con esta secuencia:
   `develop` y `main`) y los tres **gate obligatorio con el mismo nivel
   de exigencia** antes de mergear cualquier PR (paso 7 del circuito) —
   para `circuit-tests`/`product-tests` es decisión confirmada por el
-  humano en Fase CLARIFY (ver `runs/04-ci-wiring-product-tests/spec.md`,
+  humano en Fase CLARIFY (ver `runs/v1.1.0/04-ci-wiring-product-tests/spec.md`,
   sección "Clarificaciones realizadas"); para `local-reconciler-tests`
   es decisión explícita del humano al cerrar F-003 de la reauditoría
   final v1.1 (ningún `continue-on-error` ni mecanismo equivalente que
@@ -912,7 +919,7 @@ otro proyecto sin adaptarlas.
   a `develop`... ni, una vez que exista, nunca directo a `main`") — esta
   decisión pasó por
   Fase CLARIFY con el humano (ver
-  `runs/05-operational-readiness-docs/decision.md`), no es un supuesto
+  `runs/v1.1.0/05-operational-readiness-docs/decision.md`), no es un supuesto
   unilateral. Requiere permisos de administrador sobre el repositorio y
   un remoto GitHub ya configurado (ver bullet "Remoto GitHub" arriba).
 

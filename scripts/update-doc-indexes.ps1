@@ -3,13 +3,15 @@ param(
     [string] $Slug,
 
     [Parameter(Mandatory = $true)]
-    [string] $Title
+    [string] $Title,
+
+    [string] $Version = ""
 )
 
 $ErrorActionPreference = "Stop"
 . (Join-Path $PSScriptRoot "feature-contract.ps1")
 
-$info = Get-FeatureInfo -Slug $Slug -Title $Title
+$info = Get-FeatureInfo -Slug $Slug -Title $Title -Version $Version
 $changed = $false
 
 # Preflight de ambos indices antes de escribir. Evita que un indice quede
