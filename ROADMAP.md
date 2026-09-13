@@ -13,7 +13,7 @@ Una fase sólo pasa a `[x]` después del merge a `develop`.
 - [x] 07-sdd-adaptativo — Fase 02: SDD adaptativo.
 - [x] 08-arquitectura-roles — Fase 03: Arquitectura de roles.
 - [x] 09-convergence — Fase 04: CONVERGENCE.
-- [-] 10-evidencias-adaptativas — Fase 05: contrato adaptativo de evidencias.
+- [x] 10-evidencias-adaptativas — Fase 05: contrato adaptativo de evidencias.
 - [ ] 11-tests-ci-audit — Fase 06: tests, CI y .audit.
 - [ ] 12-agentic-evals — Fase 07: Agentic Evals.
 - [ ] 13-routing-dinamico — Fase 08: routing dinámico de modelos.
@@ -51,6 +51,7 @@ alterar tags, commits ni la release congelada.
 - [CONSTITUTION](CONSTITUTION.md) — principios permanentes.
 - [AGENTS](AGENTS.md) — operación del circuito.
 - [STATUS](STATUS.md) — estado actual para reentrada.
+
 
 
 
