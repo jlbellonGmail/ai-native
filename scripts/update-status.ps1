@@ -1,7 +1,7 @@
 param([string]$RepositoryRoot = "")
 $ErrorActionPreference = "Stop"
 $NL = [Environment]::NewLine
-function Git([string[]]$Arguments) {
+function Invoke-GitCommand([string[]]$Arguments) {
     $output = & git @Arguments 2>&1
     if ($LASTEXITCODE -ne 0) { throw "git command failed" }
     ($output -join $NL).Trim()
@@ -29,15 +29,15 @@ function ReplaceAuto([string]$Content,[string]$Block) {
     $Content.TrimEnd([char]13,[char]10) + $NL + $NL + $Block + $NL
 }
 try {
-    $root = if ($RepositoryRoot) { [IO.Path]::GetFullPath($RepositoryRoot) } else { Git @("rev-parse","--show-toplevel") }
+    $root = if ($RepositoryRoot) { [IO.Path]::GetFullPath($RepositoryRoot) } else { Invoke-GitCommand @("rev-parse","--show-toplevel") }
     $status = Join-Path $root "STATUS.md"
     if (-not (Test-Path -LiteralPath $status -PathType Leaf)) { throw "No existe STATUS.md" }
     Push-Location $root
     try {
-        $branch = Git @("branch","--show-current")
+        $branch = Invoke-GitCommand @("branch","--show-current")
         if (-not $branch) { $branch = "(detached)" }
-        $full = Git @("rev-parse","HEAD")
-        $short = Git @("rev-parse","--short","HEAD")
+        $full = Invoke-GitCommand @("rev-parse","HEAD")
+        $short = Invoke-GitCommand @("rev-parse","--short","HEAD")
         $remote = "sin remoto"
         $remoteHead = Optional "git" @("symbolic-ref","refs/remotes/origin/HEAD")
         if ($remoteHead.Code -eq 0 -and $remoteHead.Text) { $remote = $remoteHead.Text }
@@ -45,7 +45,7 @@ try {
             $remoteUrl = Optional "git" @("remote","get-url","origin")
             if ($remoteUrl.Code -eq 0 -and $remoteUrl.Text) { $remote = "origin ($($remoteUrl.Text))" }
         }
-        $raw = Git @("worktree","list","--porcelain")
+        $raw = Invoke-GitCommand @("worktree","list","--porcelain")
         $trees = @()
         $current = ""
         foreach ($line in ($raw -split $NL)) {
@@ -60,7 +60,7 @@ try {
         $pr = GhValue $gh @("pr","list","--head",$branch,"--state","open","--json","number,title,url","--limit","1") "sin PR"
         $ci = GhValue $gh @("run","list","--branch",$branch,"--limit","1","--json","name,status,conclusion,headSha,url") "sin CI"
         $release = GhValue $gh @("release","list","--limit","1","--json","tagName,name,publishedAt") "sin release"
-        $statusTree = if (Git @("status","--porcelain")) { "dirty" } else { "clean" }
+        $statusTree = if (Invoke-GitCommand @("status","--porcelain")) { "dirty" } else { "clean" }
         $title = "## Estado verificado autom" + [char]225 + "ticamente"
         $releaseLabel = "-" + " " + [char]218 + "ltima release"
         $lines = @(
@@ -74,7 +74,7 @@ try {
         $encoding = [Text.UTF8Encoding]::new($false)
         $content = [IO.File]::ReadAllText($status,[Text.Encoding]::UTF8)
         [IO.File]::WriteAllText($status,(ReplaceAuto $content ($lines -join $NL)),$encoding)
-        $statusTree = if (Git @("status","--porcelain")) { "dirty" } else { "clean" }
+        $statusTree = if (Invoke-GitCommand @("status","--porcelain")) { "dirty" } else { "clean" }
         $lines[8] = "- Working tree: $statusTree"
         [IO.File]::WriteAllText($status,(ReplaceAuto ([IO.File]::ReadAllText($status,[Text.Encoding]::UTF8)) ($lines -join $NL)),$encoding)
     } finally { Pop-Location }
