@@ -45,14 +45,14 @@ modifican worktrees ajenos.
 
 ## Estado verificado automáticamente
 
-- Actualizado: 2026-09-13T05:33:58Z
+- Actualizado: 2026-09-13T05:38:48Z
 - Rama: feature/06-assess-motor-adaptativo
-- HEAD: c31cfcb (c31cfcb0a88bf229bfa8726916c5a52aa0eed6f9)
+- HEAD: 49bfbc3 (49bfbc336f97107784f01eda1cd6c3a044a59e15)
 - Remoto: refs/remotes/origin/develop
 - Working tree: dirty
 - Worktrees: C:/Proyectos/template (develop); C:/Proyectos/worktrees/06-assess-motor-adaptativo (feature/06-assess-motor-adaptativo)
-- PR activa: sin PR
-- CI: sin CI
+- PR activa: {"number":31,"title":"Assess Motor Adaptativo","url":"https://github.com/jlbellonGmail/template/pull/31"}
+- CI: {"conclusion":"success","headSha":"49bfbc336f97107784f01eda1cd6c3a044a59e15","name":"CI","status":"completed","url":"https://github.com/jlbellonGmail/template/actions/runs/34740685233"}
 - Última release: {"name":"v1.1.0 — Roadmap → Analyst → Spec Reviewer → Builder → QA → Code Reviewer → .audit → HITL → PR","publishedAt":"2026-09-13T02:03:08Z","tagName":"v1.1.0"}
 
 <!-- STATUS:AUTO:END -->
