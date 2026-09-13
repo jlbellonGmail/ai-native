@@ -4,21 +4,19 @@
 
 - Versión/base: evolución hacia TEMPLATE v2.0.0 desde la estable congelada
   v1.1.0; no se publica una release en este bootstrap.
-- Fase: 00 — Fundamentos v2 y compatibilidad; alcance 00.1–00.6.
-- Estado de coordinación: RUNNING. Etapa: implementación documental completada;
-  pendiente verificación final y Reviewer adversarial.
-- Completado: principios y responsabilidades, estrategia de compatibilidad,
-  matriz v1, invariantes/permisos, métricas, conceptos SDD/convergence/Evals,
-  diseño mínimo de supervisor y procedimiento temporal, ROADMAP maestro v2.
-- Pendiente: consolidar resultados de tests/validaciones, resolver hallazgos,
-  commit, push, PR hacia develop y CI verde antes de PR_READY.
+- Fase: 01 — ASSESS / motor adaptativo (`06-assess-motor-adaptativo`).
+- Estado de coordinación: RUNNING. Etapa: implementación, QA y revisión final
+  completados localmente; pendiente commit, PR y CI.
+- Completado: evaluador determinista de riesgo/profundidad, fallo cerrado,
+  JSONL auditable, tests, documentación, índices y artefactos SDD.
+- Pendiente: commit/push, crear PR contra `develop`, esperar CI y corregir
+  cualquier fallo propio del alcance.
 - Bloqueos del alcance actual: ninguno identificado. El checkout principal
   contiene cambios ajenos que se preservan; el trabajo usa aislamiento propio.
-- Último checkpoint documental: propuesta aprobada e implementación entregada
-  para verificación; evidencia en el expediente enlazado abajo.
-- Siguiente acción exacta: verificar diff/documentación y resultados del suite,
-  pasar Reviewer adversarial y corregir hasta converger; preparar PR con CI
-  verde y detener para decisión humana. No iniciar Fase 01 en esta ejecución.
+- Último checkpoint: contrato Feature aprobado, adaptadores sincronizados y
+  evidencia de ASSESS en `runs/06-assess-motor-adaptativo/`.
+- Siguiente acción exacta: revisar diff final, commitear, publicar PR y esperar
+  todos los checks; detener sólo ante decisión humana MERGE/NO MERGE.
 
 ## Fuentes para retomar
 
@@ -47,14 +45,14 @@ modifican worktrees ajenos.
 
 ## Estado verificado automáticamente
 
-- Actualizado: 2026-09-13T04:21:07Z
-- Rama: chore/fundamentos-v2
-- HEAD: 9985e0b (9985e0bd14b653f4df163e28de48f72a208ce3b2)
+- Actualizado: 2026-09-13T05:33:58Z
+- Rama: feature/06-assess-motor-adaptativo
+- HEAD: c31cfcb (c31cfcb0a88bf229bfa8726916c5a52aa0eed6f9)
 - Remoto: refs/remotes/origin/develop
 - Working tree: dirty
-- Worktrees: C:/Proyectos/template (chore/cierre-pipeline-secuencial); C:/Proyectos/worktrees/fundamentos-v2 (chore/fundamentos-v2)
-- PR activa: {"number":30,"title":"Establecer fundamentos v2 y compatibilidad","url":"https://github.com/jlbellonGmail/template/pull/30"}
-- CI: {"conclusion":"success","headSha":"9985e0bd14b653f4df163e28de48f72a208ce3b2","name":"CI","status":"completed","url":"https://github.com/jlbellonGmail/template/actions/runs/34737533092"}
+- Worktrees: C:/Proyectos/template (develop); C:/Proyectos/worktrees/06-assess-motor-adaptativo (feature/06-assess-motor-adaptativo)
+- PR activa: sin PR
+- CI: sin CI
 - Última release: {"name":"v1.1.0 — Roadmap → Analyst → Spec Reviewer → Builder → QA → Code Reviewer → .audit → HITL → PR","publishedAt":"2026-09-13T02:03:08Z","tagName":"v1.1.0"}
 
 <!-- STATUS:AUTO:END -->
