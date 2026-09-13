@@ -45,14 +45,14 @@ modifican worktrees ajenos.
 
 ## Estado verificado automáticamente
 
-- Actualizado: 2026-09-13T05:38:48Z
+- Actualizado: 2026-09-13T05:43:24Z
 - Rama: feature/06-assess-motor-adaptativo
-- HEAD: 49bfbc3 (49bfbc336f97107784f01eda1cd6c3a044a59e15)
+- HEAD: f179c10 (f179c1041d5bc654762f1fe10931aee3855d860d)
 - Remoto: refs/remotes/origin/develop
 - Working tree: dirty
 - Worktrees: C:/Proyectos/template (develop); C:/Proyectos/worktrees/06-assess-motor-adaptativo (feature/06-assess-motor-adaptativo)
 - PR activa: {"number":31,"title":"Assess Motor Adaptativo","url":"https://github.com/jlbellonGmail/template/pull/31"}
-- CI: {"conclusion":"success","headSha":"49bfbc336f97107784f01eda1cd6c3a044a59e15","name":"CI","status":"completed","url":"https://github.com/jlbellonGmail/template/actions/runs/34740685233"}
+- CI: {"conclusion":"failure","headSha":"f179c1041d5bc654762f1fe10931aee3855d860d","name":"Post-HITL merge gate","status":"completed","url":"https://github.com/jlbellonGmail/template/actions/runs/34740822977"}
 - Última release: {"name":"v1.1.0 — Roadmap → Analyst → Spec Reviewer → Builder → QA → Code Reviewer → .audit → HITL → PR","publishedAt":"2026-09-13T02:03:08Z","tagName":"v1.1.0"}
 
 <!-- STATUS:AUTO:END -->
