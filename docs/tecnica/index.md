@@ -28,5 +28,6 @@ una calificación subjetiva.
 - [Assess Motor Adaptativo](assess-motor-adaptativo.md)
 - [SDD Adaptativo](sdd-adaptativo.md)
 - [Arquitectura de roles](arquitectura-roles.md)
+- [Convergence autónoma Builder-Reviewer](convergence.md)
 
 <!-- FEATURE_LINKS_END -->
