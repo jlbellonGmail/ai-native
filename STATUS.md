@@ -22,7 +22,7 @@ plan de GitHub y permanece documentada como limitación de plataforma.
 
 ## Próximo paso
 
-Preparar F04 desde `develop`; F03 ya está mergeada y cerrada.
+Preparar F04 desde `develop`; F03 ya está mergeada y cerrada (PR #34).
 
 ## Detalle
 
