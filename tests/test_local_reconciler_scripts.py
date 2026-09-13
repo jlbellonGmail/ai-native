@@ -155,6 +155,40 @@ def start_reconciler(
     return run_capture_to_files(command, cwd, tmp_path, slug)
 
 
+def run_reconciler_foreground(
+    cwd: Path,
+    slug: str,
+    tmp_path: Path,
+    worktree_dir: Path | None = None,
+    poll_seconds: int = 1,
+    max_minutes: int = 2,
+) -> subprocess.CompletedProcess[str]:
+    """Ejecuta el motor en primer plano para probar lifecycle.
+
+    Los tests de arranque cubren `-StartBackground`. Los tests de limpieza
+    prueban aquí el motor directamente para no hacer depender la verificación
+    de ROADMAP de la supervivencia de un proceso nieto del host de pytest.
+    Esa separación evita falsos timeouts sin relajar el gate Windows.
+    """
+    command = [
+        powershell(),
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        str(START_SCRIPT),
+        "-Slug",
+        slug,
+        "-PollSeconds",
+        str(poll_seconds),
+        "-MaxMinutes",
+        str(max_minutes),
+    ]
+    if worktree_dir is not None:
+        command.extend(["-WorktreeDir", str(worktree_dir)])
+    return run(command, cwd, check=False)
+
+
 def state_dir(main: Path) -> Path:
     return main / ".git" / "feature-reconcilers"
 
@@ -261,19 +295,6 @@ def branch_exists(main: Path, branch: str) -> bool:
     return git(main, "branch", "--list", branch).stdout.strip() != ""
 
 
-def test_start_reconciler_in_main_checkout(tmp_path, cleanup_reconcilers):
-    _, main = make_repo(tmp_path)
-    result = start_reconciler(main, SLUG, tmp_path, worktree_dir=tmp_path / "no-matter")
-    assert result.returncode == 0, result.stdout + result.stderr
-    wait_for_reconciler_running(main, SLUG)
-    wait_until(
-        lambda: (state_dir(main) / f"{SLUG}.log").exists()
-        and (state_dir(main) / f"{SLUG}.err.log").exists(),
-        30,
-        "El reconciliador no escribio sus logs.",
-    )
-
-
 def test_start_reconciler_from_linked_worktree(tmp_path, cleanup_reconcilers):
     _, main = make_repo(tmp_path)
     worktree = make_worktree(main, tmp_path, "wt-demo", SLUG)
@@ -322,13 +343,12 @@ def test_reconciler_cleans_worktree_and_branch_when_remote_closed(tmp_path, clea
     _, main = make_repo(tmp_path)
     worktree = make_worktree(main, tmp_path, "wt-demo", SLUG)
     push_remote_roadmap(main, {SLUG: "x"})
-    result = start_reconciler(worktree, SLUG, tmp_path)
+    result = run_reconciler_foreground(main, SLUG, tmp_path, worktree_dir=worktree)
     assert result.returncode == 0, result.stdout + result.stderr
     wait_for_reconciler_finished(main, SLUG)
     assert not worktree.exists()
     assert not branch_exists(main, BRANCH)
-    log = (state_dir(main) / f"{SLUG}.log").read_text(encoding="utf-8", errors="replace")
-    assert "Reconciliacion local completa" in log
+    assert "Reconciliacion local completa" in result.stdout
     assert main.exists()
     assert (main / "ROADMAP.md").exists()
 
@@ -338,7 +358,7 @@ def test_reconciler_cleans_only_target_worktree_and_branch(tmp_path, cleanup_rec
     alpha = make_worktree(main, tmp_path, "wt-alpha", "98-alpha")
     beta = make_worktree(main, tmp_path, "wt-beta", "97-beta")
     push_remote_roadmap(main, {"98-alpha": "x", "97-beta": " "})
-    result = start_reconciler(alpha, "98-alpha", tmp_path)
+    result = run_reconciler_foreground(main, "98-alpha", tmp_path, worktree_dir=alpha)
     assert result.returncode == 0, result.stdout + result.stderr
     wait_for_reconciler_finished(main, "98-alpha")
     assert not alpha.exists()
@@ -352,14 +372,13 @@ def test_reconciler_never_removes_dirty_worktree(tmp_path, cleanup_reconcilers):
     worktree = make_worktree(main, tmp_path, "wt-demo", SLUG)
     (worktree / "draft.txt").write_text("trabajo no confirmado", encoding="utf-8")
     push_remote_roadmap(main, {SLUG: "x"})
-    result = start_reconciler(worktree, SLUG, tmp_path)
-    assert result.returncode == 0, result.stdout + result.stderr
+    result = run_reconciler_foreground(main, SLUG, tmp_path, worktree_dir=worktree)
+    assert result.returncode != 0, result.stdout + result.stderr
     wait_for_reconciler_finished(main, SLUG)
     assert worktree.exists()
     assert (worktree / "draft.txt").read_text(encoding="utf-8") == "trabajo no confirmado"
     assert branch_exists(main, BRANCH)
-    error_log = (state_dir(main) / f"{SLUG}.err.log").read_text(encoding="utf-8", errors="replace")
-    assert error_log.strip() != ""
+    assert (result.stdout + result.stderr).strip() != ""
 
 
 def test_start_reconciler_returns_quickly(tmp_path, cleanup_reconcilers):

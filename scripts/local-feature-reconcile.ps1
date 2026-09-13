@@ -67,54 +67,44 @@ function Start-LocalReconciler {
         $powershell = Get-Command pwsh -ErrorAction Stop
     }
 
-    $scriptPath = Join-Path $PSScriptRoot "local-feature-reconcile.ps1"
-    if ([string]::IsNullOrWhiteSpace($Version)) {
-        $innerCommand = @(
-            "&", (Convert-ToPowerShellLiteral $scriptPath),
-            "-Slug", (Convert-ToPowerShellLiteral $Slug),
-            "-Branch", (Convert-ToPowerShellLiteral $Branch),
-            "-WorktreeDir", (Convert-ToPowerShellLiteral $WorktreeDir),
-            "-Mode", (Convert-ToPowerShellLiteral $Mode),
-            "-PollSeconds", $PollSeconds, "-MaxMinutes", $MaxMinutes
-        ) -join " "
-    }
-    else {
-        $innerCommand = @(
-            "&", (Convert-ToPowerShellLiteral $scriptPath),
-            "-Slug", (Convert-ToPowerShellLiteral $Slug),
-            "-Branch", (Convert-ToPowerShellLiteral $Branch),
-            "-WorktreeDir", (Convert-ToPowerShellLiteral $WorktreeDir),
-            "-Mode", (Convert-ToPowerShellLiteral $Mode),
-            "-Version", (Convert-ToPowerShellLiteral $Version),
-            "-PollSeconds", $PollSeconds, "-MaxMinutes", $MaxMinutes
-        ) -join " "
-    }
-
-    $encodedCommand = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes($innerCommand))
     $arguments = @(
         "-NoProfile",
         "-ExecutionPolicy", "Bypass",
-        "-EncodedCommand", $encodedCommand
+        "-File", $scriptPath,
+        "-Slug", $Slug,
+        "-Branch", $Branch,
+        "-WorktreeDir", $WorktreeDir,
+        "-Mode", $Mode,
+        "-PollSeconds", $PollSeconds,
+        "-MaxMinutes", $MaxMinutes
     )
+    if (-not [string]::IsNullOrWhiteSpace($Version)) {
+        $arguments += @("-Version", $Version)
+    }
 
     Write-Host "==> Iniciando reconciliador local para $Slug. Log: $logPath"
     try {
-        # -NoNewWindow en vez de -WindowStyle Hidden: -WindowStyle requiere una
-        # window station/desktop interactivo para crear (incluso oculta) una
-        # ventana. En sesiones no interactivas (Session 0), como el runner de
-        # GitHub Actions windows-latest que ejecuta los jobs como servicio sin
-        # desktop, Start-Process con -WindowStyle Hidden + redireccion de
-        # stdio lanza una excepcion. -NoNewWindow no depende de ninguna window
-        # station y es compatible con -RedirectStandardOutput/Error tanto en
-        # sesiones interactivas como no interactivas.
-        $created = Start-Process `
-            -FilePath $powershell.Source `
-            -ArgumentList $arguments `
-            -WorkingDirectory $mainRoot `
-            -RedirectStandardOutput $logPath `
-            -RedirectStandardError $errorLogPath `
-            -NoNewWindow `
-            -PassThru
+        # En sesiones interactivas una ventana oculta permite que el proceso
+        # sobreviva al launcher. En Session 0 (runner Windows como servicio)
+        # no hay window station disponible y se usa -NoNewWindow.
+        $startParams = @{
+            FilePath = $powershell.Source
+            # Windows PowerShell 5.1 rechaza arrays con valores vacios al
+            # bindear Start-Process. El launcher ya calculo todos los
+            # parametros; una cadena unica conserva el orden sin nulls.
+            ArgumentList = ($arguments | Where-Object { $null -ne $_ -and $_ -ne "" }) -join " "
+            WorkingDirectory = $mainRoot
+            RedirectStandardOutput = $logPath
+            RedirectStandardError = $errorLogPath
+            PassThru = $true
+        }
+        if ([Environment]::UserInteractive) {
+            $startParams.WindowStyle = "Hidden"
+        }
+        else {
+            $startParams.NoNewWindow = $true
+        }
+        $created = Start-Process @startParams
 
         # Fail-safe: Start-Process puede devolver un objeto de proceso valido
         # (sin lanzar excepcion) aunque el hijo muera de inmediato -- por
