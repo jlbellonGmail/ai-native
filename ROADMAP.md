@@ -50,7 +50,7 @@ no implementa ASSESS ni fases posteriores.
 
 ## Backlog v2
 
-- [ ] 06-assess-motor-adaptativo — Fase 01: ASSESS / motor adaptativo. Determinar riesgo y profundidad con evidencia sin activar todo el pipeline.
+- [-] 06-assess-motor-adaptativo — Fase 01: ASSESS / motor adaptativo. Determinar riesgo y profundidad con evidencia sin activar todo el pipeline.
 
       Referencias:
       - docs/tecnica/fundamentos-v2.md
@@ -168,3 +168,4 @@ minúsculas con guiones, seguido de `—` y descripción corta en español.
 - [x] 03-adopcion-proyecto-existente — Guia de adopcion del circuito en un proyecto existente: checklist de colisiones (.agentic/, scripts/, runs/, docs/tecnica/, docs/usuario/, AGENTS.md, los 4 workflows de .github/workflows/) con estrategia de merge para cada caso, y script opcional que detecte colisiones en un repo destino.
 - [x] 04-ci-wiring-product-tests — Separa .github/workflows/ci.yml en un job circuit-tests (el pytest actual del circuito, siempre obligatorio) y un job product-tests con un marcador claro para agregar trivialmente el build/test real del stack de cada proyecto.
 - [x] 05-operational-readiness-docs — Checklist de branch protection de GitHub en la seccion "Setup manual" de AGENTS.md (require PR, status check, approval, dismiss stale approvals) con comandos gh exactos, y nota de troubleshooting sobre bloqueos de local-feature-reconcile.ps1/ready-for-pr.ps1 por EDR agresivo en Windows.
+
