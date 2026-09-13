@@ -3,7 +3,7 @@
 Esta feature (`04-ci-wiring-product-tests`) separa el job único `test` de
 `.github/workflows/ci.yml` en dos jobs top-level (`circuit-tests` y
 `product-tests`), sin agregar stack, dependencia ni herramienta nueva.
-Ver `runs/04-ci-wiring-product-tests/spec.md`, `plan.md` y `tasks.md`
+Ver `runs/v1.1.0/04-ci-wiring-product-tests/spec.md`, `plan.md` y `tasks.md`
 para el detalle completo de criterios de aceptación (`AC-N`) y tareas.
 
 ## Por qué dos jobs en vez de uno
@@ -33,7 +33,7 @@ circuito ni su reporte de resultado.
 ## Por qué `product-tests` es requerido/bloqueante desde ya, pese a estar vacío
 
 Esta fue una ambigüedad material identificada explícitamente durante la
-Fase CLARIFY (ver `runs/04-ci-wiring-product-tests/spec.md`, secciones
+Fase CLARIFY (ver `runs/v1.1.0/04-ci-wiring-product-tests/spec.md`, secciones
 "Contexto y fuentes" y "Clarificaciones realizadas"): no había evidencia
 previa en el repo sobre si `product-tests` debía ser status check
 requerido en branch protection mientras solo corre un placeholder, y es
@@ -143,5 +143,5 @@ cualquier PR nueva.
   entrada nueva en `docs/tecnica/arquitectura.md` sobre stack de
   producto.
 
-Ver `runs/04-ci-wiring-product-tests/spec.md` (sección "Explícitamente NO
+Ver `runs/v1.1.0/04-ci-wiring-product-tests/spec.md` (sección "Explícitamente NO
 incluye") para el detalle completo.

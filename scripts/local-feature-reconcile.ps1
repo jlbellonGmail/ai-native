@@ -9,6 +9,8 @@ param(
     [ValidateSet("Feature", "Milestone")]
     [string] $Mode = "Feature",
 
+    [string] $Version = "",
+
     [int] $PollSeconds = 60,
 
     [int] $MaxMinutes = 1440,
@@ -32,7 +34,8 @@ function Convert-ToPowerShellLiteral {
 
 function Start-LocalReconciler {
     if ([string]::IsNullOrWhiteSpace($Branch)) {
-        $Branch = if ($Mode -eq "Milestone") { "milestone/$Slug" } else { "feature/$Slug" }
+        $versionPrefix = if ([string]::IsNullOrWhiteSpace($Version)) { "" } else { "$Version-" }
+        $Branch = if ($Mode -eq "Milestone") { "milestone/$versionPrefix$Slug" } else { "feature/$versionPrefix$Slug" }
     }
 
     $mainRoot = Split-Path -Parent (Get-GitCommonDir)
@@ -65,16 +68,27 @@ function Start-LocalReconciler {
     }
 
     $scriptPath = Join-Path $PSScriptRoot "local-feature-reconcile.ps1"
-    $innerCommand = @(
-        "&",
-        (Convert-ToPowerShellLiteral $scriptPath),
-        "-Slug", (Convert-ToPowerShellLiteral $Slug),
-        "-Branch", (Convert-ToPowerShellLiteral $Branch),
-        "-WorktreeDir", (Convert-ToPowerShellLiteral $WorktreeDir),
-        "-Mode", (Convert-ToPowerShellLiteral $Mode),
-        "-PollSeconds", $PollSeconds,
-        "-MaxMinutes", $MaxMinutes
-    ) -join " "
+    if ([string]::IsNullOrWhiteSpace($Version)) {
+        $innerCommand = @(
+            "&", (Convert-ToPowerShellLiteral $scriptPath),
+            "-Slug", (Convert-ToPowerShellLiteral $Slug),
+            "-Branch", (Convert-ToPowerShellLiteral $Branch),
+            "-WorktreeDir", (Convert-ToPowerShellLiteral $WorktreeDir),
+            "-Mode", (Convert-ToPowerShellLiteral $Mode),
+            "-PollSeconds", $PollSeconds, "-MaxMinutes", $MaxMinutes
+        ) -join " "
+    }
+    else {
+        $innerCommand = @(
+            "&", (Convert-ToPowerShellLiteral $scriptPath),
+            "-Slug", (Convert-ToPowerShellLiteral $Slug),
+            "-Branch", (Convert-ToPowerShellLiteral $Branch),
+            "-WorktreeDir", (Convert-ToPowerShellLiteral $WorktreeDir),
+            "-Mode", (Convert-ToPowerShellLiteral $Mode),
+            "-Version", (Convert-ToPowerShellLiteral $Version),
+            "-PollSeconds", $PollSeconds, "-MaxMinutes", $MaxMinutes
+        ) -join " "
+    }
 
     $encodedCommand = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes($innerCommand))
     $arguments = @(
@@ -137,12 +151,15 @@ if ($StartBackground) {
 }
 
 if ([string]::IsNullOrWhiteSpace($Branch)) {
-    $Branch = if ($Mode -eq "Milestone") { "milestone/$Slug" } else { "feature/$Slug" }
+    $versionPrefix = if ([string]::IsNullOrWhiteSpace($Version)) { "" } else { "$Version-" }
+    $Branch = if ($Mode -eq "Milestone") { "milestone/$versionPrefix$Slug" } else { "feature/$versionPrefix$Slug" }
 }
 
 $repoRoot = Get-RepositoryRoot
 if ([string]::IsNullOrWhiteSpace($WorktreeDir)) {
-    $WorktreeDir = Join-Path (Join-Path (Split-Path -Parent $repoRoot) "worktrees") $Slug
+    $worktreePrefix = if ([string]::IsNullOrWhiteSpace($Version)) { "" } else { "$Version-" }
+    $worktreeName = "$worktreePrefix$Slug"
+    $WorktreeDir = Join-Path (Join-Path (Split-Path -Parent $repoRoot) "worktrees") $worktreeName
 }
 
 $reconcileItems = if ($Mode -eq "Milestone") {

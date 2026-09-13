@@ -224,6 +224,8 @@ function Get-WorkUnitInfo {
         [ValidateSet("Feature", "Milestone")]
         [string] $Mode = "Feature",
 
+        [string] $Version = "",
+
         # Solo relevante en modo Milestone: si no se pasa y existe
         # runs/milestone-$Slug/work-unit.json, se lee de ahi.
         [string[]] $Items = @()
@@ -241,19 +243,22 @@ function Get-WorkUnitInfo {
             }) -join " "
         }
 
+        $versionPrefix = if ([string]::IsNullOrWhiteSpace($Version)) { "" } else { "$Version-" }
+        $runPrefix = if ([string]::IsNullOrWhiteSpace($Version)) { "runs" } else { "runs/$Version" }
         return [pscustomobject]@{
             Mode = "Feature"
             Slug = $Slug
             Number = $Matches["number"]
             DocSlug = $docSlug
             Title = $Title
-            Branch = "feature/$Slug"
-            RunDir = "runs/$Slug"
+            Version = $Version
+            Branch = "feature/$versionPrefix$Slug"
+            RunDir = "$runPrefix/$Slug"
             TechnicalDoc = "docs/tecnica/$docSlug.md"
             UserDoc = "docs/usuario/$docSlug.md"
             TechnicalIndex = "docs/tecnica/index.md"
             UserIndex = "docs/usuario/index.md"
-            Decision = "runs/$Slug/decision.md"
+            Decision = "$runPrefix/$Slug/decision.md"
             Manifest = $null
             Items = @()
         }
@@ -283,20 +288,23 @@ function Get-WorkUnitInfo {
 
     $itemInfos = @($itemSlugs | ForEach-Object { Get-WorkUnitInfo -Slug $_ -Mode Feature })
 
+    $versionPrefix = if ([string]::IsNullOrWhiteSpace($Version)) { "" } else { "$Version-" }
+    $runPrefix = if ([string]::IsNullOrWhiteSpace($Version)) { "runs" } else { "runs/$Version" }
     return [pscustomobject]@{
         Mode = "Milestone"
         Slug = $Slug
+        Version = $Version
         Number = $null
         DocSlug = $null
         Title = $Title
-        Branch = "milestone/$Slug"
-        RunDir = $runDir
+        Branch = "milestone/$versionPrefix$Slug"
+        RunDir = if ([string]::IsNullOrWhiteSpace($Version)) { $runDir } else { "$runPrefix/milestone-$Slug" }
         TechnicalDoc = $null
         UserDoc = $null
         TechnicalIndex = $null
         UserIndex = $null
-        Decision = "$runDir/decision.md"
-        Manifest = $manifestPath
+        Decision = if ([string]::IsNullOrWhiteSpace($Version)) { "$runDir/decision.md" } else { "$runPrefix/milestone-$Slug/decision.md" }
+        Manifest = if ([string]::IsNullOrWhiteSpace($Version)) { $manifestPath } else { "$runPrefix/milestone-$Slug/work-unit.json" }
         Items = $itemInfos
     }
 }

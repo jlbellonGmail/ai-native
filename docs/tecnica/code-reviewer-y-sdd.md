@@ -5,7 +5,7 @@ circuito (`code-reviewer-agent`), formaliza Spec-Driven Development
 (`plan.md` + `tasks.md` junto a `spec.md`), y corrige tres bugs reales
 detectados por auditoría en `scripts/feature-contract.ps1` y
 `scripts/close-feature.ps1`, más `$schema` roto en `.agentic/`. Ver
-`runs/01-code-reviewer-y-sdd/spec.md`, `plan.md` y `tasks.md` para el
+`runs/v1.1.0/01-code-reviewer-y-sdd/spec.md`, `plan.md` y `tasks.md` para el
 detalle completo de criterios de aceptación (`AC-N`) y tareas.
 
 ## Eje 1 — `code-reviewer-agent`
@@ -182,7 +182,7 @@ de QA sin que QA volviera a correr. Es una regla de proceso (documentada
 en `.agentic/roles/code-reviewer-agent.md` y en `AGENTS.md`), no un gate
 técnico: implementarla requeriría comparar timestamps o hashes de commit
 entre artefactos, lo cual el spec de esta feature dejó explícitamente
-fuera de alcance (ver `runs/01-code-reviewer-y-sdd/spec.md`, sección
+fuera de alcance (ver `runs/v1.1.0/01-code-reviewer-y-sdd/spec.md`, sección
 "Alcance" y "Riesgos / supuestos").
 
 ## Actualización de documentación del propio circuito

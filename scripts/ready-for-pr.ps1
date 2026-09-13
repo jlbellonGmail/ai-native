@@ -5,7 +5,9 @@ param(
     [string] $Title = "",
 
     [ValidateSet("Feature", "Milestone")]
-    [string] $Mode = "Feature"
+    [string] $Mode = "Feature",
+
+    [string] $Version = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -97,12 +99,12 @@ if ($Mode -eq "Milestone") {
     $manifest = Read-WorkUnitManifest -Path $manifestPath
     $items = @($manifest.Items)
     $contractTitle = $Title -replace "^Milestone ", ""
-    $info = Get-WorkUnitInfo -Slug $Slug -Title $contractTitle -Mode Milestone -Items $items
+    $info = Get-WorkUnitInfo -Slug $Slug -Title $contractTitle -Mode Milestone -Items $items -Version $Version
     $expectedBranchPrefix = "milestone/"
 }
 else {
     $contractTitle = $Title -replace "^Feature [0-9]{2}-", ""
-    $info = Get-FeatureInfo -Slug $Slug -Title $contractTitle
+    $info = Get-FeatureInfo -Slug $Slug -Title $contractTitle -Version $Version
     $expectedBranchPrefix = "feature/"
 }
 
@@ -140,7 +142,7 @@ if ($Mode -eq "Milestone") {
     # rama "todos ya Ready", que igual puede seguir hacia push/creacion de
     # PR mas adelante en el script). Se invoca sin -RequireReadyRoadmap:
     # ese switch se sigue exigiendo despues de la mutacion, sin cambios.
-    Assert-WorkUnitContract -Slug $Slug -Mode Milestone -Title $info.Title
+    Assert-WorkUnitContract -Slug $Slug -Mode Milestone -Title $info.Title -Version $Version
 
     if ($readyItems.Count -eq $items.Count) {
         Write-Host "==> Todos los items del milestone '$Slug' ya estan en READY_FOR_PR."
@@ -160,7 +162,7 @@ if ($Mode -eq "Milestone") {
         Invoke-Checked "git" @("commit", "-m", "docs: marcar milestone $Slug como ready for PR ($($items -join ', '))")
     }
 
-    Assert-WorkUnitContract -Slug $Slug -Mode Milestone -Title $info.Title -RequireReadyRoadmap
+    Assert-WorkUnitContract -Slug $Slug -Mode Milestone -Title $info.Title -Version $Version -RequireReadyRoadmap
 }
 else {
     $escapedSlug = [regex]::Escape($Slug)
@@ -173,7 +175,7 @@ else {
     # de audit-1.md): la validacion completa del contrato corre antes de
     # cualquier mutacion/commit de ROADMAP.md, incluida la rama "ya esta
     # en READY_FOR_PR" (que igual puede seguir hacia push/creacion de PR).
-    Assert-FeatureContract -Slug $Slug -Title $info.Title
+    Assert-FeatureContract -Slug $Slug -Title $info.Title -Version $Version
 
     if ($roadmap -match "(?m)^- \[-\] $escapedSlug\b") {
         Write-Host "==> $Slug ya esta en READY_FOR_PR."
@@ -192,7 +194,7 @@ else {
         Invoke-Checked "git" @("commit", "-m", "docs: marcar $Slug como ready for PR")
     }
 
-    Assert-FeatureContract -Slug $Slug -Title $info.Title -RequireReadyRoadmap
+    Assert-FeatureContract -Slug $Slug -Title $info.Title -Version $Version -RequireReadyRoadmap
 }
 
 Write-Host "==> Pusheando $currentBranch..."
@@ -206,7 +208,7 @@ if ($null -ne $existingPr) {
         throw "La PR existente #$($existingPr.number) apunta a '$($existingPr.baseRefName)', no a '$baseBranch'."
     }
     Write-Host "==> PR existente: #$($existingPr.number) $($existingPr.url)"
-    & $powerShellPath -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot "local-feature-reconcile.ps1") -Slug $Slug -Branch $currentBranch -WorktreeDir (Get-Location).Path -Mode $Mode -StartBackground
+    & $powerShellPath -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot "local-feature-reconcile.ps1") -Slug $Slug -Branch $currentBranch -WorktreeDir (Get-Location).Path -Mode $Mode -Version $Version -StartBackground
     exit 0
 }
 
@@ -332,4 +334,4 @@ finally {
     }
 }
 
-& $powerShellPath -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot "local-feature-reconcile.ps1") -Slug $Slug -Branch $currentBranch -WorktreeDir (Get-Location).Path -Mode $Mode -StartBackground
+& $powerShellPath -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot "local-feature-reconcile.ps1") -Slug $Slug -Branch $currentBranch -WorktreeDir (Get-Location).Path -Mode $Mode -Version $Version -StartBackground

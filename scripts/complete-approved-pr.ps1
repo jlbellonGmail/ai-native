@@ -9,6 +9,8 @@ param(
     [ValidateSet("Feature", "Milestone")]
     [string] $Mode = "Feature",
 
+    [string] $Version = "",
+
     [string] $BaseBranch = "",
 
     [ValidateSet("merge", "squash", "rebase")]
@@ -314,7 +316,8 @@ function Wait-PrChecks {
 }
 
 if ([string]::IsNullOrWhiteSpace($Branch)) {
-    $Branch = if ($Mode -eq "Milestone") { "milestone/$Slug" } else { "feature/$Slug" }
+    $versionPrefix = if ([string]::IsNullOrWhiteSpace($Version)) { "" } else { "$Version-" }
+    $Branch = if ($Mode -eq "Milestone") { "milestone/$versionPrefix$Slug" } else { "feature/$versionPrefix$Slug" }
 }
 
 if ([string]::IsNullOrWhiteSpace($BaseBranch)) {
@@ -452,6 +455,7 @@ $cleanupArgs = @(
     "-Slug", $Slug,
     "-Branch", $Branch,
     "-Mode", $Mode,
+    "-Version", $Version,
     "-PollSeconds", $LocalCleanupPollSeconds,
     "-MaxMinutes", $LocalCleanupMaxMinutes
 )

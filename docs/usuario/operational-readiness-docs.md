@@ -42,7 +42,7 @@ vas a poder pushear directo a `develop` saltándote PR, aprobación o CI,
 ni siquiera en un incidente operativo excepcional, salvo que cambies la
 configuración manualmente antes. Es una decisión confirmada
 explícitamente (no un valor por defecto elegido sin consultar), ver
-`runs/05-operational-readiness-docs/decision.md`.
+`runs/v1.1.0/05-operational-readiness-docs/decision.md`.
 
 Si preferís no correr el comando o no tenés `gh` disponible, el mismo
 bullet documenta la alternativa equivalente paso a paso en la UI de

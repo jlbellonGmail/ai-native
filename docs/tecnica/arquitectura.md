@@ -355,7 +355,7 @@ descripción fija del estado de una única etapa.
 
 ## Decisión: fundamentos v2 compatibles con v1.1.0
 
-Se elige `PRINCIPLES.md` en la raíz antes de materializar sus reglas:
+Se elige `CONSTITUTION.md` en la raíz antes de materializar sus reglas:
 expresa principios normativos estables y es descubrible sin añadir una
 jerarquía. `CONSTITUTION.md` sería igualmente posible, pero sugeriría otra
 capa de gobierno sin una necesidad distinta. No se crean ambos archivos.

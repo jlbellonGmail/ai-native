@@ -7,7 +7,9 @@ param(
 
     [string[]] $Items = @(),
 
-    [string] $Title = ""
+    [string] $Title = "",
+
+    [string] $Version = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -134,9 +136,11 @@ foreach ($item in $itemSlugs) {
     }
 }
 
-$branch = if ($Mode -eq "Milestone") { "milestone/$Slug" } else { "feature/$Slug" }
+$versionPrefix = if ([string]::IsNullOrWhiteSpace($Version)) { "" } else { "$Version-" }
+$branch = if ($Mode -eq "Milestone") { "milestone/$versionPrefix$Slug" } else { "feature/$versionPrefix$Slug" }
 $worktreesRoot = Join-Path (Split-Path -Parent $repoRoot) "worktrees"
-$worktreeDir = Join-Path $worktreesRoot $Slug
+$worktreeName = "$versionPrefix$Slug".TrimEnd('-')
+$worktreeDir = Join-Path $worktreesRoot $worktreeName
 
 if (Test-Path -LiteralPath $worktreeDir) {
     throw "Ya existe un directorio de worktree para '$Slug': $worktreeDir."
@@ -150,19 +154,25 @@ Write-Host "==> Creando rama '$branch' y worktree en '$worktreeDir'..."
 Invoke-Checked "git" @("worktree", "add", "-b", $branch, $worktreeDir, $baseBranch)
 
 if ($Mode -eq "Milestone") {
-    $runDir = Join-Path $worktreeDir "runs/milestone-$Slug"
+    $runRelative = if ([string]::IsNullOrWhiteSpace($Version)) { "runs/milestone-$Slug" } else { "runs/$Version/milestone-$Slug" }
+    $runDir = Join-Path $worktreeDir $runRelative
     New-Item -ItemType Directory -Path $runDir -Force | Out-Null
     $manifestPath = Join-Path $runDir "work-unit.json"
 
     Push-Location $worktreeDir
     try {
-        Write-WorkUnitManifest -Path "runs/milestone-$Slug/work-unit.json" -Mode "milestone" -Slug $Slug -Items $itemSlugs
-        Invoke-Checked "git" @("add", "runs/milestone-$Slug/work-unit.json")
+        $manifestRelative = if ([string]::IsNullOrWhiteSpace($Version)) { "runs/milestone-$Slug/work-unit.json" } else { "runs/$Version/milestone-$Slug/work-unit.json" }
+        Write-WorkUnitManifest -Path $manifestRelative -Mode "milestone" -Slug $Slug -Items $itemSlugs
+        Invoke-Checked "git" @("add", $manifestRelative)
         Invoke-Checked "git" @("commit", "-m", "chore: iniciar milestone $Slug con items $($itemSlugs -join ', ')")
     }
     finally {
         Pop-Location
     }
+}
+else {
+    $featureRunRelative = if ([string]::IsNullOrWhiteSpace($Version)) { "runs/$Slug" } else { "runs/$Version/$Slug" }
+    New-Item -ItemType Directory -Path (Join-Path $worktreeDir $featureRunRelative) -Force | Out-Null
 }
 
 Write-Host ""
@@ -171,7 +181,7 @@ Write-Host "==> Rama: $branch"
 Write-Host "==> Worktree: $worktreeDir"
 if ($Mode -eq "Milestone") {
     Write-Host "==> Items agrupados: $($itemSlugs -join ', ')"
-    Write-Host "==> Manifest: runs/milestone-$Slug/work-unit.json"
+    Write-Host "==> Manifest: $(if ([string]::IsNullOrWhiteSpace($Version)) { "runs/milestone-$Slug/work-unit.json" } else { "runs/$Version/milestone-$Slug/work-unit.json" })"
 }
 Write-Host ""
 Write-Host "==> Proximo paso: correr analyst-agent en sesion nueva, dentro de $worktreeDir,"

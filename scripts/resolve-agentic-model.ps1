@@ -6,6 +6,8 @@ param(
 
     [string] $Feature = "",
 
+    [string] $Version = "",
+
     [string] $RunFile = "",
 
     [string] $Model = "",
@@ -329,7 +331,8 @@ try {
     }
 
     if ([string]::IsNullOrWhiteSpace($RunFile) -and -not [string]::IsNullOrWhiteSpace($Feature)) {
-        $RunFile = Join-Path $root ("runs/$Feature/run.yaml" -replace '/', [System.IO.Path]::DirectorySeparatorChar)
+        $runPrefix = if ([string]::IsNullOrWhiteSpace($Version)) { "runs" } else { "runs/$Version" }
+        $RunFile = Join-Path $root ("$runPrefix/$Feature/run.yaml" -replace '/', [System.IO.Path]::DirectorySeparatorChar)
     }
     elseif (-not [string]::IsNullOrWhiteSpace($RunFile) -and -not [System.IO.Path]::IsPathRooted($RunFile)) {
         $RunFile = Join-Path $root $RunFile
@@ -460,7 +463,8 @@ try {
     }
 
     if ([string]::IsNullOrWhiteSpace($EvidencePath) -and -not [string]::IsNullOrWhiteSpace($Feature)) {
-        $EvidencePath = Join-Path $root ("runs/$Feature/model-routing.jsonl" -replace '/', [System.IO.Path]::DirectorySeparatorChar)
+        $runPrefix = if ([string]::IsNullOrWhiteSpace($Version)) { "runs" } else { "runs/$Version" }
+        $EvidencePath = Join-Path $root ("$runPrefix/$Feature/model-routing.jsonl" -replace '/', [System.IO.Path]::DirectorySeparatorChar)
     }
     elseif (-not [string]::IsNullOrWhiteSpace($EvidencePath) -and -not [System.IO.Path]::IsPathRooted($EvidencePath)) {
         $EvidencePath = Join-Path $root $EvidencePath
@@ -494,7 +498,8 @@ catch {
 
     if ([string]::IsNullOrWhiteSpace($EvidencePath) -and -not [string]::IsNullOrWhiteSpace($Feature)) {
         $rootForFailure = Get-RepositoryRoot
-        $EvidencePath = Join-Path $rootForFailure ("runs/$Feature/model-routing.jsonl" -replace '/', [System.IO.Path]::DirectorySeparatorChar)
+        $runPrefix = if ([string]::IsNullOrWhiteSpace($Version)) { "runs" } else { "runs/$Version" }
+        $EvidencePath = Join-Path $rootForFailure ("$runPrefix/$Feature/model-routing.jsonl" -replace '/', [System.IO.Path]::DirectorySeparatorChar)
     }
     elseif (-not [string]::IsNullOrWhiteSpace($EvidencePath) -and -not [System.IO.Path]::IsPathRooted($EvidencePath)) {
         $rootForFailure = Get-RepositoryRoot

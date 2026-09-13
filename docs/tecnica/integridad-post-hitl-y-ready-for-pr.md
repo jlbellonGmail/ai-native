@@ -3,7 +3,7 @@
 Esta feature (`02-integridad-post-hitl-y-ready-for-pr`) cierra tres gaps
 de integridad conocidos del motor del circuito agéntico, sin agregar
 stack ni herramientas nuevas. Ver
-`runs/02-integridad-post-hitl-y-ready-for-pr/spec.md`, `plan.md` y
+`runs/v1.1.0/02-integridad-post-hitl-y-ready-for-pr/spec.md`, `plan.md` y
 `tasks.md` para el detalle completo de criterios de aceptación (`AC-N`) y
 tareas.
 
@@ -221,5 +221,5 @@ directamente.
   única resolución de una aprobación obsoleta es que el humano vuelva a
   aprobar.
 
-Ver `runs/02-integridad-post-hitl-y-ready-for-pr/spec.md` (sección
+Ver `runs/v1.1.0/02-integridad-post-hitl-y-ready-for-pr/spec.md` (sección
 "Explícitamente NO incluye") para el detalle completo.
