@@ -20,5 +20,6 @@ fuente canónica, regenerar adaptadores y declarar modelos por ejecución.
 - [Arquitectura de roles](arquitectura-roles.md)
 - [Convergence autónoma Builder-Reviewer](convergence.md)
 - [Evidencias adaptativas](evidencias-adaptativas.md)
+- [Tests CI y audit](tests-ci-audit.md)
 
 <!-- FEATURE_LINKS_END -->
