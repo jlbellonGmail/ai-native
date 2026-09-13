@@ -25,6 +25,16 @@ mismo y Reviewer valida siempre el estado vigente. Planner sólo reingresa si
 Reviewer marca una decisión material, ambigüedad, contradicción o cambio de
 alcance; los bloqueos externos y fallos técnicos terminan de forma segura.
 
+### Evidencia adaptativa F05
+
+Las unidades v2 que materializan `runs/<version>/<slug>/sdd.json` usan el
+contrato declarativo de `scripts/feature-contract.ps1`: SUMMARY.md es siempre
+la entrada humana. LIGHT exige sólo SUMMARY y review vigente; STANDARD agrega
+intención/plan, QA y documentación; FULL agrega tasks, decisión, auditoría y
+validaciones reforzadas. Los artefactos no exigidos pueden no existir y nunca
+se crean placeholders. La ausencia de `sdd.json` conserva el contrato legacy.
+`ready-for-pr.ps1` consume la misma política; JSON/JSONL es evidencia máquina.
+
 ## Transición a v2: vigencia y dirección
 
 Leer también [CONSTITUTION.md](CONSTITUTION.md), fuente de principios normativos.
