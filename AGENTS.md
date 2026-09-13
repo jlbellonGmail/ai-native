@@ -1,5 +1,27 @@
 # Proyecto: template
 
+## Transición a v2: vigencia y dirección
+
+Leer también [PRINCIPLES.md](PRINCIPLES.md), fuente de principios normativos.
+La Fase 00 establece el [diseño v2](docs/tecnica/fundamentos-v2.md) y su
+[procedimiento temporal](docs/usuario/fundamentos-v2.md). ROADMAP dirige el
+trabajo; STATUS resume la reentrada sin sustituir evidencia real.
+
+El motor de cinco agentes, sus contratos y los scripts descritos abajo siguen
+vigentes para Feature/Milestone. Planner/Builder/Reviewer, SDD adaptativo y
+supervisor son arquitectura objetivo, no capacidades activadas por este texto.
+Cada sustitución exige su fase, pruebas y PR; no se omiten gates v1 invocando
+principios v2. El bootstrap Fase 00 es gobernanza `chore/*` y sigue el ciclo
+funcional Planner → Reviewer → Builder → verificación → Reviewer autorizado
+por el pedido humano, sin checkpoints humanos intermedios.
+
+Resolver inspección, aislamiento, implementación, tests, correcciones y PR
+autónomamente dentro del alcance autorizado. Escalar sólo decisiones materiales
+sin evidencia, riesgos significativos, información indispensable ausente o
+conflictos irresolubles; registrar el estado y la acción exacta necesaria.
+Los nombres de herramientas de la configuración vigente no definen roles
+conceptuales del Template. No editar adaptadores generados manualmente.
+
 Template base para arrancar un proyecto nuevo ya con un circuito
 agéntico AI-Native funcionando: analista → auditor → implementador → QA →
 code reviewer, con un único punto de intervención humana (la decisión de
