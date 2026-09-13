@@ -1,10 +1,10 @@
 # Estado operativo
 
 Versión: v2.0.0  
-Estado general: T01 terminada; F01 y F02 cerradas.  
-Última fase funcional terminada: F02 — SDD adaptativo.  
+Estado general: F03 terminada; F01, F02 y T01 cerradas.  
+Última fase funcional terminada: F03 — Arquitectura de roles.  
 Intervención transversal: T01 — normalización documental, terminada.  
-Siguiente fase: F03 — Arquitectura de roles.  
+Siguiente fase: F04 — CONVERGENCE.  
 
 ## Qué ya funciona
 
@@ -13,7 +13,7 @@ determinística y la documentación por unidad siguen operativos.
 
 ## Qué sigue
 
-Iniciar `08-arquitectura-roles` cuando corresponda.
+Iniciar `09-convergence` cuando corresponda.
 
 ## Problemas abiertos
 
@@ -22,11 +22,11 @@ plan de GitHub y permanece documentada como limitación de plataforma.
 
 ## Próximo paso
 
-Ejecutar el arranque versionado de F03 desde `develop`.
+Preparar F04 desde `develop`; F03 ya está mergeada y cerrada.
 
 ## Detalle
 
-[SUMMARY de T01](runs/v2.0.0/T01-normalizacion-documental/SUMMARY.md)
+[SUMMARY de F03](runs/v2.0.0/08-arquitectura-roles/SUMMARY.md)
 
 <!-- STATUS:AUTO:BEGIN -->
 
