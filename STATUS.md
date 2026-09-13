@@ -32,14 +32,14 @@ Preparar F04 desde `develop`; F03 ya está mergeada y cerrada.
 
 ## Estado verificado automáticamente
 
-- Actualizado: 2026-09-13T18:36:58Z
-- Rama: feature/v2.0.0-08-arquitectura-roles
-- HEAD: 038d61b (038d61bb1f87466421e1657d75319e28a9ab11f6)
+- Actualizado: 2026-09-13T19:16:42Z
+- Rama: develop
+- HEAD: fc9775a (fc9775ad9ccb9453bc6ccbd2aac9b418e14a2d05)
 - Remoto: refs/remotes/origin/develop
 - Working tree: dirty
-- Worktrees: C:/Proyectos/template (develop); C:/Proyectos/worktrees/v2.0.0-08-arquitectura-roles (feature/v2.0.0-08-arquitectura-roles)
+- Worktrees: C:/Proyectos/template (develop)
 - PR activa: sin PR
-- CI: sin CI
+- CI: {"conclusion":"","headSha":"fc9775ad9ccb9453bc6ccbd2aac9b418e14a2d05","name":"CI","status":"in_progress","url":"https://github.com/jlbellonGmail/template/actions/runs/34777165063"}
 - Última release: {"name":"v1.1.0 — Roadmap → Analyst → Spec Reviewer → Builder → QA → Code Reviewer → .audit → HITL → PR","publishedAt":"2026-09-13T02:03:08Z","tagName":"v1.1.0"}
 
 <!-- STATUS:AUTO:END -->
