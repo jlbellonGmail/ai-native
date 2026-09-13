@@ -107,7 +107,7 @@ alcance de este STATUS.md.
 
 ## Evidencia
 
-- Release: GitHub Release "Template v1.0.0" (tag `v1.0.0` sobre `8804a82`,
+- Última release: {"name":"Template v1.0.0","publishedAt":"2026-09-09T20:40:11Z","tagName":"v1.0.0"}
   publicado 2026-09-09T20:40:11Z) — `gh release list`.
 - PR: #24 "Registrar auditoría definitiva 100/100" (`develop` ←
   `chore/auditoria-definitiva-100`), MERGED 2026-09-09T20:29:32Z — `gh pr
@@ -166,3 +166,19 @@ Pegar o resumir:
 - último resultado del agente
 - `git status`
 - cualquier error, bloqueo o cambio nuevo
+
+<!-- STATUS:AUTO:BEGIN -->
+
+## Estado verificado automáticamente
+
+- Actualizado: 2026-09-12T21:37:50Z
+- Rama: develop
+- HEAD: 8e86b75 (8e86b75fd712ad94a2116fe84129ba02c86522f8)
+- Remoto: refs/remotes/origin/develop
+- Working tree: dirty
+- Worktrees: C:/Proyectos/template (develop)
+- PR activa: sin PR
+- CI: {"conclusion":"success","headSha":"8e86b75fd712ad94a2116fe84129ba02c86522f8","name":"Guard develop branch","status":"completed","url":"https://github.com/jlbellonGmail/template/actions/runs/34405462548"}
+- Última release: {"name":"Template v1.0.0","publishedAt":"2026-09-09T20:40:11Z","tagName":"v1.0.0"}
+
+<!-- STATUS:AUTO:END -->
