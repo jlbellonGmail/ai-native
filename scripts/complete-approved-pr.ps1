@@ -29,6 +29,11 @@ param(
     [switch] $SkipLocalCleanup,
 
     [switch] $CommentOnFailure
+
+    ,
+    [switch] $PreAuthorizedHumanMerge,
+
+    [string] $AuthorizationPath = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -338,14 +343,35 @@ if ($pr.headRefName -ne $Branch) {
     throw "La PR '$prRef' pertenece a head '$($pr.headRefName)', no a '$Branch'."
 }
 
-if ($pr.reviewDecision -ne "APPROVED") {
+function Assert-PreAuthorizedHumanMerge {
+    param([Parameter(Mandatory = $true)][string] $Path, [Parameter(Mandatory = $true)][string] $ExpectedScope)
+    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) { throw "No existe la autorizacion previa requerida: $Path" }
+    $authorization = Get-Content -LiteralPath $Path -Raw -Encoding UTF8
+    if ($authorization -notmatch '(?m)^decision:\s*MERGE\s*$' -or
+        $authorization -notmatch "(?m)^scope:\s*$([regex]::Escape($ExpectedScope))\s*$" -or
+        $authorization -notmatch '(?m)^phase:\s*02\s*$' -or
+        $authorization -notmatch '(?m)^authorizedBy:\s*user-instruction\s*$') {
+        throw "La autorizacion previa no tiene el formato/scope esperado para $ExpectedScope."
+    }
+}
+
+$preauthorized = $false
+if ($PreAuthorizedHumanMerge) {
+    if ([string]::IsNullOrWhiteSpace($AuthorizationPath)) { throw "-AuthorizationPath es obligatorio con -PreAuthorizedHumanMerge." }
+    Assert-PreAuthorizedHumanMerge -Path $AuthorizationPath -ExpectedScope $Slug
+    $preauthorized = $true
+    Write-Host "==> Autorizacion humana previa explicita validada para '$Slug'.
+Se conserva la aprobacion HITL normal como requisito por defecto."
+}
+
+if (-not $preauthorized -and $pr.reviewDecision -ne "APPROVED") {
     throw "La PR '$prRef' todavia no tiene aprobacion HITL. reviewDecision=$($pr.reviewDecision)."
 }
 
-Write-Host "==> Aprobacion HITL confirmada. Verificando que siga vigente sobre el commit actual..."
-$latestApprovedCommit = Get-LatestApprovedReviewCommit -GitHubCliPath $ghPath -PrNumber $pr.number
+Write-Host "==> Verificando autorizacion vigente sobre el commit actual..."
+$latestApprovedCommit = if ($preauthorized) { $pr.headRefOid } else { Get-LatestApprovedReviewCommit -GitHubCliPath $ghPath -PrNumber $pr.number }
 
-if ([string]::IsNullOrWhiteSpace($latestApprovedCommit) -or $latestApprovedCommit -ne $pr.headRefOid) {
+    if (-not $preauthorized -and ([string]::IsNullOrWhiteSpace($latestApprovedCommit) -or $latestApprovedCommit -ne $pr.headRefOid)) {
     $reportPath = Write-GateReport `
         -Slug $Slug `
         -Status "rejected" `
@@ -401,7 +427,7 @@ $successReport = Write-GateReport `
     -Slug $Slug `
     -Status "approved" `
     -Feedback @(
-        "PR $prRef aprobada por HITL, checks post-aprobacion verdes y merge ejecutado.",
+        $(if ($preauthorized) { "Autorizacion humana previa explicita validada para esta ejecucion; no se uso auto-aprobacion de GitHub." } else { "PR $prRef aprobada por HITL, checks post-aprobacion verdes y merge ejecutado." }),
         "El cierre remoto de ROADMAP queda a cargo de post-merge-close-feature.yml."
     ) `
     -Details $checks.Details

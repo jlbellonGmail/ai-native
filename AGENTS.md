@@ -8,8 +8,11 @@ La Fase 00 establece el [diseño v2](docs/tecnica/fundamentos-v2.md) y su
 trabajo; STATUS resume la reentrada sin sustituir evidencia real.
 
 El motor de cinco agentes, sus contratos y los scripts descritos abajo siguen
-vigentes para Feature/Milestone. Planner/Builder/Reviewer, SDD adaptativo y
-supervisor son arquitectura objetivo, no capacidades activadas por este texto.
+vigentes para Feature/Milestone. La Fase 02 agrega SDD adaptativo opt-in:
+`scripts/materialize-sdd.ps1` consume la salida de ASSESS y materializa LIGHT,
+STANDARD o FULL sin relajar el contrato v1. Planner/Builder/Reviewer y el
+supervisor siguen siendo arquitectura objetivo; no se activan capacidades de
+Fases posteriores por este texto.
 Cada sustitución exige su fase, pruebas y PR; no se omiten gates v1 invocando
 principios v2. El bootstrap Fase 00 es gobernanza `chore/*` y sigue el ciclo
 funcional Planner → Reviewer → Builder → verificación → Reviewer autorizado

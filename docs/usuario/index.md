@@ -18,5 +18,6 @@ fuente canónica, regenerar adaptadores y declarar modelos por ejecución.
 - [CI wiring product tests](ci-wiring-product-tests.md)
 - [Operational Readiness Docs](operational-readiness-docs.md)
 - [Assess Motor Adaptativo](assess-motor-adaptativo.md)
+- [SDD Adaptativo](sdd-adaptativo.md)
 
 <!-- FEATURE_LINKS_END -->
