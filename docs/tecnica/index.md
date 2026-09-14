@@ -33,5 +33,6 @@ una calificación subjetiva.
 - [Evidencias adaptativas](evidencias-adaptativas.md)
 - [Tests CI y audit](tests-ci-audit.md)
 - [Agentic Evals reproducibles](agentic-evals.md)
+- [MCP y herramientas externas](mcp-herramientas.md)
 
 <!-- FEATURE_LINKS_END -->
