@@ -83,4 +83,9 @@ jobs:
             -Version '${{ steps.feature.outputs.version }}' `
             -PrNumber ${{ github.event.pull_request.number }} `
             -SkipLocalCleanup `
-            -CommentOnFailure
+            -CommentOnFailure `
+            -GovernanceMode SingleMaintainer `
+            -PreAuthorizedHumanMerge `
+            -AuthorizationPath "runs/v2.0.0/\${{ steps.feature.outputs.slug }}/human-authorization.md" `
+            -IndependentReviewPath "runs/v2.0.0/\${{ steps.feature.outputs.slug }}/independent-review.md" `
+            -IntegrityEvidencePath "runs/v2.0.0/\${{ steps.feature.outputs.slug }}/integrity-evidence.md"
