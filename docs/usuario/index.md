@@ -19,6 +19,7 @@ fuente canónica, regenerar adaptadores y declarar modelos por ejecución.
 - [SDD Adaptativo](sdd-adaptativo.md)
 - [Arquitectura de roles](arquitectura-roles.md)
 - [Convergence autónoma Builder-Reviewer](convergence.md)
+- [status-observabilidad](status-observabilidad.md)
 - [seguridad-profesional](seguridad-profesional.md)
 - [Evidencias adaptativas](evidencias-adaptativas.md)
 - [Tests CI y audit](tests-ci-audit.md)
@@ -26,5 +27,5 @@ fuente canónica, regenerar adaptadores y declarar modelos por ejecución.
 - [Supply chain y CI/CD profesional](supply-chain-cicd.md)
 - [MCP y herramientas externas](mcp-herramientas.md)
 - [Routing dinámico por capacidades y evidencia](routing-dinamico.md)
-
+- [Releases y evolución](releases-evolucion.md)
 <!-- FEATURE_LINKS_END -->

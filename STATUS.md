@@ -29,14 +29,18 @@ confirmar la ejecución completa.
 
 ## Estado verificado automáticamente
 
-- Actualizado: 2026-09-14T17:42:36Z
-- Rama: maintenance/v2.0.0-T01-cierre-historico
-- HEAD: ea0bfdd (ea0bfdd31b09b95f9bf05610c80fdf21600fc281)
-- Remoto: refs/remotes/origin/develop
+- Actualizado: 2026-09-14T18:47:28Z
+- Versión: v2.0.0
+- Rama: feature/v2.0.0-20-releases-evolucion
+- HEAD: 59a6a1d4fefe8b8b7df888845851e4493f9e0ede
+- Remoto: https://github.com/jlbellonGmail/template.git
 - Working tree: dirty
-- Worktrees: C:/Proyectos/template (develop); C:/Proyectos/worktrees/v2.0.0-T01-cierre-historico (maintenance/v2.0.0-T01-cierre-historico)
-- PR activa: sin PR
-- CI: sin CI
-- Última release: {"name":"v1.1.0 — Roadmap → Analyst → Spec Reviewer → Builder → QA → Code Reviewer → .audit → HITL → PR","publishedAt":"2026-09-13T02:03:08Z","tagName":"v1.1.0"}
+- Worktrees: 3
+- Worktrees Git: 3
+- Unidades activas: 18-status-observabilidad= [feature/v2.0.0-18-status-observabilidad]; 20-releases-evolucion= [feature/v2.0.0-20-releases-evolucion]
+- PR activa: UNKNOWN / sin PR abierta
+- CI: UNKNOWN / sin CI verificable
+- CI vigente: UNKNOWN / sin CI verificable
+- Última release: UNKNOWN / no disponible
 
 <!-- STATUS:AUTO:END -->

@@ -12,8 +12,8 @@ Ver también [Circuito agentico](circuito-agentico.md) para la fuente
 canónica multiherramienta, generación de adaptadores y router de modelos.
 
 Ver también [Criterios de evaluación del repositorio](criterios-evaluacion-repo.md)
-para auditar el estado acumulado del repo con checks verificables, no
-una calificación subjetiva.
+para auditar el estado acumulado del repo con checks verificables, no una
+calificación subjetiva.
 
 <!-- FEATURE_LINKS_START -->
 
@@ -29,6 +29,7 @@ una calificación subjetiva.
 - [SDD Adaptativo](sdd-adaptativo.md)
 - [Arquitectura de roles](arquitectura-roles.md)
 - [Convergence autónoma Builder-Reviewer](convergence.md)
+- [status-observabilidad](status-observabilidad.md)
 - [seguridad-profesional](seguridad-profesional.md)
 - [Evidencias adaptativas](evidencias-adaptativas.md)
 - [Tests CI y audit](tests-ci-audit.md)
@@ -36,5 +37,5 @@ una calificación subjetiva.
 - [Supply chain y CI/CD profesional](supply-chain-cicd.md)
 - [MCP y herramientas externas](mcp-herramientas.md)
 - [Routing dinámico por capacidades y evidencia](routing-dinamico.md)
-
+- [Releases y evolución](releases-evolucion.md)
 <!-- FEATURE_LINKS_END -->
