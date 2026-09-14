@@ -1,42 +1,38 @@
 # Estado operativo
 
-Versión: v2.0.0  
-Estado general: T04 cerrada y mergeada; T01 registrada abierta, T02/T03 mergeadas; F08, F10 y F12 cerradas y mergeadas.
+Versión: v2.0.0
+Estado general: T04 cerrada y mergeada; T01 abierta; T02/T03 mergeadas; F08, F10 y F12 cerradas.
 
 ## Próximas fases
 
 - F13 — STATUS, observabilidad y reentrada, pendiente.
 - F14 — unidades y paralelización, pendiente.
 - F15 — releases y evolución, pendiente.
-- F16 — validación integral, pendiente.
+- F16 — validación integral v2, pendiente.
 - F17 — auditoría y release v2.0.0, pendiente.
 
-Próxima ejecución recomendada: F13. F14,
-F15, F16 y F17 permanecen pendientes; ninguna de estas fases ha comenzado.
+Próxima ejecución recomendada: F13. Ninguna fase posterior ha comenzado.
 
 ## Evidencia real
 
-PR #69 (F08), PR #68 (F10) y PR #67 (F12) están mergeadas contra `develop`.
-CI de `develop` verde.
+PR #72 (T04), PR #70 (T03), PR #66 (T02), y PR #69/#68/#67 (F08/F10/F12) están mergeadas contra develop.
 
 ## Incidencias
 
-El host PowerShell del entorno retiene la ejecución aislada de
-check-integrity.ps1; el script parsea y la suite focalizada pasa. CI debe
-confirmar la ejecución completa.
+El checker global detecta STATUS:AUTO stale como diagnóstico separado; no se implementa F13.
 
 <!-- STATUS:AUTO:BEGIN -->
 
 ## Estado verificado automáticamente
 
-- Actualizado: 2026-09-14T16:34:38Z
+- Actualizado: 2026-09-14T16:40:00Z
 - Rama: develop
-- HEAD: 605c50d (605c50d4c831b160a01ce350b23fa618b90fad75)
+- HEAD: e3353fb (e3353fb63fd98e60a8e806191f0b0f3aaa4ba062)
 - Remoto: refs/remotes/origin/develop
-- Working tree: dirty
+- Working tree: clean
 - Worktrees: C:/Proyectos/template (develop)
 - PR activa: sin PR
-- CI: {"conclusion":"","headSha":"605c50d4c831b160a01ce350b23fa618b90fad75","name":"CI","status":"in_progress","url":"https://github.com/jlbellonGmail/template/actions/runs/34869407996"}
-- Última release: {"name":"v1.1.0 — Roadmap → Analyst → Spec Reviewer → Builder → QA → Code Reviewer → .audit → HITL → PR","publishedAt":"2026-09-13T02:03:08Z","tagName":"v1.1.0"}
+- CI: en ejecución post-merge
+- Última release: v1.1.0
 
 <!-- STATUS:AUTO:END -->
