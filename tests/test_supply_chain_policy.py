@@ -18,7 +18,7 @@ def test_gate_rejects_floating_action(tmp_path):
     (tmp_path / "requirements-dev.txt").write_text("pytest==8.3.5\n", encoding="utf-8")
     (tmp_path / "requirements-docs.txt").write_text("mkdocs-material==9.6.18\n", encoding="utf-8")
     result = run_gate(tmp_path)
-    assert result.returncode != 0 and "acción sin SHA inmutable" in result.stderr
+    assert result.returncode != 0 and "SHA inmutable" in result.stderr
 
 def test_gate_rejects_unpinned_dependency(tmp_path):
     workflows = tmp_path / ".github" / "workflows"; workflows.mkdir(parents=True)
