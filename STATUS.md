@@ -26,18 +26,18 @@ debe confirmar la ejecución canónica.
 
 ## Estado verificado automáticamente
 
-- Actualizado: 2026-09-14T19:58:49Z
+- Actualizado: 2026-09-14T22:03:51Z
 - Versión: v2.0.0
-- Rama: maintenance/v2.0.0-T04-integridad-sincronizacion-fix
-- HEAD: 2340caa9175b523460fd285b2c1252ec6db005a2
-- Remoto: https://github.com/jlbellonGmail/template.git
+- Rama: develop
+- HEAD: f0cf6b5b346b2a780e7292b059a993521cbee5b3
+- Remoto: https://github.com/jlbellonGmail/template
 - Working tree: dirty
-- Worktrees: 2
-- Worktrees Git: 2
-- Unidades activas: 18-status-observabilidad= [feature/v2.0.0-18-status-observabilidad]
+- Worktrees: 3
+- Worktrees Git: 3
+- Unidades activas: ninguna
 - PR activa: UNKNOWN / sin PR abierta
 - CI: UNKNOWN / sin CI verificable
 - CI vigente: UNKNOWN / sin CI verificable
-- Última release: UNKNOWN / no disponible
+- Última release: v1.1.0
 
 <!-- STATUS:AUTO:END -->
