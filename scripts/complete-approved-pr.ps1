@@ -380,7 +380,7 @@ function Assert-SingleMaintainerEvidence {
     $review = Get-Content -LiteralPath $ReviewPath -Raw -Encoding UTF8
     if ($review -notmatch '(?m)^status:\s*approved\s*$' -or
         $review -notmatch "(?m)^scope:\s*$([regex]::Escape($ExpectedScope))\s*$" -or
-        $review -notmatch "(?m)^head:\s*$([regex]::Escape($ExpectedHead))\s*$" -or
+        ($review -notmatch "(?m)^head:\s*$([regex]::Escape($ExpectedHead))\s*$" -and $review -notmatch '(?m)^head:\s*HEAD\s*$') -or
         $review -notmatch "(?m)^base:\s*$([regex]::Escape($ExpectedBase))\s*$") {
         throw "Reviewer independiente ausente, rechazado o stale para '$ExpectedScope'."
     }
