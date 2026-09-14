@@ -29,14 +29,14 @@ confirmar la ejecución completa.
 
 ## Estado verificado automáticamente
 
-- Actualizado: 2026-09-14T16:34:00Z
-- Rama: develop
-- HEAD: c79b26b (c79b26b57051fbb13417335b1dbad7f27c38d398)
+- Actualizado: 2026-09-14T16:37:59Z
+- Rama: maintenance/v2.0.0-T04-integridad-final
+- HEAD: b3f3205 (b3f320548b6fca7be868cde24f30770729a4e20c)
 - Remoto: refs/remotes/origin/develop
 - Working tree: dirty
-- Worktrees: C:/Proyectos/template (develop)
+- Worktrees: C:/Proyectos/template (maintenance/v2.0.0-T04-integridad-final)
 - PR activa: sin PR
-- CI: {"conclusion":"success","headSha":"e785cec9ceb7899c0a59db52cc0ddfd70de06c18","name":"Guard develop branch","status":"completed","url":"https://github.com/jlbellonGmail/template/actions/runs/34869260694"}
+- CI: sin CI
 - Última release: {"name":"v1.1.0 — Roadmap → Analyst → Spec Reviewer → Builder → QA → Code Reviewer → .audit → HITL → PR","publishedAt":"2026-09-13T02:03:08Z","tagName":"v1.1.0"}
 
 <!-- STATUS:AUTO:END -->
