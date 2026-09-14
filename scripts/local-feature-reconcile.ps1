@@ -6,7 +6,7 @@ param(
 
     [string] $WorktreeDir = "",
 
-    [ValidateSet("Feature", "Milestone")]
+    [ValidateSet("Feature", "Milestone", "Maintenance")]
     [string] $Mode = "Feature",
 
     [string] $Version = "",
@@ -35,7 +35,7 @@ function Convert-ToPowerShellLiteral {
 function Start-LocalReconciler {
     if ([string]::IsNullOrWhiteSpace($Branch)) {
         $versionPrefix = if ([string]::IsNullOrWhiteSpace($Version)) { "" } else { "$Version-" }
-        $Branch = if ($Mode -eq "Milestone") { "milestone/$versionPrefix$Slug" } else { "feature/$versionPrefix$Slug" }
+        $Branch = if ($Mode -eq "Milestone") { "milestone/$versionPrefix$Slug" } elseif ($Mode -eq "Maintenance") { "maintenance/$versionPrefix$Slug" } else { "feature/$versionPrefix$Slug" }
     }
 
     $mainRoot = Split-Path -Parent (Get-GitCommonDir)
@@ -142,7 +142,7 @@ if ($StartBackground) {
 
 if ([string]::IsNullOrWhiteSpace($Branch)) {
     $versionPrefix = if ([string]::IsNullOrWhiteSpace($Version)) { "" } else { "$Version-" }
-    $Branch = if ($Mode -eq "Milestone") { "milestone/$versionPrefix$Slug" } else { "feature/$versionPrefix$Slug" }
+    $Branch = if ($Mode -eq "Milestone") { "milestone/$versionPrefix$Slug" } elseif ($Mode -eq "Maintenance") { "maintenance/$versionPrefix$Slug" } else { "feature/$versionPrefix$Slug" }
 }
 
 $repoRoot = Get-RepositoryRoot
@@ -189,7 +189,14 @@ try {
             Set-Location -LiteralPath $mainRoot
             [Environment]::CurrentDirectory = $mainRoot
             if (Test-Path -LiteralPath $WorktreeDir) {
-                Invoke-Checked "git" @("worktree", "remove", $WorktreeDir)
+                try { Invoke-Checked "git" @("worktree", "remove", $WorktreeDir) }
+                catch { throw "Cleanup incompleto: worktree Git activo o no removible '$WorktreeDir'. No se fuerza el borrado." }
+            }
+            Invoke-Checked "git" @("worktree", "prune")
+            if (Test-Path -LiteralPath $WorktreeDir) {
+                $entries = @(Get-ChildItem -LiteralPath $WorktreeDir -Force -ErrorAction SilentlyContinue)
+                if ($entries.Count -gt 0) { throw "Cleanup incompleto: residual físico con archivos: $WorktreeDir" }
+                Write-Warning "Residual físico vacío (posible lock Windows): $WorktreeDir"
             }
             if (Test-GitSuccess @("rev-parse", "--verify", "--quiet", $Branch)) {
                 Invoke-Checked "git" @("branch", "-d", $Branch)

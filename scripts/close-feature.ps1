@@ -8,7 +8,7 @@ param(
 
     [string] $WorktreeDir = "",
 
-    [ValidateSet("Feature", "Milestone")]
+    [ValidateSet("Feature", "Milestone", "Maintenance")]
     [string] $Mode = "Feature",
 
     [string] $Version = "",
@@ -255,8 +255,14 @@ function Remove-LocalFeatureArtifacts {
 
     Write-Host "==> Limpiando worktree y rama local..."
     if (Test-Path -LiteralPath $WorktreeDir) {
-        Invoke-Checked "git" @("worktree", "remove", $WorktreeDir)
-        Write-Host "==> Worktree eliminado: $WorktreeDir"
+        try { Invoke-Checked "git" @("worktree", "remove", $WorktreeDir) }
+        catch { throw "Cleanup incompleto: no se pudo remover el worktree Git '$WorktreeDir'. No se fuerza el borrado de contenido." }
+        Invoke-Checked "git" @("worktree", "prune")
+        if (Test-Path -LiteralPath $WorktreeDir) {
+            $entries = @(Get-ChildItem -LiteralPath $WorktreeDir -Force -ErrorAction SilentlyContinue)
+            if ($entries.Count -gt 0) { throw "Cleanup incompleto: metadata Git removida pero el residual físico contiene archivos: $WorktreeDir" }
+            Write-Warning "Residual físico vacío (posible lock Windows): $WorktreeDir"
+        } else { Write-Host "==> Worktree eliminado: $WorktreeDir" }
     }
     else {
         Write-Host "==> No existe worktree local para eliminar: $WorktreeDir"
@@ -273,7 +279,7 @@ function Remove-LocalFeatureArtifacts {
 
 if ([string]::IsNullOrWhiteSpace($Branch)) {
     $versionPrefix = if ([string]::IsNullOrWhiteSpace($Version)) { "" } else { "$Version-" }
-    $Branch = if ($Mode -eq "Milestone") { "milestone/$versionPrefix$Slug" } else { "feature/$versionPrefix$Slug" }
+    $Branch = if ($Mode -eq "Milestone") { "milestone/$versionPrefix$Slug" } elseif ($Mode -eq "Maintenance") { "maintenance/$versionPrefix$Slug" } else { "feature/$versionPrefix$Slug" }
 }
 
 $baseBranch = "develop"

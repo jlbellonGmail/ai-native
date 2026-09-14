@@ -221,7 +221,7 @@ function Get-WorkUnitInfo {
 
         [string] $Title = "",
 
-        [ValidateSet("Feature", "Milestone")]
+        [ValidateSet("Feature", "Milestone", "Maintenance")]
         [string] $Mode = "Feature",
 
         [string] $Version = "",
@@ -230,6 +230,14 @@ function Get-WorkUnitInfo {
         # runs/milestone-$Slug/work-unit.json, se lee de ahi.
         [string[]] $Items = @()
     )
+
+    if ($Mode -eq "Maintenance") {
+        if ($Slug -notmatch "^T(?<number>\d{2})-(?<docSlug>[a-z0-9]+(?:-[a-z0-9]+)*)$") { throw "Slug invalido '$Slug'. Una maintenance debe tener formato TNN-slug-en-minusculas." }
+        if ([string]::IsNullOrWhiteSpace($Title)) { $Title = $Slug }
+        $versionPrefix = if ([string]::IsNullOrWhiteSpace($Version)) { "" } else { "$Version-" }
+        $runPrefix = if ([string]::IsNullOrWhiteSpace($Version)) { "runs" } else { "runs/$Version" }
+        return [pscustomobject]@{ Mode="Maintenance"; Slug=$Slug; Number=$Matches["number"]; DocSlug=$Matches["docSlug"]; Title=$Title; Version=$Version; Branch="maintenance/$versionPrefix$Slug"; RunDir="$runPrefix/$Slug"; TechnicalDoc=$null; UserDoc=$null; TechnicalIndex=$null; UserIndex=$null; Decision="$runPrefix/$Slug/decision.md"; Manifest=$null; Items=@() }
+    }
 
     if ($Mode -eq "Feature") {
         if ($Slug -notmatch "^(?<number>[0-9]{2})-(?<docSlug>[a-z0-9]+(?:-[a-z0-9]+)*)$") {
