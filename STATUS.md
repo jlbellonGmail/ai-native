@@ -46,8 +46,8 @@ bloquean la ejecución.
 - Remoto: refs/remotes/origin/develop
 - Working tree: dirty
 - Worktrees: C:/Proyectos/template (maintenance/v2.0.0-T02-status-auto-postmerge)
-- PR activa: {"number":60,"title":"[v2.0.0][T02] Reconciliar bloque STATUS:AUTO post-merge","url":"https://github.com/jlbellonGmail/template/pull/60"}
-- CI: {"conclusion":"success","headSha":"6ece681024925f45fffa0aee7bace9ccd356dac3","name":"Post-HITL merge gate","status":"completed","url":"https://github.com/jlbellonGmail/template/actions/runs/34799881908"}
+- PR activa: sin PR
+- CI: sin CI
 - Última release: {"name":"v1.1.0 — Roadmap → Analyst → Spec Reviewer → Builder → QA → Code Reviewer → .audit → HITL → PR","publishedAt":"2026-09-13T02:03:08Z","tagName":"v1.1.0"}
 
 <!-- STATUS:AUTO:END -->
