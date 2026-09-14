@@ -134,6 +134,53 @@ function Assert-RoadmapItemsTransition {
     }
 }
 
+function Resolve-CanonicalWorkUnitSlug {
+    <#
+    Resolves a maintenance/correction branch to the single canonical TNN
+    item registered in ROADMAP.md. The branch suffix is descriptive metadata;
+    the TNN identity and ROADMAP are authoritative. Zero or multiple TNN
+    entries fail safely instead of guessing.
+    #>
+    param(
+        [Parameter(Mandatory = $true)]
+        [string] $Branch,
+
+        [ValidateSet("Maintenance")]
+        [string] $Mode = "Maintenance",
+
+        [string] $Version = "",
+
+        [string] $RoadmapPath = "ROADMAP.md"
+    )
+
+    if ($Branch -notmatch '^maintenance/(?:v[0-9]+\.[0-9]+\.[0-9]+-)?(?<branchSlug>T\d{2}-[a-z0-9]+(?:-[a-z0-9]+)*)$') {
+        throw "No se puede resolver la unidad canonica: rama Maintenance invalida '$Branch'."
+    }
+
+    if (-not (Test-Path -LiteralPath $RoadmapPath -PathType Leaf)) {
+        throw "No se puede resolver la unidad canonica: no existe '$RoadmapPath'."
+    }
+
+    $branchSlug = $Matches["branchSlug"]
+    $unitNumber = ([regex]::Match($branchSlug, '^T\d{2}')).Value
+    $content = Get-Content -LiteralPath $RoadmapPath -Raw -Encoding UTF8
+    $candidates = @(
+        [regex]::Matches($content, '(?m)^-\s+\[[ x-]\]\s+(?<id>T\d{2}-[a-z0-9]+(?:-[a-z0-9]+)*)\b') |
+            ForEach-Object { $_.Groups["id"].Value } |
+            Where-Object { $_ -match "^$([regex]::Escape($unitNumber))-" } |
+            Select-Object -Unique
+    )
+
+    if ($candidates.Count -eq 0) {
+        throw "No existe una unidad canonica $unitNumber en ROADMAP.md para la rama '$Branch'."
+    }
+    if ($candidates.Count -ne 1) {
+        throw "Identidad ambigua para la rama '$Branch': $($candidates -join ', ')."
+    }
+
+    return $candidates[0]
+}
+
 function Read-WorkUnitManifest {
     param(
         [Parameter(Mandatory = $true)]
