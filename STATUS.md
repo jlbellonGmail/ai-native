@@ -1,7 +1,7 @@
 # Estado operativo
 
 Versión: v2.0.0  
-Estado general: T04 en READY_FOR_PR; T01 registrada abierta, T02/T03 mergeadas; F08, F10 y F12 cerradas y mergeadas.
+Estado general: T04 cerrada y mergeada; T01 registrada abierta, T02/T03 mergeadas; F08, F10 y F12 cerradas y mergeadas.
 
 ## Próximas fases
 
@@ -11,7 +11,7 @@ Estado general: T04 en READY_FOR_PR; T01 registrada abierta, T02/T03 mergeadas; 
 - F16 — validación integral, pendiente.
 - F17 — auditoría y release v2.0.0, pendiente.
 
-Próxima ejecución recomendada: continuar el cierre de T04 y luego F13. F14,
+Próxima ejecución recomendada: F13. F14,
 F15, F16 y F17 permanecen pendientes; ninguna de estas fases ha comenzado.
 
 ## Evidencia real
@@ -29,14 +29,14 @@ confirmar la ejecución completa.
 
 ## Estado verificado automáticamente
 
-- Actualizado: 2026-09-14T16:24:33Z
-- Rama: maintenance/v2.0.0-T04-integridad-sincronizacion
-- HEAD: a4115d9 (a4115d9fb35d60482ad766d43d9293a932c15ded)
+- Actualizado: 2026-09-14T16:34:00Z
+- Rama: develop
+- HEAD: c79b26b (c79b26b57051fbb13417335b1dbad7f27c38d398)
 - Remoto: refs/remotes/origin/develop
 - Working tree: dirty
-- Worktrees: C:/Proyectos/template (develop); C:/Proyectos/worktrees/v2.0.0-T04-integridad-sincronizacion (maintenance/v2.0.0-T04-integridad-sincronizacion)
+- Worktrees: C:/Proyectos/template (develop)
 - PR activa: sin PR
-- CI: sin CI
+- CI: {"conclusion":"success","headSha":"e785cec9ceb7899c0a59db52cc0ddfd70de06c18","name":"Guard develop branch","status":"completed","url":"https://github.com/jlbellonGmail/template/actions/runs/34869260694"}
 - Última release: {"name":"v1.1.0 — Roadmap → Analyst → Spec Reviewer → Builder → QA → Code Reviewer → .audit → HITL → PR","publishedAt":"2026-09-13T02:03:08Z","tagName":"v1.1.0"}
 
 <!-- STATUS:AUTO:END -->
