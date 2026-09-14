@@ -1,7 +1,7 @@
 # Estado operativo
 
 Versión: v2.0.0  
-Estado general: T04 cerrada y mergeada; T01 registrada abierta, T02/T03 mergeadas; F08, F10 y F12 cerradas y mergeadas.
+Estado general: T04 cerrada y mergeada; T01 regularizada como cerrada históricamente; T02/T03 mergeadas; F08, F10 y F12 cerradas y mergeadas.
 
 ## Próximas fases
 
@@ -29,12 +29,12 @@ confirmar la ejecución completa.
 
 ## Estado verificado automáticamente
 
-- Actualizado: 2026-09-14T16:37:59Z
-- Rama: maintenance/v2.0.0-T04-integridad-final
-- HEAD: b3f3205 (b3f320548b6fca7be868cde24f30770729a4e20c)
+- Actualizado: 2026-09-14T17:42:36Z
+- Rama: maintenance/v2.0.0-T01-cierre-historico
+- HEAD: ea0bfdd (ea0bfdd31b09b95f9bf05610c80fdf21600fc281)
 - Remoto: refs/remotes/origin/develop
 - Working tree: dirty
-- Worktrees: C:/Proyectos/template (maintenance/v2.0.0-T04-integridad-final)
+- Worktrees: C:/Proyectos/template (develop); C:/Proyectos/worktrees/v2.0.0-T01-cierre-historico (maintenance/v2.0.0-T01-cierre-historico)
 - PR activa: sin PR
 - CI: sin CI
 - Última release: {"name":"v1.1.0 — Roadmap → Analyst → Spec Reviewer → Builder → QA → Code Reviewer → .audit → HITL → PR","publishedAt":"2026-09-13T02:03:08Z","tagName":"v1.1.0"}
