@@ -23,7 +23,7 @@ Una fase sólo pasa a `[x]` después del merge a `develop`.
 - [x] 17-supply-chain-cicd — Fase 12: supply chain y CI/CD profesional.
 - [-] 18-status-observabilidad — Fase 13: STATUS, observabilidad y reentrada.
 - [ ] 19-unidades-paralelizacion — Fase 14: unidades y paralelización.
-- [-] 20-releases-evolucion — Fase 15: releases y evolución.
+- [x] 20-releases-evolucion — Fase 15: releases y evolución.
 - [ ] 21-validacion-integral-v2 — Fase 16: validación integral v2.
 - [ ] 22-auditoria-release-v2 — Fase 17: auditoría y release v2.0.0.
 
@@ -53,6 +53,7 @@ alterar tags, commits ni la release congelada.
 - [CONSTITUTION](CONSTITUTION.md) — principios permanentes.
 - [AGENTS](AGENTS.md) — operación del circuito.
 - [STATUS](STATUS.md) — estado actual para reentrada.
+
 
 
 
