@@ -285,11 +285,21 @@ function Wait-PrChecks {
             "--json", "bucket,completedAt,link,name,startedAt,state,workflow"
         ) -AllowedExitCodes @(0, 1, 8)
 
-        $checks = if ([string]::IsNullOrWhiteSpace($result.Text)) {
-            @()
+        try {
+            $checks = if ([string]::IsNullOrWhiteSpace($result.Text)) {
+                @()
+            }
+            else {
+                ConvertTo-ObjectArray ($result.Text | ConvertFrom-Json)
+            }
         }
-        else {
-            ConvertTo-ObjectArray ($result.Text | ConvertFrom-Json)
+        catch {
+            # GitHub puede devolver una respuesta transitoria no JSON mientras
+            # recalcula checks tras synchronize. Se reintenta dentro del
+            # presupuesto; nunca se interpreta como verde.
+            Write-Warning "Respuesta transitoria de gh pr checks; se reintenta: $($_.Exception.Message)"
+            Start-Sleep -Seconds $PollSeconds
+            continue
         }
 
         $lastRelevantChecks = @($checks | Where-Object { $_.workflow -ne $IgnoredWorkflowName })
