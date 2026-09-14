@@ -1,7 +1,7 @@
 # Estado operativo
 
 Versión: v2.0.0  
-Estado general: T04 en corrección por PR; T01 regularizada como cerrada históricamente; T02/T03 mergeadas; F08, F10 y F12 cerradas y mergeadas; F13 y F15 cerradas y mergeadas.
+Estado general: T04 en PR #80 con CI verde y revisión independiente pendiente; T01 regularizada como cerrada históricamente; T02/T03 mergeadas; F08, F10 y F12 cerradas y mergeadas; F13 y F15 cerradas y mergeadas.
 
 ## Próximas fases
 
