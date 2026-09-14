@@ -28,14 +28,14 @@ Ninguna incidencia real abierta.
 
 ## Estado verificado automáticamente
 
-- Actualizado: 2026-09-14T11:34:10Z
-- Rama: maintenance/v2.0.0-T03-reconciliar-status-segunda-oleada
-- HEAD: 491e49b (491e49b98eb5f8719b4ae17c2a8349655821de98)
+- Actualizado: 2026-09-14T11:44:32Z
+- Rama: develop
+- HEAD: 6b72275 (6b7227533222d221cf1038e262fa21b5b5c86325)
 - Remoto: refs/remotes/origin/develop
 - Working tree: dirty
 - Worktrees: C:/Proyectos/template (develop); C:/Proyectos/worktrees/v2.0.0-T03-reconciliar-status-segunda-oleada (maintenance/v2.0.0-T03-reconciliar-status-segunda-oleada)
 - PR activa: sin PR
-- CI: sin CI
+- CI: {"conclusion":"","headSha":"6b7227533222d221cf1038e262fa21b5b5c86325","name":"CI","status":"in_progress","url":"https://github.com/jlbellonGmail/template/actions/runs/34839713654"}
 - Última release: {"name":"v1.1.0 — Roadmap → Analyst → Spec Reviewer → Builder → QA → Code Reviewer → .audit → HITL → PR","publishedAt":"2026-09-13T02:03:08Z","tagName":"v1.1.0"}
 
 <!-- STATUS:AUTO:END -->
