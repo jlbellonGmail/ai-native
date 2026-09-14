@@ -40,14 +40,14 @@ bloquean la ejecución.
 
 ## Estado verificado automáticamente
 
-- Actualizado: 2026-09-14T02:38:10Z
+- Actualizado: 2026-09-14T02:39:24Z
 - Rama: maintenance/v2.0.0-T02-status-auto-postmerge
-- HEAD: 0aba719 (0aba7190716a30ba70be887763df68ee0f8b8bbf)
+- HEAD: f871106 (f871106f23f762f3be9cc7293ee4961a6d4340a7)
 - Remoto: refs/remotes/origin/develop
 - Working tree: dirty
 - Worktrees: C:/Proyectos/template (maintenance/v2.0.0-T02-status-auto-postmerge)
 - PR activa: {"number":60,"title":"[v2.0.0][T02] Reconciliar bloque STATUS:AUTO post-merge","url":"https://github.com/jlbellonGmail/template/pull/60"}
-- CI: {"conclusion":"","headSha":"4317b482cd6a7bce0f5e92ed73056fa7bbd9777f","name":"CI","status":"in_progress","url":"https://github.com/jlbellonGmail/template/actions/runs/34799827688"}
+- CI: {"conclusion":"success","headSha":"6ece681024925f45fffa0aee7bace9ccd356dac3","name":"Post-HITL merge gate","status":"completed","url":"https://github.com/jlbellonGmail/template/actions/runs/34799881908"}
 - Última release: {"name":"v1.1.0 — Roadmap → Analyst → Spec Reviewer → Builder → QA → Code Reviewer → .audit → HITL → PR","publishedAt":"2026-09-13T02:03:08Z","tagName":"v1.1.0"}
 
 <!-- STATUS:AUTO:END -->
