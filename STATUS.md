@@ -29,10 +29,10 @@ confirmar la ejecución completa.
 
 ## Estado verificado automáticamente
 
-- Actualizado: 2026-09-14T19:45:32Z
+- Actualizado: 2026-09-14T19:53:06Z
 - Versión: v2.0.0
 - Rama: feature/v2.0.0-18-status-observabilidad
-- HEAD: 2e8b39f8a58ea0d998408b29ed9aa5c6549f0ad9
+- HEAD: b36572806d1027084d9cf359729d813f067c68ad
 - Remoto: https://github.com/jlbellonGmail/template.git
 - Working tree: dirty
 - Worktrees: 2
