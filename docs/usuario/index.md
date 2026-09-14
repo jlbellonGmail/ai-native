@@ -26,5 +26,5 @@ fuente canónica, regenerar adaptadores y declarar modelos por ejecución.
 - [Supply chain y CI/CD profesional](supply-chain-cicd.md)
 - [MCP y herramientas externas](mcp-herramientas.md)
 - [Routing dinámico por capacidades y evidencia](routing-dinamico.md)
-
+- [Releases y evolución](releases-evolucion.md)
 <!-- FEATURE_LINKS_END -->

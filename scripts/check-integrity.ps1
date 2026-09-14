@@ -1,4 +1,4 @@
-param([string]$RepositoryRoot="", [string]$WorktreeDir="")
+param([string]$RepositoryRoot="", [string]$WorktreeDir="", [string]$Version="v2.0.0")
 $ErrorActionPreference = "Stop"
 function Git([string[]]$Arguments) {
   $out = & git @Arguments 2>&1
@@ -12,7 +12,8 @@ try {
     $errors = [Collections.Generic.List[string]]::new()
     $warnings = [Collections.Generic.List[string]]::new()
     $roadmap = Get-Content "ROADMAP.md" -Raw -Encoding UTF8
-    $v2 = Join-Path $root "runs\v2.0.0"
+    if ($Version -notmatch '^v[0-9]+\.[0-9]+\.[0-9]+$') { throw "Version invalida: $Version" }
+    $v2 = Join-Path $root (Join-Path "runs" $Version)
     $dirs = @(Get-ChildItem $v2 -Directory -ErrorAction SilentlyContinue)
     $runT = @($dirs | Where-Object { $_.Name -match '^T\d{2}-[a-z0-9]+(?:-[a-z0-9]+)*$' })
     $roadT = @([regex]::Matches($roadmap,'(?m)^-\s+(?:\[[ x-]\]\s+)?(?<id>T\d{2}-[a-z0-9]+(?:-[a-z0-9]+)*)\b.*') | ForEach-Object { $_.Groups["id"].Value })
