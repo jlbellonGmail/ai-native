@@ -23,6 +23,7 @@ fuente canónica, regenerar adaptadores y declarar modelos por ejecución.
 - [Evidencias adaptativas](evidencias-adaptativas.md)
 - [Tests CI y audit](tests-ci-audit.md)
 - [Agentic Evals reproducibles](agentic-evals.md)
+- [MCP y herramientas externas](mcp-herramientas.md)
 - [Routing dinámico por capacidades y evidencia](routing-dinamico.md)
 
 <!-- FEATURE_LINKS_END -->
