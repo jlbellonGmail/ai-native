@@ -61,11 +61,18 @@ try {
         $roadmap = if (Test-Path -LiteralPath "ROADMAP.md") { Get-Content -Raw -Encoding UTF8 ROADMAP.md } else { "" }
         $units = @()
         foreach ($tree in $trees) {
-            if ($tree.branch -match '^feature/(?:v[^/]+-)?(?<slug>\d{2}-[a-z0-9-]+)$') {
-                $slug = $Matches.slug
+            $mode = ""; $slug = ""; $version = ""
+            if ($tree.branch -match '^feature/(?:(?<version>v[0-9]+\.[0-9]+\.[0-9]+)-)?(?<slug>\d{2}-[a-z0-9-]+)$') { $mode = "Feature" }
+            elseif ($tree.branch -match '^milestone/(?:(?<version>v[0-9]+\.[0-9]+\.[0-9]+)-)?(?<slug>[a-z0-9-]+)$') { $mode = "Milestone" }
+            elseif ($tree.branch -match '^maintenance/(?:(?<version>v[0-9]+\.[0-9]+\.[0-9]+)-)?(?<slug>T[0-9]{2}-[a-z0-9-]+)(?:-fix)?$') { $mode = "Maintenance" }
+            if ($mode) {
                 $line = [regex]::Match($roadmap, "(?m)^- \[(?<state>[ x-])\] $([regex]::Escape($slug))\b")
                 $state = if ($line.Success) { switch ($line.Groups.state.Value) { ' ' { 'pending' } '-' { 'ready' } 'x' { 'done' } } } else { 'unknown' }
-                $units += [ordered]@{ slug = $slug; branch = $tree.branch; worktree = $tree.path; state = $state; source = "git-worktree" }
+                $lifecycle = if ($state -eq "done") { "CLOSED" } elseif ($state -eq "ready") { "PR_OPEN" } else { "ACTIVE" }
+                $identityRelative = if($version){"runs/$version/$slug/work-unit.json"}else{"runs/$slug/work-unit.json"}
+                $identityPath = Join-Path $tree.path $identityRelative
+                $identity = if(Test-Path -LiteralPath $identityPath -PathType Leaf) { try { Get-Content $identityPath -Raw | ConvertFrom-Json } catch { $null } } else { $null }
+                $units += [ordered]@{ unitId = $slug; canonicalSlug = if($identity){$identity.canonicalSlug}else{$slug}; mode = $mode; version = $version; branch = $tree.branch; worktree = $tree.path; state = $state; lifecycle = $lifecycle; baseCommit = if($identity){$identity.baseCommit}else{$null}; currentHead = if($identity){$identity.currentHead}else{$null}; pr = if($identity){$identity.pr}else{$null}; source = "git-worktree" }
             }
         }
         $workingTree = if (Invoke-Git @("status", "--porcelain")) { "dirty" } else { "clean" }

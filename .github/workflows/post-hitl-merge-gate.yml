@@ -66,7 +66,7 @@ jobs:
         if: steps.feature.outputs.skip != 'true'
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          ref: develop
+          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
           persist-credentials: true
 
@@ -83,4 +83,9 @@ jobs:
             -Version '${{ steps.feature.outputs.version }}' `
             -PrNumber ${{ github.event.pull_request.number }} `
             -SkipLocalCleanup `
-            -CommentOnFailure
+            -CommentOnFailure `
+            -GovernanceMode SingleMaintainer `
+            -PreAuthorizedHumanMerge `
+            -AuthorizationPath "runs/v2.0.0/${{ steps.feature.outputs.slug }}/human-authorization.md" `
+            -IndependentReviewPath "runs/v2.0.0/${{ steps.feature.outputs.slug }}/independent-review.md" `
+            -IntegrityEvidencePath "runs/v2.0.0/${{ steps.feature.outputs.slug }}/integrity-evidence.md"
