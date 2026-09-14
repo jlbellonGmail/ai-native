@@ -31,7 +31,7 @@ try {
 $head = Invoke-Git @("rev-parse", "HEAD")
 if ((Field $block "Rama") -ne $branch) { Write-Host "ERROR Rama no coincide"; exit 1 }
 $recordedHead = Field $block "HEAD"
-$headMatches = $recordedHead -eq $head
+$headMatches = $recordedHead -match [regex]::Escape($head)
 if (-not $headMatches) {
     # STATUS.md cannot record the hash of the commit that contains the
     # record itself. Accept the parent only when that commit changes STATUS.md
@@ -39,7 +39,7 @@ if (-not $headMatches) {
     $parent = (Invoke-Optional "git" @("rev-parse", "HEAD^"))
     $changed = (Invoke-Optional "git" @("diff-tree", "--no-commit-id", "--name-only", "-r", "HEAD"))
     $changedFiles = @($changed.Text -split "`r?`n" | Where-Object { $_ })
-    $headMatches = $parent.Code -eq 0 -and $recordedHead -eq $parent.Text -and $changedFiles.Count -eq 1 -and $changedFiles[0] -eq "STATUS.md"
+    $headMatches = $parent.Code -eq 0 -and $recordedHead -match [regex]::Escape($parent.Text) -and $changedFiles.Count -eq 1 -and $changedFiles[0] -eq "STATUS.md"
 }
 if (-not $headMatches) { Write-Host "ERROR HEAD no coincide"; exit 1 }
     $tree = if (Invoke-Git @("status", "--porcelain")) { "dirty" } else { "clean" }
