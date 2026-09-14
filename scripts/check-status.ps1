@@ -28,11 +28,29 @@ try {
     $block = $match.Value
     $branch = Invoke-Git @("branch", "--show-current")
     if (-not $branch) { $branch = "(detached)" }
-    $head = Invoke-Git @("rev-parse", "HEAD")
-    if ((Field $block "Rama") -ne $branch) { Write-Host "ERROR Rama no coincide"; exit 1 }
-    if ((Field $block "HEAD") -notmatch [regex]::Escape($head)) { Write-Host "ERROR HEAD no coincide"; exit 1 }
-    $tree = if (Invoke-Git @("status", "--porcelain")) { "dirty" } else { "clean" }
-    if ((Field $block "Working tree") -ne $tree) { Write-Host "ERROR Working tree no coincide"; exit 1 }
+$head = Invoke-Git @("rev-parse", "HEAD")
+if ((Field $block "Rama") -ne $branch) { Write-Host "ERROR Rama no coincide"; exit 1 }
+$recordedHead = Field $block "HEAD"
+$headMatches = $recordedHead -match [regex]::Escape($head)
+if (-not $headMatches) {
+    # STATUS.md cannot record the hash of the commit that contains the
+    # record itself. Accept the parent only when that commit changes STATUS.md
+    # and nothing else; arbitrary stale snapshots remain invalid.
+    $parent = (Invoke-Optional "git" @("rev-parse", "HEAD^"))
+    $changed = (Invoke-Optional "git" @("diff-tree", "--no-commit-id", "--name-only", "-r", "HEAD"))
+    $changedFiles = @($changed.Text -split "`r?`n" | Where-Object { $_ })
+    $headMatches = $parent.Code -eq 0 -and $recordedHead -match [regex]::Escape($parent.Text) -and $changedFiles.Count -eq 1 -and $changedFiles[0] -eq "STATUS.md"
+}
+if (-not $headMatches) { Write-Host "ERROR HEAD no coincide"; exit 1 }
+$tree = if (Invoke-Git @("status", "--porcelain")) { "dirty" } else { "clean" }
+$recordedTree = Field $block "Working tree"
+$treeMatches = $recordedTree -eq $tree
+if (-not $treeMatches -and $tree -eq "clean" -and $recordedTree -eq "dirty") {
+    $changed = (Invoke-Optional "git" @("diff-tree", "--no-commit-id", "--name-only", "-r", "HEAD"))
+    $changedFiles = @($changed.Text -split "`r?`n" | Where-Object { $_ })
+    $treeMatches = $changed.Code -eq 0 -and $changedFiles.Count -eq 1 -and $changedFiles[0] -eq "STATUS.md"
+}
+if (-not $treeMatches) { Write-Host "ERROR Working tree no coincide"; exit 1 }
     $releaseField = ([char]218).ToString() + "ltima release"; foreach ($name in @("Remoto", "Worktrees", "PR activa", "CI", $releaseField)) { [void](Field $block $name) }
     $gh = (Get-Command gh -ErrorAction SilentlyContinue).Source
     if (-not $gh) {
