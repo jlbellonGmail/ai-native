@@ -65,8 +65,10 @@ if (-not $treeMatches) { Write-Host "ERROR Working tree no coincide"; exit 1 }
             $json = $pr.Text | ConvertFrom-Json
             if ((Field $block "PR activa") -notmatch [regex]::Escape([string]$json[0].number)) { Write-Host "ERROR PR no coincide"; exit 1 }
         }
-        $ci = Invoke-Optional $gh @("run", "list", "--branch", $branch, "--limit", "1", "--json", "headSha")
-        if ($ci.Code -ne 0) { Write-Host "WARNING error de consulta CI" }
+    $ciField = Field $block "CI"
+    $ci = Invoke-Optional $gh @("run", "list", "--branch", $branch, "--limit", "1", "--json", "headSha")
+    if ($ciField -eq "sin CI") { Write-Host "WARNING CI no afirmada en snapshot" }
+    elseif ($ci.Code -ne 0) { Write-Host "WARNING error de consulta CI" }
         elseif ([string]::IsNullOrWhiteSpace($ci.Text) -or $ci.Text -eq "[]") { Write-Host "WARNING sin CI" }
         else {
             $json = $ci.Text | ConvertFrom-Json

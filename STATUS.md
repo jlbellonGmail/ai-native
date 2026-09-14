@@ -42,7 +42,7 @@ bloquean la ejecución.
 
 - Actualizado: 2026-09-14T02:40:12Z
 - Rama: develop
-- HEAD: 4efb12d84277f9b3f3f14d2ccae389cc65acaf1d (4efb12d84277f9b3f3f14d2ccae389cc65acaf1d)
+- HEAD: 8bdb69ceb7460dfd6ef9b66af75c34079ddf96ac (8bdb69ceb7460dfd6ef9b66af75c34079ddf96ac)
 - Remoto: refs/remotes/origin/develop
 - Working tree: dirty
 - Worktrees: C:/Proyectos/template (maintenance/v2.0.0-T02-status-auto-postmerge)
