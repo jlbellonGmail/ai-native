@@ -1,83 +1,94 @@
-param([string]$RepositoryRoot = "")
+param(
+    [string]$RepositoryRoot = "",
+    [switch]$Json,
+    [string]$MachinePath = ""
+)
 $ErrorActionPreference = "Stop"
 $NL = [Environment]::NewLine
-function Invoke-GitCommand([string[]]$Arguments) {
+
+function Invoke-Git([string[]]$Arguments) {
     $output = & git @Arguments 2>&1
-    if ($LASTEXITCODE -ne 0) { throw "git command failed" }
-    ($output -join $NL).Trim()
+    if ($LASTEXITCODE -ne 0) { throw "git command failed: $($Arguments -join ' ')" }
+    return (($output | ForEach-Object { $_.ToString() }) -join $NL).Trim()
 }
-function Optional([string]$File,[string[]]$Arguments) {
-    $old = $ErrorActionPreference
-    $ErrorActionPreference = "Continue"
-    try { $output = & $File @Arguments 2>&1; $code = $LASTEXITCODE } finally { $ErrorActionPreference = $old }
-    [pscustomobject]@{ Code = $code; Text = (($output | ForEach-Object { $_.ToString() }) -join $NL).Trim() }
+function Invoke-Optional([string]$File, [string[]]$Arguments) {
+    if (-not $File) { return [pscustomobject]@{ Code = 127; Text = "" } }
+    $psi = [Diagnostics.ProcessStartInfo]::new(); $psi.FileName = $File; $psi.UseShellExecute = $false; $psi.RedirectStandardOutput = $true; $psi.RedirectStandardError = $false
+    foreach ($argument in $Arguments) { [void]$psi.ArgumentList.Add($argument) }
+    $process = [Diagnostics.Process]::new(); $process.StartInfo = $psi
+    if (-not $process.Start()) { return [pscustomobject]@{ Code = 127; Text = "" } }
+    if (-not $process.WaitForExit(5000)) { try { $process.Kill() } catch {}; return [pscustomobject]@{ Code = 124; Text = "timeout" } }
+    [pscustomobject]@{ Code = $process.ExitCode; Text = $process.StandardOutput.ReadToEnd().Trim() }
 }
-function GhValue([string]$Path,[string[]]$Arguments,[string]$Empty) {
-    if (-not $Path) { return "gh no disponible" }
-    $result = Optional $Path $Arguments
-    if ($result.Code -ne 0) { return "error de consulta: $($result.Text)" }
-    if (-not $result.Text) { return $Empty }
-    try { $json = $result.Text | ConvertFrom-Json } catch { return "error de consulta: JSON invalido" }
-    if ($null -eq $json -or @($json).Count -eq 0) { return $Empty }
-    $json | ConvertTo-Json -Compress -Depth 8
+function Read-Gh([string]$Gh, [string[]]$Arguments) {
+    $r = Invoke-Optional $Gh $Arguments
+    if ($r.Code -ne 0 -or [string]::IsNullOrWhiteSpace($r.Text)) { return $null }
+    try { return ($r.Text | ConvertFrom-Json) } catch { return $null }
 }
-function ReplaceAuto([string]$Content,[string]$Block) {
+function Get-Worktrees([string]$Raw) {
+    $result = @(); $path = ""
+    foreach ($line in ($Raw -split "`r?`n")) {
+        if ($line.StartsWith("worktree ")) { $path = $line.Substring(9).Trim() }
+        elseif ($line.StartsWith("branch ") -and $path) {
+            $result += [ordered]@{ path = $path; branch = ($line.Substring(7).Trim() -replace '^refs/heads/', ''); gitActive = $true }
+            $path = ""
+        }
+    }
+    if ($path) { $result += [ordered]@{ path = $path; branch = "(detached)"; gitActive = $true } }
+    return @($result)
+}
+function Replace-Auto([string]$Content, [string]$Block) {
     $pattern = '(?s)<!-- STATUS:AUTO:BEGIN -->.*?<!-- STATUS:AUTO:END -->'
-    $count = [regex]::Matches($Content,$pattern).Count
+    $count = [regex]::Matches($Content, $pattern).Count
     if ($count -gt 1) { throw "STATUS.md contiene bloques AUTO duplicados" }
-    if ($count -eq 1) { return [regex]::Replace($Content,$pattern,[Text.RegularExpressions.MatchEvaluator]{param($m)$Block},1) }
-    $Content.TrimEnd([char]13,[char]10) + $NL + $NL + $Block + $NL
+    if ($count -eq 1) { return [regex]::Replace($Content, $pattern, [Text.RegularExpressions.MatchEvaluator]{ param($m) $Block }, 1) }
+    return $Content.TrimEnd([char]13, [char]10) + $NL + $NL + $Block + $NL
 }
+
 try {
-    $root = if ($RepositoryRoot) { [IO.Path]::GetFullPath($RepositoryRoot) } else { Invoke-GitCommand @("rev-parse","--show-toplevel") }
-    $status = Join-Path $root "STATUS.md"
-    if (-not (Test-Path -LiteralPath $status -PathType Leaf)) { throw "No existe STATUS.md" }
+    $root = if ($RepositoryRoot) { [IO.Path]::GetFullPath($RepositoryRoot) } else { Invoke-Git @("rev-parse", "--show-toplevel") }
     Push-Location $root
     try {
-        $branch = Invoke-GitCommand @("branch","--show-current")
-        if (-not $branch) { $branch = "(detached)" }
-        $full = Invoke-GitCommand @("rev-parse","HEAD")
-        $short = Invoke-GitCommand @("rev-parse","--short","HEAD")
-        $remote = "sin remoto"
-        $remoteHead = Optional "git" @("symbolic-ref","refs/remotes/origin/HEAD")
-        if ($remoteHead.Code -eq 0 -and $remoteHead.Text) { $remote = $remoteHead.Text }
-        else {
-            $remoteUrl = Optional "git" @("remote","get-url","origin")
-            if ($remoteUrl.Code -eq 0 -and $remoteUrl.Text) { $remote = "origin ($($remoteUrl.Text))" }
-        }
-        $raw = Invoke-GitCommand @("worktree","list","--porcelain")
-        $trees = @()
-        $current = ""
-        foreach ($line in ($raw -split $NL)) {
-            if ($line.StartsWith("worktree ")) { $current = $line.Substring(9).Trim() }
-            elseif ($line.StartsWith("branch ") -and $current) {
-                $trees += "$current ($($line.Substring(7).Trim() -replace '^refs/heads/',''))"
-                $current = ""
+        $branch = Invoke-Git @("branch", "--show-current"); if (-not $branch) { $branch = "(detached)" }
+        $head = Invoke-Git @("rev-parse", "HEAD")
+        $trees = Get-Worktrees (Invoke-Git @("worktree", "list", "--porcelain"))
+        # GitHub queries are opt-in to an authenticated CLI session. This
+        # prevents a broken credential helper from blocking local reentry.
+        $gh = if ($env:GH_TOKEN) { (Get-Command gh -ErrorAction SilentlyContinue).Source } else { $null }
+        $pr = Read-Gh $gh @("pr", "list", "--head", $branch, "--state", "open", "--json", "number,title,url,headRefOid,baseRefName", "--limit", "1")
+        $ci = Read-Gh $gh @("run", "list", "--branch", $branch, "--limit", "1", "--json", "name,status,conclusion,headSha,url")
+        $release = Read-Gh $gh @("release", "list", "--limit", "1", "--json", "tagName,name,publishedAt")
+        $roadmap = if (Test-Path -LiteralPath "ROADMAP.md") { Get-Content -Raw -Encoding UTF8 ROADMAP.md } else { "" }
+        $units = @()
+        foreach ($tree in $trees) {
+            if ($tree.branch -match '^feature/(?:v[^/]+-)?(?<slug>\d{2}-[a-z0-9-]+)$') {
+                $slug = $Matches.slug
+                $line = [regex]::Match($roadmap, "(?m)^- \[(?<state>[ x-])\] $([regex]::Escape($slug))\b")
+                $state = if ($line.Success) { switch ($line.Groups.state.Value) { ' ' { 'pending' } '-' { 'ready' } 'x' { 'done' } } } else { 'unknown' }
+                $units += [ordered]@{ slug = $slug; branch = $tree.branch; worktree = $tree.path; state = $state; source = "git-worktree" }
             }
         }
-        if ($current) { $trees += $current }
-        $gh = (Get-Command gh -ErrorAction SilentlyContinue).Source
-        $pr = GhValue $gh @("pr","list","--head",$branch,"--state","open","--json","number,title,url","--limit","1") "sin PR"
-        $ci = GhValue $gh @("run","list","--branch",$branch,"--limit","1","--json","name,status,conclusion,headSha,url") "sin CI"
-        $release = GhValue $gh @("release","list","--limit","1","--json","tagName,name,publishedAt") "sin release"
-        $statusTree = if (Invoke-GitCommand @("status","--porcelain")) { "dirty" } else { "clean" }
-        $title = "## Estado verificado autom" + [char]225 + "ticamente"
-        $releaseLabel = "-" + " " + [char]218 + "ltima release"
-        $lines = @(
-            "<!-- STATUS:AUTO:BEGIN -->","",$title,"",
-            "- Actualizado: $([DateTime]::UtcNow.ToString('yyyy-MM-ddTHH:mm:ssZ'))",
-            "- Rama: $branch","- HEAD: $short ($full)","- Remoto: $remote",
-            "- Working tree: $statusTree","- Worktrees: $($trees -join '; ')",
-            "- PR activa: $pr","- CI: $ci",("{0}: {1}" -f $releaseLabel,$release),"",
-            "<!-- STATUS:AUTO:END -->"
-        )
-        $encoding = [Text.UTF8Encoding]::new($false)
-        $content = [IO.File]::ReadAllText($status,[Text.Encoding]::UTF8)
-        [IO.File]::WriteAllText($status,(ReplaceAuto $content ($lines -join $NL)),$encoding)
-        $statusTree = if (Invoke-GitCommand @("status","--porcelain")) { "dirty" } else { "clean" }
-        $lines[8] = "- Working tree: $statusTree"
-        [IO.File]::WriteAllText($status,(ReplaceAuto ([IO.File]::ReadAllText($status,[Text.Encoding]::UTF8)) ($lines -join $NL)),$encoding)
+        $workingTree = if (Invoke-Git @("status", "--porcelain")) { "dirty" } else { "clean" }
+        $remoteResult = Invoke-Optional "git" @("remote", "get-url", "origin")
+        $remote = if ($remoteResult.Code -eq 0 -and $remoteResult.Text) { $remoteResult.Text } else { "UNKNOWN / sin remoto" }
+        $snapshot = [ordered]@{ schemaVersion = 1; generatedAt = [DateTime]::UtcNow.ToString('o'); version = 'v2.0.0'; branch = $branch; head = $head; remote = $remote; workingTree = $workingTree; worktrees = $trees; activeUnits = $units; pullRequest = $pr; ci = $ci; release = $release }
+        $jsonText = $snapshot | ConvertTo-Json -Depth 12
+        if ($MachinePath) { [IO.File]::WriteAllText([IO.Path]::GetFullPath($MachinePath), $jsonText + $NL, (New-Object Text.UTF8Encoding($false))) }
+        if ($Json) { Write-Output $jsonText; exit 0 }
+        $prText = if ($pr) { "#$($pr.number) $($pr.url)" } else { "UNKNOWN / sin PR abierta" }
+        $ciText = if ($ci) { "$($ci.conclusion) @ $($ci.headSha)" } else { "UNKNOWN / sin CI verificable" }
+        $unitText = if ($units.Count) { ($units | ForEach-Object { "$($_.slug)=$($_.state) [$($_.branch)]" }) -join '; ' } else { 'ninguna' }
+        $block = @("<!-- STATUS:AUTO:BEGIN -->", "", "## Estado verificado automáticamente", "", "- Actualizado: $([DateTime]::UtcNow.ToString('yyyy-MM-ddTHH:mm:ssZ'))", "- Versión: v2.0.0", "- Rama: $branch", "- HEAD: $head", "- Remoto: $($snapshot.remote)", "- Working tree: $workingTree", "- Worktrees: $($trees.Count)", "- Worktrees Git: $($trees.Count)", "- Unidades activas: $unitText", "- PR activa: $prText", "- CI: $ciText", "- CI vigente: $ciText", "- Última release: $(if ($release) { $release.tagName } else { 'UNKNOWN / no disponible' })", "", "<!-- STATUS:AUTO:END -->") -join $NL
+        $status = Join-Path $root "STATUS.md"
+        $content = [IO.File]::ReadAllText($status, [Text.Encoding]::UTF8)
+        [IO.File]::WriteAllText($status, (Replace-Auto $content $block), (New-Object Text.UTF8Encoding($false)))
+        # La escritura del propio STATUS cambia el working tree; registrar el
+        # estado final evita que una consulta deje un snapshot autocontradictorio.
+        $finalTree = if (Invoke-Git @("status", "--porcelain")) { "dirty" } else { "clean" }
+        if ($finalTree -ne $workingTree) {
+            $updated = [IO.File]::ReadAllText($status, [Text.Encoding]::UTF8) -replace "- Working tree: $workingTree", "- Working tree: $finalTree"
+            [IO.File]::WriteAllText($status, $updated, (New-Object Text.UTF8Encoding($false)))
+        }
     } finally { Pop-Location }
-    Write-Host "PASS STATUS.md actualizado"
-    exit 0
+    Write-Host "PASS STATUS.md actualizado"; exit 0
 } catch { Write-Host ("ERROR " + $_.Exception.Message); exit 2 }
