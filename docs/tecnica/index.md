@@ -31,5 +31,6 @@ una calificación subjetiva.
 - [Convergence autónoma Builder-Reviewer](convergence.md)
 - [Evidencias adaptativas](evidencias-adaptativas.md)
 - [Tests CI y audit](tests-ci-audit.md)
+- [Agentic Evals reproducibles](agentic-evals.md)
 
 <!-- FEATURE_LINKS_END -->

@@ -1,9 +1,10 @@
 # Estado operativo
 
 Versión: v2.0.0
-Estado general: F06 terminada y mergeada; F01–F06 cerradas.
+Estado general: F07 implementada y validada localmente; PR/CI pendientes.
 Última fase funcional terminada: F06 — tests, CI y `.audit`.
-Siguiente fase: F07 — agentic evals.
+Última fase funcional terminada: F06 — tests, CI y `.audit`; F07 en cierre.
+Siguiente fase: F08 — routing dinámico, aún no iniciada.
 
 ## Evidencia real
 
@@ -13,7 +14,8 @@ Run: `runs/v2.0.0/11-tests-ci-audit/SUMMARY.md`.
 
 ## Qué sigue
 
-F07 queda pendiente y no fue iniciada. No se iniciaron F09 ni F11.
+F07 tiene runner, fixtures A–J, evidencia JSONL y contrato FULL aprobados
+localmente. No se iniciaron F08, F09 ni F11.
 F08 espera evidencia de F07; F10 espera la política relevante de seguridad
 si las capacidades externas afectan permisos o confianza.
 
@@ -28,12 +30,12 @@ bloquean la ejecución.
 
 ## Estado verificado automáticamente
 
-- Actualizado: 2026-09-14T00:18:26Z
-- Rama: chore/f06-status-human-final
-- HEAD: 10ce7ff (10ce7fff5f8daceeb9b85d5d06367312f87bc663)
+- Actualizado: 2026-09-14T01:17:19Z
+- Rama: feature/v2.0.0-12-agentic-evals
+- HEAD: 95b3434 (95b3434a09413302cfce32396c61d4ca1e41fdce)
 - Remoto: refs/remotes/origin/develop
 - Working tree: dirty
-- Worktrees: C:/Proyectos/template (chore/f06-status-human-final)
+- Worktrees: C:/Proyectos/template (develop); C:/Proyectos/worktrees/v2.0.0-12-agentic-evals (feature/v2.0.0-12-agentic-evals); C:/Proyectos/worktrees/v2.0.0-14-skills-reutilizables (feature/v2.0.0-14-skills-reutilizables); C:/Proyectos/worktrees/v2.0.0-16-seguridad-profesional (feature/v2.0.0-16-seguridad-profesional)
 - PR activa: sin PR
 - CI: sin CI
 - Última release: {"name":"v1.1.0 — Roadmap → Analyst → Spec Reviewer → Builder → QA → Code Reviewer → .audit → HITL → PR","publishedAt":"2026-09-13T02:03:08Z","tagName":"v1.1.0"}
