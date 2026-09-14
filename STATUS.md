@@ -29,15 +29,15 @@ confirmar la ejecución completa.
 
 ## Estado verificado automáticamente
 
-- Actualizado: 2026-09-14T18:47:28Z
+- Actualizado: 2026-09-14T19:45:32Z
 - Versión: v2.0.0
-- Rama: feature/v2.0.0-20-releases-evolucion
-- HEAD: 59a6a1d4fefe8b8b7df888845851e4493f9e0ede
+- Rama: feature/v2.0.0-18-status-observabilidad
+- HEAD: 2e8b39f8a58ea0d998408b29ed9aa5c6549f0ad9
 - Remoto: https://github.com/jlbellonGmail/template.git
 - Working tree: dirty
-- Worktrees: 3
-- Worktrees Git: 3
-- Unidades activas: 18-status-observabilidad= [feature/v2.0.0-18-status-observabilidad]; 20-releases-evolucion= [feature/v2.0.0-20-releases-evolucion]
+- Worktrees: 2
+- Worktrees Git: 2
+- Unidades activas: 18-status-observabilidad= [feature/v2.0.0-18-status-observabilidad]
 - PR activa: UNKNOWN / sin PR abierta
 - CI: UNKNOWN / sin CI verificable
 - CI vigente: UNKNOWN / sin CI verificable
