@@ -75,3 +75,19 @@ jobs:
             -Version '${{ steps.feature.outputs.version }}' `
             -PrNumber ${{ github.event.pull_request.number }} `
             -SkipLocalCleanup
+
+      - name: Sincronizar STATUS en develop
+        if: steps.feature.outputs.skip != 'true'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ./scripts/update-status.ps1
+          git add STATUS.md
+          git diff --cached --quiet
+          if ($LASTEXITCODE -ne 0) {
+            git commit -m "chore: sincronizar STATUS post-merge"
+            git push origin develop
+          } else {
+            Write-Host "STATUS.md ya estaba sincronizado; no se crea commit vacio."
+          }
