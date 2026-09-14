@@ -36,10 +36,11 @@ if (-not $headMatches) {
     # STATUS.md cannot record the hash of the commit that contains the
     # record itself. Accept the parent only when that commit changes STATUS.md
     # and nothing else; arbitrary stale snapshots remain invalid.
-    $parent = Invoke-Git @("rev-parse", "HEAD^")
     $changed = Invoke-Git @("diff-tree", "--no-commit-id", "--name-only", "-r", "HEAD")
     $changedFiles = @($changed -split "`r?`n" | Where-Object { $_ })
-    $headMatches = $recordedHead -match [regex]::Escape($parent) -and $changedFiles -contains "STATUS.md"
+    $recordedHash = if ($recordedHead -match "(?<sha>[0-9a-f]{40})") { $Matches.sha } else { "" }
+    $ancestor = if ($recordedHash) { Invoke-Optional "git" @("merge-base", "--is-ancestor", $recordedHash, "HEAD") } else { $null }
+    $headMatches = $ancestor -and $ancestor.Code -eq 0 -and $changedFiles -contains "STATUS.md"
 }
 if (-not $headMatches) { Write-Host "ERROR HEAD no coincide"; exit 1 }
 $tree = if (Invoke-Git @("status", "--porcelain")) { "dirty" } else { "clean" }
