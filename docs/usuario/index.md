@@ -22,5 +22,6 @@ fuente canónica, regenerar adaptadores y declarar modelos por ejecución.
 - [seguridad-profesional](seguridad-profesional.md)
 - [Evidencias adaptativas](evidencias-adaptativas.md)
 - [Tests CI y audit](tests-ci-audit.md)
+- [Agentic Evals reproducibles](agentic-evals.md)
 
 <!-- FEATURE_LINKS_END -->

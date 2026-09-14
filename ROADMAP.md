@@ -15,7 +15,7 @@ Una fase sólo pasa a `[x]` después del merge a `develop`.
 - [x] 09-convergence — Fase 04: CONVERGENCE.
 - [x] 10-evidencias-adaptativas — Fase 05: contrato adaptativo de evidencias.
 - [x] 11-tests-ci-audit — Fase 06: tests, CI y .audit.
-- [ ] 12-agentic-evals — Fase 07: Agentic Evals.
+- [x] 12-agentic-evals — Fase 07: Agentic Evals.
 - [ ] 13-routing-dinamico — Fase 08: routing dinámico de modelos.
 - [ ] 14-skills-reutilizables — Fase 09: skills reutilizables.
 - [ ] 15-mcp-herramientas — Fase 10: MCP y herramientas externas.
