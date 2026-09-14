@@ -363,3 +363,21 @@ function Get-WorkUnitInfo {
         Items = $itemInfos
     }
 }
+
+function Get-WorkUnitIdentity {
+    param(
+        [Parameter(Mandatory = $true)][string] $Slug,
+        [ValidateSet("Feature", "Milestone", "Maintenance")][string] $Mode = "Feature",
+        [string] $Version = "", [string] $Branch = "", [string] $Worktree = "",
+        [string] $BaseCommit = "", [string] $HeadCommit = "", [int] $PrNumber = 0
+    )
+    $info = Get-WorkUnitInfo -Slug $Slug -Mode $Mode -Version $Version
+    if ([string]::IsNullOrWhiteSpace($Branch)) { $Branch = $info.Branch }
+    [ordered]@{
+        schemaVersion = 2; version = $Version; mode = $Mode.ToLowerInvariant()
+        unitId = $Slug; canonicalSlug = $Slug; branch = $Branch; worktree = $Worktree
+        runPath = $info.RunDir; baseCommit = $BaseCommit; currentHead = $HeadCommit
+        pr = if ($PrNumber -gt 0) { $PrNumber } else { $null }
+        updatedAt = [DateTime]::UtcNow.ToString('o')
+    }
+}
