@@ -26,7 +26,15 @@ param(
 
     [switch] $NoEvidence,
 
-    [switch] $UseLiveCatalog
+    [switch] $UseLiveCatalog,
+
+    [string[]] $Capabilities = @(),
+    [ValidateSet("LOW", "MEDIUM", "HIGH")][string] $Risk = "",
+    [ValidateSet("LIGHT", "STANDARD", "FULL")][string] $SddLevel = "",
+    [int] $ContextTokens = 0,
+    [ValidateSet("LIGHT", "STANDARD", "FULL")][string] $SecurityProfile = "",
+    [string] $EvalEvidencePath = "",
+    [string[]] $AvailableAliases = @()
 )
 
 $ErrorActionPreference = "Stop"
@@ -212,6 +220,51 @@ function Test-ProviderCredentials {
     return $false
 }
 
+function Test-EnvAvailable {
+    param([object] $Implementation)
+    if ($AllowMissingCredentials) { return $true }
+    $envs = @($Implementation.availabilityEnv)
+    if ($envs.Count -eq 0) { return $true }
+    foreach ($name in $envs) { if (-not [string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable([string]$name))) { return $true } }
+    return $false
+}
+
+function Read-EvalSignal {
+    param([string] $Path)
+    if ([string]::IsNullOrWhiteSpace($Path) -or -not (Test-Path -LiteralPath $Path -PathType Leaf)) { return $null }
+    $summary = $null
+    foreach ($line in (Get-Content -LiteralPath $Path -Encoding UTF8)) {
+        if ([string]::IsNullOrWhiteSpace($line)) { continue }
+        try { $row = $line | ConvertFrom-Json } catch { throw "Evidencia de evals invalida: $Path" }
+        if ($null -ne $row.passRate) { $summary = $row }
+    }
+    if ($null -eq $summary) { return [pscustomobject]@{ usable = $false; source = $Path; reason = "sin resumen passRate" } }
+    $rate = [double]$summary.passRate
+    return [pscustomobject]@{ usable = ($rate -ge 0 -and $rate -le 1); passRate = $rate; source = $Path; reason = "senal relativa del resumen F07" }
+}
+
+function Resolve-DynamicCandidate {
+    param([object] $Routing, [string] $Role, [string[]] $Required, [string] $Depth, [string] $Profile, [int] $Context, [string[]] $AllowedAliases, [object] $Models)
+    $weights = $Routing.depthWeights.$Depth
+    if ($null -eq $weights) { throw "Nivel SDD no tiene politica de routing: $Depth" }
+    $roleCaps = @($Routing.roleCapabilities.$Role)
+    if ($Required.Count -eq 0) { $Required = $roleCaps }
+    $options = @()
+    foreach ($item in @($Routing.implementations)) {
+        if ($AllowedAliases.Count -gt 0 -and $AllowedAliases -notcontains [string]$item.alias) { continue }
+        $caps = @($item.capabilities)
+        if (@($Required | Where-Object { $caps -notcontains $_ }).Count -gt 0) { continue }
+        if ($Context -gt 0 -and [int]$item.context -lt $Context) { continue }
+        if ($Profile -and @($item.securityProfiles) -notcontains $Profile) { continue }
+        $provider = Get-ProviderConfig -Models $Models -Provider ([string]$item.provider)
+        if (-not $AllowMissingCredentials -and (-not (Test-EnvAvailable $item) -or -not (Test-ProviderCredentials $provider))) { continue }
+        $score = ([double]$item.quality * [double]$weights.quality) - ([double]$item.cost * [double]$weights.cost) - ([double]$item.latency * [double]$weights.latency)
+        $options += [pscustomobject]@{ item=$item; score=$score }
+    }
+    if ($options.Count -eq 0) { throw "BLOCKED: ninguna implementacion disponible satisface las capacidades, contexto y seguridad requeridos para $Role." }
+    return ($options | Sort-Object @{Expression={$_.score};Descending=$true}, @{Expression={$_.item.alias};Descending=$false} | Select-Object -First 1).item
+}
+
 function Get-FallbackLabels {
     param(
         [Parameter(Mandatory = $true)]
@@ -333,6 +386,16 @@ try {
     }
     $roleConfig = $roleProperty.Value
 
+    if ([string]::IsNullOrWhiteSpace($SddLevel)) { $SddLevel = if ($models.routing.defaultSdd) { [string]$models.routing.defaultSdd } else { "STANDARD" } }
+    if ([string]::IsNullOrWhiteSpace($SecurityProfile)) { $SecurityProfile = $SddLevel }
+    $Capabilities = @($Capabilities | ForEach-Object { $_ -split "," } | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+    $AvailableAliases = @($AvailableAliases | ForEach-Object { $_ -split "," } | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+    $evalSignal = $null
+    if (-not [string]::IsNullOrWhiteSpace($EvalEvidencePath)) {
+        if (-not [System.IO.Path]::IsPathRooted($EvalEvidencePath)) { $EvalEvidencePath = Join-Path $root $EvalEvidencePath }
+        $evalSignal = Read-EvalSignal $EvalEvidencePath
+    }
+
     if ([string]::IsNullOrWhiteSpace($Stage)) {
         $Stage = $Role
     }
@@ -374,6 +437,14 @@ try {
     if (-not [string]::IsNullOrWhiteSpace($Variant)) {
         $selectedVariant = $Variant
         $variantOrigin = "explicit-parameter"
+    }
+
+    $dynamic = $Capabilities.Count -gt 0 -or $Risk -or $ContextTokens -gt 0 -or $EvalEvidencePath -or $AvailableAliases.Count -gt 0
+    if ($dynamic -and $models.routing -and @($models.routing.implementations).Count -gt 0) {
+        $dynamicItem = Resolve-DynamicCandidate -Routing $models.routing -Role $Role -Required $Capabilities -Depth $SddLevel -Profile $SecurityProfile -Context $ContextTokens -AllowedAliases $AvailableAliases -Models $models
+        $selectedModel = "$($dynamicItem.provider)/$($dynamicItem.model)"
+        $selectedVariant = if ($SddLevel -eq "FULL") { "high" } elseif ($SddLevel -eq "LIGHT") { "medium" } else { "high" }
+        $modelOrigin = "capability-routing"
     }
 
     if (@($models.validVariants) -notcontains $selectedVariant) {
@@ -462,6 +533,14 @@ try {
         duration_ms = [int] $stopwatch.ElapsedMilliseconds
         result = "resolved"
         cost = $null
+        capabilities_required = @($Capabilities)
+        risk = if ($Risk) { $Risk } else { $null }
+        sdd_level = $SddLevel
+        context_tokens = $ContextTokens
+        security_profile = $SecurityProfile
+        eval_signal = $evalSignal
+        eval_evidence_path = if ($EvalEvidencePath) { $EvalEvidencePath } else { $null }
+        selection_reason = if ($modelOrigin -eq "capability-routing") { "capabilities + SDD/risk policy + availability/cost/latency; deterministic tie-break by alias" } else { "legacy role default/fallback" }
         opencode = [ordered] @{
             model = $chosen.Allowed.Ref
             variant = $chosen.Candidate.Variant
