@@ -26,10 +26,10 @@ debe confirmar la ejecución canónica.
 
 ## Estado verificado automáticamente
 
-- Actualizado: 2026-09-14T22:03:51Z
+- Actualizado: 2026-09-14T23:49:04Z
 - Versión: v2.0.0
 - Rama: develop
-- HEAD: f0cf6b5b346b2a780e7292b059a993521cbee5b3
+- HEAD: cb27b2c511fb9d8eabc66421ce40a7fba70b9858
 - Remoto: https://github.com/jlbellonGmail/template
 - Working tree: dirty
 - Worktrees: 3
