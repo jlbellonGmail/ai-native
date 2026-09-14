@@ -6,7 +6,7 @@ param(
 
     [string] $Branch = "",
 
-    [ValidateSet("Feature", "Milestone")]
+    [ValidateSet("Feature", "Milestone", "Maintenance")]
     [string] $Mode = "Feature",
 
     [string] $Version = "",
@@ -317,7 +317,7 @@ function Wait-PrChecks {
 
 if ([string]::IsNullOrWhiteSpace($Branch)) {
     $versionPrefix = if ([string]::IsNullOrWhiteSpace($Version)) { "" } else { "$Version-" }
-    $Branch = if ($Mode -eq "Milestone") { "milestone/$versionPrefix$Slug" } else { "feature/$versionPrefix$Slug" }
+    $Branch = if ($Mode -eq "Milestone") { "milestone/$versionPrefix$Slug" } elseif ($Mode -eq "Maintenance") { "maintenance/$versionPrefix$Slug" } else { "feature/$versionPrefix$Slug" }
 }
 
 if ([string]::IsNullOrWhiteSpace($BaseBranch)) {

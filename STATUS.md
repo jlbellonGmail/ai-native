@@ -1,7 +1,7 @@
 # Estado operativo
 
 Versión: v2.0.0  
-Estado general: segunda oleada paralela terminada; F08, F10 y F12 cerradas y mergeadas.
+Estado general: T04 en READY_FOR_PR; T01 registrada abierta, T02/T03 mergeadas; F08, F10 y F12 cerradas y mergeadas.
 
 ## Próximas fases
 
@@ -11,9 +11,8 @@ Estado general: segunda oleada paralela terminada; F08, F10 y F12 cerradas y mer
 - F16 — validación integral, pendiente.
 - F17 — auditoría y release v2.0.0, pendiente.
 
-Próxima ejecución recomendada: F13 y F15 habilitadas. F14 espera la
-formalización de observabilidad/reentrada de F13. Ninguna de estas fases ha
-comenzado.
+Próxima ejecución recomendada: continuar el cierre de T04 y luego F13. F14,
+F15, F16 y F17 permanecen pendientes; ninguna de estas fases ha comenzado.
 
 ## Evidencia real
 
@@ -22,18 +21,20 @@ CI de `develop` verde.
 
 ## Incidencias
 
-Ninguna incidencia real abierta.
+El host PowerShell del entorno retiene la ejecución aislada de
+check-integrity.ps1; el script parsea y la suite focalizada pasa. CI debe
+confirmar la ejecución completa.
 
 <!-- STATUS:AUTO:BEGIN -->
 
 ## Estado verificado automáticamente
 
-- Actualizado: 2026-09-14T11:34:10Z
-- Rama: maintenance/v2.0.0-T03-reconciliar-status-segunda-oleada
-- HEAD: 491e49b (491e49b98eb5f8719b4ae17c2a8349655821de98)
+- Actualizado: 2026-09-14T16:24:33Z
+- Rama: maintenance/v2.0.0-T04-integridad-sincronizacion
+- HEAD: a4115d9 (a4115d9fb35d60482ad766d43d9293a932c15ded)
 - Remoto: refs/remotes/origin/develop
 - Working tree: dirty
-- Worktrees: C:/Proyectos/template (develop); C:/Proyectos/worktrees/v2.0.0-T03-reconciliar-status-segunda-oleada (maintenance/v2.0.0-T03-reconciliar-status-segunda-oleada)
+- Worktrees: C:/Proyectos/template (develop); C:/Proyectos/worktrees/v2.0.0-T04-integridad-sincronizacion (maintenance/v2.0.0-T04-integridad-sincronizacion)
 - PR activa: sin PR
 - CI: sin CI
 - Última release: {"name":"v1.1.0 — Roadmap → Analyst → Spec Reviewer → Builder → QA → Code Reviewer → .audit → HITL → PR","publishedAt":"2026-09-13T02:03:08Z","tagName":"v1.1.0"}

@@ -1,5 +1,5 @@
 param(
-    [ValidateSet("Feature", "Milestone")]
+    [ValidateSet("Feature", "Milestone", "Maintenance")]
     [string] $Mode = "Feature",
 
     [Parameter(Mandatory = $true)]
@@ -137,7 +137,7 @@ foreach ($item in $itemSlugs) {
 }
 
 $versionPrefix = if ([string]::IsNullOrWhiteSpace($Version)) { "" } else { "$Version-" }
-$branch = if ($Mode -eq "Milestone") { "milestone/$versionPrefix$Slug" } else { "feature/$versionPrefix$Slug" }
+$branch = if ($Mode -eq "Milestone") { "milestone/$versionPrefix$Slug" } elseif ($Mode -eq "Maintenance") { "maintenance/$versionPrefix$Slug" } else { "feature/$versionPrefix$Slug" }
 $worktreesRoot = Join-Path (Split-Path -Parent $repoRoot) "worktrees"
 $worktreeName = "$versionPrefix$Slug".TrimEnd('-')
 $worktreeDir = Join-Path $worktreesRoot $worktreeName
