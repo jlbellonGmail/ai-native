@@ -18,10 +18,10 @@ foreach ($workflow in $workflows) {
 }
 foreach ($fileName in @("requirements-dev.txt", "requirements-docs.txt")) {
     $path = Join-Path $Root $fileName
-    if (-not (Test-Path -LiteralPath $path)) { Add-Failure "$fileName: falta manifiesto"; continue }
+    if (-not (Test-Path -LiteralPath $path)) { Add-Failure "${fileName}: falta manifiesto"; continue }
     foreach ($line in Get-Content -LiteralPath $path) {
         $trimmed = $line.Trim()
-        if ($trimmed -and $trimmed -notmatch '^#' -and $trimmed -notmatch '==') { Add-Failure "$fileName: dependencia no fijada: $trimmed" }
+        if ($trimmed -and $trimmed -notmatch '^#' -and $trimmed -notmatch '==') { Add-Failure "${fileName}: dependencia no fijada: $trimmed" }
     }
 }
 $tracked = & git -C $Root ls-files
