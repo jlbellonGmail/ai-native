@@ -29,7 +29,7 @@ una calificación subjetiva.
 - [SDD Adaptativo](sdd-adaptativo.md)
 - [Arquitectura de roles](arquitectura-roles.md)
 - [Convergence autónoma Builder-Reviewer](convergence.md)
-- [Seguridad profesional](seguridad-profesional.md)
+- [[v2.0.0][F11] Seguridad profesional y permisos progresivos](seguridad-profesional.md)
 - [Evidencias adaptativas](evidencias-adaptativas.md)
 - [Tests CI y audit](tests-ci-audit.md)
 
