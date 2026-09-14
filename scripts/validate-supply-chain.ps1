@@ -10,7 +10,7 @@ foreach ($workflow in $workflows) {
     $content = Get-Content -LiteralPath $workflow.FullName -Raw
     if ($content -notmatch '(?m)^permissions:') { Add-Failure "$($workflow.Name): falta permissions explícito" }
     if ($content -match '(?im)write-all') { Add-Failure "$($workflow.Name): write-all no permitido" }
-    foreach ($match in [regex]::Matches($content, '(?m)^\s*uses:\s*([^\s#]+)')) {
+    foreach ($match in [regex]::Matches($content, '(?m)^\s*-?\s*uses:\s*([^\s#]+)')) {
         $reference = $match.Groups[1].Value
         if ($reference -notmatch '@[0-9a-fA-F]{40}$') { Add-Failure "$($workflow.Name): acción sin SHA inmutable: $reference" }
     }
@@ -26,7 +26,7 @@ foreach ($fileName in @("requirements-dev.txt", "requirements-docs.txt")) {
 }
 $tracked = & git -C $Root ls-files
 foreach ($relative in $tracked) {
-    if ($relative -match '^(\.git/|runs/.*(jsonl|md)$)') { continue }
+    if ($relative -match '^(\.git/|\.audit/|runs/.*(jsonl|md)$)') { continue }
     $path = Join-Path $Root $relative
     if (Test-Path -LiteralPath $path -PathType Leaf) {
         $text = Get-Content -LiteralPath $path -Raw -ErrorAction SilentlyContinue
