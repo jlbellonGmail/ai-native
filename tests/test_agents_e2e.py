@@ -179,8 +179,10 @@ class TestCircuitIntegration:
         if matches:
             count = int(matches[0])
             # Aproximado: debería haber entre 140 y 250 tests
-            assert 140 <= count <= 250, \
+            # T04 agrega cinco escenarios explícitos de integridad Txx.
+            assert 140 <= count <= 260, (
                 f"Se esperaban ~196 tests, got {count} (fuera de rango esperado)"
+            )
         else:
             # Si no se puede contar, pytest debería haber iniciado sin error
             # (validado en test_pytest_can_collect)

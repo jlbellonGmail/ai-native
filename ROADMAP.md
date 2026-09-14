@@ -30,7 +30,7 @@ Una fase sólo pasa a `[x]` después del merge a `develop`.
 ## Intervenciones transversales v2.0.0
 
 - [x] T01-normalizacion-documental — normalización documental entre F02 y F03; PR #33 mergeada contra develop, no es una fase funcional ni consume numeración del roadmap.
-- [x] T02-status-primera-oleada — reconciliación de STATUS tras la primera oleada paralela; PR #66 mergeada contra develop.
+- [x] T02-reconciliar-status-paralelo — reconciliación de STATUS tras la primera oleada paralela; PR #66 mergeada contra develop.
 - [x] T03-reconciliar-status-segunda-oleada — reconciliación de STATUS tras la segunda oleada paralela; PR #70 mergeada contra develop.
 - [x] T04-integridad-sincronizacion — integridad de sincronización y cierre transversal; PR #72 mergeada contra develop.
 
