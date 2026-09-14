@@ -40,9 +40,9 @@ bloquean la ejecución.
 
 ## Estado verificado automáticamente
 
-- Actualizado: 2026-09-14T02:39:24Z
+- Actualizado: 2026-09-14T02:39:49Z
 - Rama: maintenance/v2.0.0-T02-status-auto-postmerge
-- HEAD: f871106 (f871106f23f762f3be9cc7293ee4961a6d4340a7)
+- HEAD: 7fed485 (7fed485aed23acaeb70316d10697d54e3fc8a8e0)
 - Remoto: refs/remotes/origin/develop
 - Working tree: dirty
 - Worktrees: C:/Proyectos/template (maintenance/v2.0.0-T02-status-auto-postmerge)
