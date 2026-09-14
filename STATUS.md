@@ -1,29 +1,26 @@
 # Estado operativo
 
 Versión: v2.0.0  
-Estado general: T04 cerrada y mergeada; T01 regularizada como cerrada históricamente; T02/T03 mergeadas; F08, F10 y F12 cerradas y mergeadas.
+Estado general: T04 en corrección por PR; T01 regularizada como cerrada históricamente; T02/T03 mergeadas; F08, F10 y F12 cerradas y mergeadas; F13 y F15 cerradas y mergeadas.
 
 ## Próximas fases
 
-- F13 — STATUS, observabilidad y reentrada, pendiente.
 - F14 — unidades y paralelización, pendiente.
-- F15 — releases y evolución, pendiente.
 - F16 — validación integral, pendiente.
 - F17 — auditoría y release v2.0.0, pendiente.
 
-Próxima ejecución recomendada: F13. F14,
-F15, F16 y F17 permanecen pendientes; ninguna de estas fases ha comenzado.
+Próxima ejecución recomendada: F14. F16 y F17 permanecen pendientes; F14 aún no ha comenzado.
 
 ## Evidencia real
 
-PR #69 (F08), PR #68 (F10) y PR #67 (F12) están mergeadas contra `develop`.
-CI de `develop` verde.
+PR #69 (F08), PR #68 (F10), PR #67 (F12), PR #77 (F13) y PR #78 (F15)
+están mergeadas contra `develop`. CI de `develop` verde.
 
 ## Incidencias
 
-El host PowerShell del entorno retiene la ejecución aislada de
-check-integrity.ps1; el script parsea y la suite focalizada pasa. CI debe
-confirmar la ejecución completa.
+El host PowerShell mostró retención durante una ejecución sin timeout; se
+corrigió la recursión del wrapper Git y se validó con timeout controlado. CI
+debe confirmar la ejecución canónica.
 
 <!-- STATUS:AUTO:BEGIN -->
 
@@ -31,7 +28,7 @@ confirmar la ejecución completa.
 
 - Actualizado: 2026-09-14T19:58:49Z
 - Versión: v2.0.0
-- Rama: feature/v2.0.0-18-status-observabilidad
+- Rama: maintenance/v2.0.0-T04-integridad-sincronizacion-fix
 - HEAD: 2340caa9175b523460fd285b2c1252ec6db005a2
 - Remoto: https://github.com/jlbellonGmail/template.git
 - Working tree: dirty

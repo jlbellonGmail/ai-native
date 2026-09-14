@@ -1,7 +1,8 @@
 param([string]$RepositoryRoot="", [string]$WorktreeDir="", [string]$Version="v2.0.0")
 $ErrorActionPreference = "Stop"
 function Git([string[]]$Arguments) {
-  $out = & git @Arguments 2>&1
+  $gitCommand = Get-Command git -CommandType Application -ErrorAction Stop | Select-Object -First 1
+  $out = & $gitCommand.Source @Arguments 2>&1
   if ($LASTEXITCODE) { throw "git fallo: $($Arguments -join ' ')" }
   return ($out -join [Environment]::NewLine).Trim()
 }
@@ -17,28 +18,54 @@ try {
     $dirs = @(Get-ChildItem $v2 -Directory -ErrorAction SilentlyContinue)
     $runT = @($dirs | Where-Object { $_.Name -match '^T\d{2}-[a-z0-9]+(?:-[a-z0-9]+)*$' })
     $roadT = @([regex]::Matches($roadmap,'(?m)^-\s+(?:\[[ x-]\]\s+)?(?<id>T\d{2}-[a-z0-9]+(?:-[a-z0-9]+)*)\b.*') | ForEach-Object { $_.Groups["id"].Value })
+    if (($roadT | Group-Object | Where-Object Count -gt 1).Count) { [void]$errors.Add("identidad Txx duplicada en ROADMAP.md") }
+    $head = Git @("rev-parse","HEAD")
+    $runIds = @($runT | ForEach-Object Name)
+    foreach ($id in $roadT) {
+      if ($runIds -notcontains $id) { [void]$errors.Add("Txx '$id' cerrada o registrada sin run canónico") }
+    }
     foreach ($dir in $runT) {
       $id = $dir.Name
       if ($roadT -notcontains $id) { [void]$errors.Add("run Txx '$id' existe pero falta en ROADMAP.md"); continue }
       $summary = Join-Path $dir.FullName "SUMMARY.md"
       if (-not (Test-Path $summary -PathType Leaf)) { [void]$errors.Add("SUMMARY.md faltante para $id") }
-      elseif ([string]::IsNullOrWhiteSpace((Get-Content $summary -Raw))) { [void]$errors.Add("SUMMARY.md vacio para $id") }
+      else {
+        $summaryText = Get-Content $summary -Raw -Encoding UTF8
+        if ([string]::IsNullOrWhiteSpace($summaryText)) { [void]$errors.Add("SUMMARY.md vacio para $id") }
+        $shortId = ([regex]::Match($id,'^T\d{2}')).Value
+        if ($summaryText -notmatch "(?m)^#\s*$([regex]::Escape($shortId))\s+[-—]") { [void]$errors.Add("identidad inconsistente: SUMMARY de $id no tiene encabezado $shortId") }
+      }
     }
     foreach ($id in $roadT) {
       $line = ([regex]::Match($roadmap,"(?m)^-\s+(?:\[[ x-]\]\s+)?$([regex]::Escape($id))\b.*")).Value
       $dir = $runT | Where-Object Name -eq $id | Select-Object -First 1
       $done = $line -match '^- \[x\]'
       if ($done) {
-        $evidence = if ($dir) { Get-Content (Join-Path $dir.FullName "SUMMARY.md") -Raw } else { $line }
-        if ($evidence -notmatch '(?i)PR[^\r\n]*#\d+') { [void]$errors.Add("Txx '$id' cerrada sin PR") }
-        if ($evidence -match '(?i)Merge\s*:\s*(pendiente|no\b)') { [void]$errors.Add("Txx '$id' cerrada con Merge pendiente") }
-      } elseif (-not $dir) { [void]$warnings.Add("Txx '$id' registrada abierta sin run; no se inventa evidencia") }
+        if (-not $dir) { continue }
+        $summaryPath = Join-Path $dir.FullName "SUMMARY.md"
+        if (-not (Test-Path $summaryPath -PathType Leaf)) { continue }
+        $evidence = Get-Content $summaryPath -Raw -Encoding UTF8
+        $pr = [regex]::Match($evidence,'(?im)^PR\s*:\s*.*#(?<n>\d+)\b')
+        $merge = [regex]::Match($evidence,'(?im)^Merge\s*:\s*(?<sha>[0-9a-f]{7,40})\s*$')
+        if (-not $pr.Success) { [void]$errors.Add("Txx '$id' cerrada sin PR verificable") }
+        if (-not $merge.Success) { [void]$errors.Add("Txx '$id' cerrada sin Merge verificable") }
+        if ($merge.Success) {
+          $sha = $merge.Groups['sha'].Value
+          try { [void](Git @("rev-parse","--verify","$sha^{commit}")) }
+          catch { [void]$errors.Add("Txx '$id' referencia un merge inexistente: $sha") }
+          try { [void](Git @("merge-base","--is-ancestor",$sha,$head)) }
+          catch { [void]$errors.Add("Txx '$id' referencia un merge no alcanzable desde HEAD: $sha") }
+        }
+      }
     }
     $summaries = @(Get-ChildItem $v2 -Filter SUMMARY.md -File -Recurse -ErrorAction SilentlyContinue)
-    foreach ($match in [regex]::Matches($roadmap,'(?m)^- \[x\] \S+.*?Fase\s+(?<n>\d+)')) {
-      $n = [int]$match.Groups["n"].Value
-      $found = $summaries | Where-Object { (Get-Content $_.FullName -Raw) -match "(?m)^#\s*F0?$n\b" } | Select-Object -First 1
-      if (-not $found) { [void]$errors.Add("ROADMAP F$("{0:D2}" -f $n) [x] sin SUMMARY de cierre") }
+    foreach ($match in [regex]::Matches($roadmap,'(?m)^- \[x\] (?<id>[a-z0-9]+-[a-z0-9]+(?:-[a-z0-9]+)*)\b.*?Fase\s+(?<n>\d+)')) {
+      $phaseId = $match.Groups["id"].Value
+      $phaseSummary = Join-Path $v2 (Join-Path $phaseId "SUMMARY.md")
+      if (-not (Test-Path $phaseSummary -PathType Leaf) -or [string]::IsNullOrWhiteSpace((Get-Content $phaseSummary -Raw -Encoding UTF8))) {
+        $n = [int]$match.Groups["n"].Value
+        [void]$errors.Add("ROADMAP F$("{0:D2}" -f $n) [x] sin SUMMARY de cierre: $phaseId")
+      }
     }
     $status = Get-Content "STATUS.md" -Raw -Encoding UTF8
     $auto = [regex]::Match($status,'(?s)STATUS:AUTO:BEGIN.*?STATUS:AUTO:END')
