@@ -19,7 +19,7 @@ fuente canónica, regenerar adaptadores y declarar modelos por ejecución.
 - [SDD Adaptativo](sdd-adaptativo.md)
 - [Arquitectura de roles](arquitectura-roles.md)
 - [Convergence autónoma Builder-Reviewer](convergence.md)
-- [Seguridad Profesional](seguridad-profesional.md)
+- [seguridad-profesional](seguridad-profesional.md)
 - [Evidencias adaptativas](evidencias-adaptativas.md)
 - [Tests CI y audit](tests-ci-audit.md)
 
