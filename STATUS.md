@@ -1,18 +1,23 @@
 # Estado operativo
 
 Versión: v2.0.0  
-Estado general: F07 y F09 terminadas y mergeadas; F01–F07 y F09 cerradas.  
-Última fase funcional terminada: F09 — Skills reutilizables con progressive disclosure.  
-Siguiente fase: F08 — routing dinámico, pendiente y no iniciada.
+Estado general: F07, F09 y F11 terminadas y mergeadas; F01–F07, F09 y F11 cerradas.  
+Últimas fases completadas en la oleada paralela: F07 — Agentic Evals; F09 — Skills; F11 — Seguridad profesional.
+
+## Próximas unidades habilitadas
+
+- F08 — routing dinámico, habilitada por F07; pendiente y no iniciada.
+- F10 — MCP y herramientas externas, habilitada por F09 + F11; pendiente y no iniciada.
+- F12 — supply chain / CI-CD, habilitada por F06 + F11; pendiente y no iniciada.
 
 ## Evidencia real
 
-PR #53 mergeada contra `develop` (`42521fb`). CI de la PR y de `develop`
-verde en `circuit-tests`, `local-reconciler-tests` y `product-tests`.
-Run: `runs/v2.0.0/14-skills-reutilizables/SUMMARY.md`.
-
-PR #52 de F07 también está mergeada y validada. F11 mantiene su worktree
-paralelo activo; este estado no modifica ni reclama esa unidad.
+PR #52 (F07), PR #53 (F09) y PR #54 (F11) están mergeadas contra `develop`.
+CI de las PR y de `develop` verde en `circuit-tests`,
+`local-reconciler-tests` y `product-tests`.
+Runs: `runs/v2.0.0/12-agentic-evals/SUMMARY.md`,
+`runs/v2.0.0/14-skills-reutilizables/SUMMARY.md` y
+`runs/v2.0.0/16-seguridad-profesional/SUMMARY.md`.
 
 ## Qué sigue
 
@@ -21,9 +26,8 @@ especializado repetido que no estuviera mejor cubierto por `AGENTS.md` o por
 scripts determinísticos. La infraestructura canónica queda disponible para
 proyectos reales que demuestren esa necesidad.
 
-F08 queda pendiente de su prerrequisito de F07. F10 espera la política
-relevante de seguridad si las capacidades externas afectan permisos o
-confianza. No se inició F10.
+F08, F10 y F12 están habilitadas por sus prerrequisitos indicados arriba,
+pero ninguna de las tres comenzó.
 
 ## Incidencias
 
@@ -36,13 +40,14 @@ bloquean la ejecución.
 
 ## Estado verificado automáticamente
 
-- Actualizado: 2026-09-14T01:31:00Z
-- Rama: develop
-- HEAD: 820ce22 (develop con F07/F09 cerradas)
+- Actualizado: 2026-09-14T02:29:12Z
+- Rama: maintenance/v2.0.0-T02-reconciliar-status-paralelo
+- HEAD: 60fb2fa (60fb2fab1141811eb3e4363499e360e213e9f586)
 - Remoto: refs/remotes/origin/develop
-- Working tree: limpio
-- Worktrees activos: F11 y otras unidades paralelas, sin alterar por F09
-- PR activa: ninguna para F09
-- CI: develop verde en `circuit-tests`, `local-reconciler-tests` y `product-tests`
+- Working tree: dirty
+- Worktrees: C:/Proyectos/template (develop); C:/Proyectos/worktrees/v2.0.0-T02-reconciliar-status-paralelo (maintenance/v2.0.0-T02-reconciliar-status-paralelo)
+- PR activa: sin PR
+- CI: sin CI
+- Última release: {"name":"v1.1.0 — Roadmap → Analyst → Spec Reviewer → Builder → QA → Code Reviewer → .audit → HITL → PR","publishedAt":"2026-09-13T02:03:08Z","tagName":"v1.1.0"}
 
 <!-- STATUS:AUTO:END -->
