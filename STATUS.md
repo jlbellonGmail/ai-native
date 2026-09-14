@@ -26,11 +26,11 @@ debe confirmar la ejecución canónica.
 
 ## Estado verificado automáticamente
 
-- Actualizado: 2026-09-14T23:51:46Z
+- Actualizado: 2026-09-14T23:49:04Z
 - Versión: v2.0.0
 - Rama: develop
-- HEAD: 64b53c8f946e0e52d70acc3fad88b48dd0b766f4
-- Remoto: https://github.com/jlbellonGmail/template.git
+- HEAD: cb27b2c511fb9d8eabc66421ce40a7fba70b9858
+- Remoto: https://github.com/jlbellonGmail/template
 - Working tree: dirty
 - Worktrees: 3
 - Worktrees Git: 3
@@ -38,6 +38,6 @@ debe confirmar la ejecución canónica.
 - PR activa: UNKNOWN / sin PR abierta
 - CI: UNKNOWN / sin CI verificable
 - CI vigente: UNKNOWN / sin CI verificable
-- Última release: UNKNOWN / no disponible
+- Última release: v1.1.0
 
 <!-- STATUS:AUTO:END -->
