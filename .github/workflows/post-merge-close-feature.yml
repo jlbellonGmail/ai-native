@@ -37,7 +37,9 @@ jobs:
             echo "mode=Milestone" >> "$GITHUB_OUTPUT"
           elif [[ "$head_ref" =~ ^maintenance/(v[0-9]+\.[0-9]+\.[0-9]+)-((T[0-9]{2})-[a-z0-9]+(-[a-z0-9]+)*)$ ]]; then
             echo "version=${BASH_REMATCH[1]}" >> "$GITHUB_OUTPUT"
-            echo "slug=${BASH_REMATCH[2]}" >> "$GITHUB_OUTPUT"
+            # close-feature.ps1 resuelve la unidad TNN canónica desde ROADMAP.
+            # El sufijo de una rama correctiva no es identidad de ROADMAP.
+            echo "slug=" >> "$GITHUB_OUTPUT"
             echo "branch=$head_ref" >> "$GITHUB_OUTPUT"
             echo "mode=Maintenance" >> "$GITHUB_OUTPUT"
           else

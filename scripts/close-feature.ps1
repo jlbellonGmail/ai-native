@@ -1,6 +1,5 @@
 param(
-    [Parameter(Mandatory = $true)]
-    [string] $Slug,
+    [string] $Slug = "",
 
     [int] $PrNumber = 0,
 
@@ -278,8 +277,19 @@ function Remove-LocalFeatureArtifacts {
 }
 
 if ([string]::IsNullOrWhiteSpace($Branch)) {
+    if ([string]::IsNullOrWhiteSpace($Slug)) {
+        throw "Debe informarse Slug o Branch para cerrar la work unit."
+    }
     $versionPrefix = if ([string]::IsNullOrWhiteSpace($Version)) { "" } else { "$Version-" }
     $Branch = if ($Mode -eq "Milestone") { "milestone/$versionPrefix$Slug" } elseif ($Mode -eq "Maintenance") { "maintenance/$versionPrefix$Slug" } else { "feature/$versionPrefix$Slug" }
+}
+
+if ($Mode -eq "Maintenance") {
+    $Slug = Resolve-CanonicalWorkUnitSlug -Branch $Branch -Mode $Mode -Version $Version
+    Write-Host "==> Unidad canonica Maintenance resuelta: $Slug (rama: $Branch)"
+}
+elseif ([string]::IsNullOrWhiteSpace($Slug)) {
+    throw "Debe informarse Slug para cerrar una work unit $Mode."
 }
 
 $baseBranch = "develop"
