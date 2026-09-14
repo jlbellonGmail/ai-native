@@ -41,8 +41,8 @@ bloquean la ejecución.
 ## Estado verificado automáticamente
 
 - Actualizado: 2026-09-14T02:40:12Z
-- Rama: maintenance/v2.0.0-T02-status-auto-postmerge
-- HEAD: 2ebb0c6 (2ebb0c6abdf75cdd2c11ddf47dcef03c8fcebace)
+- Rama: develop
+- HEAD: e687c1bd3955046b94c43c639354ed734e59b94a (e687c1bd3955046b94c43c639354ed734e59b94a)
 - Remoto: refs/remotes/origin/develop
 - Working tree: dirty
 - Worktrees: C:/Proyectos/template (maintenance/v2.0.0-T02-status-auto-postmerge)
