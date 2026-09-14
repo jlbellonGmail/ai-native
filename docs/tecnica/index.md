@@ -34,5 +34,6 @@ una calificación subjetiva.
 - [Tests CI y audit](tests-ci-audit.md)
 - [Agentic Evals reproducibles](agentic-evals.md)
 - [Supply chain y CI/CD profesional](supply-chain-cicd.md)
+- [MCP y herramientas externas](mcp-herramientas.md)
 
 <!-- FEATURE_LINKS_END -->
