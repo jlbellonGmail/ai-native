@@ -17,7 +17,7 @@ Una fase sólo pasa a `[x]` después del merge a `develop`.
 - [x] 11-tests-ci-audit — Fase 06: tests, CI y .audit.
 - [x] 12-agentic-evals — Fase 07: Agentic Evals.
 - [ ] 13-routing-dinamico — Fase 08: routing dinámico de modelos.
-- [ ] 14-skills-reutilizables — Fase 09: skills reutilizables.
+- [-] 14-skills-reutilizables — Fase 09: skills reutilizables.
 - [ ] 15-mcp-herramientas — Fase 10: MCP y herramientas externas.
 - [ ] 16-seguridad-profesional — Fase 11: seguridad profesional.
 - [ ] 17-supply-chain-cicd — Fase 12: supply chain y CI/CD profesional.
@@ -51,7 +51,6 @@ alterar tags, commits ni la release congelada.
 - [CONSTITUTION](CONSTITUTION.md) — principios permanentes.
 - [AGENTS](AGENTS.md) — operación del circuito.
 - [STATUS](STATUS.md) — estado actual para reentrada.
-
 
 
 
