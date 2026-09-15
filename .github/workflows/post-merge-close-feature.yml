@@ -62,6 +62,23 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
+      - name: Resolver alcance de maintenance
+        id: maintenance
+        if: steps.feature.outputs.skip != 'true'
+        shell: pwsh
+        run: |
+          if ('${{ steps.feature.outputs.mode }}' -eq 'Maintenance') {
+            . ./scripts/workunit-lib.ps1
+            $scope = Resolve-MaintenanceScope -Branch '${{ steps.feature.outputs.branch }}' -RoadmapPath 'ROADMAP.md'
+            "scope=$($scope.Scope)" >> $env:GITHUB_OUTPUT
+            "canonical_slug=$($scope.CanonicalSlug)" >> $env:GITHUB_OUTPUT
+            "close_roadmap=$($scope.CloseRoadmap.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+            "reason=$($scope.Reason)" >> $env:GITHUB_OUTPUT
+          } else {
+            "scope=canonical-unit" >> $env:GITHUB_OUTPUT
+            "close_roadmap=true" >> $env:GITHUB_OUTPUT
+          }
+
       - name: Cerrar feature en ROADMAP remoto
         if: steps.feature.outputs.skip != 'true'
         shell: pwsh
@@ -77,7 +94,7 @@ jobs:
             -SkipLocalCleanup
 
       - name: Sincronizar STATUS en develop
-        if: steps.feature.outputs.skip != 'true'
+        if: steps.feature.outputs.skip != 'true' && steps.maintenance.outputs.scope != 'auxiliary'
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
