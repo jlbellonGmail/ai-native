@@ -29,7 +29,6 @@ try {
     Push-Location $root
     try {
         Assert-Condition ($Version -match '^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$') "Version invalida: '$Version'. Se exige SemVer vMAJOR.MINOR.PATCH."
-        Assert-Condition ($CandidateBranch -notin @("", "main")) "La candidata debe provenir de una rama de integracion distinta de main."
         $roadmapPath = Join-Path $root "ROADMAP.md"
         Assert-Condition (Test-Path -LiteralPath $roadmapPath -PathType Leaf) "ROADMAP.md inexistente."
         $roadmap = Get-Content -LiteralPath $roadmapPath -Raw -Encoding UTF8
@@ -40,7 +39,8 @@ try {
             Assert-Condition ($match.Groups["state"].Value -eq "x") "ROADMAP incompleto: '$item' no esta cerrado."
         }
 
-        $current = Invoke-Git @("branch", "--show-current")
+    Assert-Condition ($CandidateBranch -notin @("", "main")) "La candidata debe provenir de una rama de integracion distinta de main."
+    $current = Invoke-Git @("branch", "--show-current")
         Assert-Condition ($current -eq $CandidateBranch) "Rama incorrecta: se esperaba '$CandidateBranch' y se obtuvo '$current'."
         $dirty = Invoke-Git @("status", "--porcelain")
         Assert-Condition ([string]::IsNullOrWhiteSpace($dirty)) "Working tree dirty: la release exige arbol limpio."

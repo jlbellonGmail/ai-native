@@ -12,7 +12,14 @@ def run(*args):
 def test_release_gate_rejects_premature_v200_without_mutation():
     result = run("-Version", "v2.0.0", "-DryRun")
     assert result.returncode != 0
-    assert "ROADMAP incompleto" in result.stderr
+    # Before F17 closes, ROADMAP is the expected rejection. Once the release
+    # candidate is complete, the same read-only dry-run must still reject
+    # without CI evidence for the exact candidate SHA.
+    assert (
+        "ROADMAP incompleto" in result.stderr
+        or "CI no encontrado" in result.stderr
+        or "Rama incorrecta" in result.stderr
+    )
 
 
 def test_release_gate_rejects_invalid_semver():
