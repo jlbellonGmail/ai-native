@@ -28,7 +28,7 @@ function Invoke-GhChecksWithTimeout {
     $psi.UseShellExecute = $false
     $psi.RedirectStandardOutput = $true
     $psi.RedirectStandardError = $true
-    foreach ($argument in @("pr", "checks", $Ref, "--required", "--watch", "--interval", [string]$Interval)) {
+    foreach ($argument in @("pr", "checks", $Ref, "--watch", "--interval", [string]$Interval)) {
         [void]$psi.ArgumentList.Add($argument)
     }
 
