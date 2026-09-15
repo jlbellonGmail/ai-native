@@ -25,18 +25,18 @@ El host PowerShell mostró retención durante una ejecución sin timeout; se cor
 
 ## Estado verificado automáticamente
 
-- Actualizado: 2026-09-15T03:44:15Z
+- Actualizado: 2026-09-15T04:21:54Z
 - Versión: v2.0.0
-- Rama: feature/v2.0.0-22-auditoria-release-v2
-- HEAD: a1ace83f86b0d95ec5bac9c0bf643de124d6931b
-- Remoto: https://github.com/jlbellonGmail/template.git
+- Rama: develop
+- HEAD: 6f5cdded3efa97fbae234c57785cd74914c0a2b6
+- Remoto: https://github.com/jlbellonGmail/template
 - Working tree: dirty
-- Worktrees: 2
-- Worktrees Git: 2
-- Unidades activas: = [feature/v2.0.0-22-auditoria-release-v2]
+- Worktrees: 3
+- Worktrees Git: 3
+- Unidades activas: ninguna
 - PR activa: UNKNOWN / sin PR abierta
 - CI: UNKNOWN / sin CI verificable
 - CI vigente: UNKNOWN / sin CI verificable
-- Última release: UNKNOWN / no disponible
+- Última release: v1.1.0
 
 <!-- STATUS:AUTO:END -->
