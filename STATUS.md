@@ -26,18 +26,18 @@ debe confirmar la ejecución canónica.
 
 ## Estado verificado automáticamente
 
-- Actualizado: 2026-09-15T03:04:36Z
+- Actualizado: 2026-09-15T03:22:14Z
 - Versión: v2.0.0
-- Rama: develop
-- HEAD: 0aab5ac5fe6d0898997ce2dd0ab2656b1813f1d5
-- Remoto: https://github.com/jlbellonGmail/template
+- Rama: feature/v2.0.0-22-auditoria-release-v2
+- HEAD: b7b386e51bc715edde27902ef56905b03c7fe7a3
+- Remoto: https://github.com/jlbellonGmail/template.git
 - Working tree: dirty
-- Worktrees: 3
-- Worktrees Git: 3
-- Unidades activas: ninguna
+- Worktrees: 2
+- Worktrees Git: 2
+- Unidades activas: = [feature/v2.0.0-22-auditoria-release-v2]
 - PR activa: UNKNOWN / sin PR abierta
 - CI: UNKNOWN / sin CI verificable
 - CI vigente: UNKNOWN / sin CI verificable
-- Última release: v1.1.0
+- Última release: UNKNOWN / no disponible
 
 <!-- STATUS:AUTO:END -->
