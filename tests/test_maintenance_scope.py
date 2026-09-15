@@ -1,6 +1,7 @@
 import shutil
 import subprocess
 import os
+import stat
 from pathlib import Path
 
 import pytest
@@ -111,11 +112,14 @@ def test_close_feature_auxiliary_succeeds_without_roadmap_close(tmp_path):
     subprocess.run(["git", "-C", str(repo), "commit", "-m", "initial"], check=True, capture_output=True)
     subprocess.run(["git", "-C", str(repo), "remote", "add", "origin", str(remote)], check=True)
     subprocess.run(["git", "-C", str(repo), "push", "-u", "origin", "develop"], check=True, capture_output=True)
-    (bin_dir / "gh.cmd").write_text(
-        '@echo off\necho {"state":"MERGED","mergedAt":"2026-09-15T00:00:00Z",'
-        '"baseRefName":"develop","headRefName":"maintenance/v2.0.0-T05-status-f16"}\n',
-        encoding="utf-8",
-    )
+    payload = '{"state":"MERGED","mergedAt":"2026-09-15T00:00:00Z",' \
+        '"baseRefName":"develop","headRefName":"maintenance/v2.0.0-T05-status-f16"}'
+    if os.name == "nt":
+        (bin_dir / "gh.cmd").write_text(f"@echo off\necho {payload}\n", encoding="utf-8")
+    else:
+        fake_gh = bin_dir / "gh"
+        fake_gh.write_text(f"#!/bin/sh\necho '{payload}'\n", encoding="utf-8")
+        fake_gh.chmod(fake_gh.stat().st_mode | stat.S_IXUSR)
     env = os.environ.copy()
     env["PATH"] = str(bin_dir) + os.pathsep + env["PATH"]
     command = (
