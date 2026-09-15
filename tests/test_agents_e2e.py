@@ -159,9 +159,11 @@ class TestCircuitIntegration:
         assert result.returncode == 0, \
             f"pytest deberí­a ejecutarse sin error, returncode: {result.returncode}"
         # Debería haber tests coleccionables (algunos)
-        output_lower = result.stdout.lower()
-        assert "tests collected" in output_lower, \
-            f"pytest deberí­a haber recolectado tests, output: {result.stdout[:200]}"
+        output = result.stdout
+        collected_summary = re.search(r"(?m)^tests[\\/].+:\s+\d+\s*$", output)
+        collected_total = re.search(r"\d+\s+tests? collected", output, re.IGNORECASE)
+        assert collected_summary or collected_total, \
+            f"pytest deberí­a haber recolectado tests, output: {output[:200]}"
 
     def test_196_or_more_tests_approx(self):
         """Deberí­a haber ~196 tests pytest recolectados (aproximado)."""
@@ -178,15 +180,16 @@ class TestCircuitIntegration:
         matches = re.findall(r"(\d+)\s+tests? collected", output, re.IGNORECASE)
         if matches:
             count = int(matches[0])
-            # Aproximado: debería haber entre 140 y 250 tests
-            # T04 agrega cinco escenarios explícitos de integridad Txx.
-            assert 140 <= count <= 260, (
-                f"Se esperaban ~196 tests, got {count} (fuera de rango esperado)"
-            )
         else:
-            # Si no se puede contar, pytest debería haber iniciado sin error
-            # (validado en test_pytest_can_collect)
-            pytest.skip("No se pudo contar tests coleccionados")
+            file_counts = re.findall(r"(?m)^tests[\\/].+:\s+(\d+)\s*$", output)
+            assert file_counts, (
+                f"No se pudo contar tests coleccionados, output: {output[:200]}"
+            )
+            count = sum(map(int, file_counts))
+        # Aproximado: debería haber entre 140 y 260 tests.
+        assert 140 <= count <= 260, (
+            f"Se esperaban ~196 tests, got {count} (fuera de rango esperado)"
+        )
 
 
 class TestRoadmapState:
