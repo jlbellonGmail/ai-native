@@ -26,18 +26,18 @@ debe confirmar la ejecución canónica.
 
 ## Estado verificado automáticamente
 
-- Actualizado: 2026-09-14T23:49:04Z
+- Actualizado: 2026-09-15T01:21:48Z
 - Versión: v2.0.0
-- Rama: develop
-- HEAD: cb27b2c511fb9d8eabc66421ce40a7fba70b9858
-- Remoto: https://github.com/jlbellonGmail/template
+- Rama: feature/v2.0.0-21-validacion-integral-v2
+- HEAD: dfc1c61f975b80f2aaee1cb56074a8d4981017a4
+- Remoto: https://github.com/jlbellonGmail/template.git
 - Working tree: dirty
-- Worktrees: 3
-- Worktrees Git: 3
-- Unidades activas: ninguna
+- Worktrees: 2
+- Worktrees Git: 2
+- Unidades activas: = [feature/v2.0.0-21-validacion-integral-v2]
 - PR activa: UNKNOWN / sin PR abierta
 - CI: UNKNOWN / sin CI verificable
 - CI vigente: UNKNOWN / sin CI verificable
-- Última release: v1.1.0
+- Última release: UNKNOWN / no disponible
 
 <!-- STATUS:AUTO:END -->

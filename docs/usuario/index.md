@@ -29,5 +29,6 @@ fuente canónica, regenerar adaptadores y declarar modelos por ejecución.
 - [Routing dinámico por capacidades y evidencia](routing-dinamico.md)
 - [Releases y evolución](releases-evolucion.md)
 - [Unidades y paralelización](unidades-paralelizacion.md)
+- [Validacion integral v2](validacion-integral-v2.md)
 
 <!-- FEATURE_LINKS_END -->
