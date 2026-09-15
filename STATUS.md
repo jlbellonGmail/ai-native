@@ -1,20 +1,20 @@
 # Estado operativo
 
 Versión: v2.0.0  
-Estado general: T04 en PR #80 con CI verde y revisión independiente pendiente; T01 regularizada como cerrada históricamente; T02/T03 mergeadas; F08, F10 y F12 cerradas y mergeadas; F13 y F15 cerradas y mergeadas.
+Estado general: T04 en PR #80 con CI verde y revisión independiente pendiente; T01 regularizada como cerrada históricamente; T02/T03 mergeadas; F08, F10 y F12 cerradas y mergeadas; F13, F15 y F16 cerradas y mergeadas.
 
 ## Próximas fases
 
 - F14 — unidades y paralelización, pendiente.
-- F16 — validación integral, pendiente.
+- F16 — validación integral, cerrada y mergeada en PR #86.
 - F17 — auditoría y release v2.0.0, pendiente.
 
-Próxima ejecución recomendada: F14. F16 y F17 permanecen pendientes; F14 aún no ha comenzado.
+Próxima ejecución recomendada: F17, sin iniciarla en este cierre. F16 está cerrada; F17 permanece pendiente.
 
 ## Evidencia real
 
-PR #69 (F08), PR #68 (F10), PR #67 (F12), PR #77 (F13) y PR #78 (F15)
-están mergeadas contra `develop`. CI de `develop` verde.
+PR #69 (F08), PR #68 (F10), PR #67 (F12), PR #77 (F13), PR #78 (F15)
+y PR #86 (F16) están mergeadas contra `develop`. CI post-merge de `develop` verde.
 
 ## Incidencias
 
