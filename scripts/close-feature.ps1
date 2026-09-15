@@ -285,8 +285,17 @@ if ([string]::IsNullOrWhiteSpace($Branch)) {
 }
 
 if ($Mode -eq "Maintenance") {
-    $Slug = Resolve-CanonicalWorkUnitSlug -Branch $Branch -Mode $Mode -Version $Version
-    Write-Host "==> Unidad canonica Maintenance resuelta: $Slug (rama: $Branch)"
+    $maintenanceScope = Resolve-MaintenanceScope -Branch $Branch -Mode $Mode -Version $Version
+    Write-Host "==> maintenance_scope: $($maintenanceScope.Scope)"
+    if ($maintenanceScope.Scope -eq "canonical-unit") {
+        $Slug = $maintenanceScope.CanonicalSlug
+        Write-Host "==> Unidad canonica Maintenance resuelta: $Slug (rama: $Branch)"
+    }
+    else {
+        $Slug = $maintenanceScope.BranchSlug
+        Write-Host "==> close_roadmap: skipped"
+        Write-Host "==> reason: $($maintenanceScope.Reason)"
+    }
 }
 elseif ([string]::IsNullOrWhiteSpace($Slug)) {
     throw "Debe informarse Slug para cerrar una work unit $Mode."
@@ -326,6 +335,29 @@ Invoke-Checked "git" @("pull", "--ff-only", "origin", $baseBranch)
 Assert-CleanWorktree "despues de sincronizar $baseBranch"
 
 $roadmapPath = "ROADMAP.md"
+
+if ($Mode -eq "Maintenance" -and $maintenanceScope.Scope -eq "auxiliary") {
+    Write-Host "maintenance_scope: auxiliary"
+    Write-Host "close_roadmap: skipped"
+    Write-Host "reason: no canonical unit associated"
+    if ($env:GITHUB_STEP_SUMMARY) {
+        @(
+            "### Maintenance lifecycle",
+            '- maintenance_scope: auxiliary',
+            '- close_roadmap: skipped',
+            '- reason: no canonical unit associated'
+        ) | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+    }
+    if ($SkipLocalCleanup) {
+        Write-Host "==> Limpieza local omitida por -SkipLocalCleanup."
+    }
+    else {
+        Remove-LocalFeatureArtifacts $Branch $WorktreeDir
+    }
+    Assert-CleanWorktree "al finalizar"
+    Write-Host "==> Maintenance auxiliar completada sin modificar ROADMAP.md."
+    exit 0
+}
 
 if ($Mode -eq "Milestone") {
     $manifestPath = "runs/milestone-$Slug/work-unit.json"

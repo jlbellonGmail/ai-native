@@ -134,6 +134,78 @@ function Assert-RoadmapItemsTransition {
     }
 }
 
+function Get-MaintenanceIdentity {
+    param(
+        [Parameter(Mandatory = $true)][string] $Branch,
+        [string] $RoadmapPath = "ROADMAP.md"
+    )
+
+    if ($Branch -notmatch '^maintenance/(?:v[0-9]+\.[0-9]+\.[0-9]+-)?(?<branchSlug>T\d{2}-[a-z0-9]+(?:-[a-z0-9]+)*)$') {
+        throw "No se puede resolver la unidad canonica: rama Maintenance invalida '$Branch'."
+    }
+    if (-not (Test-Path -LiteralPath $RoadmapPath -PathType Leaf)) {
+        throw "No se puede resolver la unidad canonica: no existe '$RoadmapPath'."
+    }
+
+    $branchSlug = $Matches["branchSlug"]
+    $unitNumber = ([regex]::Match($branchSlug, '^T\d{2}')).Value
+    $content = Get-Content -LiteralPath $RoadmapPath -Raw -Encoding UTF8
+    $candidates = @(
+        [regex]::Matches($content, '(?m)^-\s+\[[ x-]\]\s+(?<id>T\d{2}-[a-z0-9]+(?:-[a-z0-9]+)*)\b') |
+            ForEach-Object { $_.Groups["id"].Value } |
+            Where-Object { $_ -match "^$([regex]::Escape($unitNumber))-" } |
+            Select-Object -Unique
+    )
+
+    return [pscustomobject]@{
+        Branch = $Branch
+        BranchSlug = $branchSlug
+        UnitNumber = $unitNumber
+        Candidates = @($candidates)
+    }
+}
+
+function Resolve-MaintenanceScope {
+    param(
+        [Parameter(Mandatory = $true)][string] $Branch,
+        [ValidateSet("Maintenance")][string] $Mode = "Maintenance",
+        [string] $Version = "",
+        [string] $RoadmapPath = "ROADMAP.md"
+    )
+
+    $identity = Get-MaintenanceIdentity -Branch $Branch -RoadmapPath $RoadmapPath
+    if ($identity.Candidates.Count -eq 1) {
+        return [pscustomobject]@{
+            Scope = "canonical-unit"
+            CanonicalSlug = $identity.Candidates[0]
+            Branch = $Branch
+            BranchSlug = $identity.BranchSlug
+            UnitNumber = $identity.UnitNumber
+            CloseRoadmap = $true
+            Reason = "canonical unit registered in ROADMAP.md"
+        }
+    }
+    if ($identity.Candidates.Count -gt 1) {
+        throw "Identidad ambigua para la rama '$Branch': $($identity.Candidates -join ', ')."
+    }
+
+    # Auxiliary maintenance is deliberately allowlisted. A missing TNN with
+    # an unknown purpose fails safely instead of guessing or closing a unit.
+    if ($identity.BranchSlug -match '(?i)(status|docs?|housekeeping|cleanup|close|reconcile|sync|sincron|lifecycle)') {
+        return [pscustomobject]@{
+            Scope = "auxiliary"
+            CanonicalSlug = $null
+            Branch = $Branch
+            BranchSlug = $identity.BranchSlug
+            UnitNumber = $identity.UnitNumber
+            CloseRoadmap = $false
+            Reason = "no canonical unit associated"
+        }
+    }
+
+    throw "Intencion ambigua para maintenance '$Branch': no existe una unidad canonica $($identity.UnitNumber) en ROADMAP.md y el proposito no esta allowlisted. FAILED_SAFELY / NEEDS_HUMAN_DECISION."
+}
+
 function Resolve-CanonicalWorkUnitSlug {
     <#
     Resolves a maintenance/correction branch to the single canonical TNN
@@ -153,23 +225,9 @@ function Resolve-CanonicalWorkUnitSlug {
         [string] $RoadmapPath = "ROADMAP.md"
     )
 
-    if ($Branch -notmatch '^maintenance/(?:v[0-9]+\.[0-9]+\.[0-9]+-)?(?<branchSlug>T\d{2}-[a-z0-9]+(?:-[a-z0-9]+)*)$') {
-        throw "No se puede resolver la unidad canonica: rama Maintenance invalida '$Branch'."
-    }
-
-    if (-not (Test-Path -LiteralPath $RoadmapPath -PathType Leaf)) {
-        throw "No se puede resolver la unidad canonica: no existe '$RoadmapPath'."
-    }
-
-    $branchSlug = $Matches["branchSlug"]
-    $unitNumber = ([regex]::Match($branchSlug, '^T\d{2}')).Value
-    $content = Get-Content -LiteralPath $RoadmapPath -Raw -Encoding UTF8
-    $candidates = @(
-        [regex]::Matches($content, '(?m)^-\s+\[[ x-]\]\s+(?<id>T\d{2}-[a-z0-9]+(?:-[a-z0-9]+)*)\b') |
-            ForEach-Object { $_.Groups["id"].Value } |
-            Where-Object { $_ -match "^$([regex]::Escape($unitNumber))-" } |
-            Select-Object -Unique
-    )
+    $identity = Get-MaintenanceIdentity -Branch $Branch -RoadmapPath $RoadmapPath
+    $unitNumber = $identity.UnitNumber
+    $candidates = $identity.Candidates
 
     if ($candidates.Count -eq 0) {
         throw "No existe una unidad canonica $unitNumber en ROADMAP.md para la rama '$Branch'."

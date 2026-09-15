@@ -186,8 +186,9 @@ class TestCircuitIntegration:
                 f"No se pudo contar tests coleccionados, output: {output[:200]}"
             )
             count = sum(map(int, file_counts))
-        # Aproximado: debería haber entre 140 y 260 tests.
-        assert 140 <= count <= 260, (
+        # Aproximado: la suite crece con cada escenario de lifecycle; evitar
+        # que el propio gate falle por agregar cobertura válida.
+        assert 140 <= count <= 300, (
             f"Se esperaban ~196 tests, got {count} (fuera de rango esperado)"
         )
 
