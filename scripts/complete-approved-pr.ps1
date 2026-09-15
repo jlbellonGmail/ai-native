@@ -370,7 +370,7 @@ function Assert-PreAuthorizedHumanMerge {
     $authorization = Get-Content -LiteralPath $Path -Raw -Encoding UTF8
     if ($authorization -notmatch '(?m)^decision:\s*MERGE\s*$' -or
         $authorization -notmatch "(?m)^scope:\s*$([regex]::Escape($ExpectedScope))\s*$" -or
-        $authorization -notmatch '(?m)^phase:\s*(?:02|03|04|13|14|15)\s*$' -or
+        $authorization -notmatch '(?m)^phase:\s*(?:02|03|04|13|14|15|17)\s*$' -or
         $authorization -notmatch '(?m)^authorizedBy:\s*user-instruction\s*$') {
         throw "La autorizacion previa no tiene el formato/scope esperado para $ExpectedScope."
     }
