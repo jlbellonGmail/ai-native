@@ -326,7 +326,10 @@ function Assert-IndexLink {
     $content = Get-Content -LiteralPath $IndexPath -Raw -Encoding UTF8
     $region = Get-DocsIndexManagedRegion -IndexPath $IndexPath -Content $content
     $escapedTarget = [regex]::Escape($targetName)
-    $targetPattern = "(?m)^- \[[^\]]+\]\($escapedTarget\)\s*$"
+    # Feature titles may contain scoped Markdown prefixes such as
+    # [v2.0.0][F17]. Keep the target path anchored while accepting brackets
+    # inside the link label.
+    $targetPattern = "(?m)^- \[.*?\]\($escapedTarget\)\s*$"
     $targetMatches = [regex]::Matches($content, $targetPattern)
 
     if ($targetMatches.Count -ne 1) {
@@ -372,7 +375,7 @@ function Update-DocsIndex {
     $targetName = Split-Path -Leaf $TargetPath
     $expectedLine = "- [$Title]($targetName)"
     $escapedTarget = [regex]::Escape($targetName)
-    $targetPattern = "(?m)^- \[[^\]]+\]\($escapedTarget\)\s*$"
+    $targetPattern = "(?m)^- \[.*?\]\($escapedTarget\)\s*$"
     $targetLines = [regex]::Matches($content, $targetPattern)
     if ($targetLines.Count -gt 1) {
         throw "Coincidencia ambigua: $IndexPath contiene mas de un enlace a $targetName."
