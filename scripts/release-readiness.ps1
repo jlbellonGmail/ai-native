@@ -62,11 +62,15 @@ try {
 
         $gh = Get-Command gh -ErrorAction SilentlyContinue
         Assert-Condition ($null -ne $gh) "No se puede verificar CI remoto: gh no esta disponible."
-        $ci = Invoke-Optional $gh.Source @("run", "list", "--branch", $CandidateBranch, "--limit", "50", "--json", "headSha,status,conclusion,workflowName")
+        $ci = Invoke-Optional $gh.Source @("run", "list", "--branch", $CandidateBranch, "--limit", "50", "--json", "headSha,status,conclusion,workflowName,createdAt")
         Assert-Condition ($ci.Code -eq 0) "No se pudo consultar CI: $($ci.Text)"
-        $runs = @($ci.Text | ConvertFrom-Json | Where-Object { $_.headSha -eq $candidateSha })
+        # Una misma revision puede tener una ejecucion push fallida y otra
+        # pull_request exitosa (por carreras/reintentos del proveedor). La
+        # evidencia vigente es la ultima ejecucion de cada workflow.
+        $runs = @($ci.Text | ConvertFrom-Json | Where-Object { $_.headSha -eq $candidateSha } | Sort-Object createdAt -Descending)
         Assert-Condition ($runs.Count -gt 0) "CI no encontrado para el commit candidato $candidateSha."
-        $failed = @($runs | Where-Object { $_.status -ne "completed" -or $_.conclusion -ne "success" })
+        $latestRuns = @($runs | Group-Object workflowName | ForEach-Object { $_.Group | Select-Object -First 1 })
+        $failed = @($latestRuns | Where-Object { $_.status -ne "completed" -or $_.conclusion -ne "success" })
         Assert-Condition ($failed.Count -eq 0) "CI no verde para el commit candidato $candidateSha."
 
         $remote = Invoke-Git @("ls-remote", "origin", "refs/heads/$TargetBranch", "refs/heads/$CandidateBranch")

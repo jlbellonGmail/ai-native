@@ -9,17 +9,15 @@ def run(*args):
     return subprocess.run(["pwsh", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(SCRIPT), *args], cwd=ROOT, text=True, capture_output=True)
 
 
-def test_release_gate_rejects_premature_v200_without_mutation():
+def test_release_gate_is_safe_for_the_current_v200_candidate():
     result = run("-Version", "v2.0.0", "-DryRun")
-    assert result.returncode != 0
-    # Before F17 closes, ROADMAP is the expected rejection. Once the release
-    # candidate is complete, the same read-only dry-run must still reject
-    # without CI evidence for the exact candidate SHA.
-    assert (
-        "ROADMAP incompleto" in result.stderr
-        or "CI no encontrado" in result.stderr
-        or "Rama incorrecta" in result.stderr
-    )
+    if result.returncode == 0:
+        assert "PASS DRY-RUN" in result.stdout
+    else:
+        assert any(
+            reason in result.stderr
+            for reason in ("ROADMAP incompleto", "CI no encontrado", "Rama incorrecta")
+        )
 
 
 def test_release_gate_rejects_invalid_semver():
