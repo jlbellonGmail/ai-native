@@ -1,79 +1,79 @@
-# Roadmap: template
+# ROADMAP
 
-Cada feature nueva se implementa siguiendo el circuito agéntico de
-[AGENTS.md](AGENTS.md): Analyst → Reviewer → Builder → QA → Code Reviewer
-→ `[-] READY_FOR_PR` → PR → CI verde → HITL (único punto de aprobación
-humana) → gate post-HITL → Merge → `[x]`, con su carpeta de evidencia en
-`runs/<NN>-<slug>/` y su documentación en `docs/tecnica/<slug>.md` +
-`docs/usuario/<slug>.md`.
+## Cómo usar este archivo
 
-Este archivo refleja el estado **verificado** del proyecto (código
-real, no expectativas). No se marca `[x]` antes del merge a `develop`.
+Este mapa responde qué construimos y qué falta. `[ ]` significa pendiente,
+`[-]` en ejecución o preparada en una PR y `[x]` mergeada y cerrada.
+`Fxx` identifica fases funcionales; `Txx`, intervenciones transversales.
+Una fase sólo pasa a `[x]` después del merge a `develop`.
 
-## Propósito del producto
+## v2.0.0 — Roadmap activo
 
-Por definir. Este es el template base AI-Native: no tiene producto propio
-todavía. El humano completa esta sección cuando decide qué se construye
-sobre este template (ver también `docs/tecnica/arquitectura.md`).
+- [x] 06-assess-motor-adaptativo — Fase 01: ASSESS / motor adaptativo.
+- [x] 07-sdd-adaptativo — Fase 02: SDD adaptativo.
+- [x] 08-arquitectura-roles — Fase 03: Arquitectura de roles.
+- [x] 09-convergence — Fase 04: CONVERGENCE.
+- [x] 10-evidencias-adaptativas — Fase 05: contrato adaptativo de evidencias.
+- [x] 11-tests-ci-audit — Fase 06: tests, CI y .audit.
+- [x] 12-agentic-evals — Fase 07: Agentic Evals.
+- [x] 13-routing-dinamico — Fase 08: routing dinámico de modelos.
+- [x] 14-skills-reutilizables — Fase 09: skills reutilizables.
+- [x] 15-mcp-herramientas — Fase 10: MCP y herramientas externas.
+- [x] 16-seguridad-profesional — Fase 11: seguridad profesional.
+- [x] 17-supply-chain-cicd — Fase 12: supply chain y CI/CD profesional.
+- [x] 18-status-observabilidad — Fase 13: STATUS, observabilidad y reentrada.
+- [x] 19-unidades-paralelizacion — Fase 14: unidades y paralelización.
+- [x] 20-releases-evolucion — Fase 15: releases y evolución.
+- [x] 21-validacion-integral-v2 — Fase 16: validación integral v2.
+- [x] 22-auditoria-release-v2 — Fase 17: auditoría y release v2.0.0.
 
----
+## Intervenciones transversales v2.0.0
 
-## Estado actual verificado
+- [x] T01-normalizacion-documental — normalización documental entre F02 y F03; PR #33 mergeada contra develop, no es una fase funcional ni consume numeración del roadmap.
+- [x] T02-reconciliar-status-paralelo — reconciliación de STATUS tras la primera oleada paralela; PR #66 mergeada contra develop.
+- [x] T03-reconciliar-status-segunda-oleada — reconciliación de STATUS tras la segunda oleada paralela; PR #70 mergeada contra develop.
+- [x] T04-integridad-sincronizacion — integridad de sincronización y cierre transversal; PR #72 mergeada contra develop.
 
-Repositorio inicializado con el circuito agéntico AI-Native (agentes,
-scripts del circuito, tests, estructura de documentación y CI/CD) y sin
-código de producto todavía. No hay stack definido — ver
-`docs/tecnica/arquitectura.md` y la sección "Stack" de `AGENTS.md`.
+## Histórico
 
----
+### v1.1.0
 
-## Backlog
+Las unidades históricas se conservan en [runs/v1.1.0](runs/v1.1.0/), sin
+alterar tags, commits ni la release congelada.
 
-Agregar cada ítem nuevo con el patrón:
+- [x] 00-fuente-unica-router-modelos
+- [x] 01-code-reviewer-y-sdd
+- [x] 02-integridad-post-hitl-y-ready-for-pr
+- [x] 03-adopcion-proyecto-existente
+- [x] 04-ci-wiring-product-tests
+- [x] 05-operational-readiness-docs
 
-`- [ ] NN-slug-en-minusculas — Descripción corta y verificable en español.`
+## Fuentes de orientación
 
-Opcionalmente, cuando exista documentación puntual especialmente
-relevante para ese ítem, se puede agregar un bloque `Referencias:`
-indentado debajo (nunca obligatorio para todos los ítems):
+- [CONSTITUTION](CONSTITUTION.md) — principios permanentes.
+- [AGENTS](AGENTS.md) — operación del circuito.
+- [STATUS](STATUS.md) — estado actual para reentrada.
 
-```text
-- [ ] 15-accesibilidad-ux-mobile — Descripción corta y verificable.
 
-      Referencias:
-      - docs/tecnica/<documento-relacionado>.md
-```
 
-`analyst-agent` lee `docs/producto/contexto-producto.md` automáticamente
-sin que haga falta referenciarlo acá; ver "Contexto de producto y
-bootstrap" en `AGENTS.md`.
 
-## Cómo se usa este archivo
 
-1. El humano mantiene el backlog: agrega, renombra o reordena items.
-2. Ningún item se marca `[x]` antes del merge a `develop`.
-3. Después de QA aprobado y de que `code-reviewer-agent` aprueba el diff
-   final, la automatización cambia `[ ]` → `[-]` en la rama de la feature
-   (`scripts/ready-for-pr.ps1`) y lo lleva dentro de la PR.
-4. Después de aprobar la PR, GitHub Actions ejecuta
-   `post-hitl-merge-gate.yml`: vuelve a esperar Actions y mergea solo si
-   quedan verdes. Si fallan, deja feedback para builder y no mergea.
-5. Después del merge, GitHub Actions ejecuta
-   `post-merge-close-feature.yml`, que invoca `scripts/close-feature.ps1`
-   desde `develop` para cambiar `[-]` → `[x]`, commitear y pushear a
-   `origin/develop`.
-6. Al arrancar una feature se usa el número/slug de este archivo para
-   crear `runs/<NN>-<slug>/` y la rama `feature/<NN>-<slug>` (en worktree
-   propio bajo `../worktrees/<slug>/`).
 
-**Patrón del ítem**: `NN` (dos dígitos, numeración secuencial), `slug` en
-minúsculas con guiones, seguido de `—` y descripción corta en español.
 
-## Roadmap
 
-- [x] 00-fuente-unica-router-modelos — Fuente canonica agentica, router OpenCode y gate post-HITL listos para PR.
-- [x] 01-code-reviewer-y-sdd — Quinto agente code-reviewer-agent, SDD formal (spec+plan+tasks), contrato que valida el ultimo veredicto real y corrige bugs detectados (decision.md, retry de cierre, schemas rotos).
-- [x] 02-integridad-post-hitl-y-ready-for-pr — Vincula la aprobacion HITL a la revision vigente de la PR (rechaza aprobaciones stale tras un push posterior), hace transaccional el orden de validacion en ready-for-pr.ps1 (el contrato completo se valida antes de mutar ROADMAP.md, no despues) y referencia el archivo real del ultimo veredicto aprobado en el cuerpo de la PR en vez de un placeholder generico.
-- [x] 03-adopcion-proyecto-existente — Guia de adopcion del circuito en un proyecto existente: checklist de colisiones (.agentic/, scripts/, runs/, docs/tecnica/, docs/usuario/, AGENTS.md, los 4 workflows de .github/workflows/) con estrategia de merge para cada caso, y script opcional que detecte colisiones en un repo destino.
-- [x] 04-ci-wiring-product-tests — Separa .github/workflows/ci.yml en un job circuit-tests (el pytest actual del circuito, siempre obligatorio) y un job product-tests con un marcador claro para agregar trivialmente el build/test real del stack de cada proyecto.
-- [x] 05-operational-readiness-docs — Checklist de branch protection de GitHub en la seccion "Setup manual" de AGENTS.md (require PR, status check, approval, dismiss stale approvals) con comandos gh exactos, y nota de troubleshooting sobre bloqueos de local-feature-reconcile.ps1/ready-for-pr.ps1 por EDR agresivo en Windows.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

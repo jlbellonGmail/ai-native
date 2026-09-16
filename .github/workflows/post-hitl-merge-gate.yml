@@ -40,14 +40,23 @@ jobs:
         shell: bash
         run: |
           head_ref='${{ github.event.pull_request.head.ref }}'
-          if [[ "$head_ref" =~ ^feature/([0-9]{2}-[a-z0-9]+(-[a-z0-9]+)*)$ ]]; then
-            echo "slug=${BASH_REMATCH[1]}" >> "$GITHUB_OUTPUT"
+          if [[ "$head_ref" =~ ^feature/(v[0-9]+\.[0-9]+\.[0-9]+)-([0-9]{2}-[a-z0-9]+(-[a-z0-9]+)*)$ ]]; then
+            echo "version=${BASH_REMATCH[1]}" >> "$GITHUB_OUTPUT"
+            echo "slug=${BASH_REMATCH[2]}" >> "$GITHUB_OUTPUT"
             echo "branch=$head_ref" >> "$GITHUB_OUTPUT"
             echo "mode=Feature" >> "$GITHUB_OUTPUT"
+          elif [[ "$head_ref" =~ ^feature/([0-9]{2}-[a-z0-9]+(-[a-z0-9]+)*)$ ]]; then
+            echo "version=" >> "$GITHUB_OUTPUT"
+            echo "slug=${BASH_REMATCH[1]}" >> "$GITHUB_OUTPUT"
           elif [[ "$head_ref" =~ ^milestone/([a-z0-9]+(-[a-z0-9]+)*)$ ]]; then
             echo "slug=${BASH_REMATCH[1]}" >> "$GITHUB_OUTPUT"
             echo "branch=$head_ref" >> "$GITHUB_OUTPUT"
             echo "mode=Milestone" >> "$GITHUB_OUTPUT"
+          elif [[ "$head_ref" =~ ^maintenance/(v[0-9]+\.[0-9]+\.[0-9]+)-((T[0-9]{2})-[a-z0-9]+(-[a-z0-9]+)*)$ ]]; then
+            echo "version=${BASH_REMATCH[1]}" >> "$GITHUB_OUTPUT"
+            echo "slug=${BASH_REMATCH[2]}" >> "$GITHUB_OUTPUT"
+            echo "branch=$head_ref" >> "$GITHUB_OUTPUT"
+            echo "mode=Maintenance" >> "$GITHUB_OUTPUT"
           else
             echo "La rama '$head_ref' no sigue feature/NN-slug ni milestone/slug; no hay merge automatico."
             echo "skip=true" >> "$GITHUB_OUTPUT"
@@ -55,9 +64,9 @@ jobs:
 
       - name: Checkout trusted develop
         if: steps.feature.outputs.skip != 'true'
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          ref: develop
+          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
           persist-credentials: true
 
@@ -71,6 +80,12 @@ jobs:
             -Slug '${{ steps.feature.outputs.slug }}' `
             -Branch '${{ steps.feature.outputs.branch }}' `
             -Mode '${{ steps.feature.outputs.mode }}' `
+            -Version '${{ steps.feature.outputs.version }}' `
             -PrNumber ${{ github.event.pull_request.number }} `
             -SkipLocalCleanup `
-            -CommentOnFailure
+            -CommentOnFailure `
+            -GovernanceMode SingleMaintainer `
+            -PreAuthorizedHumanMerge `
+            -AuthorizationPath "runs/v2.0.0/${{ steps.feature.outputs.slug }}/human-authorization.md" `
+            -IndependentReviewPath "runs/v2.0.0/${{ steps.feature.outputs.slug }}/independent-review.md" `
+            -IntegrityEvidencePath "runs/v2.0.0/${{ steps.feature.outputs.slug }}/integrity-evidence.md"

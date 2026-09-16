@@ -68,18 +68,18 @@ def test_sync_generates_adapters_and_is_idempotent(tmp_path: Path):
     assert first.returncode == 0, first.stderr
     assert second.returncode == 0, second.stderr
     assert check.returncode == 0, check.stderr
-    assert (repo / ".claude" / "agents" / "analyst-agent.md").exists()
-    assert (repo / ".codex" / "analyst-agent.config.toml").exists()
+    assert {p.stem for p in (repo / ".claude" / "agents").glob("*.md")} == {"planner", "builder", "reviewer"}
+    assert (repo / ".codex" / "planner.config.toml").exists()
     assert not (repo / ".codex" / "prompts" / "analyst-agent.md").exists()
     assert not (repo / ".opencode" / "agent" / "analyst-agent.md").exists()
 
     opencode = json.loads((repo / "opencode.json").read_text(encoding="utf-8"))
     assert opencode["instructions"] == ["AGENTS.md", ".claude/rules/*.md"]
-    assert opencode["agent"]["analyst-agent"]["prompt"] == "{file:./.agentic/roles/analyst-agent.md}"
+    assert opencode["agent"]["planner"]["prompt"] == "{file:./.agentic/roles/planner.md}"
     assert opencode["mcp"]["servers"] == {}
 
 
-def test_sync_generates_read_only_code_reviewer_agent_adapter(tmp_path: Path):
+def test_sync_generates_read_only_reviewer_adapter(tmp_path: Path):
     repo = make_agentic_repo(tmp_path)
 
     result = run_sync(repo)
@@ -88,7 +88,7 @@ def test_sync_generates_read_only_code_reviewer_agent_adapter(tmp_path: Path):
     assert result.returncode == 0, result.stderr
     assert check.returncode == 0, check.stderr
 
-    claude_agent = repo / ".claude" / "agents" / "code-reviewer-agent.md"
+    claude_agent = repo / ".claude" / "agents" / "reviewer.md"
     assert claude_agent.exists()
     frontmatter = claude_agent.read_text(encoding="utf-8")
     assert "tools: Read, Grep, Glob" in frontmatter
@@ -96,11 +96,11 @@ def test_sync_generates_read_only_code_reviewer_agent_adapter(tmp_path: Path):
     assert "Edit" not in frontmatter.split("---")[1]
     assert "Bash" not in frontmatter.split("---")[1]
 
-    assert (repo / ".codex" / "code-reviewer-agent.config.toml").exists()
+    assert (repo / ".codex" / "reviewer.config.toml").exists()
 
     opencode = json.loads((repo / "opencode.json").read_text(encoding="utf-8"))
-    code_reviewer = opencode["agent"]["code-reviewer-agent"]
-    assert code_reviewer["prompt"] == "{file:./.agentic/roles/code-reviewer-agent.md}"
+    code_reviewer = opencode["agent"]["reviewer"]
+    assert code_reviewer["prompt"] == "{file:./.agentic/roles/reviewer.md}"
     assert code_reviewer["permission"]["edit"] == "deny"
     assert code_reviewer["permission"]["bash"] == "deny"
 
@@ -110,7 +110,7 @@ def test_check_detects_generated_adapter_divergence(tmp_path: Path):
     result = run_sync(repo)
     assert result.returncode == 0, result.stderr
 
-    agent = repo / ".claude" / "agents" / "analyst-agent.md"
+    agent = repo / ".claude" / "agents" / "planner.md"
     agent.write_text(agent.read_text(encoding="utf-8") + "\nCambio manual\n", encoding="utf-8")
 
     check = run_sync(repo, "-Check")

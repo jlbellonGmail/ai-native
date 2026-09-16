@@ -99,7 +99,13 @@ def write_fake_gh(bin_dir: Path) -> None:
         gh.chmod(gh.stat().st_mode | stat.S_IXUSR)
 
 
-def run_gate(repo: Path, bin_dir: Path, log_path: Path, mode: str):
+def run_gate(repo: Path, bin_dir: Path, log_path: Path, mode: str, preauthorized: bool = False):
+    authorization = repo / "authorization.md"
+    if preauthorized:
+        authorization.write_text(
+            "decision: MERGE\nscope: 06-patente\nphase: 02\nauthorizedBy: user-instruction\n",
+            encoding="utf-8",
+        )
     return subprocess.run(
         [
             powershell(),
@@ -119,7 +125,7 @@ def run_gate(repo: Path, bin_dir: Path, log_path: Path, mode: str):
             "1",
             "-CheckMaxMinutes",
             "1",
-        ],
+        ] + (["-PreAuthorizedHumanMerge", "-AuthorizationPath", str(authorization)] if preauthorized else []),
         cwd=repo,
         env=command_env(bin_dir, mode, log_path),
         text=True,
@@ -182,6 +188,17 @@ def test_complete_approved_pr_requires_hitl_approval_before_checks(tmp_path: Pat
     assert "pr view" in log
     assert "pr checks" not in log
     assert reports(repo) == []
+
+
+def test_complete_approved_pr_accepts_explicit_scoped_preauthorization(tmp_path: Path):
+    repo, bin_dir, log_path = make_repo(tmp_path)
+
+    result = run_gate(repo, bin_dir, log_path, "review_required", preauthorized=True)
+
+    assert result.returncode == 0, result.stderr + result.stdout
+    log = log_path.read_text(encoding="utf-8")
+    assert "pr merge 123 --merge --delete-branch" in log
+    assert "pr checks" in log
 
 
 def test_complete_approved_pr_blocks_wrong_base_branch(tmp_path: Path):

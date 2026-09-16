@@ -1,6 +1,5 @@
 param(
-    [Parameter(Mandatory = $true)]
-    [string] $Slug,
+    [string] $Slug = "",
 
     [int] $PrNumber = 0,
 
@@ -8,8 +7,10 @@ param(
 
     [string] $WorktreeDir = "",
 
-    [ValidateSet("Feature", "Milestone")]
+    [ValidateSet("Feature", "Milestone", "Maintenance")]
     [string] $Mode = "Feature",
+
+    [string] $Version = "",
 
     [switch] $SkipLocalCleanup
 )
@@ -253,8 +254,14 @@ function Remove-LocalFeatureArtifacts {
 
     Write-Host "==> Limpiando worktree y rama local..."
     if (Test-Path -LiteralPath $WorktreeDir) {
-        Invoke-Checked "git" @("worktree", "remove", $WorktreeDir)
-        Write-Host "==> Worktree eliminado: $WorktreeDir"
+        try { Invoke-Checked "git" @("worktree", "remove", $WorktreeDir) }
+        catch { throw "Cleanup incompleto: no se pudo remover el worktree Git '$WorktreeDir'. No se fuerza el borrado de contenido." }
+        Invoke-Checked "git" @("worktree", "prune")
+        if (Test-Path -LiteralPath $WorktreeDir) {
+            $entries = @(Get-ChildItem -LiteralPath $WorktreeDir -Force -ErrorAction SilentlyContinue)
+            if ($entries.Count -gt 0) { throw "Cleanup incompleto: metadata Git removida pero el residual físico contiene archivos: $WorktreeDir" }
+            Write-Warning "Residual físico vacío (posible lock Windows): $WorktreeDir"
+        } else { Write-Host "==> Worktree eliminado: $WorktreeDir" }
     }
     else {
         Write-Host "==> No existe worktree local para eliminar: $WorktreeDir"
@@ -270,7 +277,28 @@ function Remove-LocalFeatureArtifacts {
 }
 
 if ([string]::IsNullOrWhiteSpace($Branch)) {
-    $Branch = if ($Mode -eq "Milestone") { "milestone/$Slug" } else { "feature/$Slug" }
+    if ([string]::IsNullOrWhiteSpace($Slug)) {
+        throw "Debe informarse Slug o Branch para cerrar la work unit."
+    }
+    $versionPrefix = if ([string]::IsNullOrWhiteSpace($Version)) { "" } else { "$Version-" }
+    $Branch = if ($Mode -eq "Milestone") { "milestone/$versionPrefix$Slug" } elseif ($Mode -eq "Maintenance") { "maintenance/$versionPrefix$Slug" } else { "feature/$versionPrefix$Slug" }
+}
+
+if ($Mode -eq "Maintenance") {
+    $maintenanceScope = Resolve-MaintenanceScope -Branch $Branch -Mode $Mode -Version $Version
+    Write-Host "==> maintenance_scope: $($maintenanceScope.Scope)"
+    if ($maintenanceScope.Scope -eq "canonical-unit") {
+        $Slug = $maintenanceScope.CanonicalSlug
+        Write-Host "==> Unidad canonica Maintenance resuelta: $Slug (rama: $Branch)"
+    }
+    else {
+        $Slug = $maintenanceScope.BranchSlug
+        Write-Host "==> close_roadmap: skipped"
+        Write-Host "==> reason: $($maintenanceScope.Reason)"
+    }
+}
+elseif ([string]::IsNullOrWhiteSpace($Slug)) {
+    throw "Debe informarse Slug para cerrar una work unit $Mode."
 }
 
 $baseBranch = "develop"
@@ -280,7 +308,9 @@ $repoRoot = [System.IO.Path]::GetFullPath($repoRoot)
 
 if ([string]::IsNullOrWhiteSpace($WorktreeDir)) {
     $worktreesRoot = Join-Path (Split-Path -Parent $repoRoot) "worktrees"
-    $WorktreeDir = Join-Path $worktreesRoot $Slug
+    $worktreePrefix = if ([string]::IsNullOrWhiteSpace($Version)) { "" } else { "$Version-" }
+    $worktreeName = "$worktreePrefix$Slug"
+    $WorktreeDir = Join-Path $worktreesRoot $worktreeName
 }
 
 $WorktreeDir = [System.IO.Path]::GetFullPath($WorktreeDir)
@@ -305,6 +335,29 @@ Invoke-Checked "git" @("pull", "--ff-only", "origin", $baseBranch)
 Assert-CleanWorktree "despues de sincronizar $baseBranch"
 
 $roadmapPath = "ROADMAP.md"
+
+if ($Mode -eq "Maintenance" -and $maintenanceScope.Scope -eq "auxiliary") {
+    Write-Host "maintenance_scope: auxiliary"
+    Write-Host "close_roadmap: skipped"
+    Write-Host "reason: no canonical unit associated"
+    if ($env:GITHUB_STEP_SUMMARY) {
+        @(
+            "### Maintenance lifecycle",
+            '- maintenance_scope: auxiliary',
+            '- close_roadmap: skipped',
+            '- reason: no canonical unit associated'
+        ) | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+    }
+    if ($SkipLocalCleanup) {
+        Write-Host "==> Limpieza local omitida por -SkipLocalCleanup."
+    }
+    else {
+        Remove-LocalFeatureArtifacts $Branch $WorktreeDir
+    }
+    Assert-CleanWorktree "al finalizar"
+    Write-Host "==> Maintenance auxiliar completada sin modificar ROADMAP.md."
+    exit 0
+}
 
 if ($Mode -eq "Milestone") {
     $manifestPath = "runs/milestone-$Slug/work-unit.json"

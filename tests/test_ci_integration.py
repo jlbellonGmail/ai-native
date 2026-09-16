@@ -106,6 +106,12 @@ def test_post_merge_close_has_steps(workflow_file: str):
     assert "steps:" in content, "post-merge-close-feature.yml debe tener steps"
 
 
+def test_post_merge_close_syncs_status_from_trusted_develop():
+    content = _read_workflow("post-merge-close-feature.yml")
+    assert "update-status.ps1" in content
+    assert "git push origin develop" in content
+
+
 def test_all_workflows_mention_agents_md():
     """Los workflows clave deben referenciar el circuito agente o documentación.
     

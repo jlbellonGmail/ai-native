@@ -79,22 +79,16 @@ def work_unit_schema():
 class TestAgentStructure:
     """Verify the agent structure is complete and valid."""
 
-    def test_agents_json_has_all_5_roles(self, agents_json):
-        """agents.json debe tener los 5 roles definidos: analyst, reviewer, builder, qa, code-reviewer."""
-        expected_roles = [
-            "analyst-agent",
-            "reviewer-agent",
-            "builder-agent",
-            "qa-agent",
-            "code-reviewer-agent",
-        ]
+    def test_agents_json_has_three_canonical_roles(self, agents_json):
+        """agents.json define Planner, Builder y Reviewer por capacidades."""
+        expected_roles = ["planner", "builder", "reviewer"]
         for role in expected_roles:
             assert role in agents_json.get("roles", {}), f"Falta el rol '{role}' en agents.json"
 
     def test_agents_json_has_prompt_paths(self, agents_json):
         """Cada rol debe tener path de prompt canonico."""
         roles = agents_json.get("roles", {})
-        for role_name in ["analyst-agent", "reviewer-agent", "builder-agent", "qa-agent", "code-reviewer-agent"]:
+        for role_name in ["planner", "reviewer", "builder"]:
             assert role_name in roles, f"Rol {role_name} no encontrado"
             role = roles[role_name]
             assert "prompt" in role, f"Rol {role_name} debe tener field 'prompt'"
@@ -165,9 +159,11 @@ class TestCircuitIntegration:
         assert result.returncode == 0, \
             f"pytest deberí­a ejecutarse sin error, returncode: {result.returncode}"
         # Debería haber tests coleccionables (algunos)
-        output_lower = result.stdout.lower()
-        assert "tests collected" in output_lower, \
-            f"pytest deberí­a haber recolectado tests, output: {result.stdout[:200]}"
+        output = result.stdout
+        collected_summary = re.search(r"(?m)^tests[\\/].+:\s+\d+\s*$", output)
+        collected_total = re.search(r"\d+\s+tests? collected", output, re.IGNORECASE)
+        assert collected_summary or collected_total, \
+            f"pytest deberí­a haber recolectado tests, output: {output[:200]}"
 
     def test_196_or_more_tests_approx(self):
         """Deberí­a haber ~196 tests pytest recolectados (aproximado)."""
@@ -184,13 +180,17 @@ class TestCircuitIntegration:
         matches = re.findall(r"(\d+)\s+tests? collected", output, re.IGNORECASE)
         if matches:
             count = int(matches[0])
-            # Aproximado: debería haber entre 140 y 250 tests
-            assert 140 <= count <= 250, \
-                f"Se esperaban ~196 tests, got {count} (fuera de rango esperado)"
         else:
-            # Si no se puede contar, pytest debería haber iniciado sin error
-            # (validado en test_pytest_can_collect)
-            pytest.skip("No se pudo contar tests coleccionados")
+            file_counts = re.findall(r"(?m)^tests[\\/].+:\s+(\d+)\s*$", output)
+            assert file_counts, (
+                f"No se pudo contar tests coleccionados, output: {output[:200]}"
+            )
+            count = sum(map(int, file_counts))
+        # Aproximado: la suite crece con cada escenario de lifecycle; evitar
+        # que el propio gate falle por agregar cobertura válida.
+        assert 140 <= count <= 300, (
+            f"Se esperaban ~196 tests, got {count} (fuera de rango esperado)"
+        )
 
 
 class TestRoadmapState:

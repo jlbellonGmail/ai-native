@@ -134,6 +134,111 @@ function Assert-RoadmapItemsTransition {
     }
 }
 
+function Get-MaintenanceIdentity {
+    param(
+        [Parameter(Mandatory = $true)][string] $Branch,
+        [string] $RoadmapPath = "ROADMAP.md"
+    )
+
+    if ($Branch -notmatch '^maintenance/(?:v[0-9]+\.[0-9]+\.[0-9]+-)?(?<branchSlug>T\d{2}-[a-z0-9]+(?:-[a-z0-9]+)*)$') {
+        throw "No se puede resolver la unidad canonica: rama Maintenance invalida '$Branch'."
+    }
+    if (-not (Test-Path -LiteralPath $RoadmapPath -PathType Leaf)) {
+        throw "No se puede resolver la unidad canonica: no existe '$RoadmapPath'."
+    }
+
+    $branchSlug = $Matches["branchSlug"]
+    $unitNumber = ([regex]::Match($branchSlug, '^T\d{2}')).Value
+    $content = Get-Content -LiteralPath $RoadmapPath -Raw -Encoding UTF8
+    $candidates = @(
+        [regex]::Matches($content, '(?m)^-\s+\[[ x-]\]\s+(?<id>T\d{2}-[a-z0-9]+(?:-[a-z0-9]+)*)\b') |
+            ForEach-Object { $_.Groups["id"].Value } |
+            Where-Object { $_ -match "^$([regex]::Escape($unitNumber))-" } |
+            Select-Object -Unique
+    )
+
+    return [pscustomobject]@{
+        Branch = $Branch
+        BranchSlug = $branchSlug
+        UnitNumber = $unitNumber
+        Candidates = @($candidates)
+    }
+}
+
+function Resolve-MaintenanceScope {
+    param(
+        [Parameter(Mandatory = $true)][string] $Branch,
+        [ValidateSet("Maintenance")][string] $Mode = "Maintenance",
+        [string] $Version = "",
+        [string] $RoadmapPath = "ROADMAP.md"
+    )
+
+    $identity = Get-MaintenanceIdentity -Branch $Branch -RoadmapPath $RoadmapPath
+    if ($identity.Candidates.Count -eq 1) {
+        return [pscustomobject]@{
+            Scope = "canonical-unit"
+            CanonicalSlug = $identity.Candidates[0]
+            Branch = $Branch
+            BranchSlug = $identity.BranchSlug
+            UnitNumber = $identity.UnitNumber
+            CloseRoadmap = $true
+            Reason = "canonical unit registered in ROADMAP.md"
+        }
+    }
+    if ($identity.Candidates.Count -gt 1) {
+        throw "Identidad ambigua para la rama '$Branch': $($identity.Candidates -join ', ')."
+    }
+
+    # Auxiliary maintenance is deliberately allowlisted. A missing TNN with
+    # an unknown purpose fails safely instead of guessing or closing a unit.
+    if ($identity.BranchSlug -match '(?i)(status|docs?|housekeeping|cleanup|close|reconcile|sync|sincron|lifecycle)') {
+        return [pscustomobject]@{
+            Scope = "auxiliary"
+            CanonicalSlug = $null
+            Branch = $Branch
+            BranchSlug = $identity.BranchSlug
+            UnitNumber = $identity.UnitNumber
+            CloseRoadmap = $false
+            Reason = "no canonical unit associated"
+        }
+    }
+
+    throw "Intencion ambigua para maintenance '$Branch': no existe una unidad canonica $($identity.UnitNumber) en ROADMAP.md y el proposito no esta allowlisted. FAILED_SAFELY / NEEDS_HUMAN_DECISION."
+}
+
+function Resolve-CanonicalWorkUnitSlug {
+    <#
+    Resolves a maintenance/correction branch to the single canonical TNN
+    item registered in ROADMAP.md. The branch suffix is descriptive metadata;
+    the TNN identity and ROADMAP are authoritative. Zero or multiple TNN
+    entries fail safely instead of guessing.
+    #>
+    param(
+        [Parameter(Mandatory = $true)]
+        [string] $Branch,
+
+        [ValidateSet("Maintenance")]
+        [string] $Mode = "Maintenance",
+
+        [string] $Version = "",
+
+        [string] $RoadmapPath = "ROADMAP.md"
+    )
+
+    $identity = Get-MaintenanceIdentity -Branch $Branch -RoadmapPath $RoadmapPath
+    $unitNumber = $identity.UnitNumber
+    $candidates = $identity.Candidates
+
+    if ($candidates.Count -eq 0) {
+        throw "No existe una unidad canonica $unitNumber en ROADMAP.md para la rama '$Branch'."
+    }
+    if ($candidates.Count -ne 1) {
+        throw "Identidad ambigua para la rama '$Branch': $($candidates -join ', ')."
+    }
+
+    return $candidates[0]
+}
+
 function Read-WorkUnitManifest {
     param(
         [Parameter(Mandatory = $true)]
@@ -221,13 +326,23 @@ function Get-WorkUnitInfo {
 
         [string] $Title = "",
 
-        [ValidateSet("Feature", "Milestone")]
+        [ValidateSet("Feature", "Milestone", "Maintenance")]
         [string] $Mode = "Feature",
+
+        [string] $Version = "",
 
         # Solo relevante en modo Milestone: si no se pasa y existe
         # runs/milestone-$Slug/work-unit.json, se lee de ahi.
         [string[]] $Items = @()
     )
+
+    if ($Mode -eq "Maintenance") {
+        if ($Slug -notmatch "^T(?<number>\d{2})-(?<docSlug>[a-z0-9]+(?:-[a-z0-9]+)*)$") { throw "Slug invalido '$Slug'. Una maintenance debe tener formato TNN-slug-en-minusculas." }
+        if ([string]::IsNullOrWhiteSpace($Title)) { $Title = $Slug }
+        $versionPrefix = if ([string]::IsNullOrWhiteSpace($Version)) { "" } else { "$Version-" }
+        $runPrefix = if ([string]::IsNullOrWhiteSpace($Version)) { "runs" } else { "runs/$Version" }
+        return [pscustomobject]@{ Mode="Maintenance"; Slug=$Slug; Number=$Matches["number"]; DocSlug=$Matches["docSlug"]; Title=$Title; Version=$Version; Branch="maintenance/$versionPrefix$Slug"; RunDir="$runPrefix/$Slug"; TechnicalDoc=$null; UserDoc=$null; TechnicalIndex=$null; UserIndex=$null; Decision="$runPrefix/$Slug/decision.md"; Manifest=$null; Items=@() }
+    }
 
     if ($Mode -eq "Feature") {
         if ($Slug -notmatch "^(?<number>[0-9]{2})-(?<docSlug>[a-z0-9]+(?:-[a-z0-9]+)*)$") {
@@ -241,19 +356,22 @@ function Get-WorkUnitInfo {
             }) -join " "
         }
 
+        $versionPrefix = if ([string]::IsNullOrWhiteSpace($Version)) { "" } else { "$Version-" }
+        $runPrefix = if ([string]::IsNullOrWhiteSpace($Version)) { "runs" } else { "runs/$Version" }
         return [pscustomobject]@{
             Mode = "Feature"
             Slug = $Slug
             Number = $Matches["number"]
             DocSlug = $docSlug
             Title = $Title
-            Branch = "feature/$Slug"
-            RunDir = "runs/$Slug"
+            Version = $Version
+            Branch = "feature/$versionPrefix$Slug"
+            RunDir = "$runPrefix/$Slug"
             TechnicalDoc = "docs/tecnica/$docSlug.md"
             UserDoc = "docs/usuario/$docSlug.md"
             TechnicalIndex = "docs/tecnica/index.md"
             UserIndex = "docs/usuario/index.md"
-            Decision = "runs/$Slug/decision.md"
+            Decision = "$runPrefix/$Slug/decision.md"
             Manifest = $null
             Items = @()
         }
@@ -283,20 +401,41 @@ function Get-WorkUnitInfo {
 
     $itemInfos = @($itemSlugs | ForEach-Object { Get-WorkUnitInfo -Slug $_ -Mode Feature })
 
+    $versionPrefix = if ([string]::IsNullOrWhiteSpace($Version)) { "" } else { "$Version-" }
+    $runPrefix = if ([string]::IsNullOrWhiteSpace($Version)) { "runs" } else { "runs/$Version" }
     return [pscustomobject]@{
         Mode = "Milestone"
         Slug = $Slug
+        Version = $Version
         Number = $null
         DocSlug = $null
         Title = $Title
-        Branch = "milestone/$Slug"
-        RunDir = $runDir
+        Branch = "milestone/$versionPrefix$Slug"
+        RunDir = if ([string]::IsNullOrWhiteSpace($Version)) { $runDir } else { "$runPrefix/milestone-$Slug" }
         TechnicalDoc = $null
         UserDoc = $null
         TechnicalIndex = $null
         UserIndex = $null
-        Decision = "$runDir/decision.md"
-        Manifest = $manifestPath
+        Decision = if ([string]::IsNullOrWhiteSpace($Version)) { "$runDir/decision.md" } else { "$runPrefix/milestone-$Slug/decision.md" }
+        Manifest = if ([string]::IsNullOrWhiteSpace($Version)) { $manifestPath } else { "$runPrefix/milestone-$Slug/work-unit.json" }
         Items = $itemInfos
+    }
+}
+
+function Get-WorkUnitIdentity {
+    param(
+        [Parameter(Mandatory = $true)][string] $Slug,
+        [ValidateSet("Feature", "Milestone", "Maintenance")][string] $Mode = "Feature",
+        [string] $Version = "", [string] $Branch = "", [string] $Worktree = "",
+        [string] $BaseCommit = "", [string] $HeadCommit = "", [int] $PrNumber = 0
+    )
+    $info = Get-WorkUnitInfo -Slug $Slug -Mode $Mode -Version $Version
+    if ([string]::IsNullOrWhiteSpace($Branch)) { $Branch = $info.Branch }
+    [ordered]@{
+        schemaVersion = 2; version = $Version; mode = $Mode.ToLowerInvariant()
+        unitId = $Slug; canonicalSlug = $Slug; branch = $Branch; worktree = $Worktree
+        runPath = $info.RunDir; baseCommit = $BaseCommit; currentHead = $HeadCommit
+        pr = if ($PrNumber -gt 0) { $PrNumber } else { $null }
+        updatedAt = [DateTime]::UtcNow.ToString('o')
     }
 }

@@ -6,8 +6,10 @@ param(
 
     [string] $Branch = "",
 
-    [ValidateSet("Feature", "Milestone")]
+    [ValidateSet("Feature", "Milestone", "Maintenance")]
     [string] $Mode = "Feature",
+
+    [string] $Version = "",
 
     [string] $BaseBranch = "",
 
@@ -29,6 +31,19 @@ param(
     [switch] $SkipLocalCleanup,
 
     [switch] $CommentOnFailure
+
+    ,
+    [switch] $PreAuthorizedHumanMerge,
+
+    [string] $AuthorizationPath = ""
+
+    ,
+    [ValidateSet("SingleMaintainer", "MultiMaintainer")]
+    [string] $GovernanceMode = "MultiMaintainer",
+
+    [string] $IndependentReviewPath = "",
+
+    [string] $IntegrityEvidencePath = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -270,11 +285,21 @@ function Wait-PrChecks {
             "--json", "bucket,completedAt,link,name,startedAt,state,workflow"
         ) -AllowedExitCodes @(0, 1, 8)
 
-        $checks = if ([string]::IsNullOrWhiteSpace($result.Text)) {
-            @()
+        try {
+            $checks = if ([string]::IsNullOrWhiteSpace($result.Text)) {
+                @()
+            }
+            else {
+                ConvertTo-ObjectArray ($result.Text | ConvertFrom-Json)
+            }
         }
-        else {
-            ConvertTo-ObjectArray ($result.Text | ConvertFrom-Json)
+        catch {
+            # GitHub puede devolver una respuesta transitoria no JSON mientras
+            # recalcula checks tras synchronize. Se reintenta dentro del
+            # presupuesto; nunca se interpreta como verde.
+            Write-Warning "Respuesta transitoria de gh pr checks; se reintenta: $($_.Exception.Message)"
+            Start-Sleep -Seconds $PollSeconds
+            continue
         }
 
         $lastRelevantChecks = @($checks | Where-Object { $_.workflow -ne $IgnoredWorkflowName })
@@ -309,7 +334,8 @@ function Wait-PrChecks {
 }
 
 if ([string]::IsNullOrWhiteSpace($Branch)) {
-    $Branch = if ($Mode -eq "Milestone") { "milestone/$Slug" } else { "feature/$Slug" }
+    $versionPrefix = if ([string]::IsNullOrWhiteSpace($Version)) { "" } else { "$Version-" }
+    $Branch = if ($Mode -eq "Milestone") { "milestone/$versionPrefix$Slug" } elseif ($Mode -eq "Maintenance") { "maintenance/$versionPrefix$Slug" } else { "feature/$versionPrefix$Slug" }
 }
 
 if ([string]::IsNullOrWhiteSpace($BaseBranch)) {
@@ -338,14 +364,76 @@ if ($pr.headRefName -ne $Branch) {
     throw "La PR '$prRef' pertenece a head '$($pr.headRefName)', no a '$Branch'."
 }
 
-if ($pr.reviewDecision -ne "APPROVED") {
+function Assert-PreAuthorizedHumanMerge {
+    param([Parameter(Mandatory = $true)][string] $Path, [Parameter(Mandatory = $true)][string] $ExpectedScope)
+    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) { throw "No existe la autorizacion previa requerida: $Path" }
+    $authorization = Get-Content -LiteralPath $Path -Raw -Encoding UTF8
+    if ($authorization -notmatch '(?m)^decision:\s*MERGE\s*$' -or
+        $authorization -notmatch "(?m)^scope:\s*$([regex]::Escape($ExpectedScope))\s*$" -or
+        $authorization -notmatch '(?m)^phase:\s*(?:02|03|04|13|14|15|17)\s*$' -or
+        $authorization -notmatch '(?m)^authorizedBy:\s*user-instruction\s*$') {
+        throw "La autorizacion previa no tiene el formato/scope esperado para $ExpectedScope."
+    }
+}
+
+function Assert-SingleMaintainerEvidence {
+    param(
+        [Parameter(Mandatory=$true)][string] $ReviewPath,
+        [Parameter(Mandatory=$true)][string] $IntegrityPath,
+        [Parameter(Mandatory=$true)][string] $ExpectedHead,
+        [Parameter(Mandatory=$true)][string] $ExpectedBase,
+        [Parameter(Mandatory=$true)][string] $ExpectedScope
+    )
+    if (-not (Test-Path -LiteralPath $ReviewPath -PathType Leaf)) {
+        throw "SingleMaintainer requiere Reviewer independiente vigente: $ReviewPath"
+    }
+    $review = Get-Content -LiteralPath $ReviewPath -Raw -Encoding UTF8
+    if ($review -notmatch '(?m)^status:\s*approved\s*$' -or
+        $review -notmatch "(?m)^scope:\s*$([regex]::Escape($ExpectedScope))\s*$" -or
+        ($review -notmatch "(?m)^head:\s*$([regex]::Escape($ExpectedHead))\s*$" -and $review -notmatch '(?m)^head:\s*HEAD\s*$') -or
+        $review -notmatch "(?m)^base:\s*$([regex]::Escape($ExpectedBase))\s*$") {
+        throw "Reviewer independiente ausente, rechazado o stale para '$ExpectedScope'."
+    }
+    if (-not (Test-Path -LiteralPath $IntegrityPath -PathType Leaf)) {
+        throw "SingleMaintainer requiere evidencia check-integrity PASS: $IntegrityPath"
+    }
+    $integrity = Get-Content -LiteralPath $IntegrityPath -Raw -Encoding UTF8
+    if ($integrity -notmatch '(?im)\bPASS\b' -or $integrity -match '(?im)\b(?:FAIL|TIMEOUT|ERROR)\b') {
+        throw "La evidencia de integridad no es PASS vigente: $IntegrityPath"
+    }
+}
+
+$preauthorized = $false
+if ($PreAuthorizedHumanMerge) {
+    if ([string]::IsNullOrWhiteSpace($AuthorizationPath)) { throw "-AuthorizationPath es obligatorio con -PreAuthorizedHumanMerge." }
+    Assert-PreAuthorizedHumanMerge -Path $AuthorizationPath -ExpectedScope $Slug
+    $preauthorized = $true
+    Write-Host "==> Autorizacion humana previa explicita validada para '$Slug'.
+Se conserva la aprobacion HITL normal como requisito por defecto."
+}
+
+if ($GovernanceMode -eq "SingleMaintainer") {
+    if (-not $preauthorized) {
+        throw "SingleMaintainer requiere autorización humana scoped explícita; no se fabrica self-review."
+    }
+    if ([string]::IsNullOrWhiteSpace($IndependentReviewPath) -or [string]::IsNullOrWhiteSpace($IntegrityEvidencePath)) {
+        throw "SingleMaintainer requiere -IndependentReviewPath y -IntegrityEvidencePath."
+    }
+    Assert-SingleMaintainerEvidence -ReviewPath $IndependentReviewPath -IntegrityPath $IntegrityEvidencePath -ExpectedHead $pr.headRefOid -ExpectedBase $BaseBranch -ExpectedScope $Slug
+    Write-Host "==> governance_mode: single-maintainer; approval_basis: scoped-human-authorization + independent-agent-review + CI + integrity"
+}
+else {
+    Write-Host "==> governance_mode: multi-maintainer; approval_basis: GitHub human review + CI + integrity"
+}
+
+if (-not $preauthorized -and $pr.reviewDecision -ne "APPROVED") {
     throw "La PR '$prRef' todavia no tiene aprobacion HITL. reviewDecision=$($pr.reviewDecision)."
 }
 
-Write-Host "==> Aprobacion HITL confirmada. Verificando que siga vigente sobre el commit actual..."
-$latestApprovedCommit = Get-LatestApprovedReviewCommit -GitHubCliPath $ghPath -PrNumber $pr.number
+Write-Host "==> Verificando autorizacion vigente sobre el commit actual..."
+$latestApprovedCommit = if ($preauthorized) { $pr.headRefOid } else { Get-LatestApprovedReviewCommit -GitHubCliPath $ghPath -PrNumber $pr.number }
 
-if ([string]::IsNullOrWhiteSpace($latestApprovedCommit) -or $latestApprovedCommit -ne $pr.headRefOid) {
+    if (-not $preauthorized -and ([string]::IsNullOrWhiteSpace($latestApprovedCommit) -or $latestApprovedCommit -ne $pr.headRefOid)) {
     $reportPath = Write-GateReport `
         -Slug $Slug `
         -Status "rejected" `
@@ -401,7 +489,7 @@ $successReport = Write-GateReport `
     -Slug $Slug `
     -Status "approved" `
     -Feedback @(
-        "PR $prRef aprobada por HITL, checks post-aprobacion verdes y merge ejecutado.",
+        $(if ($preauthorized) { "Autorizacion humana previa explicita validada para esta ejecucion; no se uso auto-aprobacion de GitHub." } else { "PR $prRef aprobada por HITL, checks post-aprobacion verdes y merge ejecutado." }),
         "El cierre remoto de ROADMAP queda a cargo de post-merge-close-feature.yml."
     ) `
     -Details $checks.Details
@@ -426,6 +514,7 @@ $cleanupArgs = @(
     "-Slug", $Slug,
     "-Branch", $Branch,
     "-Mode", $Mode,
+    "-Version", $Version,
     "-PollSeconds", $LocalCleanupPollSeconds,
     "-MaxMinutes", $LocalCleanupMaxMinutes
 )

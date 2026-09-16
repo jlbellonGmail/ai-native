@@ -352,3 +352,26 @@ descripción fija del estado de una única etapa.
   `snapshot`, no sincronizado" arriba); una vez que `main` exista, la
   relación entre ambas ramas sigue siendo exclusivamente vía PR de
   release humana, no un mecanismo automático adicional.
+
+## Decisión: fundamentos v2 compatibles con v1.1.0
+
+Se elige `CONSTITUTION.md` en la raíz antes de materializar sus reglas:
+expresa principios normativos estables y es descubrible sin añadir una
+jerarquía. `CONSTITUTION.md` sería igualmente posible, pero sugeriría otra
+capa de gobierno sin una necesidad distinta. No se crean ambos archivos.
+AGENTS conserva comportamiento persistente; el documento de principios
+conserva invariantes y remite al diseño para su aplicación verificable.
+
+La Fase 00 agrega fundamentos documentales y un procedimiento temporal de
+supervisión con las herramientas existentes. No agrega un ejecutable vacío:
+no existe todavía `template run`. Las decisiones de diseño y compatibilidad
+se concentran en [Fundamentos v2](fundamentos-v2.md), sin redefinir el stack.
+El motor v1, sus cinco etapas, artefactos y gates siguen vigentes hasta que
+una fase posterior demuestre y apruebe su sustitución incremental. Los tres
+roles conceptuales futuros son capacidades, no nombres de proveedores.
+
+La base estable es v1.1.0; el expediente de bootstrap registra objetos Git
+y árbol exactos. La integración se hace por PR de gobernanza desde develop,
+sin tocar main ni tags. No se cambia el modelo snapshot de adopción ni se
+migra automáticamente ningún proyecto consumidor. Se descarta reemplazar
+ahora scripts maduros: no existe evidencia comparativa que lo justifique.

@@ -1,5 +1,65 @@
 # Proyecto: template
 
+## Roles canónicos (F03)
+
+La arquitectura conceptual tiene tres roles definidos por capacidad:
+**Planner** interpreta intención, consume ASSESS y planifica SDD; **Builder**
+materializa cambios y evidencia sin autoaprobarse; **Reviewer** valida de forma
+independiente y reúne spec review, QA y code review según riesgo. Los modelos,
+proveedores y herramientas son adaptadores intercambiables. Los nombres
+históricos `analyst-agent`, `qa-agent` y `code-reviewer-agent` sólo existen como
+aliases de migración en el router y artefactos v1.1; no son roles canónicos.
+
+ASSESS y `materialize-sdd.ps1` siguen siendo determinísticos: clasifican riesgo
+y profundidad LIGHT/STANDARD/FULL; los roles consumen esa salida y no la
+reimplementan. Formato, archivos, estados, tests, CI y lifecycle permanecen en
+scripts/gates. La coordinación iterativa de convergencia pertenece a F04.
+
+### Convergencia F04
+
+La coordinación normal es Builder → validación determinística → Reviewer →
+feedback estructurado → Builder. `scripts/convergence.ps1` consume ASSESS y
+la profundidad SDD sin reclasificarlos; registra findings, progreso y un
+presupuesto proporcional LIGHT/STANDARD/FULL. Builder no puede aprobarse a sí
+mismo y Reviewer valida siempre el estado vigente. Planner sólo reingresa si
+Reviewer marca una decisión material, ambigüedad, contradicción o cambio de
+alcance; los bloqueos externos y fallos técnicos terminan de forma segura.
+
+### Evidencia adaptativa F05
+
+Las unidades v2 que materializan `runs/<version>/<slug>/sdd.json` usan el
+contrato declarativo de `scripts/feature-contract.ps1`: SUMMARY.md es siempre
+la entrada humana. LIGHT exige sólo SUMMARY y review vigente; STANDARD agrega
+intención/plan, QA y documentación; FULL agrega tasks, decisión, auditoría y
+validaciones reforzadas. Los artefactos no exigidos pueden no existir y nunca
+se crean placeholders. La ausencia de `sdd.json` conserva el contrato legacy.
+`ready-for-pr.ps1` consume la misma política; JSON/JSONL es evidencia máquina.
+
+## Transición a v2: vigencia y dirección
+
+Leer también [CONSTITUTION.md](CONSTITUTION.md), fuente de principios normativos.
+La Fase 00 dejó el diseño técnico v2 en [fundamentos-v2](docs/tecnica/fundamentos-v2.md).
+CONSTITUTION contiene los principios; ROADMAP dirige el trabajo y STATUS
+resume la reentrada sin sustituir evidencia real.
+
+El motor de cinco agentes, sus contratos y los scripts descritos abajo siguen
+vigentes para Feature/Milestone. La Fase 02 agrega SDD adaptativo opt-in:
+`scripts/materialize-sdd.ps1` consume la salida de ASSESS y materializa LIGHT,
+STANDARD o FULL sin relajar el contrato v1. Planner/Builder/Reviewer y el
+supervisor siguen siendo arquitectura objetivo; no se activan capacidades de
+Fases posteriores por este texto.
+Cada sustitución exige su fase, pruebas y PR; no se omiten gates v1 invocando
+principios v2. El bootstrap Fase 00 es gobernanza `chore/*` y sigue el ciclo
+funcional Planner → Reviewer → Builder → verificación → Reviewer autorizado
+por el pedido humano, sin checkpoints humanos intermedios.
+
+Resolver inspección, aislamiento, implementación, tests, correcciones y PR
+autónomamente dentro del alcance autorizado. Escalar sólo decisiones materiales
+sin evidencia, riesgos significativos, información indispensable ausente o
+conflictos irresolubles; registrar el estado y la acción exacta necesaria.
+Los nombres de herramientas de la configuración vigente no definen roles
+conceptuales del Template. No editar adaptadores generados manualmente.
+
 Template base para arrancar un proyecto nuevo ya con un circuito
 agéntico AI-Native funcionando: analista → auditor → implementador → QA →
 code reviewer, con un único punto de intervención humana (la decisión de
@@ -20,6 +80,13 @@ agente debe asumir tecnología, framework o dependencia no declarada
 explícitamente.
 
 ## Estructura del repo
+
+Las unidades nuevas pueden declarar identidad completa con
+`start-work-unit.ps1 -Version v2.0.0 -Mode Feature -Slug 08-arquitectura-roles`.
+Eso produce `feature/v2.0.0-08-arquitectura-roles`, el worktree
+`../worktrees/v2.0.0-08-arquitectura-roles/` y el run
+`runs/v2.0.0/08-arquitectura-roles/`. La omisión de `-Version` conserva la
+interfaz legacy para unidades históricas.
 
 - `runs/`: artefactos por feature (`spec.md`, `plan.md`, `tasks.md`,
   `audit-N.md`, `test-report-N.md`, `code-review-N.md`, `decision.md`, y
@@ -619,7 +686,7 @@ cuándo hacerlo). Es un evento manual, con esta secuencia:
   `develop` y `main`) y los tres **gate obligatorio con el mismo nivel
   de exigencia** antes de mergear cualquier PR (paso 7 del circuito) —
   para `circuit-tests`/`product-tests` es decisión confirmada por el
-  humano en Fase CLARIFY (ver `runs/04-ci-wiring-product-tests/spec.md`,
+  humano en Fase CLARIFY (ver `runs/v1.1.0/04-ci-wiring-product-tests/spec.md`,
   sección "Clarificaciones realizadas"); para `local-reconciler-tests`
   es decisión explícita del humano al cerrar F-003 de la reauditoría
   final v1.1 (ningún `continue-on-error` ni mecanismo equivalente que
@@ -887,7 +954,7 @@ otro proyecto sin adaptarlas.
   a `develop`... ni, una vez que exista, nunca directo a `main`") — esta
   decisión pasó por
   Fase CLARIFY con el humano (ver
-  `runs/05-operational-readiness-docs/decision.md`), no es un supuesto
+  `runs/v1.1.0/05-operational-readiness-docs/decision.md`), no es un supuesto
   unilateral. Requiere permisos de administrador sobre el repositorio y
   un remoto GitHub ya configurado (ver bullet "Remoto GitHub" arriba).
 
