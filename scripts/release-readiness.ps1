@@ -69,7 +69,8 @@ try {
         # evidencia vigente es la ultima ejecucion de cada workflow.
         $runs = @($ci.Text | ConvertFrom-Json | Where-Object { $_.headSha -eq $candidateSha } | Sort-Object createdAt -Descending)
         Assert-Condition ($runs.Count -gt 0) "CI no encontrado para el commit candidato $candidateSha."
-        $latestRuns = @($runs | Group-Object workflowName | ForEach-Object { $_.Group | Select-Object -First 1 })
+        $latestRuns = @($runs | Where-Object { $_.workflowName -eq "CI" } | Group-Object workflowName | ForEach-Object { $_.Group | Select-Object -First 1 })
+        Assert-Condition ($latestRuns.Count -gt 0) "CI requerido no encontrado para el commit candidato $candidateSha."
         $failed = @($latestRuns | Where-Object { $_.status -ne "completed" -or $_.conclusion -ne "success" })
         Assert-Condition ($failed.Count -eq 0) "CI no verde para el commit candidato $candidateSha."
 
