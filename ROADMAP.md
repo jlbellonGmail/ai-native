@@ -29,7 +29,7 @@ Una fase sólo pasa a `[x]` después del merge a `develop`.
 
 ## v2.0.1 — Roadmap activo
 
-- [ ] 23-manual-operativo-agents — reducir y reorganizar AGENTS.md sin perder contratos, controles ni compatibilidad del Template.
+- [-] 23-manual-operativo-agents — reducir y reorganizar AGENTS.md sin perder contratos, controles ni compatibilidad del Template.
 
 ## Intervenciones transversales v2.0.0
 
@@ -57,6 +57,7 @@ alterar tags, commits ni la release congelada.
 - [CONSTITUTION](CONSTITUTION.md) — principios permanentes.
 - [AGENTS](AGENTS.md) — operación del circuito.
 - [STATUS](STATUS.md) — estado actual para reentrada.
+
 
 
 
