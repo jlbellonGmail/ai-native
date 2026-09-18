@@ -21,6 +21,7 @@ def test_release_gate_is_safe_for_the_current_v200_candidate():
                 "CI no encontrado",
                 "Rama incorrecta",
                 "origin/develop no coincide con el commit candidato",
+                "gh no esta disponible",
             )
         )
 
