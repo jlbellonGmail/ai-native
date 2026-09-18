@@ -16,7 +16,12 @@ def test_release_gate_is_safe_for_the_current_v200_candidate():
     else:
         assert any(
             reason in result.stderr
-            for reason in ("ROADMAP incompleto", "CI no encontrado", "Rama incorrecta")
+            for reason in (
+                "ROADMAP incompleto",
+                "CI no encontrado",
+                "Rama incorrecta",
+                "origin/develop no coincide con el commit candidato",
+            )
         )
 
 
