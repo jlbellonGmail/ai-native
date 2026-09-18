@@ -27,6 +27,10 @@ Una fase sólo pasa a `[x]` después del merge a `develop`.
 - [x] 21-validacion-integral-v2 — Fase 16: validación integral v2.
 - [x] 22-auditoria-release-v2 — Fase 17: auditoría y release v2.0.0.
 
+## v2.0.1 — Roadmap activo
+
+- [x] 23-manual-operativo-agents — reducir y reorganizar AGENTS.md sin perder contratos, controles ni compatibilidad del Template.
+
 ## Intervenciones transversales v2.0.0
 
 - [x] T01-normalizacion-documental — normalización documental entre F02 y F03; PR #33 mergeada contra develop, no es una fase funcional ni consume numeración del roadmap.
@@ -53,6 +57,8 @@ alterar tags, commits ni la release congelada.
 - [CONSTITUTION](CONSTITUTION.md) — principios permanentes.
 - [AGENTS](AGENTS.md) — operación del circuito.
 - [STATUS](STATUS.md) — estado actual para reentrada.
+
+
 
 
 

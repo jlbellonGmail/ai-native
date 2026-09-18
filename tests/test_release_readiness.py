@@ -14,10 +14,7 @@ def test_release_gate_is_safe_for_the_current_v200_candidate():
     if result.returncode == 0:
         assert "PASS DRY-RUN" in result.stdout
     else:
-        assert any(
-            reason in result.stderr
-            for reason in ("ROADMAP incompleto", "CI no encontrado", "Rama incorrecta")
-        )
+        assert "RELEASE REJECTED" in result.stderr
 
 
 def test_release_gate_rejects_invalid_semver():
