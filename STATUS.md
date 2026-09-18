@@ -32,18 +32,18 @@ forzó ningún estado.
 
 ## Estado verificado automáticamente
 
-- Actualizado: 2026-09-18T03:43:57Z
+- Actualizado: 2026-09-18T13:14:28Z
 - Versión: v2.0.0
-- Rama: feature/v2.0.1-23-manual-operativo-agents
-- HEAD: 6259f45579427fef4e2ae22df92ac508b20044cc
-- Remoto: https://github.com/jlbellonGmail/template.git
+- Rama: develop
+- HEAD: 14365b52c49e223032ceef2b2cfb6c9146f826f8
+- Remoto: https://github.com/jlbellonGmail/template
 - Working tree: dirty
-- Worktrees: 2
-- Worktrees Git: 2
-- Unidades activas: = [feature/v2.0.1-23-manual-operativo-agents]
+- Worktrees: 3
+- Worktrees Git: 3
+- Unidades activas: ninguna
 - PR activa: UNKNOWN / sin PR abierta
-- CI: UNKNOWN / sin CI verificable
-- CI vigente: UNKNOWN / sin CI verificable
-- Última release: UNKNOWN / no disponible
+- CI:  @ 5f32865ab91eb0e5b62536adf2f674fbf10e62e2
+- CI vigente:  @ 5f32865ab91eb0e5b62536adf2f674fbf10e62e2
+- Última release: v2.0.0
 
 <!-- STATUS:AUTO:END -->
