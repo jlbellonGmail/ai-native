@@ -96,6 +96,15 @@ jobs:
           for sha in $(jq -r '.commits[].id' "$GITHUB_EVENT_PATH"); do
             merged_to_develop=$(gh api "repos/${{ github.repository }}/commits/$sha/pulls" --jq \
               '[.[] | select(.base.ref == "develop" and .merged_at != null)] | length')
+            # GitHub puede tardar en materializar la asociacion del commit
+            # con la PR en el endpoint anterior durante un merge. Confirmar
+            # por el SHA de merge o el SHA de la rama de la PR evita marcar
+            # como push directo una PR legitima sin aceptar ninguna PR no
+            # mergeada ni una base distinta de develop.
+            if [ "$merged_to_develop" = "0" ]; then
+              merged_to_develop=$(gh api "repos/${{ github.repository }}/pulls?state=closed&base=develop&per_page=100" --jq \
+                --arg sha "$sha" '[.[] | select(.base.ref == "develop" and .merged_at != null and (.merge_commit_sha == $sha or .head.sha == $sha))] | length')
+            fi
             if [ "$merged_to_develop" = "0" ]; then
               offending="$sha $offending"
             fi
