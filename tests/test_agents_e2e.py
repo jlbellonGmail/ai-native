@@ -58,6 +58,21 @@ def _load_yaml(name: str) -> str:
     return path.read_text(encoding="utf-8")
 
 
+def _count_collected_tests(output: str) -> int:
+    """Extract the collected-test count from pytest's quiet output."""
+    matches = re.findall(r"(\d+)\s+tests? collected", output, re.IGNORECASE)
+    if matches:
+        return int(matches[0])
+
+    file_counts = re.findall(r"(?m)^tests[\\/].+:\s+(\d+)\s*$", output)
+    if file_counts:
+        return sum(map(int, file_counts))
+
+    raise AssertionError(
+        f"No se pudo contar tests coleccionados, output: {output[:200]}"
+    )
+
+
 @pytest.fixture(scope="session")
 def agents_json():
     """Provide parsed agents.json for all tests."""
@@ -166,7 +181,7 @@ class TestCircuitIntegration:
             f"pytest deberí­a haber recolectado tests, output: {output[:200]}"
 
     def test_196_or_more_tests_approx(self):
-        """Deberí­a haber ~196 tests pytest recolectados (aproximado)."""
+        """La suite debe conservar una cobertura mínima y poder crecer."""
         result = subprocess.run(
             [sys.executable, "-m", "pytest", "--co", "-q"],
             capture_output=True,
@@ -174,23 +189,17 @@ class TestCircuitIntegration:
             cwd=str(PROJECT_ROOT),
             timeout=60,
         )
-        # Count collected tests from output
-        output = result.stdout
-        # Look for "X tests collected"
-        matches = re.findall(r"(\d+)\s+tests? collected", output, re.IGNORECASE)
-        if matches:
-            count = int(matches[0])
-        else:
-            file_counts = re.findall(r"(?m)^tests[\\/].+:\s+(\d+)\s*$", output)
-            assert file_counts, (
-                f"No se pudo contar tests coleccionados, output: {output[:200]}"
-            )
-            count = sum(map(int, file_counts))
-        # Aproximado: la suite crece con cada escenario de lifecycle; evitar
-        # que el propio gate falle por agregar cobertura válida.
-        assert 140 <= count <= 300, (
-            f"Se esperaban ~196 tests, got {count} (fuera de rango esperado)"
+        count = _count_collected_tests(result.stdout)
+        # La suite crece con cada escenario de lifecycle. Sólo se fija un
+        # mínimo para detectar una recolección accidentalmente incompleta;
+        # un techo convertiría la cobertura válida de consumidores en un fallo.
+        assert count >= 140, (
+            f"Se esperaban al menos 140 tests, got {count}"
         )
+
+    def test_collection_count_accepts_legitimate_suite_growth(self):
+        """Una suite válida de más de 300 tests no debe fallar por crecer."""
+        assert _count_collected_tests("303 tests collected") == 303
 
 
 class TestRoadmapState:
