@@ -41,6 +41,12 @@ y distribución verificable mediante Starter y adopción.
 Patch de corrección: el CI vigente sólo considera el workflow de producto
 `CI`, aunque otros workflows fallen sobre el mismo HEAD.
 
+## v2.0.4 — Roadmap activo
+
+Patch de mantenimiento: la suite contractual acepta crecimiento legítimo por
+encima de 300 tests y STATUS consulta el CLI `gh` autenticado aunque no exista
+`GH_TOKEN` en el entorno.
+
 ## Intervenciones transversales v2.0.0
 
 - [x] T01-normalizacion-documental — normalización documental entre F02 y F03; PR #33 mergeada contra develop, no es una fase funcional ni consume numeración del roadmap.
