@@ -36,6 +36,11 @@ Una fase sólo pasa a `[x]` después del merge a `develop`.
 Release de mantenimiento: STATUS actual, reconciliación, integridad histórica
 y distribución verificable mediante Starter y adopción.
 
+## v2.0.3 — Roadmap activo
+
+Patch de corrección: el CI vigente sólo considera el workflow de producto
+`CI`, aunque otros workflows fallen sobre el mismo HEAD.
+
 ## Intervenciones transversales v2.0.0
 
 - [x] T01-normalizacion-documental — normalización documental entre F02 y F03; PR #33 mergeada contra develop, no es una fase funcional ni consume numeración del roadmap.
