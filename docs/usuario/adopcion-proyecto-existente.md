@@ -25,6 +25,18 @@ sección del elemento que te está generando dudas.
 
 ## Cómo recorrer el checklist
 
+Para la infraestructura común mantenida por este Template, el manifest y el
+script oficial permiten verificar que una adopción o Starter no quedó atrás:
+
+```powershell
+pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\sync-template-starter.ps1 `
+  -StarterPath C:\ruta\al\starter -Mode Verify
+```
+
+`Sync` sólo actualiza las rutas declaradas por el manifest. El contenido propio
+del consumidor, su versión, `ROADMAP.md`, `runs/`, releases y `STATUS.md` se
+preservan/regeneran; no se copian snapshots históricos del Template.
+
 El checklist completo, con el detalle técnico de cada colisión y su
 estrategia de resolución, vive en
 [`docs/tecnica/adopcion-proyecto-existente.md`](../tecnica/adopcion-proyecto-existente.md).

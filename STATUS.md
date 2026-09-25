@@ -26,3 +26,24 @@ Estado general: v2.0.1 publicada y congelada. v2.0.0 permanece intacta en
 ## Próximo paso
 
 No iniciar v2.0.2, bootstrap ni instalación limpia en esta tarea.
+
+<!-- STATUS:AUTO:BEGIN -->
+
+## Estado verificado automáticamente
+
+- Actualizado: 2026-09-25T04:41:35.6728651Z
+- Versión de desarrollo: v2.0.1
+- Fuente de versión: ROADMAP.md
+- Rama: maintenance/status-v2.0.1-final
+- HEAD: ff89cf7f3e2d54717b70cc253810db119eccd629
+- Remoto: https://github.com/jlbellonGmail/template.git
+- Relación con remoto: 0	0
+- Working tree: dirty
+- Worktrees Git actuales: 1
+- Unidades activas: ninguna (no hay unidades ACTIVE)
+- PR vigente: #112 https://github.com/jlbellonGmail/template/pull/112 [OPEN, HEAD ff89cf7f3e2d54717b70cc253810db119eccd629]
+- CI vigente: completed/failure @ ff89cf7f3e2d54717b70cc253810db119eccd629
+- Última release publicada: v2.0.1 (publicada 09/18/2026 19:13:49)
+- Último tag: v2.0.1
+
+<!-- STATUS:AUTO:END -->

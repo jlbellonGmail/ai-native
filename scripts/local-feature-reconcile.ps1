@@ -201,6 +201,16 @@ try {
             if (Test-GitSuccess @("rev-parse", "--verify", "--quiet", $Branch)) {
                 Invoke-Checked "git" @("branch", "-d", $Branch)
             }
+            # La limpieza cambia worktrees y ramas reales. STATUS se regenera
+            # sólo después de ambas operaciones, nunca desde runs históricos.
+            $statusScript = Join-Path $PSScriptRoot "update-status.ps1"
+            $statusPath = Join-Path $mainRoot "STATUS.md"
+            if ((Test-Path -LiteralPath $statusScript -PathType Leaf) -and (Test-Path -LiteralPath $statusPath -PathType Leaf)) {
+                $pwsh = (Get-Command pwsh -ErrorAction SilentlyContinue)
+                if (-not $pwsh) { $pwsh = Get-Command powershell.exe -ErrorAction Stop }
+                & $pwsh.Source -NoProfile -ExecutionPolicy Bypass -File $statusScript -RepositoryRoot $mainRoot
+                if ($LASTEXITCODE -ne 0) { throw "Cleanup completado pero no se pudo regenerar STATUS.md." }
+            }
             Write-Host "==> Reconciliacion local completa para $Slug."
             exit 0
         }

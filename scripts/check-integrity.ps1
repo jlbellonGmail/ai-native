@@ -1,5 +1,6 @@
-param([string]$RepositoryRoot="", [string]$WorktreeDir="", [string]$Version="v2.0.0")
+param([string]$RepositoryRoot="", [string]$WorktreeDir="", [string]$Version="")
 $ErrorActionPreference = "Stop"
+. (Join-Path $PSScriptRoot "status-lib.ps1")
 function Git([string[]]$Arguments) {
   $gitCommand = Get-Command git -CommandType Application -ErrorAction Stop | Select-Object -First 1
   $out = & $gitCommand.Source @Arguments 2>&1
@@ -12,6 +13,12 @@ try {
   try {
     $errors = [Collections.Generic.List[string]]::new()
     $warnings = [Collections.Generic.List[string]]::new()
+    if ([string]::IsNullOrWhiteSpace($Version)) {
+      $branch = Git @("branch", "--show-current")
+      $resolved = Get-StatusVersion $root $branch
+      if ([string]::IsNullOrWhiteSpace($resolved.value)) { throw "No se pudo determinar la version para check-integrity; informe -Version explicitamente." }
+      $Version = $resolved.value
+    }
     $roadmap = Get-Content "ROADMAP.md" -Raw -Encoding UTF8
     if ($Version -notmatch '^v[0-9]+\.[0-9]+\.[0-9]+$') { throw "Version invalida: $Version" }
     $v2 = Join-Path $root (Join-Path "runs" $Version)
