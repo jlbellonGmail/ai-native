@@ -16,7 +16,14 @@ Cubre exactamente los 7 elementos que enumera el ítem
 concreta es probable y una guía de merge accionable (fusionar, renombrar,
 mantener ambos, reemplazar, o extender un job/step existente).
 
-Este documento **no automatiza nada**: ninguna colisión se resuelve sola.
+Este documento conserva la resolución manual de colisiones de producto, pero
+la infraestructura compartida del Template sí tiene un contrato verificable:
+`scripts/template-starter-manifest.json` enumera los archivos canónicos y
+`scripts/sync-template-starter.ps1` puede sincronizarlos o detectar drift.
+Ningún estado de `STATUS.md`, `runs/`, GitHub o releases se copia al destino.
+
+Este documento **no automatiza las decisiones de merge**: ninguna colisión de
+producto se resuelve sola.
 La resolución de cada caso la hace el equipo que adopta el template,
 apoyándose opcionalmente en `scripts/check-adoption-conflicts.ps1` (ver
 la sección "Límites del script" más abajo) para saber, antes de copiar
