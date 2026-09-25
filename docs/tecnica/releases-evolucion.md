@@ -23,3 +23,9 @@ Template → release → template-starter → bootstrap limpio
 El Starter contiene infraestructura reusable, no estado del Template. Un
 upgrade preserva versión, ROADMAP, runs y documentación propios del consumidor
 y regenera STATUS desde su repositorio.
+
+## v2.0.3
+
+Corrige la selección del CI vigente: un fallo de un workflow auxiliar, como
+la guardia de rama, no suplanta el resultado del workflow `CI` requerido para
+el HEAD actual.
