@@ -31,11 +31,11 @@ No iniciar v2.0.2, bootstrap ni instalación limpia en esta tarea.
 
 ## Estado verificado automáticamente
 
-- Actualizado: 2026-09-25T11:59:30.6615633Z
+- Actualizado: 2026-09-25T12:15:40.7539149Z
 - Versión de desarrollo: v2.0.1
 - Fuente de versión: ROADMAP.md
 - Rama: maintenance/status-v2.0.1-final
-- HEAD: 59509bb8c7a41ddef580da06ba8669897132ad12
+- HEAD: ad6ff59361c3ecf1dba06f4d2de0f2b50ce28509
 - Remoto: https://github.com/jlbellonGmail/template.git
 - Relación con remoto: 0	0
 - Working tree: dirty
