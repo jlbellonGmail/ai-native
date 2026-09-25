@@ -31,6 +31,11 @@ Una fase sólo pasa a `[x]` después del merge a `develop`.
 
 - [x] 23-manual-operativo-agents — reducir y reorganizar AGENTS.md sin perder contratos, controles ni compatibilidad del Template.
 
+## v2.0.2 — Roadmap activo
+
+Release de mantenimiento: STATUS actual, reconciliación, integridad histórica
+y distribución verificable mediante Starter y adopción.
+
 ## Intervenciones transversales v2.0.0
 
 - [x] T01-normalizacion-documental — normalización documental entre F02 y F03; PR #33 mergeada contra develop, no es una fase funcional ni consume numeración del roadmap.
