@@ -29,3 +29,10 @@ y regenera STATUS desde su repositorio.
 Corrige la selección del CI vigente: un fallo de un workflow auxiliar, como
 la guardia de rama, no suplanta el resultado del workflow `CI` requerido para
 el HEAD actual.
+
+## v2.0.4
+
+Corrige dos problemas de distribución detectados al validar la adopción:
+el gate de recolección no impone un techo artificial al crecimiento de la
+suite, y la semántica de STATUS usa el `gh` autenticado disponible, incluso
+cuando la autenticación proviene del keyring y no de `GH_TOKEN`.
