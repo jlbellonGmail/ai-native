@@ -1,4 +1,4 @@
-param([string]$RepositoryRoot="", [string]$WorktreeDir="", [string]$Version="")
+param([string]$RepositoryRoot="", [string]$WorktreeDir="", [string]$Version="", [switch]$AllowStarter)
 $ErrorActionPreference = "Stop"
 . (Join-Path $PSScriptRoot "status-lib.ps1")
 function Git([string[]]$Arguments) {
@@ -11,6 +11,13 @@ try {
   $root = if ($RepositoryRoot) { [IO.Path]::GetFullPath($RepositoryRoot) } else { [IO.Path]::GetFullPath((Git @("rev-parse","--show-toplevel"))) }
   Push-Location $root
   try {
+    if ($AllowStarter) {
+      $checkStatus = Join-Path $PSScriptRoot "check-status.ps1"
+      & (Get-Command pwsh -ErrorAction SilentlyContinue).Source -NoProfile -ExecutionPolicy Bypass -File $checkStatus
+      if ($LASTEXITCODE -ne 0) { throw "STATUS invalido en starter." }
+      Write-Host "PASS integridad starter: STATUS/Git verificados; no se evaluan evidencias historicas del Template."
+      exit 0
+    }
     $errors = [Collections.Generic.List[string]]::new()
     $warnings = [Collections.Generic.List[string]]::new()
     if ([string]::IsNullOrWhiteSpace($Version)) {
