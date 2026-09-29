@@ -28,3 +28,11 @@ def test_release_script_is_read_only():
     assert "git tag" not in content
     assert "gh release create" not in content
     assert "git push" not in content
+
+
+def test_release_readiness_accepts_promoted_main_tree_in_candidate_history():
+    content = SCRIPT.read_text(encoding="utf-8")
+    assert '"rev-parse", "$mainSha^{tree}"' in content
+    assert '"log", "--format=%T", $candidateSha' in content
+    assert "$candidateTrees -contains $mainTree" in content
+    assert "el contenido de main no esta en la historia de la candidata" in content

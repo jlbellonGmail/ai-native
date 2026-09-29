@@ -82,7 +82,11 @@ try {
         if ($remoteMain.Success) {
             $mainSha = $remoteMain.Groups["sha"].Value
             $ancestor = Invoke-Optional "git" @("merge-base", "--is-ancestor", $mainSha, $candidateSha)
-            Assert-Condition ($ancestor.Code -eq 0) "$TargetBranch y $CandidateBranch incoherentes: main no es ancestro de la candidata."
+            if ($ancestor.Code -ne 0) {
+                $mainTree = Invoke-Git @("rev-parse", "$mainSha^{tree}")
+                $candidateTrees = (Invoke-Git @("log", "--format=%T", $candidateSha)) -split "`n"
+                Assert-Condition ($candidateTrees -contains $mainTree) "$TargetBranch y $CandidateBranch incoherentes: el contenido de main no esta en la historia de la candidata."
+            }
         }
 
         $tag = Invoke-Optional "git" @("rev-parse", "$Version^{commit}")
