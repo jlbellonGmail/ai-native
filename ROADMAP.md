@@ -53,7 +53,7 @@ Patch de estabilización: STATUS-only commits no vuelven stale el snapshot,
 integridad ignora runs no canónicos, y el upgrade oficial de consumidores queda
 versionado por tag explícito y manifest anti-drift.
 
-- [-] 24-estabilizacion-definitiva — estabilización de STATUS/integridad y upgrade oficial de consumidores para v2.0.5.
+- [x] 24-estabilizacion-definitiva — estabilización de STATUS/integridad y upgrade oficial de consumidores para v2.0.5.
 
 ## Intervenciones transversales v2.0.0
 
@@ -81,6 +81,7 @@ alterar tags, commits ni la release congelada.
 - [CONSTITUTION](CONSTITUTION.md) — principios permanentes.
 - [AGENTS](AGENTS.md) — operación del circuito.
 - [STATUS](STATUS.md) — estado actual para reentrada.
+
 
 
 
