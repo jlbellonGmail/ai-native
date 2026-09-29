@@ -47,6 +47,14 @@ Patch de mantenimiento: la suite contractual acepta crecimiento legítimo por
 encima de 300 tests y STATUS consulta el CLI `gh` autenticado aunque no exista
 `GH_TOKEN` en el entorno.
 
+## v2.0.5 — Roadmap activo
+
+Patch de estabilización: STATUS-only commits no vuelven stale el snapshot,
+integridad ignora runs no canónicos, y el upgrade oficial de consumidores queda
+versionado por tag explícito y manifest anti-drift.
+
+- [-] 24-estabilizacion-definitiva — estabilización de STATUS/integridad y upgrade oficial de consumidores para v2.0.5.
+
 ## Intervenciones transversales v2.0.0
 
 - [x] T01-normalizacion-documental — normalización documental entre F02 y F03; PR #33 mergeada contra develop, no es una fase funcional ni consume numeración del roadmap.

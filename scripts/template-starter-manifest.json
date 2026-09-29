@@ -1,5 +1,7 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
+  "templateVersion": "v2.0.5",
+  "templateRepository": "https://github.com/jlbellonGmail/template.git",
   "sharedPaths": [
     "scripts/status-lib.ps1",
     "scripts/update-status.ps1",
@@ -9,8 +11,14 @@
     "scripts/start-work-unit.ps1",
     "scripts/template-starter-manifest.json",
     "scripts/sync-template-starter.ps1",
+    "scripts/upgrade-template-consumer.ps1",
     "docs/tecnica/status-observabilidad.md",
+    "docs/tecnica/adopcion-proyecto-existente.md",
     "docs/usuario/status-observabilidad.md",
-    "tests/test_status_scripts.py"
+    "docs/usuario/adopcion-proyecto-existente.md",
+    "tests/test_status_scripts.py",
+    "tests/test_check_integrity.py",
+    "tests/test_template_starter_sync.py",
+    "tests/test_template_consumer_upgrade.py"
   ]
 }

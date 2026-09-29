@@ -29,12 +29,12 @@ try {
     $roadmap = Get-Content "ROADMAP.md" -Raw -Encoding UTF8
     if ($Version -notmatch '^v[0-9]+\.[0-9]+\.[0-9]+$') { throw "Version invalida: $Version" }
  $runsRoot = Join-Path $root "runs"
- $v2 = Join-Path $runsRoot $Version
  # ROADMAP mezcla unidades históricas de varias releases. La integridad
- # debe resolver su evidencia canónica en todo runs/, no asumir que todas
- # pertenecen a la versión que se está validando.
- $dirs = @(Get-ChildItem $runsRoot -Directory -Recurse -ErrorAction SilentlyContinue)
- $runT = @($dirs | Where-Object { $_.Name -match '^T\d{2}-[a-z0-9]+(?:-[a-z0-9]+)*$' })
+ # resuelve evidencia canónica sólo bajo runs/vX.Y.Z/. Directorios sueltos
+ # como runs/T11-status-auto-commit no son work units del Template.
+ $versionDirs = @(Get-ChildItem $runsRoot -Directory -ErrorAction SilentlyContinue | Where-Object { $_.Name -match '^v\d+\.\d+\.\d+$' })
+ $canonicalRunDirs = @($versionDirs | ForEach-Object { Get-ChildItem -LiteralPath $_.FullName -Directory -ErrorAction SilentlyContinue })
+ $runT = @($canonicalRunDirs | Where-Object { $_.Name -match '^T\d{2}-[a-z0-9]+(?:-[a-z0-9]+)*$' })
     $roadT = @([regex]::Matches($roadmap,'(?m)^-\s+(?:\[[ x-]\]\s+)?(?<id>T\d{2}-[a-z0-9]+(?:-[a-z0-9]+)*)\b.*') | ForEach-Object { $_.Groups["id"].Value })
     if (($roadT | Group-Object | Where-Object Count -gt 1).Count) { [void]$errors.Add("identidad Txx duplicada en ROADMAP.md") }
     $head = Git @("rev-parse","HEAD")
@@ -79,8 +79,7 @@ try {
  $summaries = @(Get-ChildItem $runsRoot -Filter SUMMARY.md -File -Recurse -ErrorAction SilentlyContinue)
     foreach ($match in [regex]::Matches($roadmap,'(?m)^- \[x\] (?<id>[a-z0-9]+-[a-z0-9]+(?:-[a-z0-9]+)*)\b.*?Fase\s+(?<n>\d+)')) {
       $phaseId = $match.Groups["id"].Value
- $phaseDir = Get-ChildItem $runsRoot -Directory -Recurse -ErrorAction SilentlyContinue |
-   Where-Object { $_.Name -eq $phaseId } | Select-Object -First 1
+ $phaseDir = $canonicalRunDirs | Where-Object { $_.Name -eq $phaseId } | Select-Object -First 1
  $phaseSummary = if ($phaseDir) { Join-Path $phaseDir.FullName "SUMMARY.md" } else { "" }
       if (-not (Test-Path $phaseSummary -PathType Leaf) -or [string]::IsNullOrWhiteSpace((Get-Content $phaseSummary -Raw -Encoding UTF8))) {
         $n = [int]$match.Groups["n"].Value
@@ -91,7 +90,7 @@ try {
     $auto = [regex]::Match($status,'(?s)STATUS:AUTO:BEGIN.*?STATUS:AUTO:END')
     if ($auto.Success) {
       $recordedBranch = [regex]::Match($auto.Value,'(?m)^- Rama: (.+)$').Groups[1].Value.Trim()
-      $recordedHead = [regex]::Match($auto.Value,'(?m)^- HEAD: \S+ \((?<sha>[0-9a-f]{40})\)').Groups["sha"].Value
+      $recordedHead = [regex]::Match($auto.Value,'(?m)^- HEAD:\s*(?<sha>[0-9a-f]{7,40})(?:\s|$)').Groups["sha"].Value
       $branch = Git @("branch","--show-current"); $head = Git @("rev-parse","HEAD")
       if ($recordedBranch -ne $branch -or ($recordedHead -and $recordedHead -ne $head)) { [void]$warnings.Add("STATUS:AUTO stale: snapshot=$recordedBranch/$recordedHead actual=$branch/$head") }
     }

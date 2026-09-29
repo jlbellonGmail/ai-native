@@ -13,7 +13,7 @@ $starterRoot = [IO.Path]::GetFullPath($StarterPath)
 $manifestPath = Join-Path $templateRoot 'scripts/template-starter-manifest.json'
 if (-not (Test-Path -LiteralPath $starterRoot -PathType Container)) { throw "No existe StarterPath: $starterRoot" }
 $manifest = Get-Content -LiteralPath $manifestPath -Raw -Encoding UTF8 | ConvertFrom-Json
-if ($manifest.schemaVersion -ne 1) { throw "Manifest de starter no soportado: $manifestPath" }
+if ($manifest.schemaVersion -lt 1 -or $manifest.schemaVersion -gt 2) { throw "Manifest de starter no soportado: $manifestPath" }
 $drift = @()
 foreach ($relative in @($manifest.sharedPaths)) {
     $source = Join-Path $templateRoot $relative

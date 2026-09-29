@@ -18,9 +18,11 @@ mantener ambos, reemplazar, o extender un job/step existente).
 
 Este documento conserva la resolución manual de colisiones de producto, pero
 la infraestructura compartida del Template sí tiene un contrato verificable:
-`scripts/template-starter-manifest.json` enumera los archivos canónicos y
-`scripts/sync-template-starter.ps1` puede sincronizarlos o detectar drift.
-Ningún estado de `STATUS.md`, `runs/`, GitHub o releases se copia al destino.
+`scripts/template-starter-manifest.json` enumera los archivos canónicos.
+`scripts/sync-template-starter.ps1` conserva compatibilidad con Starters y
+`scripts/upgrade-template-consumer.ps1` es el mecanismo oficial para actualizar
+consumidores ya adoptados contra un tag explícito. Ningún estado de
+`STATUS.md`, `ROADMAP.md`, `runs/`, GitHub o releases se copia al destino.
 
 Este documento **no automatiza las decisiones de merge**: ninguna colisión de
 producto se resuelve sola.
@@ -57,6 +59,34 @@ correr `scripts/sync-agentic-adapters.ps1` y
 adaptadores (`.claude/agents/*.md`, `.codex/*.config.toml`,
 `opencode.json`) — esos adaptadores nunca se editan a mano, así que no
 son ellos el punto de fusión: es `.agentic/` como fuente canónica.
+
+## Upgrade oficial de consumidores
+
+Los consumidores no deben depender de scripts externos con versiones o rutas
+locales hardcodeadas. El upgrade oficial se ejecuta desde una copia del
+Template que ya contenga `scripts/upgrade-template-consumer.ps1`:
+
+```powershell
+pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\upgrade-template-consumer.ps1 `
+  -ConsumerPath C:\ruta\al\consumidor `
+  -TemplateSource https://github.com/jlbellonGmail/template.git `
+  -BaselineVersion v2.0.4 `
+  -TargetVersion v2.0.5 `
+  -Mode Apply
+```
+
+El script valida que el consumidor sea un repo Git limpio, que existan los tags
+exactos `BaselineVersion` y `TargetVersion`, que el manifest sea válido y que
+cada ruta compartida del consumidor coincida con el baseline o ya con el target.
+Si detecta drift, archivos faltantes de una adopción previa, trabajo pendiente
+o un tag inexistente, falla antes de copiar. En `Apply` sólo sincroniza las
+rutas declaradas por `sharedPaths`; no elimina archivos ni toca estado local
+del consumidor. Tras copiar, vuelve a comparar contra el target para probar
+anti-drift post-upgrade.
+
+Cuando el consumidor ya tenga un manifest con `templateVersion`, el baseline
+puede inferirse. Para consumidores anteriores a esa metadata, pasar
+`-BaselineVersion` explícitamente es obligatorio y evita defaults ocultos.
 
 ## `scripts/`
 
