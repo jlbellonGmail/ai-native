@@ -12,6 +12,18 @@ function Invoke-StatusGit {
     return (($out | ForEach-Object { $_.ToString() }) -join [Environment]::NewLine).Trim()
 }
 
+function Test-StatusOnlyRange {
+    param([string]$From, [string]$To)
+    if ([string]::IsNullOrWhiteSpace($From) -or [string]::IsNullOrWhiteSpace($To) -or $From -eq $To) { return $false }
+    try {
+        $files = @(Invoke-StatusGit @('diff', '--name-only', "$From..$To"))
+        $names = @($files -split "`r?`n" | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+        return ($names.Count -gt 0 -and @($names | Where-Object { $_ -ne 'STATUS.md' }).Count -eq 0)
+    } catch {
+        return $false
+    }
+}
+
 function Invoke-StatusExternal {
     param([Parameter(Mandatory)][string]$File, [Parameter(Mandatory)][string[]]$Arguments)
     if ([string]::IsNullOrWhiteSpace($File)) { return [pscustomobject]@{ Code = 127; Text = "" } }
@@ -44,7 +56,7 @@ function Get-StatusVersion {
             if ($v -match '^v?(\d+\.\d+\.\d+)$') { $sources += [pscustomobject]@{ Value = "v$($Matches[1])"; Source = $name } }
         }
     }
-    foreach ($path in @(Join-Path $Root "pyproject.toml", (Join-Path $Root "package.json"))) {
+    foreach ($path in @((Join-Path $Root "pyproject.toml"), (Join-Path $Root "package.json"))) {
         if (Test-Path -LiteralPath $path -PathType Leaf) {
             $raw = Get-Content -LiteralPath $path -Raw -Encoding UTF8
             if ($path -like "*package.json" -and $raw -match '"version"\s*:\s*"(\d+\.\d+\.\d+)"') { $sources += [pscustomobject]@{ Value="v$($Matches[1])"; Source=(Split-Path $path -Leaf) } }
