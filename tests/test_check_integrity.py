@@ -8,6 +8,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts" / "check-integrity.ps1"
+UPDATE_STATUS = ROOT / "scripts" / "update-status.ps1"
 
 
 def powershell():
@@ -36,6 +37,13 @@ def run_checker(repo):
     )
 
 
+def run_update_status(repo):
+    return subprocess.run(
+        [powershell(), "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(UPDATE_STATUS)],
+        cwd=repo, text=True, capture_output=True, env=env(), check=False,
+    )
+
+
 def make_repo(tmp_path, roadmap, run_id=None, summary=None):
     repo = tmp_path / "repo"
     repo.mkdir()
@@ -53,6 +61,14 @@ def make_repo(tmp_path, roadmap, run_id=None, summary=None):
     git(repo, "add", ".")
     git(repo, "commit", "-m", "fixture")
     return repo
+
+
+def add_summary(repo, version, run_id, summary):
+    run_dir = repo / "runs" / version / run_id
+    run_dir.mkdir(parents=True, exist_ok=True)
+    (run_dir / "SUMMARY.md").write_text(summary, encoding="utf-8")
+    git(repo, "add", ".")
+    git(repo, "commit", "-m", f"add {run_id}")
 
 
 ROADMAP = "# ROADMAP\n\n## Intervenciones\n- [x] T02-reconciliar-status-paralelo — reconciliación\n"
@@ -76,6 +92,37 @@ def test_orphan_run_fails(tmp_path):
     result = run_checker(repo)
     assert result.returncode == 1
     assert "falta en ROADMAP" in result.stdout
+
+
+def test_non_canonical_txx_run_at_runs_root_is_ignored(tmp_path):
+    repo = make_repo(tmp_path, "# ROADMAP\n\n## Intervenciones\n")
+    run_dir = repo / "runs" / "T11-status-auto-commit"
+    run_dir.mkdir(parents=True)
+    (run_dir / "SUMMARY.md").write_text("# T11 — scratch\n", encoding="utf-8")
+    git(repo, "add", ".")
+    git(repo, "commit", "-m", "scratch run")
+    result = run_checker(repo)
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "T11-status-auto-commit" not in result.stdout
+
+
+def test_status_only_commit_does_not_warn_integrity_stale_status(tmp_path):
+    repo = make_repo(tmp_path, "# ROADMAP\n\n## Intervenciones\n")
+    update = run_update_status(repo)
+    assert update.returncode == 0, update.stdout + update.stderr
+    git(repo, "add", "STATUS.md")
+    git(repo, "commit", "-m", "status auto")
+    result = run_checker(repo)
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "STATUS:AUTO stale" not in result.stdout
+
+
+def test_canonical_orphan_txx_run_still_fails(tmp_path):
+    repo = make_repo(tmp_path, "# ROADMAP\n\n## Intervenciones\n")
+    add_summary(repo, "v2.0.0", "T11-status-auto-commit", "# T11 — orphan\n")
+    result = run_checker(repo)
+    assert result.returncode == 1
+    assert "run Txx 'T11-status-auto-commit' existe pero falta en ROADMAP.md" in result.stdout
 
 
 def test_identity_mismatch_fails(tmp_path):

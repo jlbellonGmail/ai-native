@@ -57,6 +57,29 @@ def test_check_clean_and_dirty(tmp_path):
     assert run(UPDATE, repo).returncode == 0
     assert run(CHECK, repo).returncode == 0
 
+
+def test_status_only_commit_does_not_make_head_stale(tmp_path):
+    repo = make_repo(tmp_path)
+    assert run(UPDATE, repo).returncode == 0
+    git(repo, "add", "STATUS.md")
+    git(repo, "commit", "-m", "status auto")
+    result = run(CHECK, repo)
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "STALE HEAD" not in result.stdout
+
+
+def test_non_status_commit_still_makes_head_stale(tmp_path):
+    repo = make_repo(tmp_path)
+    assert run(UPDATE, repo).returncode == 0
+    git(repo, "add", "STATUS.md")
+    git(repo, "commit", "-m", "status auto")
+    (repo / "code.txt").write_text("change\n", encoding="utf-8")
+    git(repo, "add", "code.txt")
+    git(repo, "commit", "-m", "code change")
+    result = run(CHECK, repo)
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "STALE HEAD" in result.stdout
+
 def test_check_detects_stale_branch(tmp_path):
     repo = make_repo(tmp_path)
     assert run(UPDATE, repo).returncode == 0
@@ -123,3 +146,16 @@ def test_historical_runs_do_not_create_active_units_and_real_worktree_does(tmp_p
     assert snapshot["activeUnits"][0]["source"] == "git-worktree"
     git(repo, "worktree", "remove", str(linked))
     assert json_snapshot(repo)["activeUnits"] == []
+def test_ci_ignores_non_ci_workflows_for_same_head():
+    source = (ROOT / "scripts" / "status-lib.ps1").read_text(encoding="utf-8")
+    assert "Where-Object {$_.workflowName -eq 'CI'}" in source
+
+
+def test_status_only_commit_does_not_report_stale_head(tmp_path):
+    repo = make_repo(tmp_path)
+    assert run(UPDATE, repo).returncode == 0
+    git(repo, "add", "STATUS.md")
+    git(repo, "commit", "-m", "status snapshot")
+    result = run(CHECK, repo)
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "STALE HEAD" not in result.stdout

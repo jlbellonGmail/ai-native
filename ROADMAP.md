@@ -31,6 +31,30 @@ Una fase sólo pasa a `[x]` después del merge a `develop`.
 
 - [x] 23-manual-operativo-agents — reducir y reorganizar AGENTS.md sin perder contratos, controles ni compatibilidad del Template.
 
+## v2.0.2 — Roadmap activo
+
+Release de mantenimiento: STATUS actual, reconciliación, integridad histórica
+y distribución verificable mediante Starter y adopción.
+
+## v2.0.3 — Roadmap activo
+
+Patch de corrección: el CI vigente sólo considera el workflow de producto
+`CI`, aunque otros workflows fallen sobre el mismo HEAD.
+
+## v2.0.4 — Roadmap activo
+
+Patch de mantenimiento: la suite contractual acepta crecimiento legítimo por
+encima de 300 tests y STATUS consulta el CLI `gh` autenticado aunque no exista
+`GH_TOKEN` en el entorno.
+
+## v2.0.5 — Roadmap activo
+
+Patch de estabilización: STATUS-only commits no vuelven stale el snapshot,
+integridad ignora runs no canónicos, y el upgrade oficial de consumidores queda
+versionado por tag explícito y manifest anti-drift.
+
+- [x] 24-estabilizacion-definitiva — estabilización de STATUS/integridad y upgrade oficial de consumidores para v2.0.5.
+
 ## Intervenciones transversales v2.0.0
 
 - [x] T01-normalizacion-documental — normalización documental entre F02 y F03; PR #33 mergeada contra develop, no es una fase funcional ni consume numeración del roadmap.
@@ -57,6 +81,7 @@ alterar tags, commits ni la release congelada.
 - [CONSTITUTION](CONSTITUTION.md) — principios permanentes.
 - [AGENTS](AGENTS.md) — operación del circuito.
 - [STATUS](STATUS.md) — estado actual para reentrada.
+
 
 
 

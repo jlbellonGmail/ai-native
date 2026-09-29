@@ -12,6 +12,18 @@ function Invoke-StatusGit {
     return (($out | ForEach-Object { $_.ToString() }) -join [Environment]::NewLine).Trim()
 }
 
+function Test-StatusOnlyRange {
+    param([string]$From, [string]$To)
+    if ([string]::IsNullOrWhiteSpace($From) -or [string]::IsNullOrWhiteSpace($To) -or $From -eq $To) { return $false }
+    try {
+        $files = @(Invoke-StatusGit @('diff', '--name-only', "$From..$To"))
+        $names = @($files -split "`r?`n" | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+        return ($names.Count -gt 0 -and @($names | Where-Object { $_ -ne 'STATUS.md' }).Count -eq 0)
+    } catch {
+        return $false
+    }
+}
+
 function Invoke-StatusExternal {
     param([Parameter(Mandatory)][string]$File, [Parameter(Mandatory)][string[]]$Arguments)
     if ([string]::IsNullOrWhiteSpace($File)) { return [pscustomobject]@{ Code = 127; Text = "" } }
@@ -44,7 +56,7 @@ function Get-StatusVersion {
             if ($v -match '^v?(\d+\.\d+\.\d+)$') { $sources += [pscustomobject]@{ Value = "v$($Matches[1])"; Source = $name } }
         }
     }
-    foreach ($path in @(Join-Path $Root "pyproject.toml", (Join-Path $Root "package.json"))) {
+    foreach ($path in @((Join-Path $Root "pyproject.toml"), (Join-Path $Root "package.json"))) {
         if (Test-Path -LiteralPath $path -PathType Leaf) {
             $raw = Get-Content -LiteralPath $path -Raw -Encoding UTF8
             if ($path -like "*package.json" -and $raw -match '"version"\s*:\s*"(\d+\.\d+\.\d+)"') { $sources += [pscustomobject]@{ Value="v$($Matches[1])"; Source=(Split-Path $path -Leaf) } }
@@ -106,9 +118,10 @@ function Get-StatusSnapshot {
         $trees=Get-StatusWorktrees (Invoke-StatusGit @('worktree','list','--porcelain')) $primary
         $roadmap=if(Test-Path ROADMAP.md){Get-Content ROADMAP.md -Raw -Encoding UTF8}else{""}
         $units=@($trees | Where-Object {$_.role -eq 'linked'} | ForEach-Object { Get-StatusUnitFromTree $_ $roadmap } | Where-Object { $null -ne $_ })
-        # GitHub is optional for local reentry. CI/PR/release become explicitly
-        # NOT AVAILABLE unless the caller provides an authenticated GH_TOKEN.
-        $gh=if($env:GH_TOKEN){(Get-Command gh -ErrorAction SilentlyContinue).Source}else{$null}
+        # GitHub is optional for local reentry. Use the authenticated gh CLI
+        # when it is installed; GH_TOKEN is not required because gh also
+        # supports its native keyring/browser authentication.
+        $gh=(Get-Command gh -ErrorAction SilentlyContinue).Source
         $repoInfo=Get-StatusGhJson $gh @('repo','view','--json','nameWithOwner')
         $repoName=if($repoInfo.Available){$repoInfo.Value.nameWithOwner}else{$null}
         $prInfo=Get-StatusGhJson $gh @('pr','list','--head',$branch,'--state','open','--json','number,title,url,headRefOid,baseRefName','--limit','10')
@@ -116,7 +129,11 @@ function Get-StatusSnapshot {
         $prValue=if($pr.Count){$pr[0]}else{$null}
         $ciInfo=Get-StatusGhJson $gh @('run','list','--branch',$branch,'--commit',$head,'--limit','20','--json','name,status,conclusion,headSha,url,workflowName,createdAt')
         $runs=if($ciInfo.Available){@($ciInfo.Value | Where-Object {$_.headSha -eq $head})}else{@()}
-        $ci=if($runs.Count){$runs | Sort-Object createdAt -Descending | Select-Object -First 1}else{$null}
+        # Otros workflows (por ejemplo Guard develop branch) pueden fallar
+        # sobre el mismo SHA sin ser el CI de producto. Sólo el workflow CI
+        # determina el campo CI vigente del snapshot.
+        $ciRuns=@($runs | Where-Object {$_.workflowName -eq 'CI'})
+        $ci=if($ciRuns.Count){$ciRuns | Sort-Object createdAt -Descending | Select-Object -First 1}else{$null}
         $relInfo=Get-StatusGhJson $gh @('release','list','--limit','20','--json','tagName,name,publishedAt,isDraft,isPrerelease')
         $release=if($relInfo.Available){@($relInfo.Value | Where-Object {-not $_.isDraft -and -not $_.isPrerelease -and $_.publishedAt} | Sort-Object publishedAt -Descending | Select-Object -First 1)}else{@()}
         $releaseValue=if($release.Count){$release[0]}else{$null}
