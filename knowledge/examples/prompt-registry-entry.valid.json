@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "prompt-registry-entry.v1",
+  "id": "code-generator.system",
+  "owner": {
+    "team": "ai-knowledge",
+    "contact": "knowledge-owner@example.invalid"
+  },
+  "purpose": "Defines the contract for a system prompt used by code generation evaluations.",
+  "version": "1.0.0",
+  "status": "draft",
+  "evaluationSuite": {
+    "id": "enterprise-10-10-prompt-evaluation",
+    "minimumScore": 0.85,
+    "requiredBeforeActivation": true
+  },
+  "prompt": {
+    "role": "system",
+    "content": "You are a code generation assistant evaluated against the ENTERPRISE-10-10 prompt quality rubric.",
+    "variables": ["TASK_CONTEXT", "REPOSITORY_CONTEXT"]
+  },
+  "riskControls": {
+    "promptInjection": "required",
+    "dataBoundary": "internal",
+    "humanReview": "required-before-active"
+  },
+  "governance": {
+    "roadmapTask": "W4-T1",
+    "approvalState": "proposed",
+    "changePolicy": "schema-review-required"
+  }
+}
