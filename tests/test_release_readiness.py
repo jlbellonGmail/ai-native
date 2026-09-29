@@ -28,3 +28,10 @@ def test_release_script_is_read_only():
     assert "git tag" not in content
     assert "gh release create" not in content
     assert "git push" not in content
+
+
+def test_release_readiness_requires_main_commit_as_candidate_ancestor():
+    content = SCRIPT.read_text(encoding="utf-8")
+    assert '"merge-base", "--is-ancestor", $mainSha, $candidateSha' in content
+    assert 'Assert-Condition ($ancestor.Code -eq 0) "$TargetBranch y $CandidateBranch incoherentes: main no es ancestro de la candidata."' in content
+    assert '"log", "--format=%T", $candidateSha' not in content
