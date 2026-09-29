@@ -31,14 +31,14 @@ No iniciar v2.0.2, bootstrap ni instalación limpia en esta tarea.
 
 ## Estado verificado automáticamente
 
-- Actualizado: 2026-09-29T09:01:38.9057318Z
+- Actualizado: 2026-09-29T09:02:41.8139539Z
 - Versión de desarrollo: v2.0.5
 - Fuente de versión: branch
 - Rama: maintenance/v2.0.5-stabilization
-- HEAD: de6aeeb0d88d298f98412f6d9d13dc9ec6df50ce
+- HEAD: cb4f1ef92a9bea5f3c043406456724c18e15eb3f
 - Remoto: https://github.com/jlbellonGmail/template.git
 - Relación con remoto: sin upstream verificable
-- Working tree: dirty
+- Working tree: clean
 - Worktrees Git actuales: 2
 - Unidades activas: ninguna (no hay unidades ACTIVE)
 - PR vigente: ninguna PR abierta para este HEAD
