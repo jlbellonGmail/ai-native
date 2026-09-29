@@ -1,0 +1,279 @@
+{
+  "schemaVersion": "agent-registry-ownership.v1",
+  "roadmapTask": "W5-T4",
+  "description": "Agent registry ownership, governance ownership and approval-chain contract for ENTERPRISE-10-10 W5-T4. This contract governs ownership and accountability only; it does not create IAM, runtime permissions, service authorization, agent activation or evaluation linkage.",
+  "appliesTo": {
+    "entrySchema": "config/agent-registry.schema.json",
+    "storageContract": "registries/agents/registry.storage.json",
+    "capabilityCatalog": "config/agent-registry/capabilities.catalog.json"
+  },
+  "ownershipModel": {
+    "requiredOwnerFields": ["team", "contact"],
+    "subjectTypes": ["registry-index", "agent-skill", "capability"],
+    "roles": [
+      {
+        "id": "agent_owner",
+        "description": "Accountable for agent registry entry purpose, lifecycle stewardship and review readiness."
+      },
+      {
+        "id": "approval_reviewer",
+        "description": "Reviews ownership and approval-chain changes before future activation."
+      },
+      {
+        "id": "capability_steward",
+        "description": "Maintains alignment between ownership records and cataloged capabilities."
+      },
+      {
+        "id": "risk_accountable",
+        "description": "Confirms risk controls are acknowledged before any future runtime activation."
+      },
+      {
+        "id": "registry_steward",
+        "description": "Maintains registry consistency across schema, storage, capability catalog and ownership contracts."
+      }
+    ]
+  },
+  "approvalChain": {
+    "states": ["owner-assigned", "review-required", "steward-review-required", "approved", "deprecated"],
+    "defaultState": "owner-assigned",
+    "activationRule": "human-review-required-before-active",
+    "capabilityChangeRule": "owner-and-capability-steward-review-required",
+    "storageChangeRule": "owner-and-registry-steward-review-required",
+    "runtimeToolChangeRule": "risk-accountable-review-required-before-future-runtime-use",
+    "retirementRule": "owner-acknowledgement-and-registry-update-required",
+    "nonGoals": [
+      "No IAM role is created.",
+      "No runtime permission is granted.",
+      "No agent is approved for execution by this task.",
+      "No W5-T5 evaluation linkage is closed by W5-T4.",
+      "No W5-T6 agent registry audit is closed by W5-T4."
+    ]
+  },
+  "accountability": {
+    "maintenance": "agent_owner",
+    "changeReview": "approval_reviewer",
+    "capabilityConsistency": "capability_steward",
+    "riskControls": "risk_accountable",
+    "registryConsistency": "registry_steward"
+  },
+  "records": [
+    {
+      "id": "agent-skill-index",
+      "subjectType": "registry-index",
+      "sourceStorageEntry": "agent-skill-index",
+      "owner": {
+        "team": "ai-knowledge",
+        "contact": "knowledge-owner@example.invalid"
+      },
+      "roles": {
+        "agent_owner": "ai-knowledge",
+        "approval_reviewer": "ai-knowledge",
+        "capability_steward": "ai-knowledge",
+        "risk_accountable": "ai-knowledge",
+        "registry_steward": "ai-knowledge"
+      },
+      "approvalState": "owner-assigned",
+      "activationApproval": "not-approved",
+      "runtimePermission": "not-granted",
+      "iamProvisioning": "not-created",
+      "accountableCapabilities": ["knowledge-review"],
+      "accountabilityNotes": [
+        "Registry index ownership is recorded for governance accountability.",
+        "Activation remains blocked until future review requirements are satisfied.",
+        "Evaluation linkage remains outside W5-T4."
+      ]
+    },
+    {
+      "id": "api-design",
+      "subjectType": "agent-skill",
+      "sourceStorageEntry": "api-design",
+      "owner": {
+        "team": "ai-knowledge",
+        "contact": "knowledge-owner@example.invalid"
+      },
+      "roles": {
+        "agent_owner": "ai-knowledge",
+        "approval_reviewer": "ai-knowledge",
+        "capability_steward": "ai-knowledge",
+        "risk_accountable": "ai-knowledge",
+        "registry_steward": "ai-knowledge"
+      },
+      "approvalState": "owner-assigned",
+      "activationApproval": "not-approved",
+      "runtimePermission": "not-granted",
+      "iamProvisioning": "not-created",
+      "accountableCapabilities": ["api-design"],
+      "accountabilityNotes": [
+        "Agent skill ownership is recorded for governance accountability.",
+        "Runtime use remains blocked by W5-T4 non-goals.",
+        "Evaluation linkage remains outside W5-T4."
+      ]
+    },
+    {
+      "id": "frontend-design",
+      "subjectType": "agent-skill",
+      "sourceStorageEntry": "frontend-design",
+      "owner": {
+        "team": "ai-knowledge",
+        "contact": "knowledge-owner@example.invalid"
+      },
+      "roles": {
+        "agent_owner": "ai-knowledge",
+        "approval_reviewer": "ai-knowledge",
+        "capability_steward": "ai-knowledge",
+        "risk_accountable": "ai-knowledge",
+        "registry_steward": "ai-knowledge"
+      },
+      "approvalState": "owner-assigned",
+      "activationApproval": "not-approved",
+      "runtimePermission": "not-granted",
+      "iamProvisioning": "not-created",
+      "accountableCapabilities": ["frontend-design"],
+      "accountabilityNotes": [
+        "Agent skill ownership is recorded for governance accountability.",
+        "Runtime use remains blocked by W5-T4 non-goals.",
+        "Evaluation linkage remains outside W5-T4."
+      ]
+    },
+    {
+      "id": "architecture-design",
+      "subjectType": "agent-skill",
+      "sourceStorageEntry": "architecture-design",
+      "owner": {
+        "team": "ai-knowledge",
+        "contact": "knowledge-owner@example.invalid"
+      },
+      "roles": {
+        "agent_owner": "ai-knowledge",
+        "approval_reviewer": "ai-knowledge",
+        "capability_steward": "ai-knowledge",
+        "risk_accountable": "ai-knowledge",
+        "registry_steward": "ai-knowledge"
+      },
+      "approvalState": "owner-assigned",
+      "activationApproval": "not-approved",
+      "runtimePermission": "not-granted",
+      "iamProvisioning": "not-created",
+      "accountableCapabilities": ["architecture-design"],
+      "accountabilityNotes": [
+        "Agent skill ownership is recorded for governance accountability.",
+        "Runtime use remains blocked by W5-T4 non-goals.",
+        "Evaluation linkage remains outside W5-T4."
+      ]
+    },
+    {
+      "id": "code-review",
+      "subjectType": "agent-skill",
+      "sourceStorageEntry": "code-review",
+      "owner": {
+        "team": "ai-knowledge",
+        "contact": "knowledge-owner@example.invalid"
+      },
+      "roles": {
+        "agent_owner": "ai-knowledge",
+        "approval_reviewer": "ai-knowledge",
+        "capability_steward": "ai-knowledge",
+        "risk_accountable": "ai-knowledge",
+        "registry_steward": "ai-knowledge"
+      },
+      "approvalState": "owner-assigned",
+      "activationApproval": "not-approved",
+      "runtimePermission": "not-granted",
+      "iamProvisioning": "not-created",
+      "accountableCapabilities": ["code-review"],
+      "accountabilityNotes": [
+        "Agent skill ownership is recorded for governance accountability.",
+        "Runtime use remains blocked by W5-T4 non-goals.",
+        "Evaluation linkage remains outside W5-T4."
+      ]
+    },
+    {
+      "id": "documentation-generation",
+      "subjectType": "agent-skill",
+      "sourceStorageEntry": "documentation-generation",
+      "owner": {
+        "team": "ai-knowledge",
+        "contact": "knowledge-owner@example.invalid"
+      },
+      "roles": {
+        "agent_owner": "ai-knowledge",
+        "approval_reviewer": "ai-knowledge",
+        "capability_steward": "ai-knowledge",
+        "risk_accountable": "ai-knowledge",
+        "registry_steward": "ai-knowledge"
+      },
+      "approvalState": "owner-assigned",
+      "activationApproval": "not-approved",
+      "runtimePermission": "not-granted",
+      "iamProvisioning": "not-created",
+      "accountableCapabilities": ["documentation-generation"],
+      "accountabilityNotes": [
+        "Agent skill ownership is recorded for governance accountability.",
+        "Runtime use remains blocked by W5-T4 non-goals.",
+        "Evaluation linkage remains outside W5-T4."
+      ]
+    },
+    {
+      "id": "prompt-design",
+      "subjectType": "agent-skill",
+      "sourceStorageEntry": "prompt-design",
+      "owner": {
+        "team": "ai-knowledge",
+        "contact": "knowledge-owner@example.invalid"
+      },
+      "roles": {
+        "agent_owner": "ai-knowledge",
+        "approval_reviewer": "ai-knowledge",
+        "capability_steward": "ai-knowledge",
+        "risk_accountable": "ai-knowledge",
+        "registry_steward": "ai-knowledge"
+      },
+      "approvalState": "owner-assigned",
+      "activationApproval": "not-approved",
+      "runtimePermission": "not-granted",
+      "iamProvisioning": "not-created",
+      "accountableCapabilities": ["prompt-design"],
+      "accountabilityNotes": [
+        "Agent skill ownership is recorded for governance accountability.",
+        "Runtime use remains blocked by W5-T4 non-goals.",
+        "Evaluation linkage remains outside W5-T4."
+      ]
+    },
+    {
+      "id": "requirements-analysis",
+      "subjectType": "agent-skill",
+      "sourceStorageEntry": "requirements-analysis",
+      "owner": {
+        "team": "ai-knowledge",
+        "contact": "knowledge-owner@example.invalid"
+      },
+      "roles": {
+        "agent_owner": "ai-knowledge",
+        "approval_reviewer": "ai-knowledge",
+        "capability_steward": "ai-knowledge",
+        "risk_accountable": "ai-knowledge",
+        "registry_steward": "ai-knowledge"
+      },
+      "approvalState": "owner-assigned",
+      "activationApproval": "not-approved",
+      "runtimePermission": "not-granted",
+      "iamProvisioning": "not-created",
+      "accountableCapabilities": ["requirements-analysis"],
+      "accountabilityNotes": [
+        "Agent skill ownership is recorded for governance accountability.",
+        "Runtime use remains blocked by W5-T4 non-goals.",
+        "Evaluation linkage remains outside W5-T4."
+      ]
+    }
+  ],
+  "governance": {
+    "roadmapTask": "W5-T4",
+    "closes": [
+      "ownership model",
+      "governance ownership",
+      "approval chain"
+    ],
+    "doesNotClose": ["W5-T5", "W5-T6"],
+    "validation": "scripts/validate-agent-registry-ownership.mjs"
+  }
+}

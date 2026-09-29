@@ -1,0 +1,10 @@
+name: Reusable Lint Pipeline
+on:
+  workflow_call:
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Linter
+        run: npm run lint

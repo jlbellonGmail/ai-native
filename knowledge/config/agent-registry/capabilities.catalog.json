@@ -1,0 +1,226 @@
+{
+  "schemaVersion": "agent-capabilities-catalog.v1",
+  "roadmapTask": "W5-T3",
+  "description": "Governed capability catalog for ENTERPRISE-10-10 W5-T3. The catalog defines capability records, source registry bindings and dependency relationships only. It does not implement capabilities, modify agents, grant tools, create ownership approval chains or bind evaluation runtime.",
+  "capabilitySchema": "config/agent-registry.capability.schema.json",
+  "catalogRoot": "config/agent-registry",
+  "capabilitySource": {
+    "storageContract": "registries/agents/registry.storage.json",
+    "sourceBinding": "W5-T2 storage entry ids",
+    "runtimeBinding": "none"
+  },
+  "lifecycle": {
+    "states": ["cataloged", "candidate", "retired"],
+    "initialState": "cataloged",
+    "nonGoals": [
+      "No capability implementation is introduced.",
+      "No existing agent skill file is modified.",
+      "No runtime tool permission is granted.",
+      "No W5-T4 ownership chain is closed.",
+      "No W5-T5 evaluation linkage is closed."
+    ]
+  },
+  "dependencyRules": {
+    "relationshipTypes": ["requires", "supports", "incompatibleWith"],
+    "requiresMustReferenceCatalogedCapability": true,
+    "supportsMustReferenceCatalogedCapability": true,
+    "incompatibleWithMustReferenceCatalogedCapability": true,
+    "requiresGraphMustBeAcyclic": true
+  },
+  "capabilities": [
+    {
+      "id": "requirements-analysis",
+      "title": "Requirements Analysis",
+      "description": "Identifies objectives, actors, constraints and acceptance criteria before downstream agent work is selected.",
+      "category": "discovery",
+      "sourceAgentEntries": ["requirements-analysis"],
+      "lifecycleState": "cataloged",
+      "dependencyModel": {
+        "requires": [],
+        "supports": ["architecture-design", "api-design", "frontend-design", "documentation-generation"],
+        "incompatibleWith": []
+      },
+      "executionPolicy": {
+        "implementationState": "not-implemented-by-W5-T3",
+        "runtimeActivation": "not-granted",
+        "toolGrant": "none"
+      },
+      "governance": {
+        "roadmapTask": "W5-T3",
+        "changePolicy": "catalog-review-required",
+        "doesNotClose": ["W5-T4", "W5-T5", "W5-T6"]
+      }
+    },
+    {
+      "id": "architecture-design",
+      "title": "Architecture Design",
+      "description": "Defines components, responsibilities and module interactions after requirements are known.",
+      "category": "architecture",
+      "sourceAgentEntries": ["architecture-design"],
+      "lifecycleState": "cataloged",
+      "dependencyModel": {
+        "requires": ["requirements-analysis"],
+        "supports": ["api-design", "frontend-design", "documentation-generation", "code-review"],
+        "incompatibleWith": []
+      },
+      "executionPolicy": {
+        "implementationState": "not-implemented-by-W5-T3",
+        "runtimeActivation": "not-granted",
+        "toolGrant": "none"
+      },
+      "governance": {
+        "roadmapTask": "W5-T3",
+        "changePolicy": "catalog-review-required",
+        "doesNotClose": ["W5-T4", "W5-T5", "W5-T6"]
+      }
+    },
+    {
+      "id": "api-design",
+      "title": "API Design",
+      "description": "Frames interface contracts and integration boundaries from approved architectural context.",
+      "category": "interface-design",
+      "sourceAgentEntries": ["api-design"],
+      "lifecycleState": "cataloged",
+      "dependencyModel": {
+        "requires": ["architecture-design"],
+        "supports": ["code-review", "documentation-generation"],
+        "incompatibleWith": []
+      },
+      "executionPolicy": {
+        "implementationState": "not-implemented-by-W5-T3",
+        "runtimeActivation": "not-granted",
+        "toolGrant": "none"
+      },
+      "governance": {
+        "roadmapTask": "W5-T3",
+        "changePolicy": "catalog-review-required",
+        "doesNotClose": ["W5-T4", "W5-T5", "W5-T6"]
+      }
+    },
+    {
+      "id": "frontend-design",
+      "title": "Frontend Design",
+      "description": "Defines user-facing interaction and layout guidance from requirements and architecture context.",
+      "category": "experience-design",
+      "sourceAgentEntries": ["frontend-design"],
+      "lifecycleState": "cataloged",
+      "dependencyModel": {
+        "requires": ["architecture-design"],
+        "supports": ["code-review", "documentation-generation"],
+        "incompatibleWith": []
+      },
+      "executionPolicy": {
+        "implementationState": "not-implemented-by-W5-T3",
+        "runtimeActivation": "not-granted",
+        "toolGrant": "none"
+      },
+      "governance": {
+        "roadmapTask": "W5-T3",
+        "changePolicy": "catalog-review-required",
+        "doesNotClose": ["W5-T4", "W5-T5", "W5-T6"]
+      }
+    },
+    {
+      "id": "code-review",
+      "title": "Code Review",
+      "description": "Evaluates implementation quality, maintainability and standards compliance against known design intent.",
+      "category": "quality-review",
+      "sourceAgentEntries": ["code-review"],
+      "lifecycleState": "cataloged",
+      "dependencyModel": {
+        "requires": ["architecture-design"],
+        "supports": ["documentation-generation", "knowledge-review"],
+        "incompatibleWith": []
+      },
+      "executionPolicy": {
+        "implementationState": "not-implemented-by-W5-T3",
+        "runtimeActivation": "not-granted",
+        "toolGrant": "none"
+      },
+      "governance": {
+        "roadmapTask": "W5-T3",
+        "changePolicy": "catalog-review-required",
+        "doesNotClose": ["W5-T4", "W5-T5", "W5-T6"]
+      }
+    },
+    {
+      "id": "documentation-generation",
+      "title": "Documentation Generation",
+      "description": "Produces structured technical explanation after source requirements, design or review context exists.",
+      "category": "documentation",
+      "sourceAgentEntries": ["documentation-generation"],
+      "lifecycleState": "cataloged",
+      "dependencyModel": {
+        "requires": ["requirements-analysis"],
+        "supports": ["knowledge-review"],
+        "incompatibleWith": []
+      },
+      "executionPolicy": {
+        "implementationState": "not-implemented-by-W5-T3",
+        "runtimeActivation": "not-granted",
+        "toolGrant": "none"
+      },
+      "governance": {
+        "roadmapTask": "W5-T3",
+        "changePolicy": "catalog-review-required",
+        "doesNotClose": ["W5-T4", "W5-T5", "W5-T6"]
+      }
+    },
+    {
+      "id": "prompt-design",
+      "title": "Prompt Design",
+      "description": "Structures model instructions and interaction patterns as reusable prompt guidance for agent work.",
+      "category": "prompt-engineering",
+      "sourceAgentEntries": ["prompt-design"],
+      "lifecycleState": "cataloged",
+      "dependencyModel": {
+        "requires": [],
+        "supports": ["requirements-analysis", "documentation-generation", "knowledge-review"],
+        "incompatibleWith": []
+      },
+      "executionPolicy": {
+        "implementationState": "not-implemented-by-W5-T3",
+        "runtimeActivation": "not-granted",
+        "toolGrant": "none"
+      },
+      "governance": {
+        "roadmapTask": "W5-T3",
+        "changePolicy": "catalog-review-required",
+        "doesNotClose": ["W5-T4", "W5-T5", "W5-T6"]
+      }
+    },
+    {
+      "id": "knowledge-review",
+      "title": "Knowledge Review",
+      "description": "Reviews knowledge artifacts against ENTERPRISE-10-10 governance expectations without activating an agent.",
+      "category": "knowledge-governance",
+      "sourceAgentEntries": ["agent-skill-index"],
+      "lifecycleState": "cataloged",
+      "dependencyModel": {
+        "requires": ["documentation-generation"],
+        "supports": [],
+        "incompatibleWith": []
+      },
+      "executionPolicy": {
+        "implementationState": "not-implemented-by-W5-T3",
+        "runtimeActivation": "not-granted",
+        "toolGrant": "none"
+      },
+      "governance": {
+        "roadmapTask": "W5-T3",
+        "changePolicy": "catalog-review-required",
+        "doesNotClose": ["W5-T4", "W5-T5", "W5-T6"]
+      }
+    }
+  ],
+  "governance": {
+    "roadmapTask": "W5-T3",
+    "closes": [
+      "capability catalog",
+      "capability schema",
+      "dependency model"
+    ],
+    "doesNotClose": ["W5-T4", "W5-T5", "W5-T6"],
+    "validation": "scripts/validate-agent-registry-capabilities.mjs"
+  }
+}

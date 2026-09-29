@@ -1,0 +1,127 @@
+{
+  "schemaVersion": "historical-archive.v1",
+  "roadmapTask": "W8-T2",
+  "taskName": "Historical Archive",
+  "repo": "ai-foundation",
+  "archiveRoot": "_deprecated/2026-06-11",
+  "basedOnInventoryTask": "W8-T1",
+  "governance": {
+    "nextEligibleTask": "W8-T3",
+    "doesNotOpen": ["W8-T3"],
+    "doesNotClose": ["W8-T3", "W8-T4", "W8-T5", "W8-T6"],
+    "deletionAllowed": false,
+    "physicalMoveAllowed": false,
+    "runtimeActivationAllowed": false
+  },
+  "retentionModel": [
+    {
+      "id": "recovery_context",
+      "description": "Tool context and local rules retained for recovery comparison only.",
+      "retention": "retain_until_governance_supersedes"
+    },
+    {
+      "id": "audit_evidence",
+      "description": "Placeholder and legacy governance surfaces retained for audit continuity.",
+      "retention": "retain_for_audit_continuity"
+    },
+    {
+      "id": "runtime_reference",
+      "description": "Legacy runtime fragments retained as historical implementation reference.",
+      "retention": "retain_reference_only"
+    },
+    {
+      "id": "product_history",
+      "description": "Historical product scope and source-analysis material retained as product context.",
+      "retention": "retain_historical_context"
+    }
+  ],
+  "archiveEntries": [
+    {
+      "path": "_deprecated/2026-06-11/ai-context",
+      "retentionClass": "recovery_context",
+      "archivalState": "retained_in_place",
+      "activeUseAllowed": false,
+      "deletionAllowed": false
+    },
+    {
+      "path": "_deprecated/2026-06-11/antigravity-local-rules",
+      "retentionClass": "recovery_context",
+      "archivalState": "retained_in_place",
+      "activeUseAllowed": false,
+      "deletionAllowed": false
+    },
+    {
+      "path": "_deprecated/2026-06-11/empty-telemetry-placeholders",
+      "retentionClass": "audit_evidence",
+      "archivalState": "retained_in_place",
+      "activeUseAllowed": false,
+      "deletionAllowed": false
+    },
+    {
+      "path": "_deprecated/2026-06-11/legacy-ai-error-system",
+      "retentionClass": "runtime_reference",
+      "archivalState": "retained_in_place",
+      "activeUseAllowed": false,
+      "deletionAllowed": false
+    },
+    {
+      "path": "_deprecated/2026-06-11/legacy-ai-pipelines",
+      "retentionClass": "runtime_reference",
+      "archivalState": "retained_in_place",
+      "activeUseAllowed": false,
+      "deletionAllowed": false
+    },
+    {
+      "path": "_deprecated/2026-06-11/legacy-ai-roles",
+      "retentionClass": "runtime_reference",
+      "archivalState": "retained_in_place",
+      "activeUseAllowed": false,
+      "deletionAllowed": false
+    },
+    {
+      "path": "_deprecated/2026-06-11/legacy-ai-runtime",
+      "retentionClass": "runtime_reference",
+      "archivalState": "retained_in_place",
+      "activeUseAllowed": false,
+      "deletionAllowed": false
+    },
+    {
+      "path": "_deprecated/2026-06-11/legacy-ai-workflows",
+      "retentionClass": "runtime_reference",
+      "archivalState": "retained_in_place",
+      "activeUseAllowed": false,
+      "deletionAllowed": false
+    },
+    {
+      "path": "_deprecated/2026-06-11/legacy-governance-bundle",
+      "retentionClass": "audit_evidence",
+      "archivalState": "retained_in_place",
+      "activeUseAllowed": false,
+      "deletionAllowed": false
+    },
+    {
+      "path": "_deprecated/2026-06-11/legacy-product-scope",
+      "retentionClass": "product_history",
+      "archivalState": "retained_in_place",
+      "activeUseAllowed": false,
+      "deletionAllowed": false
+    },
+    {
+      "path": "_deprecated/2026-06-11/source-legacy-analysis",
+      "retentionClass": "product_history",
+      "archivalState": "retained_in_place",
+      "activeUseAllowed": false,
+      "deletionAllowed": false
+    }
+  ],
+  "validators": ["scripts/validate-historical-archive.mjs"],
+  "traceability": [
+    "_deprecated/2026-06-11/README.md",
+    "_deprecated/2026-06-11/legacy-inventory.md",
+    "_deprecated/2026-06-11/legacy-inventory.contract.json",
+    "_deprecated/2026-06-11/historical-archive.md",
+    "_deprecated/2026-06-11/historical-archive.contract.json",
+    "validation/roadmap-coverage.json",
+    "docs/ENTERPRISE-10-10/ROADMAP_TO_FILES.md"
+  ]
+}

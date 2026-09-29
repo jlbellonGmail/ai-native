@@ -1,0 +1,30 @@
+# ENTERPRISE-10-10 Roadmap To Files
+
+`ai-foundation` owns Security Engineering and Observability Engineering product
+implementation. It also contributes base validation and documentation coverage.
+
+| Task | Objective | Real files | Validation | Status | Reason |
+|---|---|---|---|---|---|
+| W1-T1 | CodeQL | `.github/workflows/codeql.yml` | GitHub workflow plus structural check | IMPLEMENTED_BY_EXISTING_FILES | Security scan exists in product CI. |
+| W1-T2 | Trivy | `.github/workflows/trivy.yml` | Workflow presence checked | IMPLEMENTED_BY_EXISTING_FILES | Filesystem and dependency scan workflow exists. |
+| W1-T3 | SBOM | `.github/workflows/sbom.yml` | Workflow presence checked | IMPLEMENTED_BY_EXISTING_FILES | CycloneDX generation path exists. |
+| W1-T4 | Dependency Review | `.github/workflows/dependency-review.yml`, `.github/dependency-review-config.yml` | Workflow/config presence checked | IMPLEMENTED_BY_EXISTING_FILES | Policy enforcement is configured. |
+| W1-T5 | Dependabot | `.github/dependabot.yml` | Config presence checked | IMPLEMENTED_BY_EXISTING_FILES | Automatic dependency update config exists. |
+| W1-T6 | Supply Chain Security | `.github/workflows/supply-chain.yml`, `docs/security/supply-chain.md` | Workflow/doc presence checked | IMPLEMENTED_BY_EXISTING_FILES | Attestation and verification path exists. |
+| W1-T7 | Security Audit Final | `security/enterprise-10-10/security-audit-final.json` | `validate-enterprise-10-10.mjs` | IMPLEMENTED_BY_REPAIR | Final audit maps every security task to product files. |
+| W2-T1 | SLI Definition | `observability/enterprise-10-10/observability-program.json` | `validate-enterprise-10-10.mjs` | IMPLEMENTED_BY_REPAIR | Ten SLI records exist with runtime surfaces. |
+| W2-T2 | SLO Definition | `observability/enterprise-10-10/observability-program.json` | `validate-enterprise-10-10.mjs` | IMPLEMENTED_BY_REPAIR | SLO targets and windows are bound to SLIs. |
+| W2-T3 | Error Budgets | `observability/enterprise-10-10/observability-program.json` | `validate-enterprise-10-10.mjs` | IMPLEMENTED_BY_REPAIR | Error budget formulas are bound to SLOs. |
+| W2-T4 | Metrics Catalog | `observability/enterprise-10-10/observability-program.json` | `validate-enterprise-10-10.mjs` | IMPLEMENTED_BY_REPAIR | Metric names and units are defined. |
+| W2-T5 | Alerting | `observability/enterprise-10-10/observability-program.json` | `validate-enterprise-10-10.mjs` | IMPLEMENTED_BY_REPAIR | Alert conditions are linked to metric records. |
+| W2-T6 | Dashboards | `observability/enterprise-10-10/observability-program.json` | `validate-enterprise-10-10.mjs` | IMPLEMENTED_BY_REPAIR | Dashboard panels are linked to alert/metric records. |
+| W2-T7 | OpenTelemetry Validation | `observability/tracing/opentelemetry-config.ts`, `observability/enterprise-10-10/observability-program.json` | `validate-enterprise-10-10.mjs` | IMPLEMENTED_BY_REPAIR | OTel signals and attributes are defined. |
+| W2-T8 | Observability Audit Final | `observability/README.md`, `scripts/validate-enterprise-10-10.mjs` | Local validation PASS required | IMPLEMENTED_BY_REPAIR | Workstream has product-side validation. |
+| W6-T1 | Contract Testing | `validation/roadmap-coverage.json`, `scripts/validate-structure.mjs` | Structure validator | IMPLEMENTED_BY_REPAIR | Foundation contracts are checked locally. |
+| W7-T1 | README Review | `README.md`, folder READMEs | Structure validator | IMPLEMENTED_BY_REPAIR | Repository is navigable from README. |
+| W7-T3 | Architecture Documentation | `docs/overview/ARCHITECTURE.md` | Structure validator | IMPLEMENTED_BY_EXISTING_FILES | Architecture documentation moved into the active docs surface. |
+| W8-T1 | Legacy Inventory | `_deprecated/2026-06-11/README.md`, `_deprecated/2026-06-11/legacy-inventory.md`, `_deprecated/2026-06-11/legacy-inventory.contract.json`, `scripts/validate-legacy-inventory.mjs`, `validation/roadmap-coverage.json` | `validate-legacy-inventory.mjs`, `validate-structure.mjs` | IMPLEMENTED | Foundation legacy groups are inventoried with owners, classifications, non-deletion guardrails and machine-readable validation while leaving W8-T2 open. |
+| W8-T2 | Historical Archive | `_deprecated/2026-06-11/README.md`, `_deprecated/2026-06-11/historical-archive.md`, `_deprecated/2026-06-11/historical-archive.contract.json`, `scripts/validate-historical-archive.mjs`, `validation/roadmap-coverage.json` | `validate-historical-archive.mjs`, `validate-legacy-inventory.mjs`, `validate-structure.mjs` | IMPLEMENTED | Foundation deprecated material is retained in place with archive policy, retention model, active-use restrictions and machine-readable validation while leaving W8-T3 open. |
+| W8-T3 | Duplicate Detection | `_deprecated/2026-06-11/README.md`, `_deprecated/2026-06-11/duplicate-detection.md`, `_deprecated/2026-06-11/duplicate-detection.contract.json`, `scripts/validate-duplicate-detection.mjs`, `validation/roadmap-coverage.json` | `validate-duplicate-detection.mjs`, `validate-historical-archive.mjs`, `validate-legacy-inventory.mjs`, `validate-structure.mjs` | IMPLEMENTED | Foundation deprecated material has duplication rules, overlap classification and machine-readable validation while leaving W8-T4 open and deleting nothing. |
+| W8-T4 | Obsolete Artifacts | `_deprecated/2026-06-11/README.md`, `_deprecated/2026-06-11/obsolete-artifacts.md`, `_deprecated/2026-06-11/obsolete-artifacts.contract.json`, `scripts/validate-obsolete-artifacts.mjs`, `validation/roadmap-coverage.json` | `validate-obsolete-artifacts.mjs`, `validate-duplicate-detection.mjs`, `validate-historical-archive.mjs`, `validate-legacy-inventory.mjs`, `validate-structure.mjs` | IMPLEMENTED | Foundation deprecated material has obsolete policy, deprecation model, lifecycle rules and machine-readable validation while leaving W8-T5 open and deleting nothing. |
+| W8-T5 | Reference Validation | `scripts/validate-structure.mjs` | Local validation PASS required | IMPLEMENTED_BY_REPAIR | Active files, coverage mappings and empty directories are checked locally. |

@@ -1,0 +1,17 @@
+{
+  "id": "dec_1774414581359_r8r45a",
+  "sessionId": "1774414581353",
+  "agent": "backend-agent",
+  "input": {
+    "email": "test_observabilidad@gi.com"
+  },
+  "output": {
+    "id": "eeb063cc-f4c5-4426-8e6f-aa3cb1f7db5c",
+    "email": "test_observabilidad@gi.com"
+  },
+  "thoughtTrace": "Ejecución de tarea de dominio",
+  "durationMs": 3,
+  "timestamp": "2026-03-25T04:56:21.359Z",
+  "success": true,
+  "integrityHash": "67e863f4c9ff89d539456013a66fb0813fcf72d174fd6494a5b415bcb38cd93e"
+}

@@ -1,0 +1,87 @@
+{
+  "schemaVersion": "obsolete-artifacts.v1",
+  "roadmapTask": "W8-T4",
+  "taskName": "Obsolete Artifacts",
+  "repo": "ai-template",
+  "archiveRoot": "_deprecated/2026-06-11",
+  "basedOnDetectionTask": "W8-T3",
+  "governance": {
+    "nextEligibleTask": "W8-T5",
+    "doesNotOpen": ["W8-T5"],
+    "doesNotClose": ["W8-T5", "W8-T6"],
+    "deletionAllowed": false,
+    "physicalMoveAllowed": false,
+    "runtimeDeletionAllowed": false,
+    "runtimeActivationAllowed": false
+  },
+  "deprecationModel": [
+    {
+      "id": "obsolete_package_artifact",
+      "description": "Archived package manager artifact superseded by active pnpm-lock.yaml."
+    },
+    {
+      "id": "retained_runtime_evidence",
+      "description": "Historical runtime data or logs retained as evidence only."
+    },
+    {
+      "id": "retained_source_analysis",
+      "description": "Historical source analysis retained as product history."
+    },
+    {
+      "id": "retained_local_state",
+      "description": "Local editor/worktree state retained for recovery only."
+    }
+  ],
+  "obsoleteArtifacts": [
+    {
+      "path": "_deprecated/2026-06-11/cursor-worktree-state",
+      "obsoleteClass": "retained_local_state",
+      "lifecycleState": "deprecated_retained",
+      "lifecycleAction": "retain_local_recovery_history",
+      "removalAllowed": false,
+      "runtimeDeletionAllowed": false
+    },
+    {
+      "path": "_deprecated/2026-06-11/runtime-data",
+      "obsoleteClass": "retained_runtime_evidence",
+      "lifecycleState": "deprecated_retained",
+      "lifecycleAction": "retain_inactive_runtime_evidence",
+      "removalAllowed": false,
+      "runtimeDeletionAllowed": false
+    },
+    {
+      "path": "_deprecated/2026-06-11/runtime-logs",
+      "obsoleteClass": "retained_runtime_evidence",
+      "lifecycleState": "deprecated_retained",
+      "lifecycleAction": "retain_inactive_runtime_log_evidence",
+      "removalAllowed": false,
+      "runtimeDeletionAllowed": false
+    },
+    {
+      "path": "_deprecated/2026-06-11/source-legacy-analysis",
+      "obsoleteClass": "retained_source_analysis",
+      "lifecycleState": "deprecated_retained",
+      "lifecycleAction": "retain_historical_source_analysis",
+      "removalAllowed": false,
+      "runtimeDeletionAllowed": false
+    },
+    {
+      "path": "_deprecated/2026-06-11/package-lock.json",
+      "obsoleteClass": "obsolete_package_artifact",
+      "lifecycleState": "deprecated_retained",
+      "lifecycleAction": "retain_package_manager_history",
+      "removalAllowed": false,
+      "runtimeDeletionAllowed": false
+    }
+  ],
+  "validators": ["scripts/validate-obsolete-artifacts.mjs"],
+  "traceability": [
+    "_deprecated/2026-06-11/README.md",
+    "_deprecated/2026-06-11/duplicate-detection.contract.json",
+    "_deprecated/2026-06-11/obsolete-artifacts.md",
+    "_deprecated/2026-06-11/obsolete-artifacts.contract.json",
+    "pnpm-lock.yaml",
+    "validation/roadmap-coverage.json",
+    "docs/ENTERPRISE-10-10/ROADMAP_TO_FILES.md"
+  ]
+}

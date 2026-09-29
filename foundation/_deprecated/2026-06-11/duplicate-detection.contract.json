@@ -1,0 +1,124 @@
+{
+  "schemaVersion": "duplicate-detection.v1",
+  "roadmapTask": "W8-T3",
+  "taskName": "Duplicate Detection",
+  "repo": "ai-foundation",
+  "archiveRoot": "_deprecated/2026-06-11",
+  "basedOnArchiveTask": "W8-T2",
+  "governance": {
+    "nextEligibleTask": "W8-T4",
+    "doesNotOpen": ["W8-T4"],
+    "doesNotClose": ["W8-T4", "W8-T5", "W8-T6"],
+    "deletionAllowed": false,
+    "physicalMoveAllowed": false,
+    "automaticRemovalAllowed": false,
+    "runtimeActivationAllowed": false
+  },
+  "duplicationRules": [
+    {
+      "id": "active_surface_overlap",
+      "description": "Archived material describes a capability that has an active product surface."
+    },
+    {
+      "id": "governance_overlap",
+      "description": "Archived governance material overlaps root governance."
+    },
+    {
+      "id": "historical_only",
+      "description": "Archived material has no active counterpart but remains useful history."
+    },
+    {
+      "id": "placeholder_overlap",
+      "description": "Archived placeholders overlap an active or external ownership surface."
+    }
+  ],
+  "duplicates": [
+    {
+      "path": "_deprecated/2026-06-11/ai-context",
+      "duplicateClass": "historical_only",
+      "activeCounterpart": null,
+      "disposition": "retain_recovery_context",
+      "deletionAllowed": false
+    },
+    {
+      "path": "_deprecated/2026-06-11/antigravity-local-rules",
+      "duplicateClass": "historical_only",
+      "activeCounterpart": null,
+      "disposition": "retain_local_rule_history",
+      "deletionAllowed": false
+    },
+    {
+      "path": "_deprecated/2026-06-11/empty-telemetry-placeholders",
+      "duplicateClass": "placeholder_overlap",
+      "activeCounterpart": "observability",
+      "disposition": "retain_placeholder_evidence",
+      "deletionAllowed": false
+    },
+    {
+      "path": "_deprecated/2026-06-11/legacy-ai-error-system",
+      "duplicateClass": "active_surface_overlap",
+      "activeCounterpart": "runtime",
+      "disposition": "retain_legacy_runtime_reference",
+      "deletionAllowed": false
+    },
+    {
+      "path": "_deprecated/2026-06-11/legacy-ai-pipelines",
+      "duplicateClass": "active_surface_overlap",
+      "activeCounterpart": ".github/workflows",
+      "disposition": "retain_legacy_pipeline_reference",
+      "deletionAllowed": false
+    },
+    {
+      "path": "_deprecated/2026-06-11/legacy-ai-roles",
+      "duplicateClass": "active_surface_overlap",
+      "activeCounterpart": "runtime",
+      "disposition": "retain_legacy_role_reference",
+      "deletionAllowed": false
+    },
+    {
+      "path": "_deprecated/2026-06-11/legacy-ai-runtime",
+      "duplicateClass": "active_surface_overlap",
+      "activeCounterpart": "runtime",
+      "disposition": "retain_legacy_runtime_reference",
+      "deletionAllowed": false
+    },
+    {
+      "path": "_deprecated/2026-06-11/legacy-ai-workflows",
+      "duplicateClass": "active_surface_overlap",
+      "activeCounterpart": ".github/workflows",
+      "disposition": "retain_legacy_workflow_reference",
+      "deletionAllowed": false
+    },
+    {
+      "path": "_deprecated/2026-06-11/legacy-governance-bundle",
+      "duplicateClass": "governance_overlap",
+      "activeCounterpart": "../governance",
+      "disposition": "retain_audit_continuity",
+      "deletionAllowed": false
+    },
+    {
+      "path": "_deprecated/2026-06-11/legacy-product-scope",
+      "duplicateClass": "governance_overlap",
+      "activeCounterpart": "../governance/roadmaps/ENTERPRISE-10-10-ROADMAP.md",
+      "disposition": "retain_historical_scope_reference",
+      "deletionAllowed": false
+    },
+    {
+      "path": "_deprecated/2026-06-11/source-legacy-analysis",
+      "duplicateClass": "historical_only",
+      "activeCounterpart": null,
+      "disposition": "retain_historical_analysis",
+      "deletionAllowed": false
+    }
+  ],
+  "validators": ["scripts/validate-duplicate-detection.mjs"],
+  "traceability": [
+    "_deprecated/2026-06-11/README.md",
+    "_deprecated/2026-06-11/legacy-inventory.contract.json",
+    "_deprecated/2026-06-11/historical-archive.contract.json",
+    "_deprecated/2026-06-11/duplicate-detection.md",
+    "_deprecated/2026-06-11/duplicate-detection.contract.json",
+    "validation/roadmap-coverage.json",
+    "docs/ENTERPRISE-10-10/ROADMAP_TO_FILES.md"
+  ]
+}

@@ -1,0 +1,118 @@
+{
+  "program": "ENTERPRISE-10-10",
+  "workstream": "W2 Observability Engineering",
+  "ownerRepo": "ai-foundation",
+  "status": "PRODUCT_REPAIRED",
+  "records": [
+    {
+      "id": "obs-001-request-success",
+      "surface": "runtime-request",
+      "sli": { "id": "sli-001", "goodEvent": "request.completed", "totalEvent": "request.received", "formula": "good / total" },
+      "slo": { "id": "slo-001", "target": ">= 0.995", "window": "30d" },
+      "errorBudget": { "id": "eb-001", "budgetFormula": "1 - target", "burnFormula": "bad / total" },
+      "metric": { "id": "metric-001", "name": "ai_runtime_request_success_ratio", "unit": "ratio" },
+      "alert": { "id": "alert-001", "condition": "burn_rate_1h > 2 and burn_rate_6h > 1" },
+      "dashboard": { "id": "dash-001", "panel": "Request success ratio and burn rate" },
+      "otel": { "id": "otel-001", "signals": ["counter", "histogram"], "attributes": ["service.name", "operation.name", "outcome"] }
+    },
+    {
+      "id": "obs-002-tool-latency",
+      "surface": "tool-execution",
+      "sli": { "id": "sli-002", "goodEvent": "tool.completed_under_threshold", "totalEvent": "tool.completed", "formula": "good / total" },
+      "slo": { "id": "slo-002", "target": ">= 0.950", "window": "7d" },
+      "errorBudget": { "id": "eb-002", "budgetFormula": "1 - target", "burnFormula": "slow / total" },
+      "metric": { "id": "metric-002", "name": "ai_tool_latency_ms", "unit": "milliseconds" },
+      "alert": { "id": "alert-002", "condition": "p95_latency_ms > 3000 for 15m" },
+      "dashboard": { "id": "dash-002", "panel": "Tool latency p50/p95/p99" },
+      "otel": { "id": "otel-002", "signals": ["histogram"], "attributes": ["tool.name", "tool.result"] }
+    },
+    {
+      "id": "obs-003-evaluation-pass",
+      "surface": "evaluation",
+      "sli": { "id": "sli-003", "goodEvent": "evaluation.passed", "totalEvent": "evaluation.completed", "formula": "passed / completed" },
+      "slo": { "id": "slo-003", "target": ">= 0.970", "window": "30d" },
+      "errorBudget": { "id": "eb-003", "budgetFormula": "1 - target", "burnFormula": "failed / completed" },
+      "metric": { "id": "metric-003", "name": "ai_evaluation_pass_ratio", "unit": "ratio" },
+      "alert": { "id": "alert-003", "condition": "pass_ratio_24h < 0.970" },
+      "dashboard": { "id": "dash-003", "panel": "Evaluation pass ratio by suite" },
+      "otel": { "id": "otel-003", "signals": ["counter"], "attributes": ["suite.id", "evaluation.type"] }
+    },
+    {
+      "id": "obs-004-policy-block",
+      "surface": "policy-gate",
+      "sli": { "id": "sli-004", "goodEvent": "policy.blocked_invalid_action", "totalEvent": "policy.invalid_action_detected", "formula": "blocked / detected" },
+      "slo": { "id": "slo-004", "target": ">= 0.990", "window": "30d" },
+      "errorBudget": { "id": "eb-004", "budgetFormula": "1 - target", "burnFormula": "missed / detected" },
+      "metric": { "id": "metric-004", "name": "ai_policy_block_ratio", "unit": "ratio" },
+      "alert": { "id": "alert-004", "condition": "policy_miss_count > 0 over 1h" },
+      "dashboard": { "id": "dash-004", "panel": "Policy blocks and misses" },
+      "otel": { "id": "otel-004", "signals": ["counter"], "attributes": ["policy.id", "decision"] }
+    },
+    {
+      "id": "obs-005-context-freshness",
+      "surface": "knowledge-context",
+      "sli": { "id": "sli-005", "goodEvent": "context.fresh", "totalEvent": "context.loaded", "formula": "fresh / loaded" },
+      "slo": { "id": "slo-005", "target": ">= 0.980", "window": "30d" },
+      "errorBudget": { "id": "eb-005", "budgetFormula": "1 - target", "burnFormula": "stale / loaded" },
+      "metric": { "id": "metric-005", "name": "ai_context_freshness_ratio", "unit": "ratio" },
+      "alert": { "id": "alert-005", "condition": "freshness_ratio_24h < 0.980" },
+      "dashboard": { "id": "dash-005", "panel": "Context freshness by source" },
+      "otel": { "id": "otel-005", "signals": ["counter"], "attributes": ["context.source", "freshness.state"] }
+    },
+    {
+      "id": "obs-006-cost-control",
+      "surface": "model-usage",
+      "sli": { "id": "sli-006", "goodEvent": "usage.within_budget", "totalEvent": "usage.recorded", "formula": "within_budget / recorded" },
+      "slo": { "id": "slo-006", "target": ">= 0.990", "window": "30d" },
+      "errorBudget": { "id": "eb-006", "budgetFormula": "1 - target", "burnFormula": "over_budget / recorded" },
+      "metric": { "id": "metric-006", "name": "ai_usage_cost_budget_ratio", "unit": "ratio" },
+      "alert": { "id": "alert-006", "condition": "projected_monthly_cost > approved_budget" },
+      "dashboard": { "id": "dash-006", "panel": "Model cost burn and forecast" },
+      "otel": { "id": "otel-006", "signals": ["counter", "histogram"], "attributes": ["model.name", "tenant.id"] }
+    },
+    {
+      "id": "obs-007-retry-recovery",
+      "surface": "resilience",
+      "sli": { "id": "sli-007", "goodEvent": "retry.recovered", "totalEvent": "retry.started", "formula": "recovered / started" },
+      "slo": { "id": "slo-007", "target": ">= 0.900", "window": "7d" },
+      "errorBudget": { "id": "eb-007", "budgetFormula": "1 - target", "burnFormula": "unrecovered / started" },
+      "metric": { "id": "metric-007", "name": "ai_retry_recovery_ratio", "unit": "ratio" },
+      "alert": { "id": "alert-007", "condition": "retry_recovery_ratio_1h < 0.900" },
+      "dashboard": { "id": "dash-007", "panel": "Retry attempts and recovery ratio" },
+      "otel": { "id": "otel-007", "signals": ["counter"], "attributes": ["retry.strategy", "error.type"] }
+    },
+    {
+      "id": "obs-008-incident-retention",
+      "surface": "incident-logging",
+      "sli": { "id": "sli-008", "goodEvent": "incident.persisted", "totalEvent": "incident.created", "formula": "persisted / created" },
+      "slo": { "id": "slo-008", "target": ">= 0.999", "window": "30d" },
+      "errorBudget": { "id": "eb-008", "budgetFormula": "1 - target", "burnFormula": "lost / created" },
+      "metric": { "id": "metric-008", "name": "ai_incident_retention_ratio", "unit": "ratio" },
+      "alert": { "id": "alert-008", "condition": "incident_persist_failures > 0 over 15m" },
+      "dashboard": { "id": "dash-008", "panel": "Incident persistence health" },
+      "otel": { "id": "otel-008", "signals": ["counter"], "attributes": ["incident.severity", "storage.target"] }
+    },
+    {
+      "id": "obs-009-security-scan",
+      "surface": "security-ci",
+      "sli": { "id": "sli-009", "goodEvent": "security_scan.passed", "totalEvent": "security_scan.completed", "formula": "passed / completed" },
+      "slo": { "id": "slo-009", "target": ">= 0.990", "window": "30d" },
+      "errorBudget": { "id": "eb-009", "budgetFormula": "1 - target", "burnFormula": "failed / completed" },
+      "metric": { "id": "metric-009", "name": "ai_security_scan_pass_ratio", "unit": "ratio" },
+      "alert": { "id": "alert-009", "condition": "critical_vulnerability_count > 0" },
+      "dashboard": { "id": "dash-009", "panel": "Security scan pass ratio and vulnerability severity" },
+      "otel": { "id": "otel-009", "signals": ["counter"], "attributes": ["scanner.name", "severity"] }
+    },
+    {
+      "id": "obs-010-template-validation",
+      "surface": "template-scaffold",
+      "sli": { "id": "sli-010", "goodEvent": "template.validation_passed", "totalEvent": "template.validation_completed", "formula": "passed / completed" },
+      "slo": { "id": "slo-010", "target": ">= 0.980", "window": "30d" },
+      "errorBudget": { "id": "eb-010", "budgetFormula": "1 - target", "burnFormula": "failed / completed" },
+      "metric": { "id": "metric-010", "name": "ai_template_validation_pass_ratio", "unit": "ratio" },
+      "alert": { "id": "alert-010", "condition": "template_validation_failures > 0 over 1h" },
+      "dashboard": { "id": "dash-010", "panel": "Template validation health" },
+      "otel": { "id": "otel-010", "signals": ["counter"], "attributes": ["template.id", "validation.stage"] }
+    }
+  ]
+}

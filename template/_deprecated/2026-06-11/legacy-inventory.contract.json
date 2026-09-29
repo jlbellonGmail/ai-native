@@ -1,0 +1,78 @@
+{
+  "schemaVersion": "legacy-inventory.v1",
+  "roadmapTask": "W8-T1",
+  "taskName": "Legacy Inventory",
+  "repo": "ai-template",
+  "inventoryRoot": "_deprecated/2026-06-11",
+  "createdFrom": "2026-06-11 structural realignment",
+  "governance": {
+    "nextEligibleTask": "W8-T2",
+    "doesNotOpen": ["W8-T2"],
+    "doesNotClose": ["W8-T2", "W8-T3", "W8-T4", "W8-T5"],
+    "deletionAllowed": false,
+    "runtimeActivationAllowed": false
+  },
+  "classificationModel": [
+    {
+      "id": "local_worktree_state",
+      "description": "Local editor/worktree state retained for recovery only."
+    },
+    {
+      "id": "runtime_state",
+      "description": "Historical runtime data and logs retained as evidence."
+    },
+    {
+      "id": "legacy_source_analysis",
+      "description": "Historical source analysis knowledge and Supabase fragments."
+    },
+    {
+      "id": "duplicate_package_lock",
+      "description": "Package manager artifact superseded by pnpm-lock.yaml."
+    }
+  ],
+  "inventory": [
+    {
+      "path": "_deprecated/2026-06-11/cursor-worktree-state",
+      "owner": "template-stewards",
+      "classification": "local_worktree_state",
+      "disposition": "retain_recovery_only",
+      "deletionAllowed": false
+    },
+    {
+      "path": "_deprecated/2026-06-11/runtime-data",
+      "owner": "template-stewards",
+      "classification": "runtime_state",
+      "disposition": "retain_historical_evidence",
+      "deletionAllowed": false
+    },
+    {
+      "path": "_deprecated/2026-06-11/runtime-logs",
+      "owner": "template-stewards",
+      "classification": "runtime_state",
+      "disposition": "retain_historical_evidence",
+      "deletionAllowed": false
+    },
+    {
+      "path": "_deprecated/2026-06-11/source-legacy-analysis",
+      "owner": "template-stewards",
+      "classification": "legacy_source_analysis",
+      "disposition": "retain_for_future_archive_review",
+      "deletionAllowed": false
+    },
+    {
+      "path": "_deprecated/2026-06-11/package-lock.json",
+      "owner": "template-stewards",
+      "classification": "duplicate_package_lock",
+      "disposition": "retain_obsolete_evidence",
+      "deletionAllowed": false
+    }
+  ],
+  "validators": ["scripts/validate-legacy-inventory.mjs"],
+  "traceability": [
+    "_deprecated/2026-06-11/README.md",
+    "_deprecated/2026-06-11/legacy-inventory.md",
+    "_deprecated/2026-06-11/legacy-inventory.contract.json",
+    "validation/roadmap-coverage.json",
+    "docs/ENTERPRISE-10-10/ROADMAP_TO_FILES.md"
+  ]
+}

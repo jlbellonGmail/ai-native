@@ -1,0 +1,10 @@
+name: Reusable Security Pipeline
+on:
+  workflow_call:
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan Secrets & Vulnerabilities
+        run: npm run audit

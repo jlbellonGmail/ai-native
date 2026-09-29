@@ -1,0 +1,30 @@
+{
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@opentelemetry/api": "^1.9.1",
+    "@types/node": "^25.5.0",
+    "@types/react": "^19.2.16",
+    "@types/react-dom": "^19.2.3",
+    "eslint": "^10.4.1",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.60.1"
+  },
+  "type": "module",
+  "dependencies": {
+    "next": "^16.2.7",
+    "openai": "^6.33.0",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "pnpm typecheck",
+    "start": "next start",
+    "lint": "eslint .",
+    "test": "echo \"No tests defined in ai-foundation\" && exit 0",
+    "typecheck": "tsc --noEmit",
+    "audit": "node scripts/ai-audit.js",
+    "validate:runtime-observability": "node observability/smoke-tests/validate-runtime-observability-wiring.mjs",
+    "validate:target-repo-security": "node scripts/validate-target-repo-security.mjs"
+  }
+}

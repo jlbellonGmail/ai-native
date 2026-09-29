@@ -1,0 +1,19 @@
+{
+    "mcpServers": {
+        "supabase-postgres": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-postgres",
+                "postgresql://postgres:[PASSWORD]@db.[PROJECT_REF].supabase.co:5432/postgres"
+            ],
+            "env": {
+                "NOTE": "Sustituir [PASSWORD] y [PROJECT_REF] por variables de entorno seguras"
+            },
+            "capabilities": {
+                "introspection": true,
+                "query": "read-only"
+            }
+        }
+    }
+}

@@ -1,0 +1,11 @@
+{
+  "name": "__PROJECT_NAME__",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "validate": "node scripts/validate-ai-native-project.mjs && node scripts/validate-testing-profiles.mjs",
+    "validate:testing-profiles": "node scripts/validate-testing-profiles.mjs",
+    "test:profiles": "node testing/smoke/testing-smoke.mjs"
+  }
+}
