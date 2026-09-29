@@ -30,9 +30,8 @@ def test_release_script_is_read_only():
     assert "git push" not in content
 
 
-def test_release_readiness_accepts_promoted_main_tree_in_candidate_history():
+def test_release_readiness_requires_main_commit_as_candidate_ancestor():
     content = SCRIPT.read_text(encoding="utf-8")
-    assert '"rev-parse", "$mainSha^{tree}"' in content
-    assert '"log", "--format=%T", $candidateSha' in content
-    assert "$candidateTrees -contains $mainTree" in content
-    assert "el contenido de main no esta en la historia de la candidata" in content
+    assert '"merge-base", "--is-ancestor", $mainSha, $candidateSha' in content
+    assert 'Assert-Condition ($ancestor.Code -eq 0) "$TargetBranch y $CandidateBranch incoherentes: main no es ancestro de la candidata."' in content
+    assert '"log", "--format=%T", $candidateSha' not in content

@@ -93,6 +93,7 @@ def test_guard_accepts_commits_from_the_exact_merged_develop_pr_head():
     content = _read_guard_workflow()
     assert 'commits/$AFTER/pulls' in content
     assert 'select(.base.ref == "develop" and .merged_at != null) | .head.sha' in content
+    assert '[ -n "$accepted_pr_head" ]' in content
     assert 'git merge-base --is-ancestor "$sha" "$accepted_pr_head"' in content
     assert 'select(.base.ref == "develop" and .merged_at != null and .merge_commit_sha == $sha) | .head.sha' in content
 
