@@ -1,0 +1,42 @@
+{
+  "projectName": "__PROJECT_NAME__",
+  "preset": "__PROJECT_PRESET__",
+  "generator": "create-ai-native-app",
+  "generatorTask": "AI-NATIVE-HARDENING-V1.1/H2",
+  "baseline": "ai-native-app",
+  "sdd": {
+    "source": "ai-knowledge/sdd",
+    "flow": ["Specify", "Plan", "Implement", "Verify"],
+    "gates": [
+      "SPEC_READY",
+      "PLAN_READY",
+      "IMPLEMENTATION_READY",
+      "VERIFICATION_READY",
+      "DONE"
+    ]
+  },
+  "observability": {
+    "task": "AI-NATIVE-HARDENING-V1.1/H3",
+    "config": "config/observability/runtime-observability.json",
+    "runtimeHelper": "services/infrastructure/observability/runtime-observability.mjs",
+    "defaultMode": "noop",
+    "exportsRemotelyByDefault": false
+  },
+  "testingProfiles": {
+    "task": "AI-NATIVE-HARDENING-V1.1/H4",
+    "catalog": "testing/profiles/testing-profiles.json",
+    "validator": "scripts/validate-testing-profiles.mjs",
+    "smokeCommand": "npm run test:profiles",
+    "defaultExecution": "local"
+  },
+  "securityValidation": {
+    "task": "AI-NATIVE-HARDENING-V1.1/H6",
+    "guide": "docs/security/SECURITY-BOOTSTRAP.md",
+    "remoteControlsRequireTargetEvidence": true,
+    "localValidationIsRemotePass": false
+  },
+  "validation": {
+    "command": "npm run validate",
+    "validator": "scripts/validate-ai-native-project.mjs"
+  }
+}

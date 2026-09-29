@@ -1,0 +1,81 @@
+{
+  "schemaVersion": "contract-testing.v1",
+  "roadmapTask": "W6-T1",
+  "description": "Reusable contract testing model and validation policy for generated projects. This contract defines expected boundary coverage without executing runtime services or closing W6-T2.",
+  "model": {
+    "boundaryTypes": [
+      "http-route",
+      "service",
+      "repository-adapter",
+      "external-provider",
+      "agent-command"
+    ],
+    "requiredContractFields": [
+      "id",
+      "boundaryType",
+      "owner",
+      "inputShape",
+      "outputShape",
+      "negativeCases",
+      "evidence"
+    ],
+    "minimumNegativeCases": 1,
+    "runtimeExecution": "not-required-by-w6-t1",
+    "pipelineExecution": "not-created-by-w6-t1"
+  },
+  "validationPolicy": {
+    "requiredBeforeStableBoundary": true,
+    "allowedEvidence": [
+      "contract-test",
+      "schema",
+      "fixture",
+      "validator"
+    ],
+    "forbiddenAsSoleEvidence": [
+      "manual-note",
+      "governance-archive"
+    ],
+    "changePolicy": "contract-review-required"
+  },
+  "referenceContracts": [
+    {
+      "id": "password-validator.service",
+      "boundaryType": "service",
+      "owner": "template-validation",
+      "inputShape": {
+        "password": "string"
+      },
+      "outputShape": {
+        "is_valid": "boolean",
+        "error_code": "string|null"
+      },
+      "negativeCases": [
+        "too-short-password",
+        "missing-number"
+      ],
+      "evidence": [
+        "validation/tests/README.md",
+        "validation/tests/unit/password-validator-test.ts",
+        "vitest.config.ts"
+      ],
+      "executionStatus": "not-executed-by-w6-t1"
+    }
+  ],
+  "governance": {
+    "roadmapTask": "W6-T1",
+    "closes": [
+      "contract testing model",
+      "testing contract",
+      "validation policy"
+    ],
+    "doesNotClose": [
+      "W6-T2",
+      "W6-T3",
+      "W6-T4",
+      "W6-T5",
+      "W6-T6",
+      "W6-T7"
+    ],
+    "validation": "scripts/validate-contract-testing.mjs"
+  }
+}

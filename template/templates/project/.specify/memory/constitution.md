@@ -1,0 +1,299 @@
+# Project Constitution
+
+## Purpose
+
+This constitution defines the stable Spec-Driven Development principles for this generated project.
+
+This project follows AI-NATIVE operating principles, but it must remain self-contained.
+
+The project must operate from its own repository using:
+
+- AGENTS.md
+- .agents/
+- .specify/
+- specs/
+- governance/
+- source code
+- tests
+- validators
+- documentation
+
+This file is not a roadmap.
+
+This file is not a task tracker.
+
+This file must not contain temporary execution state.
+
+Temporary state belongs in project governance.
+
+---
+
+## Core Principle
+
+Specification is the persistent source of implementation intent.
+
+Governance defines what is active.
+
+Specs define what must be built.
+
+Plans define how it will be built.
+
+Tasks define the executable checklist.
+
+Verification proves completion.
+
+Inspection prevents drift.
+
+Git records what changed.
+
+Human approval records formal acceptance when required.
+
+---
+
+## SDD Mode
+
+This project uses spec-anchored development.
+
+That means:
+
+- every meaningful change must be anchored in a specification
+- important changes must update the relevant spec before implementation
+- code is derived from the spec, not guessed from prompts
+- the spec remains alive during the task
+- implementation must be verified against acceptance criteria
+
+Spec-as-source is not the default mode.
+
+---
+
+## Mandatory SDD Flow
+
+Every executable project task must follow:
+
+1. Constitution
+2. Specify
+3. Plan
+4. Tasks
+5. Implement
+6. Verify
+7. Inspect
+8. Close
+
+No implementation is allowed before Specify and Plan.
+
+No closure is allowed before Verify and Inspect.
+
+---
+
+## Artifact Model
+
+Project SDD artifacts live in:
+
+.specify/
+specs/
+
+The `.specify/` directory contains stable memory and templates.
+
+The `specs/` directory contains task or feature-specific artifacts.
+
+A project task should use this shape:
+
+specs/<task-or-feature-id>/
+├── spec.md
+├── plan.md
+├── tasks.md
+├── verification.md
+└── inspector.md
+
+Do not create a task spec unless project governance confirms the task is active or explicitly requested by the user.
+
+---
+
+## Governance Boundary
+
+Project governance remains the official state machine.
+
+Specs do not replace governance.
+
+Governance owns:
+
+- active roadmap or workstream
+- current task
+- eligibility
+- closure state
+- archive state
+- HITL state
+- final approval
+
+Specs own:
+
+- intent
+- acceptance criteria
+- technical plan
+- task checklist
+- verification evidence
+- inspection evidence
+
+If governance and specs conflict, stop and report the inconsistency.
+
+---
+
+## Project Boundary
+
+This project is not the AI-NATIVE factory.
+
+The agent must not assume that the AI-NATIVE factory workspace exists locally.
+
+External AI-NATIVE standards apply only when explicitly adopted by this project through:
+
+- governance
+- documentation
+- dependencies
+- generated metadata
+- contracts
+- configuration
+- templates
+
+This project must remain understandable from its own repository.
+
+---
+
+## Architecture Discipline
+
+The project architecture must be respected.
+
+If the project defines Clean Architecture, Hexagonal Architecture, layered architecture, modular monolith, service architecture or another structure, the agent must follow it.
+
+Rules:
+
+- keep domain logic in the correct layer
+- keep adapters isolated when applicable
+- avoid cross-layer shortcuts
+- do not bypass public interfaces to make tests pass
+- do not hardcode business rules in the wrong place
+- align tests with the boundary being changed
+
+If architecture is unclear, inspect project documentation before implementing.
+
+---
+
+## Multi-Agent Model
+
+The project supports multi-agent execution through logical roles.
+
+Coordinator:
+Reads governance and specs. Defines scope. Does not write implementation code.
+
+Builder:
+Implements only tasks listed in tasks.md.
+
+Inspector:
+Audits diffs, validations, governance, commits and closure readiness.
+
+Verifier:
+Runs tests, validators and acceptance checks.
+
+One physical agent may perform multiple roles, but the roles must remain logically separate.
+
+---
+
+## Loop Engineering Policy
+
+Controlled loops are allowed only inside the current task.
+
+Allowed loop:
+
+Implement → Verify → Fix → Verify
+
+Limits:
+
+- maximum 3 correction loops unless user approves more
+- no silent scope expansion
+- no silent spec changes
+- no next-task work
+- no bypassing tests
+- no weakening validators
+
+If failure is caused by unclear requirements, stop and request human decision.
+
+If failure is caused by implementation bugs, fix within the current tasks.md.
+
+If failure is caused by plan design, update plan.md before continuing.
+
+---
+
+## Token Discipline
+
+The project must reduce token usage by structure, not by losing rigor.
+
+Rules:
+
+- stable rules belong in AGENTS.md and this constitution
+- procedures belong in skills
+- task intent belongs in specs
+- task state belongs in governance
+- prompts must stay compact
+- agents must read narrow files before broad files
+- agents must summarize evidence instead of dumping logs
+
+---
+
+## Validation Principle
+
+A task is not complete because the agent says it is complete.
+
+A task is complete only when:
+
+- acceptance criteria are satisfied
+- relevant validations pass
+- diff is inspected
+- governance is consistent
+- commits are auditable
+- residual risks are documented
+- human approval is recorded when required
+
+---
+
+## Human Responsibility
+
+AI agents execute.
+
+The human remains accountable for product direction, final approval and risk acceptance.
+
+Power without control is not acceptable.
+
+<!-- AI_NATIVE_PROJECT_DELIVERY_GOVERNANCE_POLICY_START -->
+
+---
+
+## Delivery Governance Policy
+
+Every executable project task is treated as one feature unless project governance explicitly defines it as audit-only, documentation-only or governance-only.
+
+A feature must have a clear boundary across:
+
+- governance
+- specs
+- git
+- branch or worktree
+- validation
+- documentation
+- Security by Design
+- DevSecOps
+- observability / monitoring
+- Engram checkpoint when available
+- MCP context usage when available
+- closure evidence
+- human approval when required
+
+Git records what changed.
+
+GitHub records remote collaboration and external verification when configured.
+
+GitHub Actions provides external CI evidence when configured.
+
+Worktrees may isolate risky, parallel or recovery work.
+
+Engram and MCP are context-efficiency tools. They reduce token and context-window pressure, but they do not replace project governance, git or validators.
+
+<!-- AI_NATIVE_PROJECT_DELIVERY_GOVERNANCE_POLICY_END -->
