@@ -2,8 +2,10 @@
 
 Este documento conserva únicamente decisiones técnicas, matriz de
 compatibilidad y criterios verificables. Los principios permanentes viven en
-[CONSTITUTION](../../CONSTITUTION.md); la operación en [AGENTS](../../AGENTS.md);
-el backlog en [ROADMAP](../../ROADMAP.md) y el estado en [STATUS](../../STATUS.md).
+[CONSTITUTION](https://github.com/jlbellonGmail/template/blob/main/CONSTITUTION.md);
+la operación en [AGENTS](https://github.com/jlbellonGmail/template/blob/main/AGENTS.md);
+el backlog en [ROADMAP](https://github.com/jlbellonGmail/template/blob/main/ROADMAP.md)
+y el estado en [STATUS](https://github.com/jlbellonGmail/template/blob/main/STATUS.md).
 
 Estado: diseño de Fase 00; motor ejecutable v1 vigente y SDD adaptativo
 habilitado de forma opt-in desde Fase 02. No es una release v2.0.0.
@@ -172,7 +174,8 @@ esta matriz por sí sola no es un sandbox.
 ## Supervisor mínimo: diseño y operación temporal
 
 No se crea `template run` ni `scripts/<orquestador>.ps1` en Fase 00. La entrada
-actual es el orquestador disponible siguiendo la [guía](../usuario/fundamentos-v2.md).
+actual es el orquestador disponible; para su operación consulte la
+[guía de usuario](../usuario/index.md).
 Esto prepara continuidad sin framework, almacenamiento ni dependencia nuevos.
 
 | Estado | Entrada y transición permitida |

@@ -92,6 +92,18 @@ jobs:
             exit 0
           fi
 
+          # A pull request that merges a previously promoted branch can
+          # introduce commits whose own PR targets another base. Accept
+          # those commits only when they are ancestors of the exact head
+          # of a merged PR associated with this push's merge commit.
+          accepted_pr_head=""
+          accepted_pr_head=$(gh api "repos/${{ github.repository }}/commits/$AFTER/pulls" --jq \
+            '.[] | select(.base.ref == "develop" and .merged_at != null) | .head.sha' 2>/dev/null | head -n 1 || true)
+          if [ -z "$accepted_pr_head" ]; then
+            accepted_pr_head=$(gh api "repos/${{ github.repository }}/pulls?state=closed&base=develop&per_page=100" 2>/dev/null | jq -r --arg sha "$AFTER" \
+              '.[] | select(.base.ref == "develop" and .merged_at != null and .merge_commit_sha == $sha) | .head.sha' | head -n 1 || true)
+          fi
+
           offending=""
           for sha in $(jq -r '.commits[].id' "$GITHUB_EVENT_PATH"); do
             merged_to_develop=$(gh api "repos/${{ github.repository }}/commits/$sha/pulls" --jq \
@@ -104,6 +116,9 @@ jobs:
             if [ "$merged_to_develop" = "0" ]; then
               merged_to_develop=$(gh api "repos/${{ github.repository }}/pulls?state=closed&base=develop&per_page=100" | jq --arg sha "$sha" \
                 '[.[] | select(.base.ref == "develop" and .merged_at != null and (.merge_commit_sha == $sha or .head.sha == $sha))] | length')
+            fi
+            if [ "$merged_to_develop" = "0" ] && [ -n "$accepted_pr_head" ] && git merge-base --is-ancestor "$sha" "$accepted_pr_head"; then
+              merged_to_develop=1
             fi
             if [ "$merged_to_develop" = "0" ]; then
               offending="$sha $offending"
