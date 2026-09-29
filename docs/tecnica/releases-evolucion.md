@@ -36,3 +36,11 @@ Corrige dos problemas de distribución detectados al validar la adopción:
 el gate de recolección no impone un techo artificial al crecimiento de la
 suite, y la semántica de STATUS usa el `gh` autenticado disponible, incluso
 cuando la autenticación proviene del keyring y no de `GH_TOKEN`.
+
+## v2.0.5
+
+Estabiliza commits que sólo actualizan `STATUS.md`, limita la detección de
+unidades activas a rutas canónicas y añade el upgrade oficial de consumidores
+con tags explícitos, manifest y controles de anti-drift. Durante la auditoría
+pre-release también se corrigió el uso inválido de `--arg` en `gh api` dentro
+del guard de `develop`; el valor SHA ahora se pasa a `jq`.
