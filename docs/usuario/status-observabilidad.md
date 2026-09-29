@@ -14,4 +14,5 @@ evidencia histórica y no implica actividad actual. Si el checker informa
 `ERROR_REAL` requiere corregir el problema. La carpeta física de un worktree
 eliminado no representa una unidad activa. La versión de desarrollo y la
 última release publicada se muestran por separado; CI sólo es vigente si su
-commit coincide con el HEAD actual.
+commit coincide con el HEAD actual. Un commit automático que modifica
+únicamente `STATUS.md` no vuelve stale el HEAD registrado.

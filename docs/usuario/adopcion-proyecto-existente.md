@@ -25,8 +25,8 @@ sección del elemento que te está generando dudas.
 
 ## Cómo recorrer el checklist
 
-Para la infraestructura común mantenida por este Template, el manifest y el
-script oficial permiten verificar que una adopción o Starter no quedó atrás:
+Para la infraestructura común mantenida por este Template, el manifest y los
+scripts oficiales permiten verificar que una adopción o Starter no quedó atrás:
 
 ```powershell
 pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\sync-template-starter.ps1 `
@@ -36,6 +36,23 @@ pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\sync-template-starter.ps
 `Sync` sólo actualiza las rutas declaradas por el manifest. El contenido propio
 del consumidor, su versión, `ROADMAP.md`, `runs/`, releases y `STATUS.md` se
 preservan/regeneran; no se copian snapshots históricos del Template.
+
+Para actualizar un consumidor ya adoptado, usá el upgrade versionado contra el
+tag destino explícito:
+
+```powershell
+pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\upgrade-template-consumer.ps1 `
+  -ConsumerPath C:\ruta\al\consumidor `
+  -TemplateSource https://github.com/jlbellonGmail/template.git `
+  -BaselineVersion v2.0.4 `
+  -TargetVersion v2.0.5 `
+  -Mode Apply
+```
+
+El comando exige repo limpio, valida los tags exactos, detecta drift antes y
+después, y sólo sincroniza las rutas compartidas declaradas por el manifest.
+Si el consumidor ya declara `templateVersion`, `-BaselineVersion` puede
+omitirse; en consumidores anteriores conviene pasarlo siempre.
 
 El checklist completo, con el detalle técnico de cada colisión y su
 estrategia de resolución, vive en

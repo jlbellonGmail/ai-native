@@ -7,7 +7,8 @@ F13 define `STATUS.md` como vista humana derivada del presente. La precedencia e
 lo que usan la misma interpretación y nunca leen el snapshot anterior para
 decidir el presente. GitHub no disponible se representa como `NOT AVAILABLE` y
 el checker lo clasifica como `STALE`/temporal; un snapshot con HEAD distinto es
-`STALE`; marcadores o rama contradictorios son `INCONSISTENTE`; fallos de
+`STALE` salvo que el HEAD actual avance desde el snapshot sólo con cambios en
+`STATUS.md`; marcadores o rama contradictorios son `INCONSISTENTE`; fallos de
 ejecución son `ERROR_REAL`.
 
 La versión de desarrollo se obtiene, en orden, de `VERSION`/`version.txt`/
@@ -23,6 +24,9 @@ rama Feature/Milestone actualmente registrada y un ítem no cerrado en
 `ROADMAP.md`; `runs/` sólo es evidencia histórica/auditable y por sí solo no
 crea unidades, PRs ni CI vigentes. El CI vigente se consulta por rama **y por
 el HEAD exacto**; un run de otro commit no puede representar PASS/FAIL actual.
+La única excepción de reentrada es el commit automático exclusivo de
+`STATUS.md`, que se valida comparando el diff entre el HEAD registrado y el
+HEAD real.
 
 La salida machine-readable se obtiene sin persistencia con `pwsh -File scripts/update-status.ps1 -Json`; `-MachinePath` es explícito para consumidores que necesitan un archivo. Así, consultar no ensucia el checkout. Las carpetas Windows residuales no se cuentan como unidades: T04 conserva su clasificación en `check-integrity.ps1`.
 
