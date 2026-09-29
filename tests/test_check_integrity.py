@@ -8,6 +8,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts" / "check-integrity.ps1"
+UPDATE_STATUS = ROOT / "scripts" / "update-status.ps1"
 
 
 def powershell():
@@ -32,6 +33,13 @@ def git(repo, *args):
 def run_checker(repo):
     return subprocess.run(
         [powershell(), "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(SCRIPT), "-Version", "v2.0.0"],
+        cwd=repo, text=True, capture_output=True, env=env(), check=False,
+    )
+
+
+def run_update_status(repo):
+    return subprocess.run(
+        [powershell(), "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(UPDATE_STATUS)],
         cwd=repo, text=True, capture_output=True, env=env(), check=False,
     )
 
@@ -96,6 +104,17 @@ def test_non_canonical_txx_run_at_runs_root_is_ignored(tmp_path):
     result = run_checker(repo)
     assert result.returncode == 0, result.stdout + result.stderr
     assert "T11-status-auto-commit" not in result.stdout
+
+
+def test_status_only_commit_does_not_warn_integrity_stale_status(tmp_path):
+    repo = make_repo(tmp_path, "# ROADMAP\n\n## Intervenciones\n")
+    update = run_update_status(repo)
+    assert update.returncode == 0, update.stdout + update.stderr
+    git(repo, "add", "STATUS.md")
+    git(repo, "commit", "-m", "status auto")
+    result = run_checker(repo)
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "STATUS:AUTO stale" not in result.stdout
 
 
 def test_canonical_orphan_txx_run_still_fails(tmp_path):

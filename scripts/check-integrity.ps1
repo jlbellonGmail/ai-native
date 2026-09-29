@@ -7,6 +7,20 @@ function Git([string[]]$Arguments) {
   if ($LASTEXITCODE) { throw "git fallo: $($Arguments -join ' ')" }
   return ($out -join [Environment]::NewLine).Trim()
 }
+function Test-StatusOnlyHeadAdvance([string]$Root, [string]$RecordedHead, [string]$ActualHead) {
+  if ($RecordedHead -notmatch "^[0-9a-f]{40}$" -or $ActualHead -notmatch "^[0-9a-f]{40}$") { return $false }
+  if ($RecordedHead -eq $ActualHead) { return $true }
+  Push-Location $Root
+  try {
+    $base = Invoke-StatusExternal "git" @("merge-base", "--is-ancestor", $RecordedHead, $ActualHead)
+    if ($base.Code -ne 0) { return $false }
+    $diff = Invoke-StatusExternal "git" @("diff", "--name-only", "$RecordedHead..$ActualHead", "--")
+    if ($diff.Code -ne 0) { return $false }
+    $paths = @($diff.Text -split "`r?`n" | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+    if ($paths.Count -eq 0) { return $false }
+    return -not ($paths | Where-Object { ($_ -replace "\\", "/") -ne "STATUS.md" })
+  } finally { Pop-Location }
+}
 try {
   $root = if ($RepositoryRoot) { [IO.Path]::GetFullPath($RepositoryRoot) } else { [IO.Path]::GetFullPath((Git @("rev-parse","--show-toplevel"))) }
   Push-Location $root
@@ -92,7 +106,8 @@ try {
       $recordedBranch = [regex]::Match($auto.Value,'(?m)^- Rama: (.+)$').Groups[1].Value.Trim()
       $recordedHead = [regex]::Match($auto.Value,'(?m)^- HEAD:\s*(?<sha>[0-9a-f]{7,40})(?:\s|$)').Groups["sha"].Value
       $branch = Git @("branch","--show-current"); $head = Git @("rev-parse","HEAD")
-      if ($recordedBranch -ne $branch -or ($recordedHead -and $recordedHead -ne $head)) { [void]$warnings.Add("STATUS:AUTO stale: snapshot=$recordedBranch/$recordedHead actual=$branch/$head") }
+      $statusOnlyHeadAdvance = Test-StatusOnlyHeadAdvance $root $recordedHead $head
+      if ($recordedBranch -ne $branch -or ($recordedHead -and $recordedHead -ne $head -and -not $statusOnlyHeadAdvance)) { [void]$warnings.Add("STATUS:AUTO stale: snapshot=$recordedBranch/$recordedHead actual=$branch/$head") }
     }
     if ($WorktreeDir) {
       $path = [IO.Path]::GetFullPath($WorktreeDir)
