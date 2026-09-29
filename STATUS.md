@@ -31,18 +31,18 @@ No iniciar v2.0.2, bootstrap ni instalación limpia en esta tarea.
 
 ## Estado verificado automáticamente
 
-- Actualizado: 2026-09-29T09:22:47.9812896Z
+- Actualizado: 2026-09-29T13:49:29.8225464Z
 - Versión de desarrollo: v2.0.5
-- Fuente de versión: branch
-- Rama: maintenance/v2.0.5-stabilization
-- HEAD: b24e035d51cc2b29421cf550ef94dc8bf7dffcff
+- Fuente de versión: ROADMAP.md
+- Rama: develop
+- HEAD: 6090bd6090ea011849c7f0e7be0c58d5d804a4f1
 - Remoto: https://github.com/jlbellonGmail/template.git
 - Relación con remoto: 0	0
-- Working tree: clean
+- Working tree: dirty
 - Worktrees Git actuales: 2
 - Unidades activas: ninguna (no hay unidades ACTIVE)
-- PR vigente: #117 https://github.com/jlbellonGmail/template/pull/117 [OPEN, HEAD b24e035d51cc2b29421cf550ef94dc8bf7dffcff]
-- CI vigente: completed/success @ b24e035d51cc2b29421cf550ef94dc8bf7dffcff
+- PR vigente: ninguna PR abierta para este HEAD
+- CI vigente: completed/success @ 6090bd6090ea011849c7f0e7be0c58d5d804a4f1
 - Última release publicada: v2.0.4 (publicada 09/25/2026 16:59:52)
 - Último tag: v2.0.4
 

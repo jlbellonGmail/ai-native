@@ -102,8 +102,8 @@ jobs:
             # como push directo una PR legitima sin aceptar ninguna PR no
             # mergeada ni una base distinta de develop.
             if [ "$merged_to_develop" = "0" ]; then
-              merged_to_develop=$(gh api "repos/${{ github.repository }}/pulls?state=closed&base=develop&per_page=100" --jq \
-                --arg sha "$sha" '[.[] | select(.base.ref == "develop" and .merged_at != null and (.merge_commit_sha == $sha or .head.sha == $sha))] | length')
+              merged_to_develop=$(gh api "repos/${{ github.repository }}/pulls?state=closed&base=develop&per_page=100" | jq --arg sha "$sha" \
+                '[.[] | select(.base.ref == "develop" and .merged_at != null and (.merge_commit_sha == $sha or .head.sha == $sha))] | length')
             fi
             if [ "$merged_to_develop" = "0" ]; then
               offending="$sha $offending"
