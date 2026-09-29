@@ -1,0 +1,94 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+
+name: AI Project Audit
+
+on:
+  push:
+    branches: ["main", "develop"]
+  pull_request:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Verify root structure
+        run: |
+          echo "📂 Current directory:"
+          pwd
+          echo "📦 Files in root:"
+          ls -la
+
+          if [ ! -f package.json ]; then
+            echo "❌ package.json NOT FOUND in root"
+            exit 1
+          fi
+
+          echo "✅ package.json found"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Debug environment
+        run: |
+          echo "Node version:"
+          node -v
+          echo "NPM version:"
+          npm -v
+          echo "📁 scripts folder:"
+          ls -la scripts || echo "⚠️ scripts folder missing"
+
+      - name: Validate AI structure
+        run: |
+          ROOT_DIR=$(pwd)
+
+          if [ ! -f "$ROOT_DIR/.ai/audit/audit-system.md" ]; then
+            echo "❌ Missing audit-system.md"
+            exit 1
+          fi
+
+          if [ ! -f "$ROOT_DIR/.ai/audit/audit-prompt.md" ]; then
+            echo "❌ Missing audit-prompt.md"
+            exit 1
+          fi
+
+          if [ ! -f "$ROOT_DIR/.ai/core/audit-agent.md" ]; then
+            echo "❌ Missing audit-agent.md"
+            exit 1
+          fi
+
+          echo "✅ Core audit files present"
+
+      - name: Run AI Audit
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          cd $GITHUB_WORKSPACE
+          node scripts/ai-audit.js
+
+      # 🧠 Persistencia (historial + badge)
+      - name: Commit audit artifacts
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+
+          git add public/ai-audit-history.json README.md || true
+
+          git commit -m "chore(ai): update audit artifacts" || echo "No changes to commit"
+
+          git push

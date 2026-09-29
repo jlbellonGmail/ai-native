@@ -1,0 +1,174 @@
+name: CycloneDX SBOM
+
+on:
+  push:
+    branches: ["main", "develop"]
+  pull_request:
+    branches: ["main", "develop"]
+  workflow_dispatch:
+
+env:
+  SBOM_DIR: ${{ runner.temp }}/ai-foundation-sbom
+  SBOM_RUN1: ${{ runner.temp }}/ai-foundation-sbom/ai-foundation-sbom.run1.cdx.json
+  SBOM_RUN2: ${{ runner.temp }}/ai-foundation-sbom/ai-foundation-sbom.run2.cdx.json
+  SBOM_NORM1: ${{ runner.temp }}/ai-foundation-sbom/ai-foundation-sbom.run1.normalized.json
+  SBOM_NORM2: ${{ runner.temp }}/ai-foundation-sbom/ai-foundation-sbom.run2.normalized.json
+
+jobs:
+  sbom:
+    name: Generate SBOM
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Prepare SBOM workspace
+        shell: bash
+        run: mkdir -p "$SBOM_DIR"
+
+      - name: Generate SBOM run 1
+        id: generate_run1
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if corepack pnpm sbom --sbom-format cyclonedx --sbom-spec-version 1.7 --sbom-type application --lockfile-only > "$SBOM_RUN1"; then
+            echo "generator=pnpm" >> "$GITHUB_OUTPUT"
+          else
+            corepack pnpm dlx @cyclonedx/cdxgen --no-install-deps --validate --output "$SBOM_RUN1" .
+            echo "generator=cdxgen" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Generate SBOM run 2
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ "${{ steps.generate_run1.outputs.generator }}" = "pnpm" ]; then
+            corepack pnpm sbom --sbom-format cyclonedx --sbom-spec-version 1.7 --sbom-type application --lockfile-only > "$SBOM_RUN2"
+          else
+            corepack pnpm dlx @cyclonedx/cdxgen --no-install-deps --validate --output "$SBOM_RUN2" .
+          fi
+
+      - name: Validate and normalize SBOM
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          node --input-type=module <<'NODE'
+          import { readFileSync, writeFileSync } from 'node:fs';
+          import { createHash } from 'node:crypto';
+
+          const normalize = (value) => {
+            if (Array.isArray(value)) {
+              return value.map(normalize);
+            }
+
+            if (value && typeof value === 'object') {
+              const entries = Object.entries(value)
+                .filter(([key]) => key !== 'serialNumber')
+                .filter(([key]) => key !== 'timestamp')
+                .map(([key, nested]) => [key, normalize(nested)])
+                .sort(([a], [b]) => a.localeCompare(b));
+
+              return Object.fromEntries(entries);
+            }
+
+            return value;
+          };
+
+          const toStableJson = (value) => JSON.stringify(normalize(value), null, 2) + '\n';
+          const sha256 = (text) => createHash('sha256').update(text).digest('hex');
+          const sbomRun1 = JSON.parse(readFileSync(process.env.SBOM_RUN1, 'utf8'));
+          const sbomRun2 = JSON.parse(readFileSync(process.env.SBOM_RUN2, 'utf8'));
+          const packageJson = JSON.parse(readFileSync('package.json', 'utf8'));
+
+          const requiredDependencies = new Set([
+            ...Object.keys(packageJson.dependencies ?? {}),
+            ...Object.keys(packageJson.devDependencies ?? {}),
+            ...Object.keys(packageJson.optionalDependencies ?? {})
+          ]);
+
+          const assertPackageConsistency = (sbom, label) => {
+            const componentNames = new Set(
+              sbom.components.map((component) => component.name).filter(Boolean)
+            );
+
+            for (const dependency of requiredDependencies) {
+              if (!componentNames.has(dependency)) {
+                throw new Error(`${label} SBOM is missing dependency from package.json: ${dependency}`);
+              }
+            }
+          };
+
+          if (sbomRun1.bomFormat !== 'CycloneDX' || sbomRun2.bomFormat !== 'CycloneDX') {
+            throw new Error('Invalid SBOM format: expected CycloneDX');
+          }
+
+          if (!sbomRun1.components?.length || !sbomRun2.components?.length) {
+            throw new Error('SBOM missing components');
+          }
+
+          if (!sbomRun1.metadata?.component || !sbomRun2.metadata?.component) {
+            throw new Error('SBOM missing metadata.component');
+          }
+
+          if (!sbomRun1.dependencies?.length || !sbomRun2.dependencies?.length) {
+            throw new Error('SBOM missing dependencies');
+          }
+
+          assertPackageConsistency(sbomRun1, 'run1');
+          assertPackageConsistency(sbomRun2, 'run2');
+
+          const normalizedRun1 = toStableJson(sbomRun1);
+          const normalizedRun2 = toStableJson(sbomRun2);
+          const hashRun1 = sha256(normalizedRun1);
+          const hashRun2 = sha256(normalizedRun2);
+
+          writeFileSync(process.env.SBOM_NORM1, normalizedRun1);
+          writeFileSync(process.env.SBOM_NORM2, normalizedRun2);
+
+          if (hashRun1 !== hashRun2) {
+            throw new Error('Normalized SBOM is not reproducible');
+          }
+
+          const report = {
+            generator: '${{ steps.generate_run1.outputs.generator }}',
+            output: {
+              run1: process.env.SBOM_RUN1,
+              run2: process.env.SBOM_RUN2,
+              normalizedRun1: process.env.SBOM_NORM1,
+              normalizedRun2: process.env.SBOM_NORM2
+            },
+            result: {
+              bomFormat: sbomRun1.bomFormat,
+              specVersion: sbomRun1.specVersion,
+              packageJsonHasName: Boolean(packageJson.name),
+              normalizedHash: hashRun1,
+              componentCount: sbomRun1.components.length,
+              dependencyCount: sbomRun1.dependencies.length
+            }
+          };
+
+          writeFileSync(`${process.env.SBOM_DIR}/validation-report.json`, JSON.stringify(report, null, 2) + '\n');
+
+      - name: Upload CycloneDX SBOM artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-foundation-sbom-cyclonedx-${{ github.sha }}
+          path: ${{ env.SBOM_DIR }}
+          if-no-files-found: error
+          retention-days: 30

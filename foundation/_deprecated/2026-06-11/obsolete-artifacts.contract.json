@@ -1,0 +1,134 @@
+{
+  "schemaVersion": "obsolete-artifacts.v1",
+  "roadmapTask": "W8-T4",
+  "taskName": "Obsolete Artifacts",
+  "repo": "ai-foundation",
+  "archiveRoot": "_deprecated/2026-06-11",
+  "basedOnDetectionTask": "W8-T3",
+  "governance": {
+    "nextEligibleTask": "W8-T5",
+    "doesNotOpen": ["W8-T5"],
+    "doesNotClose": ["W8-T5", "W8-T6"],
+    "deletionAllowed": false,
+    "physicalMoveAllowed": false,
+    "runtimeDeletionAllowed": false,
+    "runtimeActivationAllowed": false
+  },
+  "deprecationModel": [
+    {
+      "id": "retained_history",
+      "description": "Historical material retained for audit and recovery context."
+    },
+    {
+      "id": "obsolete_placeholder",
+      "description": "Placeholder material superseded by owned active surfaces."
+    },
+    {
+      "id": "superseded_active_surface",
+      "description": "Legacy runtime, workflow, pipeline, or role material superseded by active product surfaces."
+    },
+    {
+      "id": "superseded_governance",
+      "description": "Legacy governance or product scope material superseded by root governance."
+    }
+  ],
+  "obsoleteArtifacts": [
+    {
+      "path": "_deprecated/2026-06-11/ai-context",
+      "obsoleteClass": "retained_history",
+      "lifecycleState": "deprecated_retained",
+      "lifecycleAction": "retain_recovery_context",
+      "removalAllowed": false,
+      "runtimeDeletionAllowed": false
+    },
+    {
+      "path": "_deprecated/2026-06-11/antigravity-local-rules",
+      "obsoleteClass": "retained_history",
+      "lifecycleState": "deprecated_retained",
+      "lifecycleAction": "retain_local_rule_history",
+      "removalAllowed": false,
+      "runtimeDeletionAllowed": false
+    },
+    {
+      "path": "_deprecated/2026-06-11/empty-telemetry-placeholders",
+      "obsoleteClass": "obsolete_placeholder",
+      "lifecycleState": "deprecated_retained",
+      "lifecycleAction": "retain_placeholder_evidence",
+      "removalAllowed": false,
+      "runtimeDeletionAllowed": false
+    },
+    {
+      "path": "_deprecated/2026-06-11/legacy-ai-error-system",
+      "obsoleteClass": "superseded_active_surface",
+      "lifecycleState": "deprecated_retained",
+      "lifecycleAction": "retain_inactive_runtime_reference",
+      "removalAllowed": false,
+      "runtimeDeletionAllowed": false
+    },
+    {
+      "path": "_deprecated/2026-06-11/legacy-ai-pipelines",
+      "obsoleteClass": "superseded_active_surface",
+      "lifecycleState": "deprecated_retained",
+      "lifecycleAction": "retain_inactive_pipeline_reference",
+      "removalAllowed": false,
+      "runtimeDeletionAllowed": false
+    },
+    {
+      "path": "_deprecated/2026-06-11/legacy-ai-roles",
+      "obsoleteClass": "superseded_active_surface",
+      "lifecycleState": "deprecated_retained",
+      "lifecycleAction": "retain_inactive_role_reference",
+      "removalAllowed": false,
+      "runtimeDeletionAllowed": false
+    },
+    {
+      "path": "_deprecated/2026-06-11/legacy-ai-runtime",
+      "obsoleteClass": "superseded_active_surface",
+      "lifecycleState": "deprecated_retained",
+      "lifecycleAction": "retain_inactive_runtime_reference",
+      "removalAllowed": false,
+      "runtimeDeletionAllowed": false
+    },
+    {
+      "path": "_deprecated/2026-06-11/legacy-ai-workflows",
+      "obsoleteClass": "superseded_active_surface",
+      "lifecycleState": "deprecated_retained",
+      "lifecycleAction": "retain_inactive_workflow_reference",
+      "removalAllowed": false,
+      "runtimeDeletionAllowed": false
+    },
+    {
+      "path": "_deprecated/2026-06-11/legacy-governance-bundle",
+      "obsoleteClass": "superseded_governance",
+      "lifecycleState": "deprecated_retained",
+      "lifecycleAction": "retain_governance_audit_continuity",
+      "removalAllowed": false,
+      "runtimeDeletionAllowed": false
+    },
+    {
+      "path": "_deprecated/2026-06-11/legacy-product-scope",
+      "obsoleteClass": "superseded_governance",
+      "lifecycleState": "deprecated_retained",
+      "lifecycleAction": "retain_historical_scope_reference",
+      "removalAllowed": false,
+      "runtimeDeletionAllowed": false
+    },
+    {
+      "path": "_deprecated/2026-06-11/source-legacy-analysis",
+      "obsoleteClass": "retained_history",
+      "lifecycleState": "deprecated_retained",
+      "lifecycleAction": "retain_historical_analysis",
+      "removalAllowed": false,
+      "runtimeDeletionAllowed": false
+    }
+  ],
+  "validators": ["scripts/validate-obsolete-artifacts.mjs"],
+  "traceability": [
+    "_deprecated/2026-06-11/README.md",
+    "_deprecated/2026-06-11/duplicate-detection.contract.json",
+    "_deprecated/2026-06-11/obsolete-artifacts.md",
+    "_deprecated/2026-06-11/obsolete-artifacts.contract.json",
+    "validation/roadmap-coverage.json",
+    "docs/ENTERPRISE-10-10/ROADMAP_TO_FILES.md"
+  ]
+}

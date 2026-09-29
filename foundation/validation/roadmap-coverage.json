@@ -1,0 +1,48 @@
+{
+  "repo": "ai-foundation",
+  "roadmap": "ENTERPRISE-10-10",
+  "tasks": {
+    "W1-T1": [".github/workflows/codeql.yml", "docs/ENTERPRISE-10-10/ROADMAP_TO_FILES.md"],
+    "W1-T2": [".github/workflows/trivy.yml", "security/README.md"],
+    "W1-T3": [".github/workflows/sbom.yml", "security/README.md"],
+    "W1-T4": [".github/workflows/dependency-review.yml", ".github/dependency-review-config.yml"],
+    "W1-T5": [".github/dependabot.yml"],
+    "W1-T6": [".github/workflows/supply-chain.yml", "docs/security/supply-chain.md"],
+    "W1-T7": ["security/enterprise-10-10/security-audit-final.json", "security/enterprise-10-10/README.md"],
+    "W2-T1": ["observability/enterprise-10-10/observability-program.json"],
+    "W2-T2": ["observability/enterprise-10-10/observability-program.json"],
+    "W2-T3": ["observability/enterprise-10-10/observability-program.json"],
+    "W2-T4": ["observability/enterprise-10-10/observability-program.json"],
+    "W2-T5": ["observability/enterprise-10-10/observability-program.json"],
+    "W2-T6": ["observability/enterprise-10-10/observability-program.json"],
+    "W2-T7": ["observability/tracing/opentelemetry-config.ts", "observability/enterprise-10-10/observability-program.json"],
+    "W2-T8": ["observability/README.md", "scripts/validate-enterprise-10-10.mjs"],
+    "W6-T1": ["validation/roadmap-coverage.json", "scripts/validate-structure.mjs"],
+    "W7-T1": ["README.md"],
+    "W7-T3": ["docs/overview/ARCHITECTURE.md"],
+    "W8-T1": ["_deprecated/2026-06-11/README.md", "_deprecated/2026-06-11/legacy-inventory.md", "_deprecated/2026-06-11/legacy-inventory.contract.json", "scripts/validate-legacy-inventory.mjs", "docs/ENTERPRISE-10-10/ROADMAP_TO_FILES.md"],
+    "W8-T2": ["_deprecated/2026-06-11/README.md", "_deprecated/2026-06-11/historical-archive.md", "_deprecated/2026-06-11/historical-archive.contract.json", "scripts/validate-historical-archive.mjs", "docs/ENTERPRISE-10-10/ROADMAP_TO_FILES.md"],
+    "W8-T3": ["_deprecated/2026-06-11/README.md", "_deprecated/2026-06-11/duplicate-detection.md", "_deprecated/2026-06-11/duplicate-detection.contract.json", "scripts/validate-duplicate-detection.mjs", "docs/ENTERPRISE-10-10/ROADMAP_TO_FILES.md"],
+    "W8-T4": ["_deprecated/2026-06-11/README.md", "_deprecated/2026-06-11/obsolete-artifacts.md", "_deprecated/2026-06-11/obsolete-artifacts.contract.json", "scripts/validate-obsolete-artifacts.mjs", "docs/ENTERPRISE-10-10/ROADMAP_TO_FILES.md"],
+    "W8-T5": ["scripts/validate-structure.mjs"],
+    "H3": [
+      "observability/runtime-wiring.md",
+      "observability/runtime-wiring/runtime-observability.contract.json",
+      "observability/runtime-wiring/runtime-observability.ts",
+      "observability/opentelemetry-example/runtime-observability-example.ts",
+      "observability/smoke-tests/validate-runtime-observability-wiring.mjs",
+      "runtime/core/runtime.ts",
+      "runtime/README.md",
+      "observability/README.md",
+      "scripts/validate-structure.mjs",
+      "scripts/validate-enterprise-10-10.mjs"
+    ]
+  },
+  "taskStates": {
+    "W8-T1": "IMPLEMENTED",
+    "W8-T2": "IMPLEMENTED",
+    "W8-T3": "IMPLEMENTED",
+    "W8-T4": "IMPLEMENTED",
+    "H3": "IMPLEMENTED"
+  }
+}
