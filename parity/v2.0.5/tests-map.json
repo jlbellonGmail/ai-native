@@ -1,0 +1,350 @@
+{
+  "schemaVersion": 1,
+  "source": "Contrato de Paridad TEMPLATE v2.0.5 -> AI-NATIVE v3, seccion 20.1 (governance/adr/ADR-002-contrato-paridad-template-v205.md)",
+  "generatedBy": "parity/v2.0.5/build-tests-map.mjs",
+  "totalFiles": 35,
+  "totalFunctions": 264,
+  "actionCounts": {
+    "MOVE": 28,
+    "STRENGTHEN": 3,
+    "REPLACE": 2,
+    "KEEP_LEGACY_AND_REPLACE": 2
+  },
+  "unmappedFunctions": 0,
+  "note": "Granularidad de archivo (35), no de node-id de pytest (~285 casos con parametrize). El desglose a nivel node-id, con columna de fixtures y accion por caso (MOVE/AMEND/REPLACED_BY/RETIRED(D-x)), es trabajo de M1.1 (baseline medida) segun el Contrato de Paridad seccion 20.1.",
+  "files": [
+    {
+      "file": "test_adaptive_evidence.py",
+      "functions": 6,
+      "action": "MOVE",
+      "destination": "tests/circuit/contract",
+      "capabilities": [
+        "CIR-05",
+        "CIR-06"
+      ]
+    },
+    {
+      "file": "test_agentic_evals.py",
+      "functions": 4,
+      "action": "REPLACE",
+      "destination": "tests/evaluation",
+      "capabilities": [
+        "EVL-01"
+      ]
+    },
+    {
+      "file": "test_agentic_schemas.py",
+      "functions": 12,
+      "action": "MOVE",
+      "destination": "tests/contracts",
+      "capabilities": [
+        "AGT-09"
+      ]
+    },
+    {
+      "file": "test_agentic_sync_scripts.py",
+      "functions": 6,
+      "action": "MOVE",
+      "destination": "tests/adapters",
+      "capabilities": [
+        "AGT-04",
+        "AGT-05"
+      ]
+    },
+    {
+      "file": "test_agents_e2e.py",
+      "functions": 13,
+      "action": "REPLACE",
+      "destination": "tests/parity",
+      "capabilities": [
+        "AGT-01",
+        "GOV-01"
+      ]
+    },
+    {
+      "file": "test_assess_work_unit.py",
+      "functions": 5,
+      "action": "MOVE",
+      "destination": "tests/circuit/assess",
+      "capabilities": [
+        "CIR-03"
+      ]
+    },
+    {
+      "file": "test_audit_framework.py",
+      "functions": 4,
+      "action": "MOVE",
+      "destination": "tests/audit",
+      "capabilities": [
+        "AUD-01",
+        "AUD-02",
+        "AUD-03"
+      ]
+    },
+    {
+      "file": "test_canonical_workunit_identity.py",
+      "functions": 6,
+      "action": "MOVE",
+      "destination": "tests/circuit/identity",
+      "capabilities": [
+        "CIR-01"
+      ]
+    },
+    {
+      "file": "test_check_adoption_conflicts.py",
+      "functions": 4,
+      "action": "MOVE",
+      "destination": "tests/migrate",
+      "capabilities": [
+        "DIS-03"
+      ]
+    },
+    {
+      "file": "test_check_integrity.py",
+      "functions": 8,
+      "action": "MOVE",
+      "destination": "tests/state",
+      "capabilities": [
+        "STA-06"
+      ]
+    },
+    {
+      "file": "test_ci_integration.py",
+      "functions": 12,
+      "action": "STRENGTHEN",
+      "destination": "tests/workflows",
+      "capabilities": [
+        "CI-01",
+        "CI-06",
+        "CI-07"
+      ]
+    },
+    {
+      "file": "test_ci_workflow.py",
+      "functions": 9,
+      "action": "MOVE",
+      "destination": "tests/workflows",
+      "capabilities": [
+        "CI-01",
+        "CI-02",
+        "CI-03"
+      ]
+    },
+    {
+      "file": "test_close_feature_script.py",
+      "functions": 9,
+      "action": "MOVE",
+      "destination": "tests/circuit/close",
+      "capabilities": [
+        "CIR-18"
+      ]
+    },
+    {
+      "file": "test_complete_approved_pr_script.py",
+      "functions": 8,
+      "action": "MOVE",
+      "destination": "tests/merge-gate",
+      "capabilities": [
+        "CIR-17"
+      ]
+    },
+    {
+      "file": "test_convergence.py",
+      "functions": 4,
+      "action": "MOVE",
+      "destination": "tests/circuit/converge",
+      "capabilities": [
+        "CIR-13"
+      ]
+    },
+    {
+      "file": "test_feature_contract_scripts.py",
+      "functions": 24,
+      "action": "MOVE",
+      "destination": "tests/circuit",
+      "capabilities": [
+        "CIR-05",
+        "CIR-07",
+        "CIR-14",
+        "CIR-15"
+      ]
+    },
+    {
+      "file": "test_guard_develop_branch_workflow.py",
+      "functions": 20,
+      "action": "MOVE",
+      "destination": "tests/workflows/guard",
+      "capabilities": [
+        "CI-05"
+      ]
+    },
+    {
+      "file": "test_local_reconciler_scripts.py",
+      "functions": 7,
+      "action": "MOVE",
+      "destination": "tests/circuit/reconcile",
+      "capabilities": [
+        "CIR-19"
+      ]
+    },
+    {
+      "file": "test_maintenance_scope.py",
+      "functions": 7,
+      "action": "MOVE",
+      "destination": "tests/circuit/identity",
+      "capabilities": [
+        "CIR-22"
+      ]
+    },
+    {
+      "file": "test_materialize_sdd.py",
+      "functions": 3,
+      "action": "MOVE",
+      "destination": "tests/circuit/sdd",
+      "capabilities": [
+        "CIR-04"
+      ]
+    },
+    {
+      "file": "test_mcp_tools.py",
+      "functions": 5,
+      "action": "MOVE",
+      "destination": "tests/mcp",
+      "capabilities": [
+        "AGT-08"
+      ]
+    },
+    {
+      "file": "test_milestone_close_feature.py",
+      "functions": 5,
+      "action": "MOVE",
+      "destination": "tests/circuit/milestone",
+      "capabilities": [
+        "CIR-23"
+      ]
+    },
+    {
+      "file": "test_milestone_contract.py",
+      "functions": 11,
+      "action": "MOVE",
+      "destination": "tests/circuit/milestone",
+      "capabilities": [
+        "CIR-23"
+      ]
+    },
+    {
+      "file": "test_milestone_ready_for_pr.py",
+      "functions": 5,
+      "action": "MOVE",
+      "destination": "tests/circuit/milestone",
+      "capabilities": [
+        "CIR-23"
+      ]
+    },
+    {
+      "file": "test_model_router_scripts.py",
+      "functions": 10,
+      "action": "MOVE",
+      "destination": "tests/routing",
+      "capabilities": [
+        "AGT-06",
+        "AGT-11"
+      ]
+    },
+    {
+      "file": "test_parallel_units_f14.py",
+      "functions": 1,
+      "action": "STRENGTHEN",
+      "destination": "tests/circuit/lifecycle",
+      "capabilities": [
+        "CIR-20",
+        "CIR-21",
+        "CIR-24"
+      ]
+    },
+    {
+      "file": "test_product_context_compatibility.py",
+      "functions": 5,
+      "action": "MOVE",
+      "destination": "tests/circuit",
+      "capabilities": [
+        "GOV-06"
+      ]
+    },
+    {
+      "file": "test_release_readiness.py",
+      "functions": 4,
+      "action": "STRENGTHEN",
+      "destination": "tests/release",
+      "capabilities": [
+        "CI-09"
+      ]
+    },
+    {
+      "file": "test_security_policy.py",
+      "functions": 4,
+      "action": "MOVE",
+      "destination": "tests/policy",
+      "capabilities": [
+        "AGT-07"
+      ]
+    },
+    {
+      "file": "test_start_work_unit.py",
+      "functions": 10,
+      "action": "MOVE",
+      "destination": "tests/circuit/start",
+      "capabilities": [
+        "CIR-02"
+      ]
+    },
+    {
+      "file": "test_status_scripts.py",
+      "functions": 12,
+      "action": "MOVE",
+      "destination": "tests/state/status",
+      "capabilities": [
+        "STA-03",
+        "STA-04",
+        "STA-05"
+      ]
+    },
+    {
+      "file": "test_supply_chain_policy.py",
+      "functions": 3,
+      "action": "MOVE",
+      "destination": "tests/supply-chain",
+      "capabilities": [
+        "CI-08"
+      ]
+    },
+    {
+      "file": "test_template_consumer_upgrade.py",
+      "functions": 4,
+      "action": "KEEP_LEGACY_AND_REPLACE",
+      "destination": "legacy/template-v2/tests (frozen) + tests/migrate",
+      "capabilities": [
+        "DIS-02"
+      ]
+    },
+    {
+      "file": "test_template_starter_sync.py",
+      "functions": 1,
+      "action": "KEEP_LEGACY_AND_REPLACE",
+      "destination": "legacy/template-v2/tests (frozen) + tests/migrate",
+      "capabilities": [
+        "DIS-01"
+      ]
+    },
+    {
+      "file": "test_workunit_lib.py",
+      "functions": 13,
+      "action": "MOVE",
+      "destination": "tests/circuit",
+      "capabilities": [
+        "CIR-01",
+        "STA-01"
+      ]
+    }
+  ]
+}

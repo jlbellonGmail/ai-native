@@ -1,0 +1,141 @@
+#!/usr/bin/env node
+// Generates capabilities.json from the structured data below. This data is
+// a mechanical transcription of the Contrato de Paridad TEMPLATE v2.0.5 ->
+// AI-NATIVE v3 (ADR-002), matrix in section 3.3 of the session plan. Kept as
+// a script (not hand-edited JSON) so the source data, its counts and its
+// JSON Schema conformance are all verified together before writing the
+// output file. Re-run after editing the CAPABILITIES array below.
+import { writeFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
+
+const here = dirname(fileURLToPath(import.meta.url));
+
+// classification: PRESERVED | IMPROVED | REPLACED_EQUIVALENT | LOCAL_BY_DESIGN
+const CAPABILITIES = [
+  // GOV — contrato y gobernanza (10)
+  { id: "GOV-01", area: "GOV", capability: "Manual operativo: reentrada, autoridad, roles, identidad, ASSESS, circuito, artefactos, veredicto, git, CI, modelos", location: "AGENTS.md", classification: "IMPROVED", destination: "Kernel <=60 lineas + skills lazy (core/kernel/, skills/*)", phase: "M2.2/M3.5", risk: "M", parTests: ["PAR-CONTEXT-BUDGET"], testsV2: ["test_agents_e2e.py"] },
+  { id: "GOV-02", area: "GOV", capability: "18 principios de la constitucion", location: "CONSTITUTION.md", classification: "PRESERVED", destination: "core/constitution.md central + invariantes", phase: "M2.2", risk: "B", parTests: ["PAR-CANONICAL-SOURCE"], testsV2: [] },
+  { id: "GOV-03", area: "GOV", capability: "Bridge Claude @AGENTS.md", location: "CLAUDE.md", classification: "PRESERVED", destination: "Bootstrap (punto de entrada local)", phase: "M4.1", risk: "B", parTests: ["C1"], testsV2: ["test_agentic_sync_scripts.py"] },
+  { id: "GOV-04", area: "GOV", capability: "Reentrada operativa (AGENTS, STATUS, git, gh)", location: "AGENTS.md #Reentrada", classification: "IMPROVED", destination: "ai-native recover (runtime) + skill recover", phase: "M3.2", risk: "M", parTests: ["PAR-RECOVERY"], testsV2: ["test_status_scripts.py"] },
+  { id: "GOV-05", area: "GOV", capability: "Orden de autoridad y reglas de seguridad", location: "AGENTS.md #Autoridad", classification: "IMPROVED", destination: "Kernel (control plane > contenido)", phase: "M2.2", risk: "M", parTests: ["PAR-TRUST-BOUNDARY"], testsV2: [] },
+  { id: "GOV-06", area: "GOV", capability: "Contexto de producto + bootstrap de contexto", location: "docs/producto/contexto-producto.md, AGENTS.md #Contexto", classification: "LOCAL_BY_DESIGN", destination: "Archivo local + skill product-context", phase: "M3.5", risk: "B", parTests: ["PAR-PRODUCT-CONTEXT"], testsV2: ["test_product_context_compatibility.py"] },
+  { id: "GOV-07", area: "GOV", capability: "Reglas de dominio", location: ".claude/rules/, AGENTS.md #Reglas de dominio", classification: "IMPROVED", destination: "Seccion local del AGENTS + packs", phase: "M4.7", risk: "B", parTests: ["PAR-PACK-RULES"], testsV2: [] },
+  { id: "GOV-08", area: "GOV", capability: "Politica Git (develop/main, nombres de rama, sin tags de agente)", location: "AGENTS.md #Git", classification: "PRESERVED", destination: "profiles/*.json gitModel + preflight", phase: "M3.1", risk: "B", parTests: ["PAR-PREFLIGHT"], testsV2: ["test_start_work_unit.py", "test_guard_develop_branch_workflow.py"] },
+  { id: "GOV-09", area: "GOV", capability: "Versionado por tag humano", location: "AGENTS.md #Versionado", classification: "PRESERVED", destination: "release-gate (runtime + workflow)", phase: "M4.2", risk: "M", parTests: ["PAR-RELEASE"], testsV2: ["test_release_readiness.py"] },
+  { id: "GOV-10", area: "GOV", capability: "Herramientas requeridas / setup manual", location: "AGENTS.md #Herramientas, #Setup", classification: "IMPROVED", destination: "ai-native doctor", phase: "M4.1", risk: "B", parTests: ["PAR-DOCTOR"], testsV2: [] },
+
+  // AGT — agentes y configuracion (11)
+  { id: "AGT-01", area: "AGT", capability: "Roles Planner / Builder / Reviewer", location: ".agentic/roles/*.md", classification: "PRESERVED", destination: "core/roles/*.md", phase: "M2.2", risk: "B", parTests: ["PAR-ROLES"], testsV2: ["test_agents_e2e.py", "test_agentic_schemas.py"] },
+  { id: "AGT-02", area: "AGT", capability: "Config por herramienta (tools, modelo, permisos)", location: ".agentic/agents.json", classification: "IMPROVED", destination: "core/agents.json + overrides del lock", phase: "M2.2", risk: "M", parTests: ["C1", "C2", "C3", "C4"], testsV2: ["test_agentic_schemas.py", "test_agentic_sync_scripts.py"] },
+  { id: "AGT-03", area: "AGT", capability: "Aliases legacy (analyst, qa, code-reviewer)", location: "models.json roleAliases", classification: "IMPROVED", destination: "Alias conservados; QA = runtime verify + Reviewer", phase: "M3.2", risk: "M", parTests: ["PAR-QA-VERIFY"], testsV2: ["test_model_router_scripts.py"] },
+  { id: "AGT-04", area: "AGT", capability: "Adaptadores generados + -Check en CI", location: "sync-agentic-adapters.ps1", classification: "IMPROVED", destination: "runtime/adapters (derivados ignorados + check de puntos de entrada)", phase: "M3.3", risk: "M", parTests: ["PAR-ADAPTERS"], testsV2: ["test_agentic_sync_scripts.py"] },
+  { id: "AGT-05", area: "AGT", capability: "Espejo de skills a .claude / .opencode", location: "sync-agentic-adapters.ps1", classification: "IMPROVED", destination: "Materializacion por perfil, rol y nivel (skills/registry.json)", phase: "M3.3", risk: "M", parTests: ["PAR-SKILLS-LAZY"], testsV2: ["test_agentic_sync_scripts.py"] },
+  { id: "AGT-06", area: "AGT", capability: "Routing de modelos estatico y dinamico, fallback, run.yaml, model-routing.jsonl", location: "models.json, resolve-agentic-model.ps1", classification: "IMPROVED", destination: "runtime/routing + eventos en events.jsonl (metricas NOT_AVAILABLE_FROM_TOOL explicito)", phase: "M3.4", risk: "M", parTests: ["PAR-ROUTING-EVIDENCE"], testsV2: ["test_model_router_scripts.py"] },
+  { id: "AGT-07", area: "AGT", capability: "Security policy: 10 capacidades, perfiles, autorizacion acotada", location: "security-policy.json/.ps1", classification: "IMPROVED", destination: "core/security-policy.json (matriz por rol) + runtime/policy aplicado en cada accion mutante", phase: "M3.4", risk: "A", parTests: ["PAR-POLICY-ENFORCED"], testsV2: ["test_security_policy.py"] },
+  { id: "AGT-08", area: "AGT", capability: "Catalogo MCP + decision on-demand", location: ".agentic/mcp.json, mcp-tools.ps1", classification: "IMPROVED", destination: "mcp/catalog.json, mcp/profiles/, runtime/mcp-gateway", phase: "M4.4", risk: "A", parTests: ["PAR-MCP-TRUST"], testsV2: ["test_mcp_tools.py"] },
+  { id: "AGT-09", area: "AGT", capability: "7 JSON Schemas", location: ".agentic/schemas/", classification: "IMPROVED", destination: "contracts/ (unificado en unit.schema.json)", phase: "M2.1", risk: "M", parTests: ["PAR-SCHEMAS"], testsV2: ["test_agentic_schemas.py"] },
+  { id: "AGT-10", area: "AGT", capability: "Setup Codex/OpenCode (README, pin del plugin)", location: ".codex/*, .opencode/package.json", classification: "IMPROVED", destination: "Generado por adaptadores; docs centrales", phase: "M3.3", risk: "B", parTests: ["C2", "C3", "C4"], testsV2: ["test_agentic_sync_scripts.py"] },
+  { id: "AGT-11", area: "AGT", capability: "Salvaguardas del router: allowlist de fallback, credentialEnv, bloqueo de catalogo vivo/credito, log de fallos, run.yaml estricto", location: "resolve-agentic-model.ps1", classification: "IMPROVED", destination: "runtime/routing (guard de credito reutilizado en el harness de evals)", phase: "M3.4", risk: "M", parTests: ["PAR-ROUTING-SAFEGUARDS"], testsV2: ["test_model_router_scripts.py"] },
+
+  // CIR — circuito agentico (25)
+  { id: "CIR-01", area: "CIR", capability: "Identidad Feature / Milestone / Maintenance", location: "workunit-lib.ps1", classification: "IMPROVED", destination: "runtime/circuit/identity", phase: "M3.2", risk: "A", parTests: ["PAR-WU-FEATURE", "PAR-WU-MILESTONE"], testsV2: ["test_canonical_workunit_identity.py", "test_workunit_lib.py"] },
+  { id: "CIR-02", area: "CIR", capability: "Inicio de unidad (worktree, rama, run, manifest)", location: "start-work-unit.ps1", classification: "IMPROVED", destination: "ai-native unit start (idempotente)", phase: "M3.2", risk: "M", parTests: ["PAR-IDEMPOTENCY"], testsV2: ["test_start_work_unit.py"] },
+  { id: "CIR-03", area: "CIR", capability: "ASSESS determinista (senales, amplitud, umbrales)", location: "assess-work-unit.ps1", classification: "IMPROVED", destination: "runtime/circuit/assess + contracts/assess-rules.json", phase: "M3.2", risk: "M", parTests: ["PAR-SDD-LIGHT", "PAR-SDD-STANDARD", "PAR-SDD-FULL"], testsV2: ["test_assess_work_unit.py"] },
+  { id: "CIR-04", area: "CIR", capability: "Materializacion SDD", location: "materialize-sdd.ps1", classification: "IMPROVED", destination: "unit.json.sdd desde una sola fuente contracts/sdd-levels.json", phase: "M3.2", risk: "A", parTests: ["PAR-SDD-NO-RECLASSIFY"], testsV2: ["test_materialize_sdd.py"] },
+  { id: "CIR-05", area: "CIR", capability: "Contrato de evidencia adaptativo (LIGHT/STANDARD/FULL + Legacy)", location: "feature-contract.ps1", classification: "IMPROVED", destination: "runtime/circuit/contract (lee sdd-levels; Legacy solo lectura historica)", phase: "M3.2", risk: "A", parTests: ["PAR-SDD-LIGHT", "PAR-SDD-STANDARD", "PAR-SDD-FULL"], testsV2: ["test_adaptive_evidence.py", "test_feature_contract_scripts.py", "test_milestone_contract.py"] },
+  { id: "CIR-06", area: "CIR", capability: "Contrato de SUMMARY (7 secciones, 6 campos)", location: "feature-contract.ps1", classification: "PRESERVED", destination: "Idem + seccion Intent compacta (LIGHT)", phase: "M3.2", risk: "B", parTests: ["PAR-SDD-LIGHT"], testsV2: ["test_adaptive_evidence.py"] },
+  { id: "CIR-07", area: "CIR", capability: "Veredicto YAML; gana el ultimo intento", location: "feature-contract.ps1", classification: "IMPROVED", destination: "events.jsonl reviews[] + compatibilidad con archivos v2", phase: "M3.2", risk: "M", parTests: ["PAR-VERDICT-COMPAT"], testsV2: ["test_feature_contract_scripts.py"] },
+  { id: "CIR-08", area: "CIR", capability: "CLARIFY (solo en prompt)", location: "AGENTS.md, circuito-agentico.md", classification: "IMPROVED", destination: "Estado SPECIFIED exige openQuestions=[] o NEEDS_HUMAN_DECISION", phase: "M3.2", risk: "M", parTests: ["PAR-CLARIFY"], testsV2: [] },
+  { id: "CIR-09", area: "CIR", capability: "Spec review previo al build (paso 2; audit-N solo en FULL)", location: "AGENTS.md paso 2", classification: "IMPROVED", destination: "Transicion SPEC_REVIEWED en todos los niveles; evidencia proporcional", phase: "M3.2", risk: "M", parTests: ["PAR-SPEC-REVIEW-PRE-BUILD"], testsV2: ["test_adaptive_evidence.py"] },
+  { id: "CIR-10", area: "CIR", capability: "QA/Verify (paso 4; test-report-N)", location: "AGENTS.md paso 4", classification: "IMPROVED", destination: "ai-native verify determinista + interpretacion del Reviewer", phase: "M3.2", risk: "A", parTests: ["PAR-QA-VERIFY"], testsV2: ["test_adaptive_evidence.py"] },
+  { id: "CIR-11", area: "CIR", capability: "Code review posterior a QA (paso 5; code-review-N siempre)", location: "AGENTS.md paso 5", classification: "PRESERVED", destination: "Transicion CODE_REVIEWED", phase: "M3.2", risk: "B", parTests: ["PAR-CODE-REVIEW-POST-BUILD"], testsV2: ["test_adaptive_evidence.py"] },
+  { id: "CIR-12", area: "CIR", capability: "Retornos: Reviewer->Planner, QA->Builder, CR->Builder, NO MERGE->Builder", location: "AGENTS.md", classification: "IMPROVED", destination: "Transiciones de retorno en contracts/state-machine.json", phase: "M3.2", risk: "M", parTests: ["PAR-STATE-MACHINE"], testsV2: [] },
+  { id: "CIR-13", area: "CIR", capability: "Convergence: presupuestos LIGHT=2/STANDARD=4/FULL=6, fingerprint, no-progress, escalaciones", location: "convergence.ps1", classification: "IMPROVED", destination: "runtime/circuit/converge invocado por el orquestador; severidad como enum", phase: "M3.2", risk: "A", parTests: ["PAR-CONV-SUCCESS", "PAR-CONV-NO-PROGRESS", "PAR-CONV-BUDGET-EXHAUSTED"], testsV2: ["test_convergence.py"] },
+  { id: "CIR-14", area: "CIR", capability: "Documentacion por cambio (indices FEATURE_LINKS)", location: "feature-contract.ps1, update-doc-indexes.ps1", classification: "IMPROVED", destination: "docImpact declarado + drift check", phase: "M3.2/M3.5", risk: "M", parTests: ["PAR-DOC-DRIFT"], testsV2: ["test_feature_contract_scripts.py"] },
+  { id: "CIR-15", area: "CIR", capability: "ready-for-pr (gate, ROADMAP, push, PR)", location: "ready-for-pr.ps1", classification: "IMPROVED", destination: "ai-native unit ready", phase: "M3.2", risk: "M", parTests: ["PAR-READY"], testsV2: ["test_feature_contract_scripts.py", "test_milestone_ready_for_pr.py"] },
+  { id: "CIR-16", area: "CIR", capability: "wait-pr-ci", location: "wait-pr-ci.ps1", classification: "PRESERVED", destination: "ai-native unit wait-ci", phase: "M3.2", risk: "B", parTests: ["PAR-WAIT-CI"], testsV2: [] },
+  { id: "CIR-17", area: "CIR", capability: "HITL unico MERGE/NO MERGE + complete-approved-pr", location: "complete-approved-pr.ps1", classification: "IMPROVED", destination: "Merge ejecutado por cuenta humana sobre SHA verificado; trust-gate (P44)", phase: "M4.3", risk: "A", parTests: ["PAR-SINGLE-HITL", "PAR-HUMAN-MERGE", "PAR-MERGE-GATE-TRUST", "PAR-AGENT-IDENTITY", "PAR-TRUSTED-CALLER"], testsV2: ["test_complete_approved_pr_script.py"] },
+  { id: "CIR-18", area: "CIR", capability: "close-feature ([x], milestone atomico, alcance de maintenance)", location: "close-feature.ps1", classification: "IMPROVED", destination: "Cierre por merge: unit ready marca [x] dentro de la PR", phase: "M3.2", risk: "M", parTests: ["PAR-CLOSURE-BY-MERGE", "PAR-CLOSE"], testsV2: ["test_close_feature_script.py", "test_milestone_close_feature.py"] },
+  { id: "CIR-19", area: "CIR", capability: "Reconciliador local en background (PID lock)", location: "local-feature-reconcile.ps1", classification: "IMPROVED", destination: "ai-native unit reconcile multiplataforma", phase: "M3.2", risk: "M", parTests: ["PAR-RECONCILE-XPLAT"], testsV2: ["test_local_reconciler_scripts.py"] },
+  { id: "CIR-20", area: "CIR", capability: "unit-lifecycle (inspect, reconcile, cleanup, evidencia stale)", location: "unit-lifecycle.ps1", classification: "IMPROVED", destination: "Parte de la maquina de estados", phase: "M3.2", risk: "M", parTests: ["PAR-STATE-MACHINE"], testsV2: ["test_parallel_units_f14.py"] },
+  { id: "CIR-21", area: "CIR", capability: "Limpieza de worktree con residuos en Windows", location: "cleanup-work-unit.ps1", classification: "PRESERVED", destination: "ai-native unit cleanup", phase: "M3.2", risk: "B", parTests: ["PAR-CLEANUP"], testsV2: ["test_parallel_units_f14.py"] },
+  { id: "CIR-22", area: "CIR", capability: "Alcance de maintenance canonico/auxiliar", location: "workunit-lib.ps1", classification: "IMPROVED", destination: "Identidad + regla explicita", phase: "M3.2", risk: "B", parTests: ["PAR-MAINTENANCE"], testsV2: ["test_maintenance_scope.py"] },
+  { id: "CIR-23", area: "CIR", capability: "Milestone: 1 rama/1 PR/1 HITL, docs por item, transiciones atomicas", location: "varios", classification: "IMPROVED", destination: "Milestone + tasks[] con dependsOn (DAG)", phase: "M3.2", risk: "A", parTests: ["PAR-MILESTONE-SINGLE-CIRCUIT", "PAR-TASK-DAG"], testsV2: ["test_milestone_close_feature.py", "test_milestone_contract.py", "test_milestone_ready_for_pr.py", "test_canonical_workunit_identity.py"] },
+  { id: "CIR-24", area: "CIR", capability: "Unidades paralelas en worktrees", location: "start-work-unit.ps1, unit-lifecycle.ps1", classification: "IMPROVED", destination: "Registro de claims en el git common dir con file lock", phase: "M3.2", risk: "M", parTests: ["PAR-PARALLEL-UNITS"], testsV2: ["test_parallel_units_f14.py"] },
+  { id: "CIR-25", area: "CIR", capability: "Modos de gobernanza SingleMaintainer / MultiMaintainer", location: "complete-approved-pr.ps1", classification: "IMPROVED", destination: "profile.governance.mode (0 aprobaciones + merge humano, o >=1 aprobacion)", phase: "M4.3", risk: "A", parTests: ["PAR-GOVERNANCE-MODES"], testsV2: ["test_complete_approved_pr_script.py", "test_parallel_units_f14.py"] },
+
+  // STA — estado y trazabilidad (6)
+  { id: "STA-01", area: "STA", capability: "Formato y estados de ROADMAP ([ ]/[-]/[x]; [~] aceptado)", location: "ROADMAP.md, workunit-lib.ps1", classification: "LOCAL_BY_DESIGN", destination: "Contrato contracts/roadmap.md + parser central; contenido local", phase: "M3.2", risk: "M", parTests: ["PAR-ROADMAP"], testsV2: ["test_workunit_lib.py"] },
+  { id: "STA-02", area: "STA", capability: "Layout de runs/vX.Y.Z/<unit>/", location: "check-integrity.ps1, feature-contract.ps1", classification: "LOCAL_BY_DESIGN", destination: "Local, con esquema central", phase: "M3.2", risk: "M", parTests: ["PAR-RUNS"], testsV2: ["test_check_integrity.py"] },
+  { id: "STA-03", area: "STA", capability: "Snapshot STATUS (bloque AUTO)", location: "status-lib.ps1, update-status.ps1", classification: "IMPROVED", destination: "ai-native status (vista derivada)", phase: "M3.1", risk: "A", parTests: ["PAR-STATUS-DERIVED", "PAR-STATUS-ACTIVE-UNITS"], testsV2: ["test_status_scripts.py"] },
+  { id: "STA-04", area: "STA", capability: "check-status", location: "check-status.ps1", classification: "IMPROVED", destination: "Semantica de resultados (runtime/lib/result.mjs)", phase: "M3.1", risk: "A", parTests: ["PAR-RESULT-SEMANTICS"], testsV2: ["test_status_scripts.py"] },
+  { id: "STA-05", area: "STA", capability: "Tolerancia a commits que solo tocan STATUS", location: "status-lib.ps1, check-integrity.ps1", classification: "IMPROVED", destination: "observedCommit unico (first-parent)", phase: "M3.1", risk: "M", parTests: ["PAR-STATUS-SELF-STALE"], testsV2: ["test_status_scripts.py", "test_check_integrity.py"] },
+  { id: "STA-06", area: "STA", capability: "check-integrity (ROADMAP<->runs<->git, SHAs alcanzables)", location: "check-integrity.ps1", classification: "IMPROVED", destination: "Siempre activo en pr-gate", phase: "M3.1/M4.3", risk: "M", parTests: ["PAR-INTEGRITY-IN-CI"], testsV2: ["test_check_integrity.py"] },
+
+  // DIS — distribucion (3)
+  { id: "DIS-01", area: "DIS", capability: "Sincronizacion del Starter (manifest + SHA256)", location: "sync-template-starter.ps1", classification: "REPLACED_EQUIVALENT", destination: "Lock + bootstrap; el Starter pasa a ser fixture/canary", phase: "M4.1/M5", risk: "M", parTests: ["PAR-MINIMAL-CONSUMER-FOOTPRINT"], testsV2: ["test_template_starter_sync.py"] },
+  { id: "DIS-02", area: "DIS", capability: "Upgrade anti-drift (baseline/target, hash, rutas protegidas)", location: "upgrade-template-consumer.ps1", classification: "REPLACED_EQUIVALENT", destination: "PR de bump (2 archivos); logica de hash reutilizada en migrate --inventory", phase: "M1.2/M4", risk: "M", parTests: ["PAR-BUMP-FOOTPRINT", "PAR-MIGRATE-CLASSIFY"], testsV2: ["test_template_consumer_upgrade.py"] },
+  { id: "DIS-03", area: "DIS", capability: "Adopcion brownfield (colisiones + procedimiento)", location: "check-adoption-conflicts.ps1", classification: "IMPROVED", destination: "migrate --inventory + skill brownfield-adoption", phase: "M1.2", risk: "A", parTests: ["PAR-BROWNFIELD-SAFETY"], testsV2: ["test_check_adoption_conflicts.py"] },
+
+  // CI — CI/CD, release y seguridad (9)
+  { id: "CI-01", area: "CI", capability: "circuit-tests (pytest + adapters + supply chain)", location: "ci.yml", classification: "IMPROVED", destination: "pr-gate reutilizable + CI propia de ai-native (Ubuntu + Windows)", phase: "M0.3/M4.3", risk: "M", parTests: ["PAR-PR-GATE"], testsV2: ["test_ci_workflow.py", "test_ci_integration.py"] },
+  { id: "CI-02", area: "CI", capability: "Hook product-tests (placeholder que siempre pasa)", location: "ci.yml", classification: "IMPROVED", destination: "pr-gate ejecuta productTestCommand del lock; NOT_APPLICABLE si falta", phase: "M4.3", risk: "M", parTests: ["PAR-PR-GATE"], testsV2: ["test_ci_workflow.py"] },
+  { id: "CI-03", area: "CI", capability: "Tests del reconciliador en Windows", location: "ci.yml", classification: "PRESERVED", destination: "Matriz Windows en la CI de ai-native", phase: "M1.1", risk: "B", parTests: ["PAR-RECONCILE-XPLAT"], testsV2: ["test_local_reconciler_scripts.py"] },
+  { id: "CI-04", area: "CI", capability: "mkdocs build/deploy", location: "docs.yml", classification: "IMPROVED", destination: "Workflow docs reutilizable; build tambien en PR si cambia docs", phase: "M4.3", risk: "B", parTests: ["PAR-DOC-DRIFT"], testsV2: [] },
+  { id: "CI-05", area: "CI", capability: "Guard reactivo de develop", location: "guard-develop-branch.yml", classification: "REPLACED_EQUIVALENT", destination: "Ruleset nativo (ruta A); guard corregido solo como fallback", phase: "M4.3", risk: "M", parTests: ["PAR-BRANCH-PROTECTION"], testsV2: ["test_guard_develop_branch_workflow.py"] },
+  { id: "CI-06", area: "CI", capability: "Gate post-HITL", location: "post-hitl-merge-gate.yml", classification: "IMPROVED", destination: "merge-gate confiable + trust-gate (P44)", phase: "M0.0/M4.3", risk: "A", parTests: ["PAR-MERGE-GATE-TRUST", "PAR-TRUSTED-CALLER"], testsV2: ["test_ci_integration.py"] },
+  { id: "CI-07", area: "CI", capability: "Cierre post-merge + STATUS", location: "post-merge-close-feature.yml", classification: "REPLACED_EQUIVALENT", destination: "post-merge de solo lectura (integrity, merged_by humano, limpieza local)", phase: "M0.0/M4.3", risk: "A", parTests: ["PAR-POST-MERGE", "PAR-HUMAN-MERGE"], testsV2: ["test_ci_integration.py"] },
+  { id: "CI-08", area: "CI", capability: "Politica de supply chain (permissions, pin por SHA, secretos)", location: "validate-supply-chain.ps1", classification: "IMPROVED", destination: "runtime/supply-chain + pr-gate", phase: "M4.3", risk: "A", parTests: ["PAR-SUPPLY-CHAIN"], testsV2: ["test_supply_chain_policy.py"] },
+  { id: "CI-09", area: "CI", capability: "Release readiness", location: "release-readiness.ps1", classification: "IMPROVED", destination: "release-gate parametrizado en release.yml", phase: "M4.2", risk: "M", parTests: ["PAR-RELEASE"], testsV2: ["test_release_readiness.py"] },
+
+  // AUD/EVL — auditoria y evaluaciones (6)
+  { id: "AUD-01", area: "AUD", capability: "Metodo de auditoria (prompt, reglas, score Q1-Q8, evidencia E1-E5, pasada adversarial)", location: ".audit/*.md", classification: "IMPROVED", destination: "audit/method/ (auditMethod 1.2); gate solo de release, con tolerancia", phase: "M4.5", risk: "M", parTests: ["PAR-AUDIT-METHOD"], testsV2: ["test_audit_framework.py"] },
+  { id: "AUD-02", area: "AUD", capability: "Perfil TEMPLATE (2762 lineas)", location: ".audit/profiles/TEMPLATE.md", classification: "IMPROVED", destination: "audit/profiles/PLATFORM.md (adaptacion) + TEMPLATE conservado para consumidores v2", phase: "M4.5", risk: "B", parTests: ["PAR-AUDIT-METHOD"], testsV2: ["test_audit_framework.py"] },
+  { id: "AUD-03", area: "AUD", capability: "Perfiles APPLICATION y LIBRARY (placeholders)", location: ".audit/profiles/", classification: "IMPROVED", destination: "Perfiles completos + FACTORY", phase: "M4.5", risk: "A", parTests: ["PAR-AUDIT-METHOD"], testsV2: ["test_audit_framework.py"] },
+  { id: "AUD-04", area: "AUD", capability: "reports, evidence, history, SCORE_HISTORY", location: ".audit/{reports,evidence,history}", classification: "LOCAL_BY_DESIGN", destination: "Local por consumidor, con schema de informe", phase: "M4.5", risk: "M", parTests: ["PAR-AUDIT-VALIDITY"], testsV2: [] },
+  { id: "AUD-05", area: "AUD", capability: "Versionado del framework (tag audit-framework-v1.1.0)", location: "tag de git", classification: "IMPROVED", destination: "platform.json.components.auditMethod", phase: "M4.5", risk: "B", parTests: ["PAR-AUDIT-METHOD"], testsV2: [] },
+  { id: "EVL-01", area: "EVL", capability: "Escenarios agenticos A-J + runner", location: "evals/scenarios.json, agentic-evals.ps1", classification: "IMPROVED", destination: "evaluation/scenarios como dataset + harness real L1", phase: "M4.6", risk: "A", parTests: ["PAR-EVAL-REAL"], testsV2: ["test_agentic_evals.py"] },
+
+  // DOC/HIS (4)
+  { id: "DOC-01", area: "DOC", capability: "55 docs tecnicas/usuario + sitio mkdocs", location: "docs/, mkdocs.yml, requirements-docs.txt", classification: "IMPROVED", destination: "Docs de plataforma centrales; consumidor conserva solo docs de producto", phase: "M3.5", risk: "M", parTests: ["PAR-DOC-DRIFT"], testsV2: [] },
+  { id: "DOC-02", area: "DOC", capability: "Log de decisiones (arquitectura, fundamentos-v2, criterios)", location: "docs/tecnica/*", classification: "PRESERVED", destination: "governance/adr/ de ai-native", phase: "M0.1", risk: "B", parTests: [], testsV2: [] },
+  { id: "HIS-01", area: "HIS", capability: "Runs historicos v1.1.0-v2.0.5 (301 archivos)", location: "runs/", classification: "LOCAL_BY_DESIGN", destination: "Quedan en el repo template (congelado) como historia", phase: "M6", risk: "B", parTests: [], testsV2: [] },
+  { id: "HIS-02", area: "HIS", capability: "ROADMAP y STATUS del propio Template", location: "raiz de template", classification: "LOCAL_BY_DESIGN", destination: "Quedan en template", phase: "-", risk: "B", parTests: [], testsV2: [] },
+];
+
+const VALID_CLASSIFICATIONS = new Set(["PRESERVED", "IMPROVED", "REPLACED_EQUIVALENT", "LOCAL_BY_DESIGN", "DEPRECATED_EXPLICITLY"]);
+
+function assert(cond, msg) {
+  if (!cond) throw new Error(msg);
+}
+
+// Structural checks before writing anything.
+const seen = new Set();
+for (const c of CAPABILITIES) {
+  assert(!seen.has(c.id), `duplicate capability id: ${c.id}`);
+  seen.add(c.id);
+  assert(VALID_CLASSIFICATIONS.has(c.classification), `${c.id}: invalid classification ${c.classification}`);
+  for (const field of ["area", "capability", "location", "destination", "phase", "risk"]) {
+    assert(typeof c[field] === "string" && c[field].length > 0, `${c.id}: missing ${field}`);
+  }
+  assert(Array.isArray(c.parTests), `${c.id}: parTests must be an array`);
+  assert(Array.isArray(c.testsV2), `${c.id}: testsV2 must be an array`);
+}
+assert(CAPABILITIES.length === 74, `expected 74 capabilities, got ${CAPABILITIES.length}`);
+
+const counts = { PRESERVED: 0, IMPROVED: 0, REPLACED_EQUIVALENT: 0, LOCAL_BY_DESIGN: 0, DEPRECATED_EXPLICITLY: 0 };
+for (const c of CAPABILITIES) counts[c.classification] += 1;
+
+const output = {
+  schemaVersion: 1,
+  source: "Contrato de Paridad TEMPLATE v2.0.5 -> AI-NATIVE v3 (governance/adr/ADR-002-contrato-paridad-template-v205.md)",
+  generatedBy: "parity/v2.0.5/build-capabilities.mjs",
+  totalCapabilities: CAPABILITIES.length,
+  classificationCounts: counts,
+  unmapped: 0,
+  capabilities: CAPABILITIES,
+};
+
+writeFileSync(join(here, "capabilities.json"), JSON.stringify(output, null, 2) + "\n");
+console.log(`wrote capabilities.json: ${CAPABILITIES.length} capabilities, counts=`, counts);

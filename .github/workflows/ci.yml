@@ -76,3 +76,7 @@ jobs:
       - name: runtime/lib result-semantics conformance (PAR-RESULT-SEMANTICS)
         shell: bash
         run: node --test runtime/lib/result.test.mjs
+
+      - name: parity gate (P38 TEST_PARITY / P40 PARITY_SCORECARD, UNMAPPED=0)
+        shell: bash
+        run: node parity/validate-parity.mjs
