@@ -12,13 +12,15 @@ No se abre una fase M(n+1) sin que las condiciones P de salida de M(n) estén en
 
 - [x] M0.0a — Contención inmediata: deshabilitar `post-hitl-merge-gate.yml` y `post-merge-close-feature.yml` en los repos afectados (B02/B04/B31 vigentes). Reversible, sin commits.
 - [x] M0.0v — Verificar la contención: 16/16 workflows aplicables en `disabled_manually`, sin runs posteriores; `gi-vertical-dental` sin exposición (repo remoto vacío). P39a PASS.
-- [-] M0.1 — Gobernanza: registrar la consolidación (PR #2), ADR-001..004, `VERSIONING-POLICY` completa, este roadmap, `roadmap-status.json` reconciliado, archivo P0-T1 reconstruido.
+- [x] M0.1 — Gobernanza: registrar la consolidación (PR #2), ADR-001..004, `VERSIONING-POLICY` completa, este roadmap, `roadmap-status.json` reconciliado, archivo P0-T1 reconstruido. PR #3, mergeada `220113d`.
 - [ ] M0.0b — Corrección definitiva en TEMPLATE: patch v2.0.6 (sin `head.ref` interpolado, sin checkout de PR con escritura, sin pre-autorización por archivo) + rulesets en repos públicos. Puede ir después de M0.1.
-- [ ] M0.2 — Reparación post-subtree: rutas `ai-*` y `D:\proyectos` obsoletas, `.gitignore`, validadores rotos (`validate-enterprise-template`, W8 foundation).
-- [ ] M0.3a — CI de la raíz de ai-native (validadores node, Ubuntu + Windows), sin dependencias de GHAS.
+- [x] M0.2 — Reparación post-subtree: rutas `ai-*` y `D:\proyectos` obsoletas, `.gitignore`, validadores rotos (`validate-enterprise-template`, W8 foundation). PR #3, mergeada `220113d`.
+- [x] M0.3a — CI de la raíz de ai-native (validadores node, Ubuntu + Windows), sin dependencias de GHAS. PR #3, mergeada `220113d`. **P2 PASS con evidencia remota real** en ambos sistemas operativos, tanto en la PR (runs `36723909756`→`36728072722`) como post-merge en `main` (run `36741496288`).
 - [ ] M0.3b — Workflows de seguridad (CodeQL, Trivy, SBOM, dependency-review, supply-chain) movidos a la raíz, fijados por SHA. Depende de **D1** (visibilidad).
-- [ ] M0.4 — Semántica de resultados común (PASS / PASS_WITH_WARNINGS / FAIL / ERROR) + corpus de conformidad compartido.
-- [ ] M0.5 — `parity/v2.0.5/{capabilities,tests-map,files-map}.json` con validador `UNMAPPED=0`.
+- [x] M0.4 — Semántica de resultados común (PASS / PASS_WITH_WARNINGS / FAIL / ERROR) + corpus de conformidad compartido. PR #3, mergeada `220113d`.
+- [x] M0.5 — `parity/v2.0.5/{capabilities,tests-map,files-map}.json` con validador `UNMAPPED=0`. PR #3, mergeada `220113d`.
+
+**Hallazgo real de la primera corrida de CI en Ubuntu (bloqueante hasta corregirse, ya resuelto):** el repo no tenía `.gitattributes`; en Windows (`core.autocrlf=true`) el checkout convierte LF→CRLF, y los 11 `sha256` guardados en `knowledge/registries/{agents,prompts}/registry.storage.json` se habían calculado contra esa versión CRLF, no contra el blob real de Git (LF). En Ubuntu, sin esa conversión, los 11 hashes no coincidían. Corregido en el mismo PR #3 (`.gitattributes` + 11 hashes recalculados contra el blob real), verificado con PASS remoto real posterior en ambos sistemas.
 
 ## M1 — Baseline
 

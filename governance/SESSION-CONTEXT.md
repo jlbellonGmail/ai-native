@@ -2753,3 +2753,31 @@ Restricciones vigentes:
 * No modificar `foundation/`, `knowledge/` ni `template/` (subcarpetas producto) durante M0.
 * No tocar repos GI para migracion real sin autorizacion explicita por oleada (M6).
 * D1 (visibilidad de `ai-native`), D3 (aprobar deprecaciones), D4 (canary real) y A1/A2/A3 (identidad del agente, rulesets, GitHub App `ai-native-gate`) siguen pendientes y bloquean las fases que dependen de ellas segun el grafo de M0-M6.
+
+---
+
+## Ultima ejecucion valida
+
+Tipo:
+AI-NATIVE V3 — CIERRE DE M0 (push confirmado) E INICIO DE M1
+
+Estado:
+M0.0a/M0.0v/M0.1/M0.2/M0.3a/M0.4/M0.5 FORMALLY_CLOSED (push confirmado via merge); M0.0b y M0.3b pendientes (dependen de D2-repos/D1); M1 EN CURSO
+
+Repositorio impactado:
+
+* `ai-native`: PR #3 revisada y mergeada por el usuario (merge humano, HITL respetado). Commit de merge `220113d6d6e5c491eff20b2ece27039ab1c6c837` sobre `main`.
+
+Validado:
+
+* CI en la PR #3: ambos jobs (`validators (ubuntu-latest)`, `validators (windows-latest)`) en `success`, verificado leyendo el log completo de cada job (no solo el estado agregado), corridas `36723909756`->`36728072722` (la primera corrida fallo por limite de facturacion de GitHub Actions en la cuenta, ajeno al codigo; el usuario lo corrigio; la segunda corrida encontro un bug real de CRLF/LF corregido en el mismo PR; la tercera corrida quedo verde).
+* CI post-merge en `main`: run `36741496288`, ambos jobs `success`, verificado.
+* Rama `chore/m0-governance-and-repair` eliminada localmente y en `origin` tras el merge.
+* `node parity/validate-parity.mjs` en `main` sincronizado localmente: PASS.
+
+Restricciones vigentes:
+
+* M0.0b (patch v2.0.6 + rulesets en repos publicos) y M0.3b (workflows de seguridad, requiere D1) siguen sin iniciar; no bloquean M1.
+* M1.1 (importar TEMPLATE v2.0.5 filtrado a `legacy/template-v2/`) es la siguiente tarea, autorizada explicitamente por el usuario ("continua automaticamente con M1 segun el Plan Maestro").
+* No tocar repos GI (M6) sin autorizacion explicita por oleada.
+* Merge siempre humano (HITL real); el agente no mergea PRs propias.
