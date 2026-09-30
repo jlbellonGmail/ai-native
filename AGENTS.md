@@ -68,36 +68,34 @@ Human approval defines what is formally accepted.
 
 ## Factory Workspace
 
-Factory workspace root:
+Factory workspace root: the repository root (this repository is the single workspace; there is no separate drive-level root).
 
-```text
-D:\proyectos\ai-native
-```
-
-Factory repositories:
+Factory areas (consolidated by subtree since PR #2, 2026-09-29; see `governance/adr/ADR-001-arquitectura-referencia-versionada.md`):
 
 ```text
 governance/
-ai-foundation/
-ai-knowledge/
-ai-template/
+foundation/
+knowledge/
+template/
 ```
 
-Repository responsibilities:
+Area responsibilities:
 
 ```text
 governance/
 Roadmaps, session context, execution state, current task records, archives, evidence, approval records, closure records and decision history.
 
-ai-foundation/
+foundation/
 Technical foundation, runtime contracts, security, observability, infrastructure-facing capabilities and foundational reusable components.
 
-ai-knowledge/
+knowledge/
 Knowledge base, standards, SDD assets, prompts, guardrails, evaluations, quality gates, documentation and reusable methodology.
 
-ai-template/
-Project template, scaffolding, generators, manifests, examples and reusable project structure for real AI-NATIVE projects.
+template/
+Project template, scaffolding, generators, manifests, examples and reusable project structure for real AI-NATIVE projects, plus the TEMPLATE v2.0.5 evolution work (see governance/roadmaps/AI-NATIVE-V3-ROADMAP.md).
 ```
+
+These are directories inside this single repository, not separate Git repositories. Cross-area moves (e.g. `foundation/` -> `knowledge/`) are ordinary file moves, not repository operations.
 
 The factory is not a generated project.
 
@@ -483,30 +481,30 @@ When working inside the factory, the agent must distinguish between these scopes
 
 ```text
 foundation scope:
-Changes to ai-foundation only.
+Changes to foundation/ only.
 
 knowledge scope:
-Changes to ai-knowledge only.
+Changes to knowledge/ only.
 
 template scope:
-Changes to ai-template only.
+Changes to template/ only.
 
 governance scope:
 Changes to governance only.
 
-cross-repository scope:
-Coordinated changes across more than one factory repository.
+cross-area scope:
+Coordinated changes across more than one factory area (foundation/, knowledge/, template/, governance/) in the same repository.
 ```
 
-Cross-repository changes require explicit justification from the task scope.
+Cross-area changes require explicit justification from the task scope.
 
-The agent must not assume that a change in one repository requires changes in the others.
+The agent must not assume that a change in one area requires changes in the others.
 
 ---
 
 ## Template and Generated Project Boundary
 
-ai-template may contain assets that are copied, rendered or transformed into generated projects.
+template/ may contain assets that are copied, rendered or transformed into generated projects.
 
 The agent must distinguish between:
 
@@ -518,7 +516,7 @@ template assets:
 Copied or rendered into generated projects.
 
 generated project behavior:
-Expected behavior after a real project is created from ai-template.
+Expected behavior after a real project is created from template/ (via its generator or via ai-native bootstrap once available).
 ```
 
 Changing the factory AGENTS.md does not automatically change generated project templates.

@@ -21,9 +21,9 @@ Use:
 Factory repositories:
 
 - governance/
-- ai-foundation/
-- ai-knowledge/
-- ai-template/
+- foundation/
+- knowledge/
+- template/
 
 Rules:
 

@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "description": "Shared conformance corpus for result-status semantics (PAR-RESULT-SEMANTICS, P3). Consumed today by runtime/lib/result.test.mjs (node). The pwsh reference implementation planned for M3.1 must pass the same cases.",
+  "exitCodeCases": [
+    { "status": "PASS", "strict": false, "exitCode": 0 },
+    { "status": "PASS", "strict": true, "exitCode": 0 },
+    { "status": "PASS_WITH_WARNINGS", "strict": false, "exitCode": 0 },
+    { "status": "PASS_WITH_WARNINGS", "strict": true, "exitCode": 1 },
+    { "status": "FAIL", "strict": false, "exitCode": 1 },
+    { "status": "FAIL", "strict": true, "exitCode": 1 },
+    { "status": "ERROR", "strict": false, "exitCode": 2 },
+    { "status": "ERROR", "strict": true, "exitCode": 2 }
+  ],
+  "invalidGateStatuses": ["NOT_RUN", "NOT_APPLICABLE"],
+  "statusFromCountsCases": [
+    { "errors": 0, "warnings": 0, "status": "PASS" },
+    { "errors": 0, "warnings": 1, "status": "PASS_WITH_WARNINGS" },
+    { "errors": 0, "warnings": 3, "status": "PASS_WITH_WARNINGS" },
+    { "errors": 1, "warnings": 0, "status": "FAIL" },
+    { "errors": 1, "warnings": 2, "status": "FAIL" },
+    { "errors": 2, "warnings": 0, "status": "FAIL" }
+  ],
+  "forbiddenPatterns": [
+    {
+      "id": "print-pass-with-warnings-exit-0",
+      "regressionOf": "B08",
+      "description": "TEMPLATE v2.0.5 check-status.ps1 prints the literal 'PASS STATUS.md coherente (warnings regenerables)' and exits 0 even with warnings. formatLine() never returns the bare literal 'PASS' when warnings > 0; it returns 'PASS_WITH_WARNINGS (...)' instead."
+    },
+    {
+      "id": "json-mode-exit-always-0",
+      "regressionOf": "B09",
+      "description": "TEMPLATE v2.0.5 check-status.ps1 -Json always exits 0 even when INCONSISTENTE. exitCodeFor() takes no output-format parameter, so there is no code path that can silently return 0 regardless of status."
+    },
+    {
+      "id": "stale-status-still-prints-pass",
+      "regressionOf": "B10",
+      "description": "TEMPLATE v2.0.5 check-integrity.ps1 treats a stale STATUS.md as a warning-only condition that still prints PASS at exit 0. Under this module, any warning forces PASS_WITH_WARNINGS, and CI (strict=true) exits non-zero on it."
+    }
+  ]
+}

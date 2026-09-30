@@ -2688,3 +2688,68 @@ Restricciones vigentes:
 * H7 - First Client Project Playbook queda como proxima tarea elegible, no abierta
 * no abrir H7 sin instruccion explicita separada
 * no hacer push sin instruccion explicita
+
+---
+
+## Ultima ejecucion valida
+
+Tipo:
+AI-NATIVE V3 — GOBERNANZA M0 (contencion + reconciliacion post-consolidacion)
+
+Estado:
+GOVERNANCE CONSISTENCY FORMALLY_ACCEPTED / M0.0a-M0.0v-M0.1 EXECUTED, M0.1 EN CURSO
+
+Contexto:
+
+* Sesion de auditoria arquitectonica (TEMPLATE v2.0.5 vs ai-native consolidado), contraste independiente Claude <-> Codex, Decision Arquitectonica Consolidada (DAC), Contrato de Paridad TEMPLATE v2.0.5 -> AI-NATIVE v3 con revision critica independiente (55 hallazgos incorporados) y Enmienda Final P44/P45 (TRUSTED_CALLER_INTEGRITY, REVIEWER_INDEPENDENCE_ENFORCEMENT). Aprobado como PLAN por el usuario. Autorizacion explicita de ejecucion recibida (D2 aprobado) para iniciar D2 -> M0.0a -> M0.0v -> M0.1 -> fases posteriores elegibles del Plan Maestro.
+* La consolidacion por `git subtree add` de `template/`, `foundation/` y `knowledge/` (PR #2, commit `d459522`, 2026-09-29) no habia sido registrada en gobernanza hasta esta entrada. AGENTS.md, scripts y `.gitignore` seguian describiendo el modelo previo de 4 repositorios (`governance/`, `ai-foundation/`, `ai-knowledge/`, `ai-template/`) y rutas `ai-*`/`D:\proyectos` que ya no existen en este checkout. Esta inconsistencia queda resuelta por ADR-001..004 y por M0.2 (reparacion de rutas, subfase siguiente).
+
+Repositorios impactados:
+
+* `ai-native` (governance-only en esta entrada: ADR-001..004, VERSIONING-POLICY completada, roadmap AI-NATIVE-V3, roadmap-status.json reconciliado, archivo P0-T1 reconstruido).
+* `template` (github.com/jlbellonGmail/template, publico): 2 workflows deshabilitados (`post-hitl-merge-gate.yml`, `post-merge-close-feature.yml`), sin commits.
+* `template-starter`, `gi-common-crm`, `gi-common-persons`, `gi-common-tenants`, `gi-ocr`, `gi-platform-core`: mismos 2 workflows deshabilitados cada uno.
+* `gi-clinicadental`: `post-merge-close-feature.yml` deshabilitado (no tenia `post-hitl-merge-gate.yml`).
+* `gi-vertical-dental`: sin accion — el repositorio remoto esta vacio (solo existe una rama local `codex/vertical-dental-baseline` sin pushear); no hay workflow expuesto que deshabilitar.
+
+Accion ejecutada (M0.0a — contencion inmediata, reversible, sin archivos):
+
+* `gh workflow disable post-hitl-merge-gate.yml` y `gh workflow disable post-merge-close-feature.yml` via API de GitHub, en los repositorios listados arriba.
+* Motivo: defectos B02/B04/B31 del Contrato de Paridad — el gate post-HITL de TEMPLATE v2.0.5 acepta checkout de la PR con token de escritura, reutiliza una autorizacion de merge ya commiteada (`runs/v2.0.0/22-auditoria-release-v2/human-authorization.md`), y `post-merge-close-feature.yml` interpola `${{ github.event.pull_request.head.ref }}` en bash bajo `pull_request_target` con `contents: write` (inyeccion de script via nombre de rama). Vigentes en repositorios publicos al momento de esta entrada.
+
+Verificacion ejecutada (M0.0v — solo lectura):
+
+* `gh api repos/{owner}/{repo}/actions/workflows/{workflow}` para los 16 workflows aplicables (17 esperados menos los 2 inexistentes en `gi-vertical-dental` por repo vacio; ver detalle abajo) -> estado `disabled_manually` en 16/16.
+* `gh api .../runs?per_page=1` sobre cada workflow -> ninguna ejecucion posterior a la desactivacion (ultimas ejecuciones registradas entre 2026-09-17 y 2026-09-29, todas previas a esta sesion).
+* Resultado: **P39a PASS**. Condicion de entrada de M0.1 satisfecha.
+
+Validado:
+
+* D2 (contencion) fue aprobado explicitamente por el usuario en esta sesion.
+* M0.0a y M0.0v quedan `[x]` en `governance/roadmaps/AI-NATIVE-V3-ROADMAP.md`.
+* M0.1 queda `[-]` EN CURSO: ADR-001 (arquitectura de referencia versionada), ADR-002 (Contrato de Paridad TEMPLATE v2.0.5), ADR-003 (evidencia perdida H5/H7 — busqueda `NOT_FOUND_AFTER_SEARCH` documentada integramente en el propio ADR-003, sin inventar artefactos), ADR-004 (version de plataforma v3.0.0) creados en `governance/adr/`.
+* `governance/versioning/VERSIONING-POLICY.md` completada (estaba truncada a mitad de la seccion PATCH).
+* `governance/roadmaps/roadmap-status.json` reconciliado: 9 entradas curadas originales conservadas sin alterar + 58 entradas nuevas reconciliadas mecanicamente desde las carpetas de `governance/execution/archive/` (marcadas `reconciled_mechanically_from_archive=true`, sin evidencia inventada, solo listado real de archivos archivados) + entrada `P0-T1` reconstruida + `H5`/`H7` marcadas `evidenceStatus: HISTORICAL_UNVERIFIED`. Total: 68 entradas.
+* `governance/execution/archive/AI-NATIVE-HARDENING-V1.1/P0-T1/README.md` creado — la tarea solo existia citada dentro de este archivo SESSION-CONTEXT.md (commit `cb151a5`, verificado presente), sin carpeta de archivo propia hasta ahora.
+* Regla nueva de cierre adoptada (ADR-003): ninguna tarea de producto se marca `CLOSED` sin push confirmado del commit de producto a un remoto accesible.
+* `ai-foundation`, `ai-knowledge` y `ai-template` (nombres historicos) permanecen tal como quedaron con la consolidacion del 2026-09-29; esta entrada no modifica `foundation/`, `knowledge/` ni `template/` dentro de `ai-native`.
+
+Evidencia disponible:
+
+* `governance/adr/ADR-001-arquitectura-referencia-versionada.md`
+* `governance/adr/ADR-002-contrato-paridad-template-v205.md`
+* `governance/adr/ADR-003-evidencia-perdida-h5-h7.md`
+* `governance/adr/ADR-004-versionado-plataforma-v3.md`
+* `governance/versioning/VERSIONING-POLICY.md`
+* `governance/roadmaps/AI-NATIVE-V3-ROADMAP.md`
+* `governance/roadmaps/roadmap-status.json`
+* `governance/execution/archive/AI-NATIVE-HARDENING-V1.1/P0-T1/README.md`
+* Plan de sesion completo (Contrato de Paridad, matriz de 74 capacidades, mapa de 264 tests, P1-P45, revision critica independiente, Enmienda Final P44/P45): archivo de plan de esta sesion (fuente vinculante citada desde ADR-001..004).
+
+Restricciones vigentes:
+
+* No abrir M0.2 hasta cerrar formalmente M0.1 (commit + push de esta reconciliacion).
+* No ejecutar M0.0b (patch v2.0.6 + rulesets, requiere A2) todavia; puede ir despues de M0.1 por diseno.
+* No modificar `foundation/`, `knowledge/` ni `template/` (subcarpetas producto) durante M0.
+* No tocar repos GI para migracion real sin autorizacion explicita por oleada (M6).
+* D1 (visibilidad de `ai-native`), D3 (aprobar deprecaciones), D4 (canary real) y A1/A2/A3 (identidad del agente, rulesets, GitHub App `ai-native-gate`) siguen pendientes y bloquean las fases que dependen de ellas segun el grafo de M0-M6.

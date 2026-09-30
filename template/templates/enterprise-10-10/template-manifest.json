@@ -1,12 +1,21 @@
 {
   "program": "ENTERPRISE-10-10",
-  "ownerRepo": "ai-template",
+  "ownerRepo": "template",
   "status": "PRODUCT_REPAIRED",
   "templates": [
     {
       "id": "observability-runtime",
-      "repairs": ["W2-T1", "W2-T2", "W2-T3", "W2-T4", "W2-T5", "W2-T6", "W2-T7", "W2-T8"],
-      "targetRepo": "ai-foundation",
+      "repairs": [
+        "W2-T1",
+        "W2-T2",
+        "W2-T3",
+        "W2-T4",
+        "W2-T5",
+        "W2-T6",
+        "W2-T7",
+        "W2-T8"
+      ],
+      "targetRepo": "foundation",
       "files": [
         "observability/enterprise-10-10/observability-program.json",
         "scripts/validate-enterprise-10-10.mjs"
@@ -14,8 +23,16 @@
     },
     {
       "id": "evaluation-program",
-      "repairs": ["W3-T1", "W3-T2", "W3-T3", "W3-T4", "W3-T5", "W3-T6", "W3-T7"],
-      "targetRepo": "ai-knowledge",
+      "repairs": [
+        "W3-T1",
+        "W3-T2",
+        "W3-T3",
+        "W3-T4",
+        "W3-T5",
+        "W3-T6",
+        "W3-T7"
+      ],
+      "targetRepo": "knowledge",
       "files": [
         "evaluation/enterprise-10-10/evaluation-program.json",
         "scripts/validate-enterprise-evaluation.mjs"
@@ -23,8 +40,10 @@
     },
     {
       "id": "security-final-audit",
-      "repairs": ["W1-T7"],
-      "targetRepo": "ai-foundation",
+      "repairs": [
+        "W1-T7"
+      ],
+      "targetRepo": "foundation",
       "files": [
         "security/enterprise-10-10/security-audit-final.json"
       ]

@@ -45,7 +45,7 @@
       "storagePath": "registries/agents/skills-index.md",
       "contentType": "text/markdown",
       "retentionClass": "registry-index",
-      "sha256": "c9de38b3134e25fc90ef7be0832410961256f4e77611a4a22d30ea89cf82882f"
+      "sha256": "096a2c4302e16d78b61565a35f69b5f5573fc38563b0835d63089281c4035101"
     },
     {
       "id": "api-design",
@@ -55,7 +55,7 @@
       "storagePath": "registries/agents/api-design.md",
       "contentType": "text/markdown",
       "retentionClass": "agent-skill",
-      "sha256": "b652e9a9ebf968816a7a13976b0824f8bd1069b0d8a07a4c2ed9bdb2cac70fe5"
+      "sha256": "dd41fbe1f4b4f9efd435345927c0708297dddaef4e1947ee78717d7d70e3b6c2"
     },
     {
       "id": "frontend-design",
@@ -65,7 +65,7 @@
       "storagePath": "registries/agents/frontend-design.md",
       "contentType": "text/markdown",
       "retentionClass": "agent-skill",
-      "sha256": "c5d60d3b33b3757ac9a1c1fd6b5045c3b53e2ec3a7c0d4071892f248a96d58b7"
+      "sha256": "f8ae6c933dbe1dfd1ad3fc2aa27dffa85305b519e26e60eb0fe59615d6ec087b"
     },
     {
       "id": "architecture-design",
@@ -75,7 +75,7 @@
       "storagePath": "registries/agents/architecture-design/skill.md",
       "contentType": "text/markdown",
       "retentionClass": "agent-skill",
-      "sha256": "a3b74b9035431c91e1a6857e166fffb465d9540b9a4b3d0821411c4d26bf2d44"
+      "sha256": "a149d23057f0716d709fef21a1d5ff8e0409b4ff72d5fe372aca78df20dea37e"
     },
     {
       "id": "code-review",
@@ -85,7 +85,7 @@
       "storagePath": "registries/agents/code-review/skill.md",
       "contentType": "text/markdown",
       "retentionClass": "agent-skill",
-      "sha256": "8fcad8749f53ccde6d406c18a236a0ba76e70ddc7a5a5dd131547484458ed96e"
+      "sha256": "17cc4906856ddacae08ea561d482eadaa484bb3c4b9477613141465a821ec75c"
     },
     {
       "id": "documentation-generation",
@@ -95,7 +95,7 @@
       "storagePath": "registries/agents/documentation-generation/skill.md",
       "contentType": "text/markdown",
       "retentionClass": "agent-skill",
-      "sha256": "4f0ae6d8468d78ceebb8b1ddb5ac093de4168e551e5382f815e8d2b5dcf95a98"
+      "sha256": "6bc3cf67aabd4e36afcbb0b1df63a9071b8dc47c6d64a982422b0a6597365887"
     },
     {
       "id": "prompt-design",
@@ -105,7 +105,7 @@
       "storagePath": "registries/agents/prompt-design/skill.md",
       "contentType": "text/markdown",
       "retentionClass": "agent-skill",
-      "sha256": "c0dc5e26dbb2fd257efa5316aca40ba0e4a92225e582cc555f3193ed71fc9509"
+      "sha256": "20f1f99c1d1a217da1aa760333ae8e5c2e25c4d688b48d2a3e356aae6c32f44d"
     },
     {
       "id": "requirements-analysis",
@@ -115,7 +115,7 @@
       "storagePath": "registries/agents/requirements-analysis/skill.md",
       "contentType": "text/markdown",
       "retentionClass": "agent-skill",
-      "sha256": "8ab916d0bb82f02dd25e128d05ea7a76a5b7a2207d330b22112f8fbf484dbc79"
+      "sha256": "e02e6b9ea0c83b89cbf105d5847dcf5a7570981d6e100eeded19a0faefaa60b6"
     }
   ],
   "governance": {

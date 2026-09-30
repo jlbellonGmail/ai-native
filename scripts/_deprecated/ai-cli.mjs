@@ -1,3 +1,9 @@
+// DEPRECATED (2026-09-30, M0.2 governance reconciliation).
+// Kept for history; DO NOT RUN. Reason: Calls require() inside an ESM package (throws at runtime); 'init' does not copy any scaffold; references the pre-consolidation ai-template/ai-foundation/ai-knowledge paths.
+// Tracked in governance/roadmaps/AI-NATIVE-V3-ROADMAP.md (M0.2) and
+// governance/adr/ADR-001-arquitectura-referencia-versionada.md.
+// Ungoverned when introduced (commit 3c6ad67); not part of any closed task.
+
 #!/usr/bin/env node
 import { existsSync } from "node:fs";
 import { readdirSync } from "node:fs";

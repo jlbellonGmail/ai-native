@@ -1,3 +1,9 @@
+// DEPRECATED (2026-09-30, M0.2 governance reconciliation).
+// Kept for history; DO NOT RUN. Reason: Hardcodes root to ai-template/ (pre-consolidation path); every gate prints FAIL but the process never exits non-zero, so it always reports success.
+// Tracked in governance/roadmaps/AI-NATIVE-V3-ROADMAP.md (M0.2) and
+// governance/adr/ADR-001-arquitectura-referencia-versionada.md.
+// Ungoverned when introduced (commit 3c6ad67); not part of any closed task.
+
 #!/usr/bin/env node
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";

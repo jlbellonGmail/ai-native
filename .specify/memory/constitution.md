@@ -7,9 +7,9 @@ This constitution defines the stable Spec-Driven Development principles for the 
 The AI-NATIVE factory is responsible for evolving:
 
 - governance
-- ai-foundation
-- ai-knowledge
-- ai-template
+- foundation
+- knowledge
+- template
 - project generation
 - reusable SDD methodology
 - agent operating standards
@@ -144,13 +144,13 @@ The factory has four main areas:
 governance/
 Roadmaps, session state, execution current, archives, evidence and closure records.
 
-ai-foundation/
+foundation/
 Technical foundation, runtime, security, observability and reusable base components.
 
-ai-knowledge/
+knowledge/
 Knowledge, standards, prompts, SDD assets, guardrails, quality gates and evaluation.
 
-ai-template/
+template/
 Project templates, generators, scaffolds, manifests and generated-project behavior.
 
 Cross-repository changes require explicit justification.

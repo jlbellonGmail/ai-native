@@ -1,0 +1,82 @@
+name: CI
+
+# M0.3a (governance/roadmaps/AI-NATIVE-V3-ROADMAP.md): root CI for ai-native.
+# Runs the node:* -only validators of foundation/, knowledge/, template/ and
+# the root audit-safe-script-mode regression fixture, on Ubuntu and Windows.
+# No package install step: every validator here imports only node: builtins
+# (verified 2026-09-30), so there is nothing to install.
+#
+# Deliberately excluded from this workflow (tracked in the roadmap):
+# - Security workflows (CodeQL/Trivy/SBOM/dependency-review/supply-chain):
+#   M0.3b, blocked on D1 (repository visibility decision).
+# - legacy/template-v2 pytest suite: M1.1 (TEMPLATE not yet imported).
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validators:
+    name: validators (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Node version
+        shell: bash
+        run: node --version
+
+      - name: foundation/ validators
+        shell: bash
+        run: |
+          set -e
+          cd foundation
+          for f in scripts/validate-*.mjs; do
+            echo "::group::foundation/$f"
+            node "$f"
+            echo "::endgroup::"
+          done
+
+      - name: knowledge/ validators
+        shell: bash
+        run: |
+          set -e
+          cd knowledge
+          for f in scripts/validate-*.mjs; do
+            echo "::group::knowledge/$f"
+            node "$f"
+            echo "::endgroup::"
+          done
+
+      - name: template/ validators
+        shell: bash
+        run: |
+          set -e
+          cd template
+          for f in scripts/validate-*.mjs; do
+            echo "::group::template/$f"
+            node "$f"
+            echo "::endgroup::"
+          done
+
+      - name: root audit-safe-script-mode regression fixture
+        shell: bash
+        run: node scripts/validate-audit-safe-script-mode.mjs
+
+      - name: runtime/lib result-semantics conformance (PAR-RESULT-SEMANTICS)
+        shell: bash
+        run: node --test runtime/lib/result.test.mjs
+
+      - name: parity gate (P38 TEST_PARITY / P40 PARITY_SCORECARD, UNMAPPED=0)
+        shell: bash
+        run: node parity/validate-parity.mjs

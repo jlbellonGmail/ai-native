@@ -89,9 +89,9 @@ If scope is unclear, inspect all factory repositories:
 
 ```text
 governance/
-ai-foundation/
-ai-knowledge/
-ai-template/
+foundation/
+knowledge/
+template/
 ```
 
 Minimum commands per inspected repository:

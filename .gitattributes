@@ -1,0 +1,25 @@
+# Force LF line endings for text files, regardless of each machine's
+# core.autocrlf setting. Without this, Windows checkouts silently convert
+# LF -> CRLF, which breaks any content-hash check (sha256, etc) computed
+# against the file on disk: the git blob (what CI on Linux checks out) has
+# LF, so a hash captured on a Windows machine with core.autocrlf=true
+# stops matching on Ubuntu runners. Root-caused 2026-09-30 in M0.3a CI:
+# knowledge/registries/{agents,prompts}/registry.storage.json stored
+# CRLF-derived sha256 values for all 11 of their entries; all 11 failed on
+# ubuntu-latest while passing on windows-latest. See
+# governance/roadmaps/AI-NATIVE-V3-ROADMAP.md.
+* text=auto eol=lf
+
+# Windows-only scripts keep their native line endings.
+*.ps1 text eol=crlf
+*.cmd text eol=crlf
+*.bat text eol=crlf
+
+# Binary assets: never touch.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary

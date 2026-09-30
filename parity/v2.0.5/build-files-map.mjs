@@ -1,0 +1,57 @@
+#!/usr/bin/env node
+// Generates files-map.json: area-level mapping of the 576 tracked files of
+// TEMPLATE v2.0.5 (tag v2.0.5, commit 92a797c) to capability groups and
+// destination. Mechanical transcription of Contrato de Paridad (ADR-002)
+// section 4. Individual-file granularity (576 rows) is not attempted here;
+// git ls-tree at legacy/template-v2 (M1.1) is the authoritative per-file
+// list once TEMPLATE is imported.
+import { writeFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
+
+const here = dirname(fileURLToPath(import.meta.url));
+
+const AREAS = [
+  { area: "root", files: 13, description: "AGENTS, CONSTITUTION, CLAUDE, README, ROADMAP, STATUS, mkdocs.yml, opencode.json, .mcp.json, pytest.ini, requirements x2, .gitignore", capabilityGroups: ["GOV-01", "GOV-02", "GOV-03", "STA-01", "STA-03", "AGT-04", "DOC-01", "CI-01"], destination: "Kernel/constitucion central; ROADMAP/STATUS locales; opencode.json/.mcp.json como puntos de entrada minimos", consumerKeeps: true },
+  { area: ".agentic/", files: 16, description: "roles, agents.json, models.json, security-policy.json, mcp.json, schemas", capabilityGroups: ["AGT-01", "AGT-02", "AGT-06", "AGT-07", "AGT-08", "AGT-09"], destination: "core/, contracts/, mcp/", consumerKeeps: false },
+  { area: ".agents/", files: 2, description: "skills README/.gitkeep (sin skills reales en v2.0.5)", capabilityGroups: ["AGT-05"], destination: "skills/ (generado)", consumerKeeps: false },
+  { area: ".claude/", files: 7, description: "agents/*.md generados, rules/, skills/ (espejo)", capabilityGroups: ["AGT-04", "GOV-07"], destination: "Generado; solo .claude/settings.json es bootstrap", consumerKeeps: "partial: .claude/settings.json only" },
+  { area: ".codex/", files: 6, description: "config.toml, role profiles, README", capabilityGroups: ["AGT-10"], destination: "Generado; solo .codex/config.toml es bootstrap", consumerKeeps: "partial: .codex/config.toml only" },
+  { area: ".opencode/", files: 3, description: "package.json (pin del plugin), skills (espejo)", capabilityGroups: ["AGT-10"], destination: "Generado", consumerKeeps: false },
+  { area: ".github/workflows/", files: 5, description: "ci, docs, guard-develop-branch, post-hitl-merge-gate, post-merge-close-feature", capabilityGroups: ["CI-01", "CI-02", "CI-03", "CI-04", "CI-05", "CI-06", "CI-07"], destination: "Workflows reutilizables; solo el caller ai-native.yml queda local", consumerKeeps: "partial: caller only" },
+  { area: "docs/", files: 55, description: "producto (1), tecnica (28), usuario (25), index (1)", capabilityGroups: ["DOC-01", "DOC-02", "GOV-06", "CIR-14"], destination: "Docs de plataforma -> ai-native; docs/producto y features propias quedan locales", consumerKeeps: "partial: product docs only" },
+  { area: "evals/", files: 1, description: "scenarios.json", capabilityGroups: ["EVL-01"], destination: "evaluation/", consumerKeeps: false },
+  { area: "scripts/", files: 29, description: "28 .ps1 + template-starter-manifest.json", capabilityGroups: ["CIR-*", "STA-*", "DIS-*", "CI-08", "CI-09", "AGT-*"], destination: "runtime/", consumerKeeps: false },
+  { area: "tests/", files: 35, description: "35 archivos de test, 264 funciones (ver tests-map.json)", capabilityGroups: ["*"], destination: "tests/ de ai-native", consumerKeeps: false },
+  { area: ".audit/", files: 103, description: "4 metodo + 3 perfiles + 2 historial + 9 informes + 85 evidencia", capabilityGroups: ["AUD-01", "AUD-02", "AUD-03", "AUD-04", "AUD-05"], destination: "Metodo -> audit/; informes/evidencia/historial del Template quedan en template (congelado)", consumerKeeps: "partial: .audit/{reports,evidence,history} own only" },
+  { area: "runs/", files: 301, description: "runs historicos v1.1.0-v2.0.5", capabilityGroups: ["HIS-01", "STA-02"], destination: "Quedan en template (congelado)", consumerKeeps: "own runs/ only, not TEMPLATE's history" },
+];
+
+function assert(cond, msg) {
+  if (!cond) throw new Error(msg);
+}
+
+const seen = new Set();
+for (const a of AREAS) {
+  assert(!seen.has(a.area), `duplicate area: ${a.area}`);
+  seen.add(a.area);
+  assert(Number.isInteger(a.files) && a.files > 0, `${a.area}: files must be a positive integer`);
+}
+assert(AREAS.length === 13, `expected 13 areas, got ${AREAS.length}`);
+
+const totalFiles = AREAS.reduce((sum, a) => sum + a.files, 0);
+assert(totalFiles === 576, `expected 576 total files, got ${totalFiles}`);
+
+const output = {
+  schemaVersion: 1,
+  source: "Contrato de Paridad TEMPLATE v2.0.5 -> AI-NATIVE v3, seccion 4 (governance/adr/ADR-002-contrato-paridad-template-v205.md)",
+  generatedBy: "parity/v2.0.5/build-files-map.mjs",
+  granularity: "area (13 rows). Per-individual-file granularity (576 rows) becomes available from `git ls-tree -r --name-only v2.0.5` once legacy/template-v2 is imported in M1.1; this file will be superseded/extended then.",
+  totalAreas: AREAS.length,
+  totalFiles,
+  unmappedFiles: 0,
+  areas: AREAS,
+};
+
+writeFileSync(join(here, "files-map.json"), JSON.stringify(output, null, 2) + "\n");
+console.log(`wrote files-map.json: ${AREAS.length} areas, ${totalFiles} files total`);

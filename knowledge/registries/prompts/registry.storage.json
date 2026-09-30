@@ -39,7 +39,7 @@
       "lifecycleState": "stored",
       "storagePath": "registries/prompts/code-generator/v1/system-prompt.md",
       "contentType": "text/markdown",
-      "sha256": "13e830b5e1a2648af369e7f622fd7b22896152af4f73cf8bd010889c41404a8e"
+      "sha256": "2a5fb21671eb5c731a9dffc24d4a87e22b3154e1ef69e8b08e6861629554e1e5"
     },
     {
       "id": "code-generator.system",
@@ -49,7 +49,7 @@
       "lifecycleState": "stored",
       "storagePath": "registries/prompts/code-generator/v2/system-prompt.md",
       "contentType": "text/markdown",
-      "sha256": "9e628149ff80812f94d5554f7659ac17eda3f656e9c0b4c6a85d12c66975e140"
+      "sha256": "51ac3a034496db9015661cd5e32fb82f8bd764068b24b85c1b63add3e6a3693f"
     },
     {
       "id": "code-generator.system",
@@ -59,7 +59,7 @@
       "lifecycleState": "stored",
       "storagePath": "registries/prompts/code-generator/v3/system-prompt.md",
       "contentType": "text/markdown",
-      "sha256": "39ba9e9f23a78affc0fe5450a896fbc9a25613bf61d06dd37e51df58e6c42766"
+      "sha256": "e72ec28199afe5f7f8fd2a52ff87922cb0b822fbbc05260b3fc76f31d46eee0e"
     }
   ],
   "governance": {

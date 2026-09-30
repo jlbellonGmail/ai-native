@@ -48,11 +48,12 @@ for (const template of manifest.templates) {
 // Validate that all target repos have corresponding foundation/knowledge files
   for (const template of manifest.templates) {
     for (const file of template.files) {
-      // ai-foundation and ai-knowledge are sibling repos, not inside ai-template
+      // foundation/ and knowledge/ are sibling areas under the consolidated
+      // ai-native repo (git subtree since PR #2, 2026-09-29), not inside template/.
       const fullPath = join(root, "..", template.targetRepo, file);
       assert(existsSync(fullPath), "template " + template.id + " references file " + file + " not found in " + template.targetRepo);
     }
   }
 
-console.log("ENTERPRISE-10-10 ai-template validation PASS");
+console.log("ENTERPRISE-10-10 template validation PASS");
 console.log("Template-to-repo mappings validated");

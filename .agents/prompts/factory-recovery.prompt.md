@@ -15,9 +15,9 @@ Use:
 Factory repositories:
 
 - governance/
-- ai-foundation/
-- ai-knowledge/
-- ai-template/
+- foundation/
+- knowledge/
+- template/
 
 Rules:
 
@@ -45,9 +45,9 @@ Inspect governance:
 Inspect relevant factory repositories:
 
 - governance/
-- ai-foundation/
-- ai-knowledge/
-- ai-template/
+- foundation/
+- knowledge/
+- template/
 
 Minimum git inspection per relevant repository:
 

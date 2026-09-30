@@ -4,11 +4,14 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 
 const ROOT = path.resolve(new URL("..", import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1"));
+// Areas consolidated in-tree since PR #2 (2026-09-29, git subtree); see
+// governance/adr/ADR-001-arquitectura-referencia-versionada.md. These were
+// formerly sibling repositories ai-foundation/, ai-knowledge/, ai-template/.
 const REPOS = {
   root: ROOT,
-  aiFoundation: path.join(ROOT, "ai-foundation"),
-  aiKnowledge: path.join(ROOT, "ai-knowledge"),
-  aiTemplate: path.join(ROOT, "ai-template"),
+  foundation: path.join(ROOT, "foundation"),
+  knowledge: path.join(ROOT, "knowledge"),
+  template: path.join(ROOT, "template"),
 };
 const SCRIPT = path.join(ROOT, "scripts", "audit-safe-script-mode.mjs");
 
@@ -77,19 +80,19 @@ function main() {
   assert(root.packageInventory.status === "PASS", "Root package.json should be inventoried.");
   assert(scriptByName(root, "w1t1:verify").classification.result === "BLOCKED", "Root package-level validator wrapper should be blocked.");
 
-  const foundation = runAudit(["inspect", "--repo", REPOS.aiFoundation]).json;
-  assert(foundation.packageInventory.status === "PASS", "ai-foundation package.json should be inventoried.");
-  assert(scriptByName(foundation, "test").classification.classes.includes("PACKAGE_LEVEL"), "ai-foundation test script should be package-level.");
+  const foundation = runAudit(["inspect", "--repo", REPOS.foundation]).json;
+  assert(foundation.packageInventory.status === "PASS", "foundation/ package.json should be inventoried.");
+  assert(scriptByName(foundation, "test").classification.classes.includes("PACKAGE_LEVEL"), "foundation/ test script should be package-level.");
 
-  const knowledge = runAudit(["inspect", "--repo", REPOS.aiKnowledge]).json;
-  assert(knowledge.packageInventory.status === "NOT_APPLICABLE", "ai-knowledge has no root package.json.");
+  const knowledge = runAudit(["inspect", "--repo", REPOS.knowledge]).json;
+  assert(knowledge.packageInventory.status === "NOT_APPLICABLE", "knowledge/ has no root package.json.");
 
-  const template = runAudit(["inspect", "--repo", REPOS.aiTemplate]).json;
-  assert(template.packageInventory.status === "PASS", "ai-template package.json should be inventoried.");
-  assert(scriptByName(template, "prepare").classification.classes.includes("INSTALL_OR_LIFECYCLE"), "ai-template prepare must be lifecycle-blocked.");
-  assert(scriptByName(template, "setup").classification.result === "BLOCKED", "ai-template setup must be blocked.");
-  assert(scriptByName(template, "bootstrap").classification.result === "BLOCKED", "ai-template bootstrap must be blocked.");
-  assert(scriptByName(template, "create-ai-native-app").classification.classes.includes("GENERATOR"), "ai-template generator must be classified.");
+  const template = runAudit(["inspect", "--repo", REPOS.template]).json;
+  assert(template.packageInventory.status === "PASS", "template/ package.json should be inventoried.");
+  assert(scriptByName(template, "prepare").classification.classes.includes("INSTALL_OR_LIFECYCLE"), "template/ prepare must be lifecycle-blocked.");
+  assert(scriptByName(template, "setup").classification.result === "BLOCKED", "template/ setup must be blocked.");
+  assert(scriptByName(template, "bootstrap").classification.result === "BLOCKED", "template/ bootstrap must be blocked.");
+  assert(scriptByName(template, "create-ai-native-app").classification.classes.includes("GENERATOR"), "template/ generator must be classified.");
 
   const blockedInstall = runAudit([
     "inspect",
@@ -117,7 +120,7 @@ function main() {
   const generatorDryRun = runAudit([
     "inspect",
     "--repo",
-    REPOS.aiTemplate,
+    REPOS.template,
     "--command",
     "node generators/create-ai-native-app.mjs --dry-run --name audit-safe-demo --dest C:\\tmp\\audit-safe-demo",
   ]).json;
@@ -138,8 +141,8 @@ function main() {
   assert(directNoop.execution.stdout === "audit safe noop", "Direct no-op stdout should be captured.");
   assert(directNoop.cleanupStatus === "PASS", "Direct no-op must not mutate the working tree.");
 
-  const firstTemplateInventory = runAudit(["inspect", "--repo", REPOS.aiTemplate]).json;
-  const secondTemplateInventory = runAudit(["inspect", "--repo", REPOS.aiTemplate]).json;
+  const firstTemplateInventory = runAudit(["inspect", "--repo", REPOS.template]).json;
+  const secondTemplateInventory = runAudit(["inspect", "--repo", REPOS.template]).json;
   assert(stableInventory(firstTemplateInventory) === stableInventory(secondTemplateInventory), "Inspection output should be repeatable.");
 
   for (const [name, repo] of Object.entries(REPOS)) {
