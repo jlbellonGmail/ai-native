@@ -16,8 +16,13 @@ preserved.
 **Kept:** `scripts/` (29 PowerShell scripts, the agentic circuit),
 `tests/` (35 files, 285 pytest cases — the regression baseline), `.agentic/`
 (roles, model routing, security policy, MCP catalog, schemas), `evals/`,
-the `.audit/` method files and `profiles/` (not its reports/evidence/history
-— those are the Template repo's own local evidence, not method), all 5
+the `.audit/` method files, `profiles/`, and the convention `README.md` in
+each of `.audit/{evidence,history,reports}/` (these explain the naming
+convention for those folders — method, not evidence itself; added in a
+follow-up commit without individual file history, after the initial
+filtered import, once `tests/test_audit_framework.py::
+test_audit_evidence_and_reports_are_separate_from_runs` — which reads
+them — surfaced the gap via the real CI baseline run). All 5
 `.github/workflows/` (inert here: GitHub only reads workflows from the repo
 root, not from a subdirectory — kept for reference/extraction only),
 `docs/`, `AGENTS.md`, `CONSTITUTION.md`, `ROADMAP.md`, `STATUS.md`,
@@ -33,7 +38,10 @@ reads — not a merge/HITL authorization).
   live agent context by Claude Code.
 - The rest of `runs/` (300 of 301 files) — historical work-unit evidence,
   not method; stays in the `template` repository.
-- `.audit/{reports,evidence,history}/` — same reasoning.
+- The actual *content* of `.audit/{reports,evidence,history}/` (audit
+  reports, captured evidence, the score-history log) — same reasoning as
+  `runs/`. Only each folder's `README.md` convention doc is kept (see
+  above).
 - `.claude/`, `.codex/`, `.opencode/` (generated adapter mirrors) — tests
   that exercise `sync-agentic-adapters.ps1` build their own throwaway
   fixtures for these; none read the real ones from this repo.
