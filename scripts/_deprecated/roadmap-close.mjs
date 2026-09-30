@@ -1,3 +1,9 @@
+// DEPRECATED (2026-09-30, M0.2 governance reconciliation).
+// Kept for history; DO NOT RUN. Reason: Only has hardcoded closures for W1-T1 and W1-T2 of the legacy ENTERPRISE-10-10 roadmap; not general-purpose.
+// Tracked in governance/roadmaps/AI-NATIVE-V3-ROADMAP.md (M0.2) and
+// governance/adr/ADR-001-arquitectura-referencia-versionada.md.
+// Ungoverned when introduced (commit 3c6ad67); not part of any closed task.
+
 import fs from "node:fs";
 
 const taskId = process.argv[2];

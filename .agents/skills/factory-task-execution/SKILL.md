@@ -15,9 +15,9 @@ This skill applies to the factory workspace that contains:
 
 ```text
 governance/
-ai-foundation/
-ai-knowledge/
-ai-template/
+foundation/
+knowledge/
+template/
 ```
 
 This skill is not for generated projects. Generated projects must use their own project task execution skill.
@@ -97,9 +97,9 @@ If scope is unclear, inspect all factory repositories:
 
 ```text
 governance/
-ai-foundation/
-ai-knowledge/
-ai-template/
+foundation/
+knowledge/
+template/
 ```
 
 Do not implement anything until task eligibility is confirmed from governance.

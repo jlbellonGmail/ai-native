@@ -3,60 +3,65 @@
 The AI-Native Factory is a comprehensive ecosystem for building, maintaining, and
 evolving AI-native applications with governance, standards, and reusable assets.
 
+Since 2026-09-29 (PR #2), `foundation/`, `knowledge/` and `template/` are consolidated
+inside this single repository via `git subtree` (full history preserved). They are no
+longer separate Git repositories. `ai-native` is evolving from that consolidated state
+toward a versioned-reference platform (see `governance/adr/ADR-001-arquitectura-referencia-versionada.md`
+and `governance/roadmaps/AI-NATIVE-V3-ROADMAP.md`).
+
 ## Repository Structure
 
 ```
 ai-native/
-├── ai-template/         # Reusable project scaffold
-│   ├── scaffolds/       # Copyable project skeletons
-│   ├── templates/       # Reusable template assets
-│   ├── manifests/       # Machine-readable structure manifests
-│   ├── generators/      # Project generation entry points
-│   ├── examples/        # Reference application code
-│   ├── validation/      # Tests and validators
-│   ├── config/          # Template configuration
-│   └── docs/            # Setup, architecture, overview
-├── ai-foundation/       # Product foundation
-│   ├── runtime/         # Core runtime primitives
-│   ├── roles/           # Base operating roles
-│   ├── security/        # Security controls
-│   ├── observability/   # SLIs, SLOs, error budgets
-│   └── validation/      # Security and observability checks
-├── ai-knowledge/        # Knowledge and evaluation
-│   ├── evaluation/      # Prompt and agent evaluation
-│   ├── benchmarks/      # Benchmark suites
-│   ├── datasets/        # Dataset registry
-│   ├── scoring/         # Rubrics and scoring rules
-│   └── quality-gates/   # Quality gates
-├── governance/          # Roadmaps, execution state, archives
-├── scripts/             # Factory scripts
-└── specs/               # Spec-driven development artifacts
+├── template/             # Reusable project scaffold + TEMPLATE v2.0.5 evolution work
+│   ├── scaffolds/        # Copyable project skeletons
+│   ├── templates/        # Reusable template assets
+│   ├── manifests/        # Machine-readable structure manifests
+│   ├── generators/       # Project generation entry points
+│   ├── examples/         # Reference application code
+│   ├── validation/       # Tests and validators
+│   ├── config/           # Template configuration
+│   └── docs/             # Setup, architecture, overview
+├── foundation/           # Product foundation
+│   ├── runtime/          # Core runtime primitives
+│   ├── roles/            # Base operating roles
+│   ├── security/         # Security controls
+│   ├── observability/    # SLIs, SLOs, error budgets
+│   └── validation/       # Security and observability checks
+├── knowledge/            # Knowledge and evaluation
+│   ├── evaluation/       # Prompt and agent evaluation
+│   ├── benchmarks/       # Benchmark suites
+│   ├── datasets/         # Dataset registry
+│   ├── scoring/          # Rubrics and scoring rules
+│   └── quality-gates/    # Quality gates
+├── governance/           # Roadmaps, ADRs, execution state, archives
+├── scripts/              # Factory scripts (see status note below)
+└── specs/                # Spec-driven development artifacts
 ```
 
 ## Quick Start
 
+`scripts/ai-cli.mjs` and `scripts/quality-gates.mjs` are **deprecated** pending repair
+(tracked in `governance/roadmaps/AI-NATIVE-V3-ROADMAP.md`, M0.2): `ai-cli.mjs` calls
+`require()` inside an ESM package and `quality-gates.mjs` never exits non-zero on
+failure. Do not rely on them until that phase closes. Validate each area directly:
+
 ```bash
-# Initialize a new AI-native project
-node scripts/ai-cli.mjs init my-project
+# Validate template/
+node template/scripts/validate-structure.mjs
 
-# Validate the current project structure
-node scripts/ai-cli.mjs validate
+# Validate foundation/
+node foundation/scripts/validate-enterprise-10-10.mjs
 
-# Check cross-repository integrity
-node scripts/ai-cli.mjs check-integrity
-
-# Run quality gates
-node scripts/quality-gates.mjs
-
-# Run tests
-node scripts/ai-cli.mjs test
+# Validate knowledge/
+node knowledge/scripts/validate-enterprise-evaluation.mjs
 ```
 
-## Repository Relationships
+## Area Relationships
 
 ```
 ┌─────────────────┐
-│  ai-template     │  → Reusable project scaffold
+│  template        │  → Reusable project scaffold
 │  (scaffolding)   │
 └────────┬────────┘
          │
@@ -64,58 +69,52 @@ node scripts/ai-cli.mjs test
     │         │
     ▼         ▼
 ┌─────────┐  ┌──────────┐
-│ai-foundation│  │ai-knowledge│
-│(platform)   │  │(quality)    │
+│foundation│  │knowledge │
+│(platform)│  │(quality) │
 └─────────┘  └──────────┘
 ```
 
-- **ai-template**: The scaffold that projects clone from. Contains generation contracts,
+- **template/**: The scaffold that projects clone from. Contains generation contracts,
   template manifests, reference application code, validation rules, and examples.
-- **ai-foundation**: The product foundation owning runtime primitives, base roles,
+- **foundation/**: The product foundation owning runtime primitives, base roles,
   security controls, observability contracts, CI security workflows, and validation tools.
-- **ai-knowledge**: The knowledge, registry, and evaluation product repository owning
+- **knowledge/**: The knowledge, registry, and evaluation product repository owning
   benchmark definitions, datasets, scoring, quality gates, prompt/agent registries,
   and documentation standards.
 
 ## Validation
 
-Each repository has its own validation scripts:
+Each area has its own validation scripts:
 
-### ai-template
+### template/
 ```bash
-cd ai-template
-node scripts/validate-structure.mjs
-node scripts/validate-enterprise-template.mjs
+node template/scripts/validate-structure.mjs
+node template/scripts/validate-enterprise-template.mjs
 ```
 
-### ai-foundation
+### foundation/
 ```bash
-cd ai-foundation
-node scripts/validate-enterprise-10-10.mjs
+node foundation/scripts/validate-enterprise-10-10.mjs
 ```
 
-### ai-knowledge
+### knowledge/
 ```bash
-cd ai-knowledge
-node scripts/validate-enterprise-evaluation.mjs
+node knowledge/scripts/validate-enterprise-evaluation.mjs
 ```
 
 ## Documentation
 
-- [AI Ecosystem Overview](ai-template/docs/overview/AI_ECOSYSTEM.md)
-- [System Overview](ai-template/docs/overview/SYSTEM_OVERVIEW.md)
-- [AI Quick Reference](ai-template/docs/overview/AI_QUICK_REFERENCE.md)
-- [First Project Guide](ai-template/docs/onboarding/FIRST-PROJECT.md)
-- [Project Bootstrap](ai-template/docs/setup/PROJECT_BOOTSTRAP.md)
+- [AI Ecosystem Overview](template/docs/overview/AI_ECOSYSTEM.md)
+- [System Overview](template/docs/overview/SYSTEM_OVERVIEW.md)
+- [AI Quick Reference](template/docs/overview/AI_QUICK_REFERENCE.md)
+- [First Project Guide](template/docs/onboarding/FIRST-PROJECT.md)
+- [Project Bootstrap](template/docs/setup/PROJECT_BOOTSTRAP.md)
 
 ## Governance
 
 Governance defines what agents work on. See `governance/` for:
-- Roadmaps
-- Session context
-- Execution state
-- Archives
-- Evidence
-- Approval records
-- Closure records
-- Decision history
+- Roadmaps (`governance/roadmaps/`, including `AI-NATIVE-V3-ROADMAP.md`)
+- Architecture decisions (`governance/adr/`)
+- Session context (`governance/SESSION-CONTEXT.md`)
+- Execution state (`governance/execution/`)
+- Evidence, approval records, closure records, decision history

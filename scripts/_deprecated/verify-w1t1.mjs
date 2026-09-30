@@ -1,3 +1,9 @@
+// DEPRECATED (2026-09-30, M0.2 governance reconciliation).
+// Kept for history; DO NOT RUN. Reason: References the pre-consolidation ai-foundation/ path and runs pnpm commands against it; superseded by area-local validators (see README.md).
+// Tracked in governance/roadmaps/AI-NATIVE-V3-ROADMAP.md (M0.2) and
+// governance/adr/ADR-001-arquitectura-referencia-versionada.md.
+// Ungoverned when introduced (commit 3c6ad67); not part of any closed task.
+
 import fs from "node:fs";
 import { execSync } from "node:child_process";
 
