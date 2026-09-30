@@ -1,0 +1,46 @@
+# Releases y evolución determinísticos
+
+F15 añade `scripts/release-readiness.ps1` como ruta canónica y read-only para
+evaluar un candidato SemVer. El gate exige ejecutarse sobre `develop` limpio,
+comprueba que el commit local/remoto coincide, que las fases requeridas están
+cerradas, que CI está verde sobre ese SHA, que la integridad pasa, que `main`
+es ancestro (si existe), que el tag candidato no existe y que los tags
+históricos conservan sus objetos.
+
+## v2.0.2
+
+La release de mantenimiento v2.0.2 incorpora la semántica única de `STATUS.md`
+y su distribución reproducible. `STATUS.md` se regenera desde Git, lifecycle,
+PR/CI y releases observables; `runs/` sólo conserva evidencia histórica.
+
+El camino oficial es:
+
+```text
+Template → release → template-starter → bootstrap limpio
+                         └──────────→ upgrade/adopción
+```
+
+El Starter contiene infraestructura reusable, no estado del Template. Un
+upgrade preserva versión, ROADMAP, runs y documentación propios del consumidor
+y regenera STATUS desde su repositorio.
+
+## v2.0.3
+
+Corrige la selección del CI vigente: un fallo de un workflow auxiliar, como
+la guardia de rama, no suplanta el resultado del workflow `CI` requerido para
+el HEAD actual.
+
+## v2.0.4
+
+Corrige dos problemas de distribución detectados al validar la adopción:
+el gate de recolección no impone un techo artificial al crecimiento de la
+suite, y la semántica de STATUS usa el `gh` autenticado disponible, incluso
+cuando la autenticación proviene del keyring y no de `GH_TOKEN`.
+
+## v2.0.5
+
+Estabiliza commits que sólo actualizan `STATUS.md`, limita la detección de
+unidades activas a rutas canónicas y añade el upgrade oficial de consumidores
+con tags explícitos, manifest y controles de anti-drift. Durante la auditoría
+pre-release también se corrigió el uso inválido de `--arg` en `gh api` dentro
+del guard de `develop`; el valor SHA ahora se pasa a `jq`.
