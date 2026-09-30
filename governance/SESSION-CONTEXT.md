@@ -2781,3 +2781,84 @@ Restricciones vigentes:
 * M1.1 (importar TEMPLATE v2.0.5 filtrado a `legacy/template-v2/`) es la siguiente tarea, autorizada explicitamente por el usuario ("continua automaticamente con M1 segun el Plan Maestro").
 * No tocar repos GI (M6) sin autorizacion explicita por oleada.
 * Merge siempre humano (HITL real); el agente no mergea PRs propias.
+
+---
+
+## Ultima ejecucion valida
+
+Tipo:
+AI-NATIVE V3 — M1.1 (importar TEMPLATE v2.0.5 filtrado + baseline real medida)
+
+Estado:
+M1.1 FORMALLY_CLOSED (pendiente merge humano de PR #4); M1.2/M1.3 siguientes
+
+Repositorio impactado:
+
+* `ai-native`: rama `feature/m1-1-import-template-v205`, PR #4 abierta
+  (https://github.com/jlbellonGmail/ai-native/pull/4), CI verde en los
+  4 jobs.
+
+Accion ejecutada:
+
+* Clon temporal de `template` (original nunca tocado; verificado sin
+  cambios antes y despues: `92a797c` sigue siendo el commit del tag
+  `v2.0.5`).
+* `git filter-repo` (instalado via pip para esta tarea) con allowlist
+  explicita: scripts/, tests/, .agentic/, evals/, 4 archivos raiz de
+  .audit/ + profiles/, .github/workflows/ (inertes aqui, solo
+  referencia), docs/, AGENTS.md/CONSTITUTION.md/ROADMAP.md/STATUS.md/
+  README.md, pytest.ini, requirements-{dev,docs}.txt, mkdocs.yml,
+  opencode.json, .mcp.json, .gitignore, y exactamente 1 archivo de
+  runs/ (runs/v2.0.0/15-mcp-herramientas/authorization-example.md,
+  fixture estatico de autorizacion MCP de escritura, no de merge/HITL).
+  CLAUDE.md excluido a proposito (ningun test lo requiere; sin el,
+  Claude Code nunca carga ese AGENTS.md anidado como contexto vivo).
+* `git subtree add --prefix=legacy/template-v2` (historia preservada:
+  389 commits para los 158 archivos filtrados).
+* `legacy/README.md`: documenta que conservo y por que, que se
+  excluyo, y que ningun archivo bajo legacy/ es instruccion de agente.
+* Nuevo job `legacy-template-baseline` en ci.yml (matriz Ubuntu +
+  Windows), corre `pytest -v` real dentro de legacy/template-v2.
+
+Validado:
+
+* `git ls-files legacy/template-v2 | wc -l` = 161; `pytest --collect-only`
+  = 285 tests collected (coincide exacto con la estimacion del
+  Contrato de Paridad).
+* **Baseline real (no asumida):**
+  - Ubuntu: 275 passed, 10 skipped, 0 failed (corrida `110033715681`,
+    282.62s). Los 10 skips son los tests documentados como
+    solo-Windows (captura de body de PR + test_local_reconciler_scripts.py).
+  - Windows: 285 passed, 0 skipped, 0 failed (corrida `110033716341`,
+    250.05s). Windows corre los 285, sin ningun skip.
+* Se encontraron y corrigieron en el camino, con evidencia real de
+  cada corrida de CI:
+  1. Regresion preexistente en `main` (commit `d0c6f49`, ajena a esta
+     rama): `foundation/validation/roadmap-coverage.json` reclamaba 5
+     archivos de `.github/workflows/` ya eliminados por una limpieza
+     legitima del usuario. `main` ya estaba en rojo desde ese commit
+     (run `36748729630`) antes de que esta rama existiera. Corregido
+     quitando solo las 5 rutas eliminadas de roadmap-coverage.json;
+     ninguna tarea quedo con lista vacia.
+  2. 1 test propio de `legacy/template-v2` fallaba
+     (`test_audit_framework.py::test_audit_evidence_and_reports_are_separate_from_runs`)
+     por una exclusion mia demasiado amplia del import filtrado: los 3
+     `README.md` de convencion de `.audit/{evidence,history,reports}/`
+     son metodo (explican la convencion de nombres), no evidencia real;
+     agregados en un commit aparte, sin historia individual previa
+     (unica excepcion; el resto de los 158 archivos si conserva su
+     historia).
+* Intento local (descartado como medicion, documentado como diagnostico):
+  202 failed / 83 passed en esta maquina Windows, con OSError en
+  cascada. Un test aislado tardo 29s (deberia ser ~1s) y, solo, paso
+  limpio -> contencion de recursos de este entorno local especifico,
+  no del codigo. Confirmado por la corrida limpia real en CI.
+
+Restricciones vigentes:
+
+* PR #4 pendiente de revision y merge humano (HITL real: el agente no
+  mergea PRs propias).
+* M1.2 (Hash DB v2.0.0-v2.0.6 + `migrate --inventory`, solo lectura) y
+  M1.3 (informe de solo lectura de los repos GI y el Starter) son la
+  continuacion, recien despues del merge de PR #4.
+* No tocar repos GI sin autorizacion explicita por oleada (M6).
