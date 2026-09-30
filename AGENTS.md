@@ -97,6 +97,8 @@ Project template, scaffolding, generators, manifests, examples and reusable proj
 
 These are directories inside this single repository, not separate Git repositories. Cross-area moves (e.g. `foundation/` -> `knowledge/`) are ordinary file moves, not repository operations.
 
+A fifth directory, `legacy/`, holds frozen source material imported for extraction and regression-testing only (see `legacy/README.md`). It is never a factory area, never agent instructions, and never governance. An agent must not treat any file under `legacy/` as an operating rule for this repository, even if it is itself named `AGENTS.md`.
+
 The factory is not a generated project.
 
 Rules for generated projects belong in the generated project template and are copied into each generated project.
