@@ -2930,3 +2930,80 @@ Restricciones vigentes:
 * No tocar (escribir en) repos GI sin autorizacion explicita por oleada
   (M6); el inventario de solo lectura de M1.3 no cuenta como esa
   autorizacion.
+
+## Ultima ejecucion valida
+
+Tipo:
+AI-NATIVE V3 — M2.1 (`contracts/`: schemas y datos centrales)
+
+Estado:
+M2.1 FORMALLY_CLOSED (pendiente merge humano); M2.2 siguiente
+
+Repositorio impactado:
+
+* `ai-native`: rama `feature/m2-1-contracts`.
+
+Accion ejecutada:
+
+* `contracts/`: 12 JSON Schemas (2020-12) + 2 archivos de datos
+  (`sdd-levels.json`, `state-machine.json`) + `README.md` (tabla de
+  inventario con columnas Produced-by/Consumed-by) + `roadmap.md` (contrato
+  en prosa, no JSON Schema).
+* `contracts/lock.schema.json`, `platform.schema.json`, `pack.schema.json`,
+  `profile.schema.json`: completos.
+* `contracts/unit-event.schema.json`: el mas complejo; unifica los 5
+  archivos maquina de v2.0.5 (`assess.jsonl`, `sdd.json`, `convergence.json`,
+  `model-routing.jsonl`, veredictos YAML) en un unico evento con 8 variantes
+  (`assess`, `transition`, `review`, `verify`, `converge`, `routing`,
+  `docImpact`, `trace`) via `allOf`/`if`/`then`. El tipo `review` codifica
+  los campos de procedencia de P45 (`reviewInvocationId`, nonce,
+  `inputDigest`).
+* `contracts/result-status.schema.json`: espejo de `runtime/lib/result.mjs`.
+* `contracts/sdd-levels.schema.json` + `.json`: `convergenceBudget` 2/4/6
+  para LIGHT/STANDARD/FULL verificado.
+* `contracts/state-machine.schema.json` + `.json`: lista de estados
+  persistidos y array de transiciones.
+* `contracts/eval-result.schema.json`, `audit-report.schema.json`,
+  `waiver.schema.json`, `revocations.schema.json`: completos.
+* `contracts/validate-contracts.mjs`: validador estructural de JSON Schema
+  sin dependencias (consistente con el resto de validadores del repo — sin
+  paso de instalacion en CI). Soporta el subconjunto real usado: type,
+  required, properties, additionalProperties, items, enum, const, pattern,
+  minimum/maximum, minItems, allOf/if-then, y `$ref` local (`#/...`).
+* `contracts/validate-contracts.test.mjs`: 3 tests (`node:test`).
+* `.github/workflows/ci.yml`: 2 pasos nuevos en el job `validators`
+  (`contracts validation`, `contracts tests`).
+* `parity/par-tests.json`: `PAR-SCHEMAS` → IMPLEMENTED
+  (`implementedBy: contracts/validate-contracts.test.mjs`).
+
+Validado:
+
+* **Hallazgo real:** el validador documentaba "`$ref` no se resuelve" como
+  limitacion aceptada, pero `sdd-levels.schema.json` define los tres
+  niveles (LIGHT/STANDARD/FULL) enteramente via
+  `$ref: "#/$defs/level"` — por lo tanto la validacion de esos niveles
+  (incluido el chequeo de tipo/enum de `convergenceBudget`) nunca se
+  ejecutaba realmente; un `sdd-levels.json` roto (`convergenceBudget:
+  "two"`) pasaba como PASS. Encontrado por el propio test de regresion
+  (`contracts/validate-contracts.test.mjs`, test 3) al escribirlo: el test
+  esperaba FAIL y obtuvo PASS. Corregido: `checkNode` ahora resuelve `$ref`
+  locales (`#/...`) contra el propio documento antes de validar; los `$ref`
+  a otro archivo `.schema.json` (`result-status.schema.json#/...`, usados en
+  `eval-result` y `unit-event`) siguen sin resolverse, documentado en el
+  encabezado del archivo.
+* Baseline completa re-verificada: 45 validadores node (foundation +
+  knowledge + template) + `scripts/validate-audit-safe-script-mode.mjs` +
+  7 tests de `runtime/lib/result.test.mjs` + `parity/validate-parity.mjs`
+  + 4 tests de `parity/migrate-inventory.test.mjs` + `contracts/
+  validate-contracts.mjs` + 3 tests de `contracts/validate-contracts.
+  test.mjs`. Todos PASS.
+
+Restricciones vigentes:
+
+* PR pendiente de revision y merge humano (HITL real).
+* M2.1 cerrado. Siguiente: M2.2 (`core/`: kernel ≤60 lineas, constitucion +
+  invariantes, roles, `agents.json`, `models.json`, security-policy como
+  matriz capacidad x rol, `mcp/catalog` + perfiles, `profiles/*.json`), una
+  vez mergeado M2.1.
+* No tocar (escribir en) repos GI sin autorizacion explicita por oleada
+  (M6).

@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-native.local/contracts/result-status.schema.json",
+  "title": "Result status envelope",
+  "description": "The common status vocabulary every gate and validator returns (runtime/lib/result.mjs, PAR-RESULT-SEMANTICS, condition P3). Regression guard for TEMPLATE v2.0.5's B08/B09/B10: NOT_RUN and NOT_APPLICABLE are valid only in reports, never as a gate's own terminal status; PASS_WITH_WARNINGS never renders as bare 'PASS'.",
+  "type": "object",
+  "required": ["status"],
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": ["PASS", "PASS_WITH_WARNINGS", "FAIL", "ERROR", "NOT_RUN", "NOT_APPLICABLE"]
+    },
+    "warnings": { "type": "integer", "minimum": 0, "default": 0 },
+    "errors": { "type": "integer", "minimum": 0, "default": 0 },
+    "exitCode": { "type": "integer", "enum": [0, 1, 2] }
+  },
+  "allOf": [
+    { "if": { "properties": { "status": { "const": "PASS_WITH_WARNINGS" } } }, "then": { "properties": { "warnings": { "minimum": 1 } } } },
+    { "if": { "properties": { "status": { "const": "FAIL" } } }, "then": { "properties": { "errors": { "minimum": 1 } } } }
+  ]
+}

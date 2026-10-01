@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-native.local/contracts/eval-result.schema.json",
+  "title": "Evaluation result (L1/L2/L3)",
+  "description": "Extends TEMPLATE v2.0.5's legacy/template-v2/.agentic/schemas/agentic-eval-result.schema.json (evalSuite/scenario/expected/actual/pass), which never ran an actual agent (D-4: its 'actual' was hand-authored to equal 'expected', EVL-01 in capabilities.json). This version requires runs>=1 and explicit metricStatus per metric (regression guard for AGT-06's 'cost: null' with no explanation), and adds the level/platform/pack/consumer identification needed so a result is never mistaken for evidence of a different commit, model or dataset (Y13/Y41 in the session's addenda).",
+  "type": "object",
+  "required": ["schemaVersion", "level", "suite", "suiteVersion", "datasetDigest", "platform", "runs", "metrics", "status"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "level": { "type": "string", "enum": ["L1", "L2", "L3"] },
+    "suite": { "type": "string" },
+    "suiteVersion": { "type": "string" },
+    "datasetDigest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "platform": {
+      "type": "object",
+      "required": ["version", "commit"],
+      "properties": { "version": { "type": "string" }, "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" } }
+    },
+    "profile": { "type": ["string", "null"], "default": null },
+    "packs": { "type": "array", "default": [], "items": { "type": "object", "required": ["id", "version", "commit"] } },
+    "consumer": {
+      "type": ["object", "null"],
+      "default": null,
+      "description": "Required for L3 only.",
+      "properties": { "repo": { "type": "string" }, "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" } }
+    },
+    "tool": { "type": "object", "properties": { "name": { "type": "string" }, "version": { "type": "string" } } },
+    "model": { "type": "object", "properties": { "id": { "type": "string" }, "version": { "type": "string" } } },
+    "runs": { "type": "integer", "minimum": 1, "description": "N>=3 required for stochastic (model-involving) suites (Y13); deterministic suites may use runs=1." },
+    "metrics": {
+      "type": "object",
+      "required": ["score", "metricStatus"],
+      "properties": {
+        "score": { "type": "number", "minimum": 0, "maximum": 1 },
+        "variance": { "type": ["number", "null"] },
+        "cost": { "type": ["number", "null"] },
+        "contextTokens": { "type": ["integer", "null"] },
+        "durationMs": { "type": ["integer", "null"] },
+        "metricStatus": {
+          "type": "object",
+          "additionalProperties": { "type": "string", "enum": ["MEASURED", "NOT_AVAILABLE_FROM_TOOL"] },
+          "description": "One entry per metric field above; a null value is only valid when its metricStatus says NOT_AVAILABLE_FROM_TOOL, never silently."
+        }
+      }
+    },
+    "threshold": { "type": "number", "default": 0.8 },
+    "status": { "$ref": "result-status.schema.json#/properties/status" },
+    "runnerVersion": { "type": "string" },
+    "evidencePath": { "type": "string" }
+  }
+}

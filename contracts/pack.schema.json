@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-native.local/contracts/pack.schema.json",
+  "title": "Domain pack manifest",
+  "description": "A pack's own manifest, published by the pack's owning repo (e.g. gi-platform-core/ai-pack/pack.json), never stored inside ai-native itself (ai-native stays agnostic of GI domain content; see governance/adr/ADR-001).",
+  "type": "object",
+  "required": ["schemaVersion", "id", "owner", "repo", "version", "provides"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+    "owner": { "type": "string", "description": "GitHub handle or team that owns this pack; mirrors the repo's CODEOWNERS." },
+    "repo": { "type": "string", "pattern": "^github:[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$" },
+    "path": { "type": "string", "default": "ai-pack" },
+    "version": { "type": "string" },
+    "dependsOn": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "type": "object",
+        "required": ["id", "range"],
+        "properties": {
+          "id": { "type": "string" },
+          "range": { "type": "string", "description": "semver range of the dependency pack." }
+        }
+      }
+    },
+    "platformRange": { "type": "string", "description": "semver range of ai-native platform versions this pack is compatible with." },
+    "provides": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "rules": { "type": "array", "items": { "type": "string" }, "default": [] },
+        "skills": { "type": "array", "items": { "type": "string" }, "default": [] },
+        "mcpProfiles": { "type": "array", "items": { "type": "string" }, "default": [] },
+        "testingProfiles": { "type": "array", "items": { "type": "string" }, "default": [] }
+      }
+    }
+  }
+}

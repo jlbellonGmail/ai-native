@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-native.local/contracts/lock.schema.json",
+  "title": "ai-native.lock.json",
+  "description": "Pins a consumer to an exact, verifiable platform release, profile set, pack set and overrides. The only file a consumer's own PR ever needs to change for a routine bump (together with the caller SHA in .github/workflows/ai-native.yml). See governance/adr/ADR-001-arquitectura-referencia-versionada.md.",
+  "type": "object",
+  "required": ["schemaVersion", "platform", "profiles"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "platform": {
+      "type": "object",
+      "required": ["repo", "version", "commit", "digest"],
+      "additionalProperties": false,
+      "properties": {
+        "repo": { "type": "string", "pattern": "^github:[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$" },
+        "version": { "type": "string", "pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]+(-(alpha|rc)\\.[0-9]+)?$" },
+        "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+        "channel": { "type": "string", "enum": ["stable", "rc"], "default": "stable" }
+      }
+    },
+    "profiles": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" }
+    },
+    "mcpProfiles": {
+      "type": "array",
+      "default": [],
+      "items": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" }
+    },
+    "packs": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "type": "object",
+        "required": ["id", "repo", "version", "commit", "digest"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+          "repo": { "type": "string", "pattern": "^github:[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$" },
+          "path": { "type": "string", "default": "ai-pack" },
+          "version": { "type": "string" },
+          "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+          "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+        }
+      }
+    },
+    "overrides": {
+      "type": "object",
+      "default": {},
+      "description": "Dotted-path overrides into core/{agents,models,security-policy}.json. Never secrets (names of env vars only, per AGT-06/AGT-07)."
+    }
+  }
+}
