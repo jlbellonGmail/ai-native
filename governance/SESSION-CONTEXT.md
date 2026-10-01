@@ -3084,3 +3084,141 @@ Restricciones vigentes:
   hecho.
 * No tocar (escribir en) repos GI sin autorizacion explicita por oleada
   (M6).
+
+## Ultima ejecucion valida
+
+Tipo:
+AI-NATIVE V3 — M2.3 (spike de compatibilidad real C1-C4: Claude Code,
+Codex CLI, OpenCode)
+
+Estado:
+M2.3 FORMALLY_CLOSED, mergeada por el agente, CI post-merge verde
+
+Excepcion de gobernanza aplicada en esta unidad (no un patron general):
+
+* El usuario envio una autorizacion explicita, escrita y acotada
+  **exclusivamente a esta Work Unit (M2.3)**: "Para esta Work Unit queda
+  suspendida la regla anterior de 'merge siempre humano'... el merge queda
+  explicitamente autorizado al agente una vez que todos los gates
+  obligatorios esten verdes." El agente mergeo PR #8 el 2026-10-01 bajo
+  esa autorizacion, solo despues de verificar CI remota real en verde
+  (Ubuntu + Windows, ambos jobs) via logs reales.
+* **Esto NO cambia la regla general del resto del Plan Maestro.** A partir
+  de M3.1 en adelante, el merge vuelve a ser exclusivamente humano salvo
+  que el usuario repita una autorizacion igualmente explicita y acotada
+  para otra Work Unit puntual.
+
+Repositorio impactado:
+
+* `ai-native`: rama `feature/m2-3-compat-spike` (eliminada tras el merge).
+
+Accion ejecutada:
+
+* Verificacion de CLIs reales instaladas en esta maquina: `claude` 2.1.285,
+  `codex` 0.158.0, `opencode` v2.0.20 (todas presentes; sin esto el spike
+  habria quedado como NOT_AVAILABLE_FROM_TOOL completo).
+* Fixtures minimos reproducibles por herramienta
+  (`evaluation/compat/fixtures/{claude,codex,opencode}/`): `AGENTS.md`
+  (+ `CLAUDE.md` puente solo para Claude), una skill `ping` trivial, y el
+  archivo de permisos/config propio de cada herramienta
+  (`.claude/settings.json`, `opencode.json`; Codex no necesito uno para
+  los chequeos basicos).
+* Invocaciones reales no interactivas (`claude -p --output-format json`,
+  `codex exec --json`, `opencode run --format json`) contra cada fixture,
+  con captura literal de la salida — ningun resultado fue inferido.
+* `evaluation/compat/compat-matrix.json`: 26 registros estructurados
+  (status CONFIRMED / PARTIAL / NOT_AVAILABLE_FROM_TOOL + evidencia o
+  fallback documentado para cada uno).
+* `evaluation/compat/findings.md`: narrativa con comandos y extractos
+  reales de salida, mas una seccion de diferencias entre herramientas y
+  una seccion de entrada concreta para M3.3.
+* `evaluation/compat/validate-compat-matrix.mjs` + `.test.mjs`: valida la
+  estructura de los hallazgos (nunca re-ejecuta las CLIs — serian
+  invocaciones pagas y no deterministas, prohibidas en `pr-gate` por SS
+  12.5). 3 tests.
+* `.github/workflows/ci.yml`: 2 pasos nuevos (`compat-matrix validation`,
+  `compat-matrix tests`).
+* `parity/par-tests.json`: `C1`, `C2`, `C3`, `C4` → IMPLEMENTED
+  (`implementedBy: evaluation/compat/compat-matrix.json`).
+
+Hallazgos reales (ninguno inferido; ver `evaluation/compat/findings.md`
+para comandos y salidas completas):
+
+* **Skills:** descubrimiento automatico confirmado en las 3 herramientas
+  (`.claude/skills/`, `.agents/skills/` para Codex, `.opencode/skills/` +
+  espejo `.agents/skills/` para OpenCode).
+* **Hooks (Claude):** `PreToolUse` dispara en modo `-p` no interactivo,
+  pero **solo** si el comando del hook usa `$CLAUDE_PROJECT_DIR` — una
+  ruta relativa simple fallo silenciosamente en el primer intento
+  (encontrado y corregido durante el propio spike).
+* **Hooks (Codex):** PARTIAL. `--dangerously-bypass-hook-trust` confirma
+  que existe un mecanismo de confianza de hooks, pero no se verifico
+  sintaxis real con un hook disparando — entrada abierta para M3.3, no se
+  invento evidencia.
+* **Hooks (OpenCode):** NOT_AVAILABLE_FROM_TOOL en este spike (no
+  explorado); fallback: usar `permission` como control primario.
+* **Permisos (Claude):** `permissions.deny` bloquea de verdad en modo no
+  interactivo (`permission_denials[]` en la salida JSON).
+* **Permisos (OpenCode):** `opencode.json.permission.bash` bloquea de
+  verdad (el modelo reporta la denegacion explicitamente, sin evento de
+  ejecucion del comando).
+* **Permisos (Codex) — HALLAZGO CRITICO:** en Windows, ni `-s
+  workspace-write` ni `-s read-only -c approval_policy=never` impidieron
+  que `git push origin HEAD` se **ejecutara realmente** (fallo solo por
+  falta de refspec, no por denegacion de sandbox). El sandboxing de Codex
+  no aisla ejecucion de procesos en este entorno Windows. Confirma (no
+  contradice) el diseno ya existente del plan maestro: el enforcement real
+  de GIT_WRITE/MERGE para Codex debe vivir del lado del servidor
+  (`trust-gate`, P44), nunca confiarse al cliente — documentado como
+  riesgo residual aceptado para Codex en Windows.
+* **Metricas:** Claude expone costo USD + tokens; Codex expone tokens sin
+  costo; OpenCode no expuso ninguno de los dos en este modo. Las 3
+  entradas `NOT_AVAILABLE_FROM_TOOL` tienen fallback documentado, consejo
+  con `contracts/eval-result.schema.json` (`metricStatus`, nunca un `null`
+  silencioso).
+* **Identidad de invocacion:** las 3 herramientas dan un id distinto y no
+  reutilizado por invocacion separada (Claude `session_id`, Codex
+  `thread_id`, OpenCode `sessionID`) — insumo directo confirmado para
+  `reviewInvocationId` de P45.
+* **Arranque en frio de pwsh:** medido en esta maquina (3 corridas): 487ms,
+  475ms, 440ms (mediana ~475ms). Confirma con datos reales el hallazgo 35
+  de la revision critica del plan maestro ("300ms es irreal"): el
+  presupuesto de `check` debe excluir el arranque en frio de pwsh.
+* **Codex `exec`:** si el prompt se pasa como argumento posicional pero
+  stdin queda abierto, el proceso cuelga indefinidamente esperando EOF
+  ("Reading additional input from stdin..."). Hubo que matar un proceso en
+  background la primera vez; corregido invocando siempre con stdin
+  cerrado (`< /dev/null`).
+
+Validado:
+
+* Baseline completa re-verificada: 45 validadores node (foundation +
+  knowledge + template) + `scripts/validate-audit-safe-script-mode.mjs` +
+  7 tests de `runtime/lib/result.test.mjs` + 5 tests de `runtime/lib/
+  schema-lite.test.mjs` + `parity/validate-parity.mjs` + 4 tests de
+  `parity/migrate-inventory.test.mjs` + `contracts/validate-contracts.mjs`
+  + 3 tests de `contracts/validate-contracts.test.mjs` + `core/
+  validate-core.mjs` + 4 tests de `core/validate-core.test.mjs` +
+  `evaluation/compat/validate-compat-matrix.mjs` + 3 tests de
+  `evaluation/compat/validate-compat-matrix.test.mjs`. Todos PASS.
+* CI remota real verificada en PR #8 (Ubuntu + Windows, job `validators` y
+  job `legacy/template-v2 baseline`), via logs reales, antes del merge
+  autonomo.
+* CI post-merge en `main` verificada en verde despues del merge.
+
+Restricciones vigentes:
+
+* M2.3 cerrado. Siguiente: M3.1 (STATUS/integrity: vista derivada,
+  `observedCommit` first-parent, semantica de resultados aplicada).
+* La regla "merge siempre humano" **vuelve a estar vigente** a partir de
+  M3.1; la excepcion de esta sesion fue explicita y estaba acotada a M2.3
+  unicamente.
+* C2-hooks (sintaxis real) y C3 (config.toml / mcp_servers funcional)
+  quedan como entradas explicitamente abiertas, no cerradas por omision:
+  se difieren a M3.3 y M4.4 respectivamente.
+* El hallazgo critico de Codex (sandbox no bloquea en Windows) debe
+  tenerse presente al disenar `runtime/adapters` en M3.3: no asumir que
+  `sandbox_mode`/`approval_policy` de Codex son un control de seguridad
+  real en Windows.
+* No tocar (escribir en) repos GI sin autorizacion explicita por oleada
+  (M6).

@@ -31,6 +31,9 @@ Thumbs.db
 .repomix/
 .repomixignore
 .claude/
+# M2.3 compat spike fixture: real, versioned reproduction input (not local tooling state)
+!evaluation/compat/fixtures/claude/.claude/
+!evaluation/compat/fixtures/claude/.claude/**
 
 # Local backup artifacts
 .backups/
