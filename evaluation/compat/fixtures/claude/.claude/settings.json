@@ -1,0 +1,8 @@
+{
+  "permissions": { "deny": ["Bash(git push:*)"] },
+  "hooks": {
+    "PreToolUse": [
+      { "matcher": "Bash", "hooks": [ { "type": "command", "command": "echo fired >> \"$CLAUDE_PROJECT_DIR/hook-fired.log\"" } ] }
+    ]
+  }
+}

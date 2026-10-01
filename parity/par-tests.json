@@ -93,10 +93,10 @@
     { "id": "PAR-CONTROL-PLANE-AS-DATA", "phase": "M4.3", "status": "PLANNED" },
     { "id": "PAR-REVIEWER-INDEPENDENCE", "phase": "M3.2/M4.3", "status": "PLANNED" },
     { "id": "PAR-REVIEW-TAMPER-EVIDENT", "phase": "M3.2/M4.3", "status": "PLANNED" },
-    { "id": "C1", "phase": "M2.3/M5.2", "status": "PLANNED" },
-    { "id": "C2", "phase": "M2.3/M5.2", "status": "PLANNED" },
-    { "id": "C3", "phase": "M2.3/M5.2", "status": "PLANNED" },
-    { "id": "C4", "phase": "M2.3/M5.2", "status": "PLANNED" },
+    { "id": "C1", "phase": "M2.3/M5.2", "status": "IMPLEMENTED", "implementedBy": "evaluation/compat/compat-matrix.json" },
+    { "id": "C2", "phase": "M2.3/M5.2", "status": "IMPLEMENTED", "implementedBy": "evaluation/compat/compat-matrix.json" },
+    { "id": "C3", "phase": "M2.3/M5.2", "status": "IMPLEMENTED", "implementedBy": "evaluation/compat/compat-matrix.json" },
+    { "id": "C4", "phase": "M2.3/M5.2", "status": "IMPLEMENTED", "implementedBy": "evaluation/compat/compat-matrix.json" },
     { "id": "C5", "phase": "M4.4/M5.2", "status": "PLANNED" },
     { "id": "C6", "phase": "M4.3/M5.2", "status": "PLANNED" }
   ]
