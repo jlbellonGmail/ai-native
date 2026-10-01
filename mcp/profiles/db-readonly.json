@@ -1,0 +1,6 @@
+{
+  "schemaVersion": 1,
+  "id": "db-readonly",
+  "description": "Perfil reservado para un futuro servidor MCP de base de datos de solo lectura (plan maestro SS 11). Ningun servidor esta registrado todavia en mcp/catalog.json; agregar uno aca sin su entrada correspondiente en el catalogo debe fallar la validacion (groundwork de PAR-MCP-TRUST, enforcement real en M4.4).",
+  "servers": []
+}

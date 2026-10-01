@@ -1,0 +1,6 @@
+{
+  "schemaVersion": 1,
+  "id": "none",
+  "description": "Perfil MCP por defecto: ningun servidor es alcanzable. core/security-policy.json sigue gobernando EXTERNAL_WRITE sin importar el perfil (defaultDecision: deny).",
+  "servers": []
+}

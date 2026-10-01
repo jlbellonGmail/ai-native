@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "id": "python-service",
+  "description": "Servicio Python desplegable (API o worker; p. ej. gi-platform-core, gi-ocr).",
+  "tools": ["claude", "codex", "opencode"],
+  "gitModel": { "integrationBranch": "main", "branchNamePattern": "^(feature|milestone|maintenance)/" },
+  "governance": { "mode": "SingleMaintainer" },
+  "mergeMethod": "merge",
+  "mcpDefaultProfile": "none",
+  "docRelevantPaths": ["docs/api/**", "openapi.yaml", "src/**/routes/**"],
+  "testingProfiles": ["smoke", "contract", "coverage", "load"],
+  "productTestCommand": "pytest -q"
+}

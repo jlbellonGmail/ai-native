@@ -1,0 +1,5 @@
+{
+  "schemaVersion": 1,
+  "description": "AGT-08 (IMPROVED). Servidores MCP registrados, consumidos solo via el gateway (runtime/mcp-gateway, M4.4). Vacio hasta que un servidor tenga id real, allowlist de operaciones y clasificacion de riesgo (plan maestro SS 11). Cada entrada de mcp/profiles/*.json debe existir aca (core/validate-core.mjs lo exige).",
+  "servers": {}
+}

@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "id": "factory",
+  "description": "El propio repo ai-native (dogfooding) y consumidores que usan skills de delivery-governance de fabrica.",
+  "tools": ["claude", "codex", "opencode"],
+  "gitModel": { "integrationBranch": "main", "branchNamePattern": "^(feature|chore|docs)/" },
+  "governance": { "mode": "SingleMaintainer" },
+  "mergeMethod": "merge",
+  "mcpDefaultProfile": "none",
+  "docRelevantPaths": ["core/**", "contracts/**", "runtime/**", "governance/**"],
+  "testingProfiles": ["smoke", "contract", "coverage"],
+  "productTestCommand": null
+}

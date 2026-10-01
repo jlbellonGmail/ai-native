@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "id": "python-lib",
+  "description": "Libreria o paquete Python sin servicio desplegable (p. ej. gi-common-crm como dependencia interna).",
+  "tools": ["claude", "codex", "opencode"],
+  "gitModel": { "integrationBranch": "main", "branchNamePattern": "^(feature|milestone|maintenance)/" },
+  "governance": { "mode": "SingleMaintainer" },
+  "mergeMethod": "squash",
+  "mcpDefaultProfile": "none",
+  "docRelevantPaths": ["README.md", "docs/api/**", "pyproject.toml"],
+  "testingProfiles": ["smoke", "contract", "coverage"],
+  "productTestCommand": "pytest -q"
+}
