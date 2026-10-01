@@ -90,6 +90,10 @@ jobs:
         shell: bash
         run: node --test runtime/lib/result.test.mjs
 
+      - name: runtime/lib result-semantics conformance, pwsh reference implementation (PAR-RESULT-SEMANTICS)
+        shell: pwsh
+        run: ./runtime/lib/result.conformance.test.ps1
+
       - name: parity gate (P38 TEST_PARITY / P40 PARITY_SCORECARD, UNMAPPED=0)
         shell: bash
         run: node parity/validate-parity.mjs
@@ -125,6 +129,30 @@ jobs:
       - name: compat-matrix tests
         shell: bash
         run: node --test evaluation/compat/validate-compat-matrix.test.mjs
+
+      - name: runtime/lib git tests (PAR-STATUS-SELF-STALE)
+        shell: bash
+        run: node --test runtime/lib/git.test.mjs
+
+      - name: runtime/lib json tests
+        shell: bash
+        run: node --test runtime/lib/json.test.mjs
+
+      - name: runtime/lib preflight tests (PAR-PREFLIGHT)
+        shell: bash
+        run: node --test runtime/lib/preflight.test.mjs
+
+      - name: runtime/status snapshot tests (PAR-STATUS-DERIVED, PAR-STATUS-ACTIVE-UNITS)
+        shell: bash
+        run: node --test runtime/status/snapshot.test.mjs
+
+      - name: runtime/status integrity tests (PAR-STATUS-SELF-STALE)
+        shell: bash
+        run: node --test runtime/status/integrity.test.mjs
+
+      - name: runtime/status integrity gate, live self-check (PAR-INTEGRITY-IN-CI)
+        shell: bash
+        run: node runtime/status/validate-integrity.mjs
 
   legacy-template-baseline:
     name: legacy/template-v2 baseline (${{ matrix.os }})

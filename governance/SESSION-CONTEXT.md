@@ -3222,3 +3222,148 @@ Restricciones vigentes:
   real en Windows.
 * No tocar (escribir en) repos GI sin autorizacion explicita por oleada
   (M6).
+
+## Ultima ejecucion valida
+
+Tipo:
+AI-NATIVE V3 — M3.1 (STATUS/integrity: vista derivada, `observedCommit`
+first-parent, semantica de resultados aplicada)
+
+Estado:
+M3.1 FORMALLY_CLOSED (pendiente merge humano); M3.2 siguiente
+
+Regla de gobernanza confirmada en esta Work Unit:
+
+* La excepcion de merge autonomo otorgada para M2.3 **no se repite aqui**.
+  M3.1 vuelve al HITL unico estandar: el agente no mergea esta PR. El
+  agente ejecuto SDD completo (Specify -> Plan -> Implement -> Verify),
+  corrio el baseline completo localmente, hizo push y abrio la PR, y se
+  detiene en `STATUS: M3.1_READY_FOR_HUMAN_MERGE`.
+
+Repositorio impactado:
+
+* `ai-native`: rama `feature/m3-1-status-integrity`.
+
+Accion ejecutada:
+
+* `runtime/lib/git.mjs` (+ `git.test.mjs`, 13 tests): primitivas git
+  dependencia-cero (branch, HEAD, working tree, ancestor, worktree list,
+  tags, upstream divergence) y `getObservedCommit` — caminata first-parent
+  commit-por-commit que resuelve el primer commit no-"solo STATUS.md"
+  (PAR-STATUS-SELF-STALE).
+* `runtime/lib/json.mjs` (+ `json.test.mjs`, 5 tests): `buildReport`/
+  `renderOutput`/`exitCodeForReport`; el exit code es funcion pura de
+  `status`, nunca de si la salida es JSON o texto humano.
+* `runtime/lib/preflight.mjs` (+ `preflight.test.mjs`, 6 tests): chequeo
+  de solo lectura de rama actual contra `gitModel.integrationBranch` /
+  `gitModel.branchNamePattern` de `profiles/*.json` (PAR-PREFLIGHT /
+  GOV-08). No crea ramas ni worktrees (eso es `start-work-unit`, M3.2) ni
+  aplica enforcement de servidor (eso es M4.3).
+* `runtime/lib/result.ps1` + `runtime/lib/result.conformance.test.ps1`:
+  implementacion pwsh de referencia de `runtime/lib/result.mjs`, validada
+  contra el mismo corpus compartido `result.conformance.json` (19
+  chequeos, incluidos los tres guardas de regresion B08/B09/B10
+  explicitos). Prometida en el encabezado de `result.conformance.json`
+  desde M0.4 ("planned for M3.1"), construida ahora.
+* `runtime/status/snapshot.mjs` (+ `snapshot.test.mjs`, 10 tests):
+  `buildSnapshot` (vista derivada completa: branch, head, observedCommit,
+  worktrees, activeUnits, version, PR/CI/release vía `gh` best-effort),
+  `getVersion` (archivo explicito > branch > ROADMAP.md declarado > tag >
+  desconocido, nunca hardcodeado) y `getActiveUnits`/`parseRoadmapEntries`
+  (PAR-STATUS-DERIVED / PAR-STATUS-ACTIVE-UNITS).
+* `runtime/status/integrity.mjs` (+ `integrity.test.mjs`, 7 tests):
+  `checkIntegrity` — coherencia del bloque STATUS:AUTO (cuando existe)
+  contra la vista derivada, usando el mismo `getObservedCommit` que
+  `snapshot.mjs` (no una segunda implementacion). Ausencia de STATUS.md es
+  NOT_APPLICABLE (nunca el status propio de un gate, PAR-RESULT-SEMANTICS),
+  normalizado a PASS en el validador real. El cruce ROADMAP.md<->`runs/`
+  (STA-02, PAR-RUNS) queda listado explicitamente en el campo `deferred` —
+  diferido a M3.2, no omitido en silencio.
+* `runtime/status/validate-integrity.mjs`: gate real de CI, corre
+  `checkIntegrity` contra el propio estado vivo de `ai-native` en cada
+  ejecucion (PAR-INTEGRITY-IN-CI / P37, "siempre activo en pr-gate").
+* `.github/workflows/ci.yml`: 8 pasos nuevos (git/json/preflight/snapshot/
+  integrity tests, el gate `validate-integrity.mjs`, y la conformance pwsh
+  en ambos sistemas operativos).
+* `parity/par-tests.json`: `PAR-PREFLIGHT`, `PAR-STATUS-DERIVED`,
+  `PAR-STATUS-SELF-STALE`, `PAR-STATUS-ACTIVE-UNITS`,
+  `PAR-INTEGRITY-IN-CI` → IMPLEMENTED (implementedBy real: 95 tests
+  registrados, 14 implementados).
+
+Hallazgos reales (ninguno inferido):
+
+* **Logica STATUS-only duplicada y divergente:** `status-lib.ps1`
+  (`Test-StatusOnlyRange`) y `check-integrity.ps1`
+  (`Test-StatusOnlyHeadAdvance`) implementaban cada uno su propio chequeo
+  de "¿este rango sólo tocó STATUS.md?", ambos sobre un diff plano de dos
+  puntos (`git diff --name-only A..B`). Un diff plano sólo mira la
+  diferencia neta de árbol entre los dos extremos: una secuencia
+  root -> (agrega code.txt) -> (elimina code.txt + toca STATUS.md) tiene
+  diff neto `STATUS.md` únicamente, por lo que el chequeo legado la
+  clasificaria como "solo STATUS", ocultando el commit intermedio real.
+  Encontrado escribiendo el test de regresion de `git.test.mjs`
+  ("does not skip a commit whose own diff touches more than the ignored
+  paths..."), que primero reproduce el diff plano legado como sanity
+  check y luego verifica que `getObservedCommit` (caminata first-parent,
+  commit por commit, cada commit evaluado contra SU propio diff) no lo
+  clasifica como solo-STATUS. Corregido unificando ambas en una unica
+  funcion (`runtime/lib/git.mjs#getObservedCommit`), consumida tanto por
+  `snapshot.mjs` como por `integrity.mjs`.
+* **`activeUnits` hardcodeado al formato de slug de TEMPLATE:**
+  `Get-StatusUnitFromTree` matcheaba el nombre de rama contra un slug de
+  dos digitos (`\d{2}-[a-z0-9-]+`), el formato de TEMPLATE v2.0.5. El
+  propio roadmap de `ai-native`
+  (`governance/roadmaps/AI-NATIVE-V3-ROADMAP.md`) usa slugs `M3.1`,
+  `W5-T3`, etc. Portar la regex tal cual habria hecho que
+  `getActiveUnits` devolviera siempre `[]` contra este mismo repositorio,
+  incluso con un worktree de feature real activo. Encontrado escribiendo
+  el test de regresion "parseRoadmapEntries matches ai-native's own
+  M-dot-number roadmap slugs, not just TEMPLATE's two-digit slugs".
+  Corregido generalizando `parseRoadmapEntries`/`getActiveUnits` a
+  cualquier forma de slug (normalizacion + coincidencia de sufijo/prefijo),
+  sin asumir un formato fijo.
+* **pwsh reference implementation pendiente:** `result.conformance.json`
+  declaraba desde M0.4 "The pwsh reference implementation planned for
+  M3.1 must pass the same cases", pero no existia ningun archivo `.ps1`
+  correspondiente. Construido en esta Work Unit (`result.ps1` +
+  `result.conformance.test.ps1`), con los mismos 19 casos del corpus
+  compartido, incluidos los tres guardas de regresion B08/B09/B10
+  explicitos (bare "PASS" con warnings > 0; ausencia deliberada de un
+  parametro `-Json` en `Get-ResultExitCode`; exit code no-cero bajo
+  `-Strict` para `PASS_WITH_WARNINGS`).
+
+Validado:
+
+* Baseline completa re-verificada: 45 validadores node (foundation +
+  knowledge + template) + `scripts/validate-audit-safe-script-mode.mjs` +
+  `parity/validate-parity.mjs` (PASS, 95 registrados/14 implementados) +
+  `contracts/validate-contracts.mjs` + `core/validate-core.mjs` +
+  `evaluation/compat/validate-compat-matrix.mjs` +
+  `runtime/status/validate-integrity.mjs` (PASS contra el propio repo,
+  humano y `--json`, mismo exit code en ambos modos) + los tests node de
+  `runtime/lib/{result,schema-lite,git,json,preflight}.test.mjs`,
+  `parity/migrate-inventory.test.mjs`, `contracts/validate-contracts.
+  test.mjs`, `core/validate-core.test.mjs`, `evaluation/compat/
+  validate-compat-matrix.test.mjs`, `runtime/status/{snapshot,integrity}.
+  test.mjs` (41 tests nuevos de esta Work Unit) + la conformance pwsh
+  `runtime/lib/result.conformance.test.ps1` (19 chequeos). Todos PASS.
+* `git diff --check` sin problemas de whitespace. `git status --short`
+  revisado antes de cada commit.
+
+Restricciones vigentes:
+
+* PR pendiente de revision y merge humano (HITL real) — regla estandar
+  restaurada, sin excepcion para esta Work Unit.
+* M3.1 cerrado. Siguiente: M3.2 (circuito completo: identidad, ASSESS,
+  SDD, contrato de evidencia, spec review, QA/verify, code review,
+  convergence, maquina de estados, cierre por merge, `review run`/P45),
+  una vez mergeado M3.1.
+* El cruce ROADMAP.md<->`runs/`/SUMMARY.md (STA-02, PAR-RUNS) sigue
+  pendiente: `ai-native` todavia no tiene el layout `runs/vX.Y.Z/<unit>/`
+  de TEMPLATE v2.0.5. `runtime/status/integrity.mjs#checkIntegrity` lo
+  documenta explicitamente en su campo `deferred` en lugar de omitirlo.
+* `start-work-unit` (creacion real de rama/worktree, PAR-WU-FEATURE/
+  PAR-WU-MILESTONE) no fue tocado: `runtime/lib/preflight.mjs` es de solo
+  lectura, no crea nada.
+* No tocar (escribir en) repos GI sin autorizacion explicita por oleada
+  (M6).
