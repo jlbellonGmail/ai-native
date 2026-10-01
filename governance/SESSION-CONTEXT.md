@@ -3477,8 +3477,9 @@ Validado:
 
 Restricciones vigentes:
 
-* PR pendiente de revision y merge humano (HITL real) — regla estandar,
-  sin excepcion para esta Work Unit.
+* PR #10 (`feature/m3-2-circuit-completo`) pendiente de CI y de revision
+  y merge humano (HITL real) — regla estandar, sin excepcion para esta
+  Work Unit.
 * M3.2 cerrado. Siguiente: M3.3 (adaptadores derivados por herramienta +
   materializacion de skills lazy), una vez mergeado M3.2.
 * El cruce completo ROADMAP.md<->`runs/`/SUMMARY.md con identidad Txx
