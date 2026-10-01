@@ -3352,8 +3352,9 @@ Validado:
 
 Restricciones vigentes:
 
-* PR pendiente de revision y merge humano (HITL real) — regla estandar
-  restaurada, sin excepcion para esta Work Unit.
+* PR #9 (`feature/m3-1-status-integrity`) pendiente de CI y de revision y
+  merge humano (HITL real) — regla estandar restaurada, sin excepcion
+  para esta Work Unit.
 * M3.1 cerrado. Siguiente: M3.2 (circuito completo: identidad, ASSESS,
   SDD, contrato de evidencia, spec review, QA/verify, code review,
   convergence, maquina de estados, cierre por merge, `review run`/P45),
