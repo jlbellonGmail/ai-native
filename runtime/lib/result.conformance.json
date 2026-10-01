@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "description": "Shared conformance corpus for result-status semantics (PAR-RESULT-SEMANTICS, P3). Consumed today by runtime/lib/result.test.mjs (node). The pwsh reference implementation planned for M3.1 must pass the same cases.",
+  "description": "Shared conformance corpus for result-status semantics (PAR-RESULT-SEMANTICS, P3). Consumed by runtime/lib/result.test.mjs (node) and, since M3.1, by runtime/lib/result.conformance.test.ps1 (pwsh reference implementation, runtime/lib/result.ps1) -- both must pass the same cases.",
   "exitCodeCases": [
     { "status": "PASS", "strict": false, "exitCode": 0 },
     { "status": "PASS", "strict": true, "exitCode": 0 },

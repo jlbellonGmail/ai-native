@@ -12,7 +12,7 @@
 //
 // See governance/adr/ADR-002-contrato-paridad-template-v205.md and
 // runtime/lib/result.conformance.json (corpus shared with the pwsh
-// reference implementation once M3.1 builds it).
+// reference implementation, runtime/lib/result.ps1, since M3.1).
 
 export const RESULT_STATUS = Object.freeze({
   PASS: "PASS",
