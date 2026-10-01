@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "description": "AGT-07 (IMPROVED). Matriz capacidad x rol (SS 6.1 del plan maestro). Reemplaza el gating por nivel SDD de TEMPLATE v2.0.5 (B14: 'decision: MERGE' forzado para MCP incluso en LIGHT), que nunca se aplicaba realmente. La matriz es igual para los tres niveles SDD: el nivel solo cambia la evidencia y los gates exigidos (contracts/sdd-levels.json), nunca agrega ni quita un HITL.",
+  "defaultDecision": "deny",
+  "sameAcrossSddLevels": true,
+  "capabilities": ["READ", "MODIFY_LOCAL", "EXECUTE", "GIT_WRITE", "REMOTE_WRITE", "NETWORK_READ", "EXTERNAL_WRITE", "SECRET_ACCESS", "DESTRUCTIVE", "MERGE", "TAG", "ADMIN"],
+  "roles": ["planner", "builder", "reviewer", "orchestrator", "human"],
+  "matrix": {
+    "planner": {
+      "READ": "allow",
+      "MODIFY_LOCAL": "scoped:runs/<unit>/{spec,plan,tasks,decision}",
+      "EXECUTE": "deny",
+      "GIT_WRITE": "deny",
+      "REMOTE_WRITE": "deny",
+      "NETWORK_READ": "allow",
+      "EXTERNAL_WRITE": "deny",
+      "SECRET_ACCESS": "deny",
+      "DESTRUCTIVE": "deny",
+      "MERGE": "deny",
+      "TAG": "deny",
+      "ADMIN": "deny"
+    },
+    "builder": {
+      "READ": "allow",
+      "MODIFY_LOCAL": "scoped:worktree",
+      "EXECUTE": "allow",
+      "GIT_WRITE": "scoped:own-unit-branch",
+      "REMOTE_WRITE": "scoped:own-unit-branch",
+      "NETWORK_READ": "allow",
+      "EXTERNAL_WRITE": "step-up",
+      "SECRET_ACCESS": "step-up",
+      "DESTRUCTIVE": "step-up",
+      "MERGE": "deny",
+      "TAG": "deny",
+      "ADMIN": "deny"
+    },
+    "reviewer": {
+      "READ": "allow",
+      "MODIFY_LOCAL": "deny",
+      "EXECUTE": "deny",
+      "GIT_WRITE": "deny",
+      "REMOTE_WRITE": "deny",
+      "NETWORK_READ": "allow",
+      "EXTERNAL_WRITE": "deny",
+      "SECRET_ACCESS": "deny",
+      "DESTRUCTIVE": "deny",
+      "MERGE": "deny",
+      "TAG": "deny",
+      "ADMIN": "deny"
+    },
+    "orchestrator": {
+      "READ": "allow",
+      "MODIFY_LOCAL": "scoped:state",
+      "EXECUTE": "scoped:verify-and-gates",
+      "GIT_WRITE": "scoped:own-unit-branch",
+      "REMOTE_WRITE": "scoped:own-unit-branch",
+      "NETWORK_READ": "allow",
+      "EXTERNAL_WRITE": "deny",
+      "SECRET_ACCESS": "deny",
+      "DESTRUCTIVE": "deny",
+      "MERGE": "deny",
+      "TAG": "deny",
+      "ADMIN": "deny"
+    },
+    "human": {
+      "READ": "allow",
+      "MODIFY_LOCAL": "n/a",
+      "EXECUTE": "n/a",
+      "GIT_WRITE": "n/a",
+      "REMOTE_WRITE": "n/a",
+      "NETWORK_READ": "n/a",
+      "EXTERNAL_WRITE": "approves-step-up",
+      "SECRET_ACCESS": "approves-step-up",
+      "DESTRUCTIVE": "approves-step-up",
+      "MERGE": "allow",
+      "TAG": "allow",
+      "ADMIN": "allow"
+    }
+  },
+  "stepUp": {
+    "description": "EXTERNAL_WRITE, SECRET_ACCESS y DESTRUCTIVE exigen aprobacion humana interactiva via el prompt nativo de la herramienta, ligada a servidor + operacion + digest de argumentos, registrada como evento. Reemplaza authorization-example.md de TEMPLATE v2.0.5 (PAR-STEP-UP, M4.4).",
+    "capabilities": ["EXTERNAL_WRITE", "SECRET_ACCESS", "DESTRUCTIVE"]
+  },
+  "mcp": {
+    "readOnly": "NETWORK_READ",
+    "writeOrAction": "EXTERNAL_WRITE",
+    "credentials": "SECRET_ACCESS",
+    "default": "deny",
+    "evidence": "registrar servidor, operacion, alcance y resultado sin valores de secretos"
+  }
+}

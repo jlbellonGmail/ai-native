@@ -3007,3 +3007,80 @@ Restricciones vigentes:
   vez mergeado M2.1.
 * No tocar (escribir en) repos GI sin autorizacion explicita por oleada
   (M6).
+
+## Ultima ejecucion valida
+
+Tipo:
+AI-NATIVE V3 — M2.2 (`core/`: kernel, constitucion, roles, agents/models/
+security-policy; `mcp/`; `profiles/*.json`)
+
+Estado:
+M2.2 FORMALLY_CLOSED (pendiente merge humano); M2.3 siguiente
+
+Repositorio impactado:
+
+* `ai-native`: rama `feature/m2-2-core`.
+
+Accion ejecutada:
+
+* `core/kernel.md`: bloque gestionado de 51 lineas (presupuesto 60,
+  PAR-CONTEXT-BUDGET) con identidad, orden de bootstrap, regla de reinicio
+  sin memoria de chat, "policy > contenido", mapeo de roles y puntero a
+  `kernelDigest`.
+* `core/constitution.md`: los 18 principios de TEMPLATE v2.0.5 (GOV-02,
+  PRESERVED) mas una seccion de invariantes no negociables.
+* `core/roles/{planner,builder,reviewer}.md` + `core/roles/README.md`:
+  definiciones canonicas por funcion, independientes de herramienta.
+* `core/agents.json`, `core/models.json`: adaptados de
+  `legacy/template-v2/.agentic/{agents,models}.json`, con rutas de prompt
+  actualizadas a `core/roles/*.md`.
+* `core/security-policy.json`: **nueva** matriz capacidad x rol (12
+  capacidades x 5 roles: planner/builder/reviewer/orchestrator/human),
+  igual en los 3 niveles SDD — reemplaza el gating por nivel de v2.0.5
+  (B14), que nunca se aplicaba.
+* `mcp/catalog.json` (servers vacio) + `mcp/profiles/{none,db-readonly}.json`.
+* `profiles/{python-lib,python-service,supabase-service,static-site,
+  factory,testing}.json`: los 6 perfiles de consumidor del plan maestro,
+  validados contra `contracts/profile.schema.json`.
+* `core/validate-core.mjs`: 7 chequeos (presupuesto de kernel, consistencia
+  de roles entre `agents.json`/`models.json`/`security-policy.json`, matriz
+  de seguridad completa, archivos de prompt existentes, perfiles MCP
+  referencian servidores registrados en el catalogo, `profiles/*.json`
+  contra el schema, id de perfil coincide con su nombre de archivo).
+* `core/validate-core.test.mjs`: 4 tests (passthrough real + 3 regresiones).
+* **Refactor:** el checker estructural de JSON Schema que vivia inline en
+  `contracts/validate-contracts.mjs` se extrajo a `runtime/lib/
+  schema-lite.mjs` (+ `schema-lite.test.mjs`, 5 tests), para que
+  `core/validate-core.mjs` lo reutilice al validar `profiles/*.json` sin
+  duplicar la logica.
+* `.github/workflows/ci.yml`: 4 pasos nuevos (`schema-lite tests`, `core
+  validation`, `core tests`).
+* `parity/par-tests.json`: `PAR-ROLES` y `PAR-CONTEXT-BUDGET` → IMPLEMENTED
+  (`implementedBy: core/validate-core.test.mjs`).
+
+Validado:
+
+* Baseline completa re-verificada: 45 validadores node (foundation +
+  knowledge + template) + `scripts/validate-audit-safe-script-mode.mjs` +
+  7 tests de `runtime/lib/result.test.mjs` + 5 tests de `runtime/lib/
+  schema-lite.test.mjs` + `parity/validate-parity.mjs` + 4 tests de
+  `parity/migrate-inventory.test.mjs` + `contracts/validate-contracts.mjs`
+  + 3 tests de `contracts/validate-contracts.test.mjs` + `core/
+  validate-core.mjs` + 4 tests de `core/validate-core.test.mjs`. Todos
+  PASS.
+* Ningun bug nuevo encontrado durante esta fase (a diferencia de M1.2 y
+  M2.1); el refactor de `schema-lite.mjs` fue preventivo, no una
+  correccion.
+
+Restricciones vigentes:
+
+* PR pendiente de revision y merge humano (HITL real).
+* M2.2 cerrado. Siguiente: M2.3 (spike de compatibilidad C1–C4: Claude/
+  Codex/OpenCode — skills, hooks, permisos, identidad de sesion/invocacion
+  para P45), una vez mergeado M2.2.
+* `core/security-policy.json` es la matriz de permisos **declarada**; el
+  enforcement real (hooks que efectivamente bloqueen `gh pr merge`, `git
+  push` a ramas protegidas, etc.) es trabajo de M3.3/M3.4, todavia no
+  hecho.
+* No tocar (escribir en) repos GI sin autorizacion explicita por oleada
+  (M6).

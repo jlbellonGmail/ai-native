@@ -106,6 +106,18 @@ jobs:
         shell: bash
         run: node --test contracts/validate-contracts.test.mjs
 
+      - name: runtime/lib schema-lite tests
+        shell: bash
+        run: node --test runtime/lib/schema-lite.test.mjs
+
+      - name: core validation (PAR-CONTEXT-BUDGET, PAR-ROLES)
+        shell: bash
+        run: node core/validate-core.mjs
+
+      - name: core tests
+        shell: bash
+        run: node --test core/validate-core.test.mjs
+
   legacy-template-baseline:
     name: legacy/template-v2 baseline (${{ matrix.os }})
     strategy:
