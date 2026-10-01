@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-native.local/contracts/profile.schema.json",
+  "title": "Platform profile",
+  "description": "A profile (profiles/*.json in this repo) selects which skills, MCP servers, gates and docRelevantPaths apply to a consumer. Layered under a pack's own additions, per the DAC precedence order: platform defaults -> profile -> pack -> lock overrides.",
+  "type": "object",
+  "required": ["schemaVersion", "id", "gitModel", "governance", "mergeMethod"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+    "description": { "type": "string" },
+    "tools": {
+      "type": "array",
+      "default": ["claude", "codex", "opencode"],
+      "items": { "type": "string", "enum": ["claude", "codex", "opencode", "cursor", "aider", "openclaw"] }
+    },
+    "gitModel": {
+      "type": "object",
+      "required": ["integrationBranch"],
+      "properties": {
+        "integrationBranch": { "type": "string", "default": "main" },
+        "branchNamePattern": { "type": "string", "default": "^(feature|milestone|maintenance)/" }
+      }
+    },
+    "governance": {
+      "type": "object",
+      "required": ["mode"],
+      "properties": {
+        "mode": { "type": "string", "enum": ["SingleMaintainer", "MultiMaintainer"] },
+        "humanMaintainers": { "type": "array", "items": { "type": "string" }, "description": "GitHub logins allowed to perform the HITL merge or dispatch merge-gate (route B)." }
+      }
+    },
+    "mergeMethod": { "type": "string", "enum": ["merge", "squash", "rebase"], "default": "merge" },
+    "mcpDefaultProfile": { "type": "string", "default": "none" },
+    "docRelevantPaths": {
+      "type": "array",
+      "default": [],
+      "items": { "type": "string" },
+      "description": "Glob-like path prefixes whose changes require docImpact != none (CIR-14 doc-drift check)."
+    },
+    "testingProfiles": {
+      "type": "array",
+      "default": ["smoke"],
+      "items": { "type": "string", "enum": ["smoke", "contract", "coverage", "mutation", "load", "performance", "chaos", "e2e"] },
+      "description": "Which risk-based testing profiles (H4/W6) this consumer's stack can actually run; selection by SDD level happens at runtime, this just bounds what's available."
+    },
+    "productTestCommand": { "type": ["string", "null"], "default": null, "description": "Command pr-gate runs for CI-02; null means NOT_APPLICABLE, not FAIL." }
+  }
+}

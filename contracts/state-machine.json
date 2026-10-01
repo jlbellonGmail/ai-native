@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "states": [
+    "NEW", "ASSESSED", "SPECIFIED", "SPEC_REVIEWED", "PLANNED", "BUILDING", "BUILT",
+    "VERIFIED", "CODE_REVIEWED", "GATES_PASSED", "READY_FOR_PR", "PR_OPEN",
+    "CI_PENDING", "AWAITING_HITL"
+  ],
+  "derivedStates": ["MERGED", "CLOSED", "CLEANED"],
+  "exceptionStates": ["NEEDS_HUMAN_DECISION", "BLOCKED", "FAILED_SAFELY", "RECONCILE_REQUIRED"],
+  "transitions": [
+    { "from": "NEW", "to": "ASSESSED", "precondition": "ASSESS ran deterministically" },
+    { "from": "ASSESSED", "to": "SPECIFIED", "precondition": "LIGHT collapses this with SPEC_REVIEWED/PLANNED into one step (intent)" },
+    { "from": "SPECIFIED", "to": "SPEC_REVIEWED", "precondition": "Reviewer verdict recorded via review run (stage=spec)" },
+    { "from": "SPEC_REVIEWED", "to": "SPECIFIED", "precondition": "spec review rejected" },
+    { "from": "SPEC_REVIEWED", "to": "PLANNED", "precondition": "STANDARD/FULL only" },
+    { "from": "PLANNED", "to": "BUILDING", "precondition": "" },
+    { "from": "BUILDING", "to": "BUILT", "precondition": "" },
+    { "from": "BUILT", "to": "VERIFIED", "precondition": "verify event with status PASS or PASS_WITH_WARNINGS" },
+    { "from": "VERIFIED", "to": "BUILDING", "precondition": "verify event with status FAIL" },
+    { "from": "VERIFIED", "to": "CODE_REVIEWED", "precondition": "Reviewer verdict recorded via review run (stage=code)" },
+    { "from": "CODE_REVIEWED", "to": "BUILDING", "precondition": "code review rejected" },
+    { "from": "CODE_REVIEWED", "to": "GATES_PASSED", "precondition": "converge event terminal=true, verdict=APPROVED" },
+    { "from": "GATES_PASSED", "to": "READY_FOR_PR", "precondition": "proportional gates (SS 12.5) pass" },
+    { "from": "READY_FOR_PR", "to": "PR_OPEN", "precondition": "PR created" },
+    { "from": "PR_OPEN", "to": "CI_PENDING", "precondition": "" },
+    { "from": "CI_PENDING", "to": "BUILDING", "precondition": "pr-gate fails" },
+    { "from": "CI_PENDING", "to": "AWAITING_HITL", "precondition": "pr-gate passes" },
+    { "from": "AWAITING_HITL", "to": "BUILDING", "precondition": "NO MERGE" },
+    { "from": "AWAITING_HITL", "to": "MERGED", "precondition": "human merge on the verified SHA (derived, not an event)" }
+  ]
+}

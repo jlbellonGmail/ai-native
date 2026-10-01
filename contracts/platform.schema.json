@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-native.local/contracts/platform.schema.json",
+  "title": "platform.json",
+  "description": "Release manifest published as an asset of every ai-native release (release.yml, M4.2). Lists component versions and sha256 digests, and the real executable status of each capability (P25 in parity/v2.0.5/capabilities.json: a capability is never claimed 'available' here unless it is 'executable').",
+  "type": "object",
+  "required": ["schemaVersion", "version", "commit", "digest", "generatedAt", "components", "capabilities"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "version": { "type": "string", "pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]+(-(alpha|rc)\\.[0-9]+)?$" },
+    "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$", "description": "sha256 of the release bundle tarball." },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "components": {
+      "type": "object",
+      "description": "Internal version of each sub-contract this release ships, independent of the platform version itself (governance/versioning/VERSIONING-POLICY.md).",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["version"],
+        "properties": {
+          "version": { "type": "string" },
+          "deprecated": { "type": "boolean", "default": false },
+          "removalTarget": { "type": ["string", "null"], "default": null }
+        }
+      }
+    },
+    "capabilities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "status"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string" },
+          "status": { "type": "string", "enum": ["executable", "data-only", "documented-only", "missing"] },
+          "evidence": { "type": "string", "description": "Path to the test or validator that proves 'executable', if applicable." }
+        }
+      }
+    },
+    "sbom": { "type": "string", "description": "Path of the CycloneDX SBOM asset within the release." },
+    "provenance": { "type": "string", "description": "Path of the sigstore attestation bundle asset within the release." }
+  }
+}

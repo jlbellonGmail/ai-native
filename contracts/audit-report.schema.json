@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-native.local/contracts/audit-report.schema.json",
+  "title": ".audit report front matter",
+  "description": "Required metadata at the top of every .audit/reports/*.md report. Encodes the rule from SS 9 of the session's architecture decision: 'audit(commit X) != permanent certification of the repository'. A report without targetCommit, or whose targetCommit the caller cannot verify against the candidate (allowing only a diff limited to .audit/** and STATUS.md), must never be accepted as current evidence by release-gate or ai-native status.",
+  "type": "object",
+  "required": ["targetRepo", "targetCommit", "platform", "auditMethod", "profile", "date", "scope", "score"],
+  "properties": {
+    "targetRepo": { "type": "string" },
+    "targetCommit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "platform": {
+      "type": "object",
+      "required": ["version", "commit"],
+      "properties": { "version": { "type": "string" }, "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" } }
+    },
+    "auditMethod": { "type": "string", "description": "e.g. '1.2', matching platform.json components.auditMethod." },
+    "profile": { "type": "string", "enum": ["PLATFORM", "APPLICATION", "LIBRARY", "FACTORY", "TEMPLATE"] },
+    "packs": { "type": "array", "default": [], "items": { "type": "string" } },
+    "tool": { "type": "object", "properties": { "name": { "type": "string" }, "model": { "type": "string" } } },
+    "date": { "type": "string", "format": "date-time" },
+    "scope": { "type": "string" },
+    "score": { "type": "number", "minimum": 0, "maximum": 100 },
+    "isMergeGate": { "const": false, "description": ".audit is never a merge gate (preserved from TEMPLATE v2.0.5's own AUDIT_RULES.md); it is a release/milestone gate only, applied via release-gate." }
+  }
+}

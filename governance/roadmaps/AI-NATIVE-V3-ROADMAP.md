@@ -30,7 +30,7 @@ No se abre una fase M(n+1) sin que las condiciones P de salida de M(n) estén en
 
 ## M2 — Contratos y core
 
-- [ ] M2.1 — `contracts/`: lock, platform, pack, profile, unit, sdd-levels, state-machine, result-status, audit-report, eval-result, waiver, revocations, roadmap.
+- [x] M2.1 — `contracts/`: lock, platform, pack, profile, unit-event (unifica assess/transition/review/verify/converge/routing/docImpact/trace), sdd-levels(+data), state-machine(+data), result-status, audit-report, eval-result, waiver, revocations, roadmap.md (prose). Validador dependencia-cero `contracts/validate-contracts.mjs` (12 schemas + 2 data files, PASS) + `contracts/validate-contracts.test.mjs` (3 tests). PAR-SCHEMAS IMPLEMENTED. PR #6. **Hallazgo real:** el validador no resolvía `$ref` (documentado como limitación), pero `sdd-levels.schema.json` define LIGHT/STANDARD/FULL vía `$ref: "#/$defs/level"`, así que la validación de esos niveles (incluido el tipo/enum de `convergenceBudget`) nunca se ejecutaba. Corregido: `$ref` locales (`#/...`) ahora se resuelven contra el propio documento; `$ref` externos (a otro archivo `.schema.json`) siguen sin resolverse, documentado.
 - [ ] M2.2 — `core/`: kernel ≤60 líneas, constitución + invariantes, roles, `agents.json`, `models.json`, matriz de seguridad por rol, `mcp/catalog` + perfiles, `profiles/*.json`.
 - [ ] M2.3 — Spike de compatibilidad C1–C4 (Claude/Codex/OpenCode): skills, hooks, permisos, identidad de sesión/invocación para P45.
 

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "levels": {
+    "LIGHT": {
+      "selection": "ASSESS score < 2",
+      "steps": ["intent", "build", "verify", "code-review"],
+      "requiredArtifacts": ["SUMMARY.md"],
+      "requiredReviews": ["code"],
+      "convergenceBudget": 2
+    },
+    "STANDARD": {
+      "selection": "2 <= ASSESS score < 5, and not forced HIGH",
+      "steps": ["spec", "spec-review", "build", "verify", "code-review", "converge"],
+      "requiredArtifacts": ["SUMMARY.md", "spec.md"],
+      "requiredReviews": ["spec", "code"],
+      "convergenceBudget": 4
+    },
+    "FULL": {
+      "selection": "ASSESS forces HIGH, or score >= 5, or forced by release/security/migration policy",
+      "steps": ["spec", "clarify", "spec-review", "plan", "tasks", "decision", "build", "verify", "code-review", "converge", "spec-audit"],
+      "requiredArtifacts": ["SUMMARY.md", "spec.md", "plan.md", "tasks.md", "decision.md"],
+      "requiredReviews": ["spec", "code"],
+      "convergenceBudget": 6
+    }
+  }
+}
