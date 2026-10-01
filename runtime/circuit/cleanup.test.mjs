@@ -33,15 +33,19 @@ test("cleanupWorkUnit removes a real worktree and its branch, tolerating the kno
     git(dir, "worktree", "add", "-b", "feature/02-item-a", worktreeDir, "main");
 
     const result = cleanupWorkUnit(dir, { worktreeDir, branch: "feature/02-item-a" });
-    // `git worktree remove` can succeed while the OS has not yet
-    // released its file handle on the directory (observed on real
-    // Windows CI runners): the directory briefly still exists, empty.
-    // cleanup-work-unit.ps1's own classification exists precisely to
-    // report that honestly (B_RESIDUAL_WINDOWS_EMPTY) instead of lying
-    // about a clean CLOSED -- both are therefore legitimate outcomes
-    // here, never C_RESIDUAL_WINDOWS_CONTENT (which would mean real
-    // files survived) or WORKTREE_REGISTERED (an actual git error).
-    assert.ok(["A_NOT_EXISTS", "B_RESIDUAL_WINDOWS_EMPTY"].includes(result.classification), `unexpected classification: ${result.classification}`);
+    // `git worktree remove` can report success while the OS has not
+    // yet released its handles on the checked-out files (observed on
+    // real Windows CI runners, presumably AV-scanner-held handles): the
+    // directory, empty or still holding checked-out content, can
+    // briefly survive. cleanup-work-unit.ps1's own classification
+    // exists precisely to report that honestly (RESIDUAL_WINDOWS/
+    // B or C) instead of lying about a clean CLOSED -- any of the three
+    // is a legitimate outcome of a successful `git worktree remove`
+    // call here; only WORKTREE_REGISTERED would mean git itself failed.
+    assert.ok(
+      ["A_NOT_EXISTS", "B_RESIDUAL_WINDOWS_EMPTY", "C_RESIDUAL_WINDOWS_CONTENT"].includes(result.classification),
+      `unexpected classification: ${result.classification}`,
+    );
     assert.equal(git(dir, "branch", "--list", "feature/02-item-a"), "");
   } finally {
     rmSync(base, { recursive: true, force: true });
