@@ -1,0 +1,2345 @@
+{
+  "schemaVersion": 1,
+  "generatedBy": "parity/migrate-inventory.mjs",
+  "generatedAt": "2026-09-30T19:42:25.201Z",
+  "target": "C:\\Proyectos\\gi-clinicadental",
+  "hashDbTags": [
+    "v2.0.0",
+    "v2.0.1",
+    "v2.0.2",
+    "v2.0.3",
+    "v2.0.4",
+    "v2.0.5"
+  ],
+  "declaredVersion": null,
+  "manifestSchemaVersion": null,
+  "preflight": {
+    "isGitRepo": true,
+    "clean": true,
+    "inFlightRoadmapItems": [],
+    "worktrees": 1
+  },
+  "totalFiles": 365,
+  "counts": {
+    "IDENTICAL_TO_TEMPLATE": 7,
+    "MODIFIED_FROM_TEMPLATE": 54,
+    "LOCAL": 304,
+    "DUPLICATED_CAPABILITY": 0,
+    "UNKNOWN": 0
+  },
+  "files": [
+    {
+      "path": ".agentic/agents.json",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "689d174005dc3d6d49ec36b044322c065c3296759200f1a21e6aa2a238852c2f",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".agentic/mcp.json",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "6270b542b246c9ef9583999d97744a610fa9218bbf60e1c14d8dcaf647206db2",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".agentic/models.json",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "3eaa59675d36572b455941497e17a65a4b52f11a3276c4922de8034face025e6",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".agentic/README.md",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "89ed9427bfe6143bca7104a55ed48d7a0af2ad3745bd84e6c3c0ccc09c8f67a7",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".agentic/roles/builder.md",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "c4b6c7ca56047ffeb641077806552a771c09e4ac9d05dda47f68ee0dd3dd76c6",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".agentic/roles/planner.md",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "1add471cebb02bce8adc64781656edf0d0b8d1d3a7c05fa5ce95034afe7083a7",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".agentic/roles/reviewer.md",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "a3547fd12908b3c91f8fdfe965df076f8f33a523361ba81d6e95a783b998825a",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".agentic/schemas/agents.schema.json",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "f5810f35440ba192468f01fde74d1ed364d661cef55022e27b33da67e606c2b6",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".agentic/schemas/convergence.schema.json",
+      "classification": "LOCAL",
+      "sha256": "cafb75ba3c2df783653463a1ab1bbe24b476458cbf0d066320af4497905ea6c1"
+    },
+    {
+      "path": ".agentic/schemas/mcp.schema.json",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "a999692ff3234edd5e610a299be813599f362f6455a49c057a3400bfdeeabb65",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".agentic/schemas/models.schema.json",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "9cda59cdb1cf153c4d1fccdd10ae87c10535d2ad17053107b0d991e81332d7b8",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".agentic/schemas/security-policy.schema.json",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "5f823658cabc49794e89b9bbe9dcd81331eaf4b83d4c5ff4f6acecd1a1bb884d",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".agentic/schemas/unit-identity.schema.json",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "b8df01e0c359e6ff4562a7ccb882ddf4350e6ccb3c5d80aa2eea605e95c271c5",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".agentic/schemas/work-unit.schema.json",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "d2747a405afbbd166a0900284cb279ffa61873a94b6ddf44f70b23d86b2c60b9",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".agentic/security-policy.json",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "a9196535dc4580f44f51da9554a50fc18fd7b57d3cd3c741d3075b430fd64118",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".claude/agents/analyst-agent.md",
+      "classification": "LOCAL",
+      "sha256": "59f6b1dcb576e758512b10e6ae7c7e6082276f6f32f2bc19adb7f327c7e71748"
+    },
+    {
+      "path": ".claude/agents/builder-agent.md",
+      "classification": "LOCAL",
+      "sha256": "4e57b65a44775425587d00b70d3e79215e5c1368aef4950936fa8475ed713189"
+    },
+    {
+      "path": ".claude/agents/builder.md",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "a473d82c623c733a252ad3d48d08f294028b2adf45cec1552d5423158bd6ce6f",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".claude/agents/planner-agent.md",
+      "classification": "LOCAL",
+      "sha256": "cc3ce0b522dcc0458e0bdfd5c1a01957e004c1d76c17ba3ba6d4eed700085f9f"
+    },
+    {
+      "path": ".claude/agents/planner.md",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "ca3a3914436cf2318740ae41528a7e46df82d3ccc272a50abb2a78738ff15290",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".claude/agents/qa-agent.md",
+      "classification": "LOCAL",
+      "sha256": "20c33c3e852f7597eca5b0fbd40f5c780a954522cf0f374f40995b53f17d66f7"
+    },
+    {
+      "path": ".claude/agents/reviewer-agent.md",
+      "classification": "LOCAL",
+      "sha256": "5fcc2c7f956ea287c2a8c0a1d0843a50f627fdbea89f238f36b44b90959d44b2"
+    },
+    {
+      "path": ".claude/agents/reviewer.md",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "42d61929118910c3f7238067b39743eccbcf8475dccbe5a7771c893ee98ced9d",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".claude/rules/.gitkeep",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".claude/skills/.gitkeep",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".codex/.gitignore",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "4903db8e7e6b6feca1e962a5d58c214668b2febc085dd1b3f89e7ac4a73646e1",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".codex/analyst-agent.config.toml",
+      "classification": "LOCAL",
+      "sha256": "a2c7992cdb0937eb35e2df7753550ad0242fc02e71675c6af519dfb28a7bd2bd"
+    },
+    {
+      "path": ".codex/builder-agent.config.toml",
+      "classification": "LOCAL",
+      "sha256": "a2c7992cdb0937eb35e2df7753550ad0242fc02e71675c6af519dfb28a7bd2bd"
+    },
+    {
+      "path": ".codex/builder.md",
+      "classification": "LOCAL",
+      "sha256": "9de4a388a198bec6c9892494d4dc1ba7fdeecae2345926b9d10deca2dea8b302"
+    },
+    {
+      "path": ".codex/config.toml",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "727b2184f1d6b7d562bab8b80e32a05ade23189af6ffbe3a63f4bdbefd65f485",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".codex/planner.config.toml",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "3c21607ad8c8e975169d4cc72fd538bebed64a615dac8e0534bc3daf288ff4b3",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".codex/planner.md",
+      "classification": "LOCAL",
+      "sha256": "73d87fbb005ebd9e275aec53d0489554d8bba2f8db7092bf160509e8f02db011"
+    },
+    {
+      "path": ".codex/prompts/analyst-agent.md",
+      "classification": "LOCAL",
+      "sha256": "ff7ccd301c306c13d76d8d06258c2cf48c00b532e484b55a9356838340b02f8d"
+    },
+    {
+      "path": ".codex/prompts/builder-agent.md",
+      "classification": "LOCAL",
+      "sha256": "ba3b5a8089e612400fa7d5a8bd93988a026dc20c0057008cdcdf49059764ea78"
+    },
+    {
+      "path": ".codex/prompts/planner-agent.md",
+      "classification": "LOCAL",
+      "sha256": "306e4a76915fa17def68f1f7d63e3d4ba97fe9069a441ebca83bc5e5909f95fa"
+    },
+    {
+      "path": ".codex/prompts/planner.md",
+      "classification": "LOCAL",
+      "sha256": "ca3a3914436cf2318740ae41528a7e46df82d3ccc272a50abb2a78738ff15290"
+    },
+    {
+      "path": ".codex/prompts/qa-agent.md",
+      "classification": "LOCAL",
+      "sha256": "45d40ccd8861906065ff7a4eb96a42ce6dd26b78708800b9697d8ef0df27306b"
+    },
+    {
+      "path": ".codex/prompts/reviewer-agent.md",
+      "classification": "LOCAL",
+      "sha256": "d4c6c8aadc74b97f5261aefc70933f9285092a216e2b46a71c664e60317dbefa"
+    },
+    {
+      "path": ".codex/qa-agent.config.toml",
+      "classification": "LOCAL",
+      "sha256": "9c83cb0b8363dc7dc060eac3847e7ba19710e6688d20ceb14c5174769656f677"
+    },
+    {
+      "path": ".codex/README.md",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "181005b4b2dfa1eeda6e22c5eda62cef3a2a2532a0f71b7e1001d8c217562ff3",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".codex/reviewer-agent.config.toml",
+      "classification": "LOCAL",
+      "sha256": "df9b4df40c36e86c01ce112a0ad37d5b1f289a02f5210c8b484ac6fc560e63bf"
+    },
+    {
+      "path": ".codex/reviewer.md",
+      "classification": "LOCAL",
+      "sha256": "b09c3d4c10649fa3d6165a25bfe0a1654ece79858839ff2433b2da193cef7a01"
+    },
+    {
+      "path": ".env.example",
+      "classification": "LOCAL",
+      "sha256": "e7d4cb81f39b967477ce4bb223d79ec7f44169170058a4846355ddb4da4bf8e3"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "69a0a03c6e15bac62ce6961de1184479210938a1106f98796c31adb3fb0a038f",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".github/workflows/docs.yml",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "612b52c92b25c8265b970e191afe0c1d7c1467438cfffc105215a09daf00d74d",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".github/workflows/post-merge-close-feature.yml",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "4d809ecea5b88a08107524dc8581b005b5d8eced0cd997f0b870307a2c642233",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".gitignore",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "3f4d0f5b5642e80c8878d136aa3a986d78d0a59c688fd41511e1378866ac5ed0",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".mcp.json",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "8fb15a56ba9f22148c21a56333ced386179e302bfa842ecc68c34686de6a97e7",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".opencode/.gitignore",
+      "classification": "LOCAL",
+      "sha256": "663a068e76d264d0bc6740f5450b6c4193c7b41ecf5e0dc222485b8a17404d95"
+    },
+    {
+      "path": ".opencode/agent/analyst-agent.md",
+      "classification": "LOCAL",
+      "sha256": "290afed240a51cb0ac589d95fe380a55b531a7c89400f6bb68fd82b682dbdbd1"
+    },
+    {
+      "path": ".opencode/agent/builder-agent.md",
+      "classification": "LOCAL",
+      "sha256": "21f048450c8b609f73a8b30206425ece02a9d3be3a2409162bc878274b0adc42"
+    },
+    {
+      "path": ".opencode/agent/builder.md",
+      "classification": "LOCAL",
+      "sha256": "9c3fded0df56f019797d96bcbfdd79df9e54ea6f0ead10fdfa6b71beca1bec1b"
+    },
+    {
+      "path": ".opencode/agent/planner.md",
+      "classification": "LOCAL",
+      "sha256": "4892e553a15d91f051c54cc3ff196a3a0c47fbbc9268f01c836b9000dfa4fda5"
+    },
+    {
+      "path": ".opencode/agent/qa-agent.md",
+      "classification": "LOCAL",
+      "sha256": "0369303faa00b4d6ad0ab94fb85771986b976f7232fa9090db3437ed0f57a83f"
+    },
+    {
+      "path": ".opencode/agent/reviewer-agent.md",
+      "classification": "LOCAL",
+      "sha256": "f7d0cc90732ec0bada8ce138572d4a3387863308050405325d2b57f2530604a2"
+    },
+    {
+      "path": ".opencode/agent/reviewer.md",
+      "classification": "LOCAL",
+      "sha256": "e955743ac1e716942c8f7b61b5b2117fd71626fbfb7f71481d2692b89651fab9"
+    },
+    {
+      "path": ".opencode/package-lock.json",
+      "classification": "LOCAL",
+      "sha256": "54405a5de6afed8747a845555da839be0eff647b532cf873a97bdbe830fe5815"
+    },
+    {
+      "path": ".opencode/package.json",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "4fb596dfe39681a842436893b0906fab3714420dc170a213da6745652470c8f1",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".opencode/skills/.gitkeep",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".vercelignore",
+      "classification": "LOCAL",
+      "sha256": "2555d0acc4447037bb8517d5ab46ebd2935bfdd8688adf42ac07c3f4f448ae62"
+    },
+    {
+      "path": "404.html",
+      "classification": "LOCAL",
+      "sha256": "75e1706a991dd07a2374e6e4fa830d454ca9be6b62e0c2c1de49ca1624680e17"
+    },
+    {
+      "path": "AGENTS.md",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "1dba865f4c9842edd21b08f657608c72cfe5b5b751d6aa50a7e0a86eaff3e609",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "api/leads.js",
+      "classification": "LOCAL",
+      "sha256": "49af65d51d15dd1c95e2a57c3d15f877c90e0c181524e1f25700ac361683c973"
+    },
+    {
+      "path": "api/leads.test.js",
+      "classification": "LOCAL",
+      "sha256": "e36b98145bb3c9c40b2bfa3f67adf86f4a4fca91599e7ec1522ed623e527c456"
+    },
+    {
+      "path": "api/_lib/clinic.js",
+      "classification": "LOCAL",
+      "sha256": "16be2c4a0c7e36b84559ed2cd84704439b14dabcb829ede1f803bdf193244638"
+    },
+    {
+      "path": "api/_lib/core-supabase.js",
+      "classification": "LOCAL",
+      "sha256": "79888b1829a5d6bbb65cb81be508708a40696f3434ed19291879028948e35bc9"
+    },
+    {
+      "path": "api/_lib/core-supabase.test.js",
+      "classification": "LOCAL",
+      "sha256": "e47595f8b2ad0732c25687560edc1dd8aeb0a3c44457b7ae481fda60331c1b71"
+    },
+    {
+      "path": "api/_lib/logger.js",
+      "classification": "LOCAL",
+      "sha256": "42a95eb358d54ef51f11b97c74aa587f61062db9420dabe0fba7bc277ffced4d"
+    },
+    {
+      "path": "api/_lib/logger.test.js",
+      "classification": "LOCAL",
+      "sha256": "daf6073d0c4f1f85cec89990c7416bcbbb583b7d12c093d6cf4709bf6eaf3744"
+    },
+    {
+      "path": "api/_lib/mailer.js",
+      "classification": "LOCAL",
+      "sha256": "40e8600a24335f61e8652ff5953a384a8349e3cbafcd3214130f483ada970d0c"
+    },
+    {
+      "path": "api/_lib/mailer.test.js",
+      "classification": "LOCAL",
+      "sha256": "7c325c56fd34f481d5f2bb917ed4c0b4995be418b5425bb9141cda4191c16c85"
+    },
+    {
+      "path": "api/_lib/sanitize-html.js",
+      "classification": "LOCAL",
+      "sha256": "e8d770816b762aa93873d5c11913e69af8735bacc9208f14bb9c7b5f49d9a874"
+    },
+    {
+      "path": "api/_lib/sanitize-html.test.js",
+      "classification": "LOCAL",
+      "sha256": "508935d97415ad46416dcef2dbd01e824c01a8cc7cd1991b816a7cd617b99b5a"
+    },
+    {
+      "path": "api/_lib/supabase-client.js",
+      "classification": "LOCAL",
+      "sha256": "9872517e9000971c945b8f61c6fe2ffc4be198459cb84f54135b06e7dc860e03"
+    },
+    {
+      "path": "apple-touch-icon.png",
+      "classification": "LOCAL",
+      "sha256": "bc69017cc4009b02d77abe5f3c2ec77d09f44e4ad30fc2c5da08aff968557730"
+    },
+    {
+      "path": "build-site.test.js",
+      "classification": "LOCAL",
+      "sha256": "e922ab94f71380347930083f0a6e7cba44c060f75b5a04001129914a70f1e38c"
+    },
+    {
+      "path": "CHANGELOG.md",
+      "classification": "LOCAL",
+      "sha256": "ce9b098e40867e522ff73f787d62400ab6899eeb69dbd7187b11b1f17a96d518"
+    },
+    {
+      "path": "CLAUDE.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "clinic-config.test.js",
+      "classification": "LOCAL",
+      "sha256": "f87f766e7b9dddb0d29e063d6190541a1d6c49620cb89936b5de491ac5523b70"
+    },
+    {
+      "path": "config/clinic.json",
+      "classification": "LOCAL",
+      "sha256": "a270f88f5a1b3d337af538f8918689d459391fc90fcf5b4bb4c25e991c5165af"
+    },
+    {
+      "path": "CONSTITUTION.md",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "eea188c7ffbbfab611b28cc6f15ec0b0a4708f28aa503102ca31958fcb149d5a",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "create_images.py",
+      "classification": "LOCAL",
+      "sha256": "2feaf96b85c47ab98bb8f777aae3bfab319d234800514306fe9e95d333f813f9"
+    },
+    {
+      "path": "docs/assets/favicon.ico",
+      "classification": "LOCAL",
+      "sha256": "f593e4297258f7d5e63d305734ddce87cd342ce67c8784e9228fa0b39dc784f8"
+    },
+    {
+      "path": "docs/assets/hero-sonrie-mas.png",
+      "classification": "LOCAL",
+      "sha256": "9c09f3db7fbaf3452c5ea147257645f1b6419a741272eb771ae8375524e04a5d"
+    },
+    {
+      "path": "docs/assets/hero-tecnica.png",
+      "classification": "LOCAL",
+      "sha256": "b14b5eb2f3c49f7455aeec87d1219d179afbc222511a3a811716b28fec659074"
+    },
+    {
+      "path": "docs/assets/hero-usuario.png",
+      "classification": "LOCAL",
+      "sha256": "1a07039b9b2bbf308b29e049b75382514a4635d2f01e759da1e36d45c4adee7f"
+    },
+    {
+      "path": "docs/css/extra.css",
+      "classification": "LOCAL",
+      "sha256": "06c673ed958988133b569b587b4c655817feed59e18f8938ff6c61abcca83139"
+    },
+    {
+      "path": "docs/index.md",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "603fb819fa541e0a147ada0c4d27c77de78b64f8f3ab9a1ad4957fb3b2e69d8b",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/tecnica/10-actualizacion-datos-contacto.md",
+      "classification": "LOCAL",
+      "sha256": "38ba68697e87f8c0bfd892524c0ae3a9ef2d44a6a4999629a13560257d185f78"
+    },
+    {
+      "path": "docs/tecnica/13-pruebas-integrales-y-seguridad.md",
+      "classification": "LOCAL",
+      "sha256": "82220bec3f710a7a95f55041d14a5a962b4d9d023bbf86b7748bd10adbdd989d"
+    },
+    {
+      "path": "docs/tecnica/adopcion-template-v2.md",
+      "classification": "LOCAL",
+      "sha256": "161499baa43b7b2f543d41f34a7155eac0efd5f366e8c5d6f68ef8dc0860f0b1"
+    },
+    {
+      "path": "docs/tecnica/arquitectura.md",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "9217d681c842a47937e36678e1b0c15b6028af3f8e32d1bac15587f61a458add",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/tecnica/configuracion-variables-entorno.md",
+      "classification": "LOCAL",
+      "sha256": "1dee481a5a30cf82f1bb8d20bdce24947aa6bc7cc45261504342613dccdfad59"
+    },
+    {
+      "path": "docs/tecnica/confirmacion-automatica-paciente.md",
+      "classification": "LOCAL",
+      "sha256": "584dc67a7c6654b474319dc7784f2de4ba9694ef337d975c7ba9e62b6be48198"
+    },
+    {
+      "path": "docs/tecnica/endpoint-recepcion-leads.md",
+      "classification": "LOCAL",
+      "sha256": "9b789d938de6030413f32a133196f48c4221ce49ec076f3c12773258fca92d47"
+    },
+    {
+      "path": "docs/tecnica/entregabilidad-correo-dominio.md",
+      "classification": "LOCAL",
+      "sha256": "4d714bedec8dc8edff51dd795d4ea0b30a75df4ead8596742bcb4ddd996ee919"
+    },
+    {
+      "path": "docs/tecnica/estado-comunicacion-leads.md",
+      "classification": "LOCAL",
+      "sha256": "b01ef2a2e0ed1324ff6a8c4fed2e0fcdf8b562e63188dad0d06238a929aa564a"
+    },
+    {
+      "path": "docs/tecnica/identidad-privacidad-white-label.md",
+      "classification": "LOCAL",
+      "sha256": "13d728af84ce7359d3da5067fdf8d2ab78f0fab95b3f623d7450a6e8f892d223"
+    },
+    {
+      "path": "docs/tecnica/index.md",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "cb10bc07b119d6ead59bc0850e8d2266365662227541578d934530dae360dc3c",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/tecnica/inicializacion-supabase-schema.md",
+      "classification": "LOCAL",
+      "sha256": "f547b8fdce0aca536faaad597b4fac5999aad76e808b4315db3d3eaa28f214b7"
+    },
+    {
+      "path": "docs/tecnica/integracion-core-platform.md",
+      "classification": "LOCAL",
+      "sha256": "2873a43577da131ab18aec95cd7179b618b03fbb760325203de15e87721ea784"
+    },
+    {
+      "path": "docs/tecnica/landing.md",
+      "classification": "LOCAL",
+      "sha256": "7bb9f0fd291cb2dd04163cbf0c7f13b0a985282a5e729989dc38db4056241d2f"
+    },
+    {
+      "path": "docs/tecnica/notificacion-clinica-smtp-ferozo.md",
+      "classification": "LOCAL",
+      "sha256": "eac72365710a7324696c1e627f4a107a0578bf180d999fdc984f1e7107db8ef5"
+    },
+    {
+      "path": "docs/tecnica/observabilidad-y-operacion.md",
+      "classification": "LOCAL",
+      "sha256": "4206d5bc4829ee8aa1a8d83f9b3a0a875bbc39a730b5c1e544050432905c50a9"
+    },
+    {
+      "path": "docs/tecnica/organizacion-runs-por-version.md",
+      "classification": "LOCAL",
+      "sha256": "6715d2d32b7b13a46f3225e5515b300062fea1ee97fe86503edcbedfe3dba81d"
+    },
+    {
+      "path": "docs/tecnica/pipeline-despliegue-vercel.md",
+      "classification": "LOCAL",
+      "sha256": "efb5d72714a86cdb2472345aa233a0269670fe0cf9c0d07dd31dbb775b00e1ff"
+    },
+    {
+      "path": "docs/tecnica/planificacion-producto-v2.md",
+      "classification": "LOCAL",
+      "sha256": "8adf4f29c3a72efe095a5cb5cefd7d2bcdfcf01ad0657597f98068eecd1a372a"
+    },
+    {
+      "path": "docs/tecnica/proteccion-antispam-y-abuso.md",
+      "classification": "LOCAL",
+      "sha256": "3178747a1037b298baebfed3c502aad2649c511a2714b7e386b303d6eafe0ff7"
+    },
+    {
+      "path": "docs/tecnica/redisenio-estetico-y-assets.md",
+      "classification": "LOCAL",
+      "sha256": "78a3d1896a77fa58455dbabd6162250e07fb82a6ee3f045de2a48932512ca187"
+    },
+    {
+      "path": "docs/tecnica/seguridad-y-politica-privacidad.md",
+      "classification": "LOCAL",
+      "sha256": "f936f93b5d30cfdf8d2a4e6d9a0fd493b63c317d19622065d5ba7a7c1b77c4d5"
+    },
+    {
+      "path": "docs/tecnica/seo-accesibilidad-y-navegacion.md",
+      "classification": "LOCAL",
+      "sha256": "dcda93a95d83ec9d21fa8d131b821bb68ace3888e8dc83a9b39c0c01388bde36"
+    },
+    {
+      "path": "docs/tecnica/validacion-identidad-lifecycle.md",
+      "classification": "LOCAL",
+      "sha256": "d927a4bd096b59ea1aef7af1eb1d63c3831e98482c404724bda78d092a283ebd"
+    },
+    {
+      "path": "docs/tecnica/validacion-mvp-produccion.md",
+      "classification": "LOCAL",
+      "sha256": "8c22ad8c0d12872d1e6d6da39b6bf34e9d1693f6f8d4d2ecee5545bd27658166"
+    },
+    {
+      "path": "docs/usuario/10-actualizacion-datos-contacto.md",
+      "classification": "LOCAL",
+      "sha256": "ed66b18bddaf21efdc1c818438fc6a2629070cd8e2a049c2f827f0a5737f5f1e"
+    },
+    {
+      "path": "docs/usuario/13-pruebas-integrales-y-seguridad.md",
+      "classification": "LOCAL",
+      "sha256": "bd258c6c0748d202b9bae8dab379d18fe01605e0231b3642531daaf5c51634f6"
+    },
+    {
+      "path": "docs/usuario/adopcion-template-v2.md",
+      "classification": "LOCAL",
+      "sha256": "0766b3b2b592879ae33e4ddd8d81cf08aee8f9fc0a1c79237ee7551cc9f59d26"
+    },
+    {
+      "path": "docs/usuario/configuracion-variables-entorno.md",
+      "classification": "LOCAL",
+      "sha256": "b306df39ec32693600f73350c5b2c6d167ae20d122d9956379955cdc7fa49514"
+    },
+    {
+      "path": "docs/usuario/confirmacion-automatica-paciente.md",
+      "classification": "LOCAL",
+      "sha256": "fb0440f0c1f3ac17040efda59153d424999e68c2b278e6163f0b7b9a2d9a6758"
+    },
+    {
+      "path": "docs/usuario/endpoint-recepcion-leads.md",
+      "classification": "LOCAL",
+      "sha256": "a6f4f8c79740fde0a3a586ae7e9562f4556602c24802bc27fcaee4ef9e6f5e2a"
+    },
+    {
+      "path": "docs/usuario/entregabilidad-correo-dominio.md",
+      "classification": "LOCAL",
+      "sha256": "6071ecbec2f5e027b2797b76944a82a11ec87e28de948af3ef017f281086e412"
+    },
+    {
+      "path": "docs/usuario/estado-comunicacion-leads.md",
+      "classification": "LOCAL",
+      "sha256": "bab9b37c6f38d91c71e099417579aba6fcb76e459dacad17462497fdae12387f"
+    },
+    {
+      "path": "docs/usuario/identidad-privacidad-white-label.md",
+      "classification": "LOCAL",
+      "sha256": "132255904ce195a3a47d0fce47e5e4cf1cb878a13433f2376b36bd214fac74d5"
+    },
+    {
+      "path": "docs/usuario/index.md",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "50a46e9cd5ef4d82f36588028ac99e72f4079135ab7abc570d48c8c8470a79af",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/usuario/inicializacion-supabase-schema.md",
+      "classification": "LOCAL",
+      "sha256": "2c3ac0bd9f3cfb6ad1b7fcf0152d1275df0d40dcf1d7f5d7f70991e710b076f5"
+    },
+    {
+      "path": "docs/usuario/integracion-core-platform.md",
+      "classification": "LOCAL",
+      "sha256": "973129e4fe7d59a29e9cd776af88b411e8337e1d03792d2602254986941bc954"
+    },
+    {
+      "path": "docs/usuario/landing.md",
+      "classification": "LOCAL",
+      "sha256": "3d8b7b0c07df9eed334760b1dc60583e05404e75cb25ee25d56480b24be0acdb"
+    },
+    {
+      "path": "docs/usuario/notificacion-clinica-smtp-ferozo.md",
+      "classification": "LOCAL",
+      "sha256": "70f55ce9563f36468b471265cb27acf28b0049cbbfebf9b63dc8c52e20ac0202"
+    },
+    {
+      "path": "docs/usuario/observabilidad-y-operacion.md",
+      "classification": "LOCAL",
+      "sha256": "eb9793fe8b9055cb89e6fa49f95a2126a3a3597f497c1a5b781d8a2da50c77b9"
+    },
+    {
+      "path": "docs/usuario/pipeline-despliegue-vercel.md",
+      "classification": "LOCAL",
+      "sha256": "c6cadd9e356098ad596e3c331601711f4fe72973c4acb877aef44a77b3e563ee"
+    },
+    {
+      "path": "docs/usuario/planificacion-producto-v2.md",
+      "classification": "LOCAL",
+      "sha256": "240b922b9848b57da1eae66f8d54e563c7877629b18d7ae55738290b1e4696f8"
+    },
+    {
+      "path": "docs/usuario/proteccion-antispam-y-abuso.md",
+      "classification": "LOCAL",
+      "sha256": "74a12bde6f35046ef6fb2a484143f29b143cb990a6dfb34dfce34da26c39eb90"
+    },
+    {
+      "path": "docs/usuario/redisenio-estetico-y-assets.md",
+      "classification": "LOCAL",
+      "sha256": "6f710889d21e8b9fb902c164c04fb6afbfae8dd268f8d705cbe978ad545c2199"
+    },
+    {
+      "path": "docs/usuario/seguridad-y-politica-privacidad.md",
+      "classification": "LOCAL",
+      "sha256": "5ddb186143fe617ee9a09f151f48cadaf5845dd7a356eebbed604df87228c645"
+    },
+    {
+      "path": "docs/usuario/seo-accesibilidad-y-navegacion.md",
+      "classification": "LOCAL",
+      "sha256": "da562c9defb8ec0f89ade8f495143b8bc206c119bee8721871c2863f96da9813"
+    },
+    {
+      "path": "docs/usuario/validacion-identidad-lifecycle.md",
+      "classification": "LOCAL",
+      "sha256": "6a5f99415b58e1c3fb2f1d78480787bd38e63d01892ed6d5c1119fb21f26f961"
+    },
+    {
+      "path": "docs/usuario/validacion-mvp-produccion.md",
+      "classification": "LOCAL",
+      "sha256": "85cede208f41c434bb70d61c4876943325c0f7e613295c86b173697bdfbe98ce"
+    },
+    {
+      "path": "favicon.ico",
+      "classification": "LOCAL",
+      "sha256": "f593e4297258f7d5e63d305734ddce87cd342ce67c8784e9228fa0b39dc784f8"
+    },
+    {
+      "path": "index.html",
+      "classification": "LOCAL",
+      "sha256": "c09bc561a627419f6ce39730c023ce4ff1adea9f8982e0ed51e908b7ee49774e"
+    },
+    {
+      "path": "mkdocs.yml",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "931a5071002e3e39bd6dc3aec3426cacec65950c909d95b17e606b01d8a9e84d",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "opencode.json",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "7b9bb4f9515eb4543db9154b9bac814aed1444bb941d77c09d4e97d21809ce48",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "package-lock.json",
+      "classification": "LOCAL",
+      "sha256": "d1a2d6ab45b7cb294d77cf9c78a9cf1f0f84f64f6b180e528ca53189bbb3eeef"
+    },
+    {
+      "path": "package.json",
+      "classification": "LOCAL",
+      "sha256": "b3f12dd8c9e78785791431449c8db1935395ee535272400d3259f7e58ea8a36f"
+    },
+    {
+      "path": "politica-de-privacidad.html",
+      "classification": "LOCAL",
+      "sha256": "015e483fe1fde2216c6edf2767c5a0028ab5275bc5a0c2a2c125567b3bd1a7be"
+    },
+    {
+      "path": "politica-dialogo.test.js",
+      "classification": "LOCAL",
+      "sha256": "b40523a51edb60293653a72498934c20f02d476d821ce04efcde57ab21eb484e"
+    },
+    {
+      "path": "pytest.ini",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "37b7898dd0df68d7bacac4726b4836010200403a1abe9542fe229caebe39b8a3",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "requirements-dev.txt",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "4db559645a19efc3970b8c4a488a46b49c1b4bfe998d88294931ca559891d081",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "ROADMAP.md",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "d50b3da4e41e6a119a95cd378a7ce7fdef144dc1c4eb7852394ea5991c59d96e",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "runs/.gitkeep",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "runs/v1.0.0-producto/01-configuracion-variables-entorno/audit-1.md",
+      "classification": "LOCAL",
+      "sha256": "bf5d57402cc8ac4d9e2f25875118be3f2cf65f4878a3939dd7c8761350752ceb"
+    },
+    {
+      "path": "runs/v1.0.0-producto/01-configuracion-variables-entorno/decision.md",
+      "classification": "LOCAL",
+      "sha256": "c66d7c444588a8f7a440a05f3643d22d288645cf9678dd3a1210f5e24b0793a2"
+    },
+    {
+      "path": "runs/v1.0.0-producto/01-configuracion-variables-entorno/spec.md",
+      "classification": "LOCAL",
+      "sha256": "512b308c8ed0eda0a3abdf43c90a51d8cf9aff1b365a5c62c70b5125594ec264"
+    },
+    {
+      "path": "runs/v1.0.0-producto/01-configuracion-variables-entorno/test-report-1.md",
+      "classification": "LOCAL",
+      "sha256": "c390d17d83960e782b8ed80a15509543929989db7a62f1424ee89ab0280cae76"
+    },
+    {
+      "path": "runs/v1.0.0-producto/02-inicializacion-supabase-schema/audit-1.md",
+      "classification": "LOCAL",
+      "sha256": "fd6a5a4829c45b0f0e52cadccad0e57d4c01cd187126af6a8a11937487749ec5"
+    },
+    {
+      "path": "runs/v1.0.0-producto/02-inicializacion-supabase-schema/decision.md",
+      "classification": "LOCAL",
+      "sha256": "093a6003e1e1bc5e63e91d10f521ba43fb554d54d2a559f03b70becfd482aeb2"
+    },
+    {
+      "path": "runs/v1.0.0-producto/02-inicializacion-supabase-schema/spec.md",
+      "classification": "LOCAL",
+      "sha256": "868ce2a55d622b0d7d77ecdff2932c4da698559382898478d1dacc508575c894"
+    },
+    {
+      "path": "runs/v1.0.0-producto/02-inicializacion-supabase-schema/test-report-1.md",
+      "classification": "LOCAL",
+      "sha256": "e048d370111a77d3e74d0d69cd36a30acc02ef3abad78159254e6df2a4146033"
+    },
+    {
+      "path": "runs/v1.0.0-producto/03-endpoint-recepcion-leads/audit-1.md",
+      "classification": "LOCAL",
+      "sha256": "af12e46d2f87c5aeb2c328de152f76c7586bf585d607d43461af6d6d6f1c778c"
+    },
+    {
+      "path": "runs/v1.0.0-producto/03-endpoint-recepcion-leads/audit-2.md",
+      "classification": "LOCAL",
+      "sha256": "337a5fc47905b16ad62c6ec798a70f3135258627fd2aec5ffbd915ec90a83a90"
+    },
+    {
+      "path": "runs/v1.0.0-producto/03-endpoint-recepcion-leads/audit-3.md",
+      "classification": "LOCAL",
+      "sha256": "1c223701d8c8d57bcf5d4d9a3e30fe6adec30384f162d085b2ca67afc023c7e9"
+    },
+    {
+      "path": "runs/v1.0.0-producto/03-endpoint-recepcion-leads/decision.md",
+      "classification": "LOCAL",
+      "sha256": "b846069c76a67c1f5951ea411acca058602082eb198335b607c9bd179a4df467"
+    },
+    {
+      "path": "runs/v1.0.0-producto/03-endpoint-recepcion-leads/spec.md",
+      "classification": "LOCAL",
+      "sha256": "f6c81202d30db160c3d74ba60d2553d241204b957bf6da83e224f4f2d434f662"
+    },
+    {
+      "path": "runs/v1.0.0-producto/03-endpoint-recepcion-leads/test-report-1.md",
+      "classification": "LOCAL",
+      "sha256": "8e553c3a332a3b62ecce95e00f2f9f682e8f30a357568b44d0db4a328005755f"
+    },
+    {
+      "path": "runs/v1.0.0-producto/04-proteccion-antispam-y-abuso/audit-1.md",
+      "classification": "LOCAL",
+      "sha256": "ed5de0dcab32de04d5bfab3fea89a2f92142538b4baab0e52faae0e3dcb5ad85"
+    },
+    {
+      "path": "runs/v1.0.0-producto/04-proteccion-antispam-y-abuso/audit-2.md",
+      "classification": "LOCAL",
+      "sha256": "4f54fae1b0c90b845c8bced8156599aea60814e0b897eb0c4f3293142a321a87"
+    },
+    {
+      "path": "runs/v1.0.0-producto/04-proteccion-antispam-y-abuso/decision.md",
+      "classification": "LOCAL",
+      "sha256": "2dbbc5883b87687efd11a6e17d379215e0704de772deda6313d76ce7508dd393"
+    },
+    {
+      "path": "runs/v1.0.0-producto/04-proteccion-antispam-y-abuso/spec.md",
+      "classification": "LOCAL",
+      "sha256": "330b4bc5f86891af302501e3d881e73dca0e9e230c54a69603d739d679510125"
+    },
+    {
+      "path": "runs/v1.0.0-producto/04-proteccion-antispam-y-abuso/test-report-1.md",
+      "classification": "LOCAL",
+      "sha256": "e1bdd98051653757231c274c0f7641d364ab5abcd6218ad6cdc863051fe108bb"
+    },
+    {
+      "path": "runs/v1.0.0-producto/05-notificacion-clinica-smtp-ferozo/audit-1.md",
+      "classification": "LOCAL",
+      "sha256": "0ba7c7b841192c8d2dd3b39d15ce9eb85a50a868eaa0710324e51e09b9742ea3"
+    },
+    {
+      "path": "runs/v1.0.0-producto/05-notificacion-clinica-smtp-ferozo/audit-2.md",
+      "classification": "LOCAL",
+      "sha256": "31db1db877e1b75fc3253eaf65be17e0bff4fba4fe61de4de44ee300275faa7c"
+    },
+    {
+      "path": "runs/v1.0.0-producto/05-notificacion-clinica-smtp-ferozo/decision.md",
+      "classification": "LOCAL",
+      "sha256": "af3bacaa8866d9d32e40fb0d11ac065e96fb2c4ae40127758bb0f94fdc972b1b"
+    },
+    {
+      "path": "runs/v1.0.0-producto/05-notificacion-clinica-smtp-ferozo/spec.md",
+      "classification": "LOCAL",
+      "sha256": "c03d3b25e542ae647c982f215346ca361b17782031755d9539aec7747e25484e"
+    },
+    {
+      "path": "runs/v1.0.0-producto/05-notificacion-clinica-smtp-ferozo/test-report-1.md",
+      "classification": "LOCAL",
+      "sha256": "4a0c029b135f09ad11931614298f1f5ffb12fad04a792bf8fe41c46ee0d9b796"
+    },
+    {
+      "path": "runs/v1.0.0-producto/06-confirmacion-automatica-paciente/audit-1.md",
+      "classification": "LOCAL",
+      "sha256": "4ae841a526412f5b0f88031918b78d6f7313f00d408860e8d7f716a9e124331b"
+    },
+    {
+      "path": "runs/v1.0.0-producto/06-confirmacion-automatica-paciente/decision.md",
+      "classification": "LOCAL",
+      "sha256": "d97f83e95227999935184f1b194c6b5e9b54fd6c3a05ada6a31dbeffb815ebdd"
+    },
+    {
+      "path": "runs/v1.0.0-producto/06-confirmacion-automatica-paciente/spec.md",
+      "classification": "LOCAL",
+      "sha256": "d7f4e61945b37d9b15676c470b51459969dc73af41df4f508708932e376e16da"
+    },
+    {
+      "path": "runs/v1.0.0-producto/06-confirmacion-automatica-paciente/test-report-1.md",
+      "classification": "LOCAL",
+      "sha256": "48c21f8d8edff9c1ae78941dc1f15cef5b83c75ee1a99591c08036f9aea4cac3"
+    },
+    {
+      "path": "runs/v1.0.0-producto/07-seguridad-y-politica-privacidad/audit-1.md",
+      "classification": "LOCAL",
+      "sha256": "d5960317959fc0fc0a6589e0c91284623ddc284e21f1447b56025f81d8ff3bbe"
+    },
+    {
+      "path": "runs/v1.0.0-producto/07-seguridad-y-politica-privacidad/decision.md",
+      "classification": "LOCAL",
+      "sha256": "f2e2ad468014b2354751362d4dd1ab007f5e0aa047a5bc2e69e182b6e83480cb"
+    },
+    {
+      "path": "runs/v1.0.0-producto/07-seguridad-y-politica-privacidad/spec.md",
+      "classification": "LOCAL",
+      "sha256": "81d3464e67a8e87555ff9d0f12270d9953cc7c052fd70ea4b1cd1a7b7650dac4"
+    },
+    {
+      "path": "runs/v1.0.0-producto/07-seguridad-y-politica-privacidad/test-report-1.md",
+      "classification": "LOCAL",
+      "sha256": "623bc5df9fd2adb61c88ee5a10229f19661d0433725c4927d1780e1a8dff570c"
+    },
+    {
+      "path": "runs/v1.0.0-producto/09-redisenio-estetico-y-assets/audit-1.md",
+      "classification": "LOCAL",
+      "sha256": "09fca5d735263ed92d1e148b5098524945b9d897a047d7a8226c6eded9f9844b"
+    },
+    {
+      "path": "runs/v1.0.0-producto/09-redisenio-estetico-y-assets/decision.md",
+      "classification": "LOCAL",
+      "sha256": "4b50f2ec89abdf1e79bb50ab1a754c3ef923d4d1e24007960b71bc5f6a9f17a6"
+    },
+    {
+      "path": "runs/v1.0.0-producto/09-redisenio-estetico-y-assets/spec.md",
+      "classification": "LOCAL",
+      "sha256": "4112a0734ae847fc7f890885689452fe44db560333314854d9dfc4544428a2e1"
+    },
+    {
+      "path": "runs/v1.0.0-producto/09-redisenio-estetico-y-assets/test-report-1.md",
+      "classification": "LOCAL",
+      "sha256": "c66c7002c7de1410318a2e5da283a8c29f7888fee55d3c5e25632f40b02629db"
+    },
+    {
+      "path": "runs/v1.0.0-producto/10-actualizacion-datos-contacto/audit-1.md",
+      "classification": "LOCAL",
+      "sha256": "842c194790e08dc25d7696d2df6be7ef4d313c2cb027827f2b10b826904b412b"
+    },
+    {
+      "path": "runs/v1.0.0-producto/10-actualizacion-datos-contacto/decision.md",
+      "classification": "LOCAL",
+      "sha256": "351e255fced9a40873263629eac898ed278cb36e2f0778d976de631b5fa79191"
+    },
+    {
+      "path": "runs/v1.0.0-producto/10-actualizacion-datos-contacto/spec.md",
+      "classification": "LOCAL",
+      "sha256": "fac76f1ad747264579d3379fc7c330dfff5d40b1985fca6c3051fd6954218ad1"
+    },
+    {
+      "path": "runs/v1.0.0-producto/11-seo-accesibilidad-y-navegacion/audit-1.md",
+      "classification": "LOCAL",
+      "sha256": "b0ba8c5b6c9430cb1330bdedfca5db3321860ff542a3093045f182dcd5189b19"
+    },
+    {
+      "path": "runs/v1.0.0-producto/11-seo-accesibilidad-y-navegacion/decision.md",
+      "classification": "LOCAL",
+      "sha256": "1b62cb5329393953d6eed585384c6676a73f3b84536fdd0c852b151d891b2381"
+    },
+    {
+      "path": "runs/v1.0.0-producto/11-seo-accesibilidad-y-navegacion/spec.md",
+      "classification": "LOCAL",
+      "sha256": "4562293320fa94393b1ab411e26e59bc975dd95d51bf3fd78e91af80a4a3b7d1"
+    },
+    {
+      "path": "runs/v1.0.0-producto/11-seo-accesibilidad-y-navegacion/test-report-1.md",
+      "classification": "LOCAL",
+      "sha256": "935a4020a6044f06c3bd70cd267c690c6a4b4250301dc334094304d8791dbaa0"
+    },
+    {
+      "path": "runs/v1.0.0-producto/12-entregabilidad-correo-dominio/audit-1.md",
+      "classification": "LOCAL",
+      "sha256": "634acd044749e1f9fcbca02111c89f7b4fddbdbe3b32c93cd421c5260e36fcda"
+    },
+    {
+      "path": "runs/v1.0.0-producto/12-entregabilidad-correo-dominio/decision.md",
+      "classification": "LOCAL",
+      "sha256": "387687fa2604e5916355475a8d2d8c5e72cce48b817a8e3da65069538a787b16"
+    },
+    {
+      "path": "runs/v1.0.0-producto/12-entregabilidad-correo-dominio/spec.md",
+      "classification": "LOCAL",
+      "sha256": "ba99e1d076ef69dda35e2f39910d192f79c0dfa51d5d586f071e2a9a9ee1f870"
+    },
+    {
+      "path": "runs/v1.0.0-producto/12-entregabilidad-correo-dominio/test-report-1.md",
+      "classification": "LOCAL",
+      "sha256": "a3f96d65714fc7235a33c3078cc94c5b214018e1af235ea3a08d4ed560c1c617"
+    },
+    {
+      "path": "runs/v1.0.0-producto/13-pruebas-integrales-y-seguridad/audit-1.md",
+      "classification": "LOCAL",
+      "sha256": "766fa12aa2d4b8fbb15f5ba577d6dd77357e8e39b867b71137cdd92b59349eac"
+    },
+    {
+      "path": "runs/v1.0.0-producto/13-pruebas-integrales-y-seguridad/decision.md",
+      "classification": "LOCAL",
+      "sha256": "9114db137f4de4dfb09327b245d8ca11a37772463fb9fe6fbad1424a52a9c297"
+    },
+    {
+      "path": "runs/v1.0.0-producto/13-pruebas-integrales-y-seguridad/test-report-1.md",
+      "classification": "LOCAL",
+      "sha256": "c0457ba280056ffd2c4d556fc4dc38968ff3f13809d37188f96620d366678503"
+    },
+    {
+      "path": "runs/v1.0.0-producto/14-pipeline-despliegue-vercel/audit-1.md",
+      "classification": "LOCAL",
+      "sha256": "7dd9a7d2321bf8165ecba70e7c8a0eb05b8ee5afe736cacc071261f8dd51c780"
+    },
+    {
+      "path": "runs/v1.0.0-producto/14-pipeline-despliegue-vercel/decision.md",
+      "classification": "LOCAL",
+      "sha256": "84028a1dbc971bab567f280b597be3c225bfa8d77aacd4e2529d56eeb52d622f"
+    },
+    {
+      "path": "runs/v1.0.0-producto/14-pipeline-despliegue-vercel/spec.md",
+      "classification": "LOCAL",
+      "sha256": "ca4691cdd04faeeb4aa2a25c7fddbbca117f61b179c138b75bb61e9c431bf5c4"
+    },
+    {
+      "path": "runs/v1.0.0-producto/14-pipeline-despliegue-vercel/test-report-1.md",
+      "classification": "LOCAL",
+      "sha256": "80ad8dc80eae7c45a4905be798198ed192ce383cf7df16291def141a1d7d3ff3"
+    },
+    {
+      "path": "runs/v1.0.0-producto/14-pipeline-despliegue-vercel/test-report-2.md",
+      "classification": "LOCAL",
+      "sha256": "a8b1f5c91ff08890f8e3dc4d66904507e30d1e118d5507985eca7ffc79f90685"
+    },
+    {
+      "path": "runs/v1.0.0-producto/15-observabilidad-y-operacion/audit-1.md",
+      "classification": "LOCAL",
+      "sha256": "62e4db8993372c5fdaff01ef94e860dbbad33c17045f37fbbd35dc979de2cfb1"
+    },
+    {
+      "path": "runs/v1.0.0-producto/15-observabilidad-y-operacion/decision.md",
+      "classification": "LOCAL",
+      "sha256": "23cd102b4db92ce75d02666ae43b3d8f807fa1b1adf2e7e0b10f87a9d601dc21"
+    },
+    {
+      "path": "runs/v1.0.0-producto/15-observabilidad-y-operacion/spec.md",
+      "classification": "LOCAL",
+      "sha256": "9e9b4d25ade76656bc7cff0ad05fd49187a82118dba490372e094caf0c7c526d"
+    },
+    {
+      "path": "runs/v1.0.0-producto/15-observabilidad-y-operacion/test-report-1.md",
+      "classification": "LOCAL",
+      "sha256": "0d94f93a1b05bcc8ac1769b76790a9eddd185968cdbeeb757ce842b294de0d56"
+    },
+    {
+      "path": "runs/v1.0.0-producto/16-validacion-mvp-produccion/audit-1-contingencia-codex.md",
+      "classification": "LOCAL",
+      "sha256": "4216469d9bb7833def8691365abeae0c5f5fb3b33955c43a9066850f5505e055"
+    },
+    {
+      "path": "runs/v1.0.0-producto/16-validacion-mvp-produccion/audit-1-intento-2.md",
+      "classification": "LOCAL",
+      "sha256": "836372157c3548260a55693020e48c22138dcd183daeb544708cda7e58df5b75"
+    },
+    {
+      "path": "runs/v1.0.0-producto/16-validacion-mvp-produccion/audit-1-intento-3.md",
+      "classification": "LOCAL",
+      "sha256": "c86c56068502c9c979c9b0e3a2f6c5b049c892609a90eefad604dafacce4f2d4"
+    },
+    {
+      "path": "runs/v1.0.0-producto/16-validacion-mvp-produccion/audit-1-intento-4.md",
+      "classification": "LOCAL",
+      "sha256": "e7371449cd131a236bc84368aa9919879963aba3ca4e8cafd46e6e1d826ec804"
+    },
+    {
+      "path": "runs/v1.0.0-producto/16-validacion-mvp-produccion/audit-1-intento-5.md",
+      "classification": "LOCAL",
+      "sha256": "ddfefbffe346c3d05ae162f486c08ecfca28fd91c5803e0840c17977de2d7710"
+    },
+    {
+      "path": "runs/v1.0.0-producto/16-validacion-mvp-produccion/audit-1-intento-6.md",
+      "classification": "LOCAL",
+      "sha256": "2992e43142c333bbac1d43746f2a6bc513203d9d640a0fd22ff93caa186af619"
+    },
+    {
+      "path": "runs/v1.0.0-producto/16-validacion-mvp-produccion/audit-1-intento-7.md",
+      "classification": "LOCAL",
+      "sha256": "4348bb7eb98efb85a9a553ba6348aa83f382653cf433731c20908d605e0bae18"
+    },
+    {
+      "path": "runs/v1.0.0-producto/16-validacion-mvp-produccion/audit-1-intento-8.md",
+      "classification": "LOCAL",
+      "sha256": "cc3526dddcc06f467e93febd35cc736970efc2969231032923007d638bb50a0e"
+    },
+    {
+      "path": "runs/v1.0.0-producto/16-validacion-mvp-produccion/audit-1-intento-9.md",
+      "classification": "LOCAL",
+      "sha256": "a3b7096a67f967da03c1028c3a1511cdf539bf4230497f4886bd3c135ca54a2b"
+    },
+    {
+      "path": "runs/v1.0.0-producto/16-validacion-mvp-produccion/audit-1.md",
+      "classification": "LOCAL",
+      "sha256": "f088d75670e080dccb37b6e65a16dadf184d649fe4e02447d008ecb84618a2aa"
+    },
+    {
+      "path": "runs/v1.0.0-producto/16-validacion-mvp-produccion/audit-2-intento-10.md",
+      "classification": "LOCAL",
+      "sha256": "c5d03cfacac1d9ea5dbfd052ab8a112ee433d4a7bdf190d9d3171f1d1f32a4a2"
+    },
+    {
+      "path": "runs/v1.0.0-producto/16-validacion-mvp-produccion/audit-2-intento-11.md",
+      "classification": "LOCAL",
+      "sha256": "388dc6c869eb3acb422dd6e69acc3eaef4d3c56b571ed55430c7c53b06a18cd2"
+    },
+    {
+      "path": "runs/v1.0.0-producto/16-validacion-mvp-produccion/audit-2-intento-2.md",
+      "classification": "LOCAL",
+      "sha256": "e75991a96a4ffc73d048e1e4ee879c1c56b1c783ab3a6e9a4ed7ca1268b2a908"
+    },
+    {
+      "path": "runs/v1.0.0-producto/16-validacion-mvp-produccion/audit-2-intento-3.md",
+      "classification": "LOCAL",
+      "sha256": "e626ea4d7efd60a49631222a9f5ddea91329947feaa8101e5a83f01d8158c6af"
+    },
+    {
+      "path": "runs/v1.0.0-producto/16-validacion-mvp-produccion/audit-2-intento-4.md",
+      "classification": "LOCAL",
+      "sha256": "7f949ce6716782ae5ae4f7f19f0648e0e971bff82cdb7702fdec6ad768fccf2f"
+    },
+    {
+      "path": "runs/v1.0.0-producto/16-validacion-mvp-produccion/audit-2-intento-5.md",
+      "classification": "LOCAL",
+      "sha256": "29897fa828ede6d4c4d9906dc6ad9b634ace9f669a60104d21a9c868c5b73f1e"
+    },
+    {
+      "path": "runs/v1.0.0-producto/16-validacion-mvp-produccion/audit-2-intento-6.md",
+      "classification": "LOCAL",
+      "sha256": "c1044816927ef7a807f423643cd7c54961f34c11312c813ab8979ab144c0e5ae"
+    },
+    {
+      "path": "runs/v1.0.0-producto/16-validacion-mvp-produccion/audit-2-intento-7.md",
+      "classification": "LOCAL",
+      "sha256": "9db502e81fcf8a3ac83a878a65add65c1e2d7a77f7928877d7f676ba6c62384e"
+    },
+    {
+      "path": "runs/v1.0.0-producto/16-validacion-mvp-produccion/audit-2-intento-8.md",
+      "classification": "LOCAL",
+      "sha256": "6bb2cee05c344d69bd91465036d0fc76d953c81841acb0aeccb7f261fa4b51f2"
+    },
+    {
+      "path": "runs/v1.0.0-producto/16-validacion-mvp-produccion/audit-2-intento-9.md",
+      "classification": "LOCAL",
+      "sha256": "624f83f74bff14f5e900835f16ce4e5dfdfab559ef6bf2ad1603dc491c814c5b"
+    },
+    {
+      "path": "runs/v1.0.0-producto/16-validacion-mvp-produccion/audit-2.md",
+      "classification": "LOCAL",
+      "sha256": "3a2d9b097b28619fc2e85ea020c764c8488ee210a63649aa1161c9ea1c497496"
+    },
+    {
+      "path": "runs/v1.0.0-producto/16-validacion-mvp-produccion/audit-3-envio-formulario-intento-2.md",
+      "classification": "LOCAL",
+      "sha256": "0f8a15816a996647a16ed281e836a3e9a484204f32e826e905d6946dfaada16e"
+    },
+    {
+      "path": "runs/v1.0.0-producto/16-validacion-mvp-produccion/audit-3-envio-formulario-intento-3.md",
+      "classification": "LOCAL",
+      "sha256": "65a0bb7461482b861bf031dd008edd85088a0ffcdca8b8999a0d217f149f17ef"
+    },
+    {
+      "path": "runs/v1.0.0-producto/16-validacion-mvp-produccion/audit-3-envio-formulario.md",
+      "classification": "LOCAL",
+      "sha256": "0a5b0e5b9b41c3d6bd9ee6de8634adc1708ec84f2a940d25ba49facda76259b5"
+    },
+    {
+      "path": "runs/v1.0.0-producto/16-validacion-mvp-produccion/audit-4-punto-16.md",
+      "classification": "LOCAL",
+      "sha256": "681743a3de4cbfd81076dd9238b818c71aee1563c7eee6ce6dd7e58aca9656d3"
+    },
+    {
+      "path": "runs/v1.0.0-producto/16-validacion-mvp-produccion/audit-5-punto-16.md",
+      "classification": "LOCAL",
+      "sha256": "f11cc70243d9bd931c4a19dbe4d9cc088557be7bbe35978bb616f552d913ffef"
+    },
+    {
+      "path": "runs/v1.0.0-producto/16-validacion-mvp-produccion/audit-6-final.md",
+      "classification": "LOCAL",
+      "sha256": "e0f4b8442af59db77f7769d5774978ddc39d632a673af7f96d69e99d67010398"
+    },
+    {
+      "path": "runs/v1.0.0-producto/16-validacion-mvp-produccion/audit-7-final.md",
+      "classification": "LOCAL",
+      "sha256": "4d29c63e5f54e56b9f784f5105ffb1cbbcc6762a49001c4f401fc29dfdcbe84e"
+    },
+    {
+      "path": "runs/v1.0.0-producto/16-validacion-mvp-produccion/decision.md",
+      "classification": "LOCAL",
+      "sha256": "6edd8eebd35c5e04a54fd6c1feaba605fe0dc456a18608a63649e64de53ac198"
+    },
+    {
+      "path": "runs/v1.0.0-producto/16-validacion-mvp-produccion/spec.md",
+      "classification": "LOCAL",
+      "sha256": "e853383ac743d4efab8478fad0ac9ee688bb26f4b4dc68452891addd1a8525e3"
+    },
+    {
+      "path": "runs/v1.0.0-producto/16-validacion-mvp-produccion/test-report-1.md",
+      "classification": "LOCAL",
+      "sha256": "cef3f075a4b3298312052e917ae1fc75fccedddfc5dcb56b3d799abe3ba7a46d"
+    },
+    {
+      "path": "runs/v1.0.0-producto/16-validacion-mvp-produccion/test-report-2.md",
+      "classification": "LOCAL",
+      "sha256": "0adacde63a441b3bc05281f8add1706cf4b63a502aab1e1de58ae44be52678d9"
+    },
+    {
+      "path": "runs/v1.0.0-producto/16-validacion-mvp-produccion/test-report-3.md",
+      "classification": "LOCAL",
+      "sha256": "3ff15607dd06c1403f378c008fe5b7ac7d7d69d8bd578d403e1212290998ecb7"
+    },
+    {
+      "path": "runs/v1.0.0-producto/16-validacion-mvp-produccion/test-report-4.md",
+      "classification": "LOCAL",
+      "sha256": "d0507c9109b84439b784ccb41051d3f51d4ef77c1224916c4db9577fd5cf5d67"
+    },
+    {
+      "path": "runs/v1.0.0-producto/16-validacion-mvp-produccion/test-report-5.md",
+      "classification": "LOCAL",
+      "sha256": "8d87ec85607fa3f7765a1eac447976a75bf135aba58cb839194b3b4fb96ffd35"
+    },
+    {
+      "path": "runs/v1.0.0-producto/16-validacion-mvp-produccion/test-report-6.md",
+      "classification": "LOCAL",
+      "sha256": "d1c65c8da388c0d1370bcf4dacecf3365235247de54d3a141f4de3b38475fc4b"
+    },
+    {
+      "path": "runs/v1.0.0-producto/16-validacion-mvp-produccion/test-report-7.md",
+      "classification": "LOCAL",
+      "sha256": "514a2aa9e4db7d560144e0e4dcd911683da88674c9ae16a893b0cda4be17ef68"
+    },
+    {
+      "path": "runs/v1.0.0-producto/16-validacion-mvp-produccion/test-report-8.md",
+      "classification": "LOCAL",
+      "sha256": "c951b840dff0dc8a6a4b8d4e2c12dfd67e5dad6293461aeb9649a9272d8c9f8e"
+    },
+    {
+      "path": "runs/v1.0.1-producto/v1.0.1-identidad-privacidad-white-label/audit-1.md",
+      "classification": "LOCAL",
+      "sha256": "8494a182243b9ecf1bd78dfc47147557d223724611041af26b0b9e565a5aa9c0"
+    },
+    {
+      "path": "runs/v1.0.1-producto/v1.0.1-identidad-privacidad-white-label/audit-2.md",
+      "classification": "LOCAL",
+      "sha256": "1577105cc1ffa107cd48518c3cbe5462aa3ca3526e08fd22680120c655ea1604"
+    },
+    {
+      "path": "runs/v1.0.1-producto/v1.0.1-identidad-privacidad-white-label/audit-3.md",
+      "classification": "LOCAL",
+      "sha256": "5c42df28ae119a9af7e8f1bb096e1774875fc2704ac6ba7d9e97d0aa8bfe3821"
+    },
+    {
+      "path": "runs/v1.0.1-producto/v1.0.1-identidad-privacidad-white-label/decision.md",
+      "classification": "LOCAL",
+      "sha256": "e2b9e1a820ef9f59d5eab9ec5c5619035c9122e507b2c8422d36379af5b73723"
+    },
+    {
+      "path": "runs/v1.0.1-producto/v1.0.1-identidad-privacidad-white-label/spec.md",
+      "classification": "LOCAL",
+      "sha256": "61103e29ac825bcfa5d9fdf35218e234bc35713c112f5c2c19974be9d9bf51c2"
+    },
+    {
+      "path": "runs/v1.0.1-producto/v1.0.1-identidad-privacidad-white-label/test-report-1.md",
+      "classification": "LOCAL",
+      "sha256": "fba61f9032e10bade2e60042cf6aa0ca37c902e1f72467b5fdabaa33b896aefd"
+    },
+    {
+      "path": "runs/v1.0.1-producto/v1.0.1-identidad-privacidad-white-label/test-report-2.md",
+      "classification": "LOCAL",
+      "sha256": "249332a17e88f6bb6004c5dfad55ab2369ff9ceb0ddcd6491133918401299014"
+    },
+    {
+      "path": "runs/v1.0.1-producto/v1.0.1-identidad-privacidad-white-label/test-report-3.md",
+      "classification": "LOCAL",
+      "sha256": "3be36478abea7be4fd351529a954920bd78dcbf26f09a5b065274d814ad24014"
+    },
+    {
+      "path": "runs/v1.0.1-producto/v1.0.1-identidad-privacidad-white-label/test-report-4.md",
+      "classification": "LOCAL",
+      "sha256": "f64b0708dca8eb8411f7d1fa50493d96443e25b4912c5a3c04bd01e7f2db0684"
+    },
+    {
+      "path": "runs/v1.0.2-gobernanza/17-adopcion-template-v2/assess.jsonl",
+      "classification": "LOCAL",
+      "sha256": "8b241cca87dcc16f65f16931821bb8e1ac393140fa997c69fb3268285a7d4128"
+    },
+    {
+      "path": "runs/v1.0.2-gobernanza/17-adopcion-template-v2/audit-1.md",
+      "classification": "LOCAL",
+      "sha256": "5bad39fd3cc94ef3232b693e73cb01c7e9edd222127ce60f23b60b0447c9ab7d"
+    },
+    {
+      "path": "runs/v1.0.2-gobernanza/17-adopcion-template-v2/audit-2.md",
+      "classification": "LOCAL",
+      "sha256": "f7eebab1fd87d04f597edd187fa10b977047ccb825a9419898373b052566aef7"
+    },
+    {
+      "path": "runs/v1.0.2-gobernanza/17-adopcion-template-v2/audit-3.md",
+      "classification": "LOCAL",
+      "sha256": "e54ffadd9ff78e2e27927f0ce219df5df8c49e8a48db6cbf61dd30740c04920c"
+    },
+    {
+      "path": "runs/v1.0.2-gobernanza/17-adopcion-template-v2/convergence.json",
+      "classification": "LOCAL",
+      "sha256": "d3a198134cdd88415ef15eec628744a7e86fd95304bd9cb9e34cd0a4185eed25"
+    },
+    {
+      "path": "runs/v1.0.2-gobernanza/17-adopcion-template-v2/decision.md",
+      "classification": "LOCAL",
+      "sha256": "57bfa7a4079e83d9a727f2c3bb152956d7b5edb8abdeafe0b8804c2cf1bcd1f9"
+    },
+    {
+      "path": "runs/v1.0.2-gobernanza/17-adopcion-template-v2/independent-review.md",
+      "classification": "LOCAL",
+      "sha256": "0119957f583d4eacb4e87d1c743b2c7447f12a6fae9158177667748e5fb8a7d4"
+    },
+    {
+      "path": "runs/v1.0.2-gobernanza/17-adopcion-template-v2/lifecycle.json",
+      "classification": "LOCAL",
+      "sha256": "8520924256f03936d87e4f9f3ecb2db6b51949594a3be101dc033effd1074498"
+    },
+    {
+      "path": "runs/v1.0.2-gobernanza/17-adopcion-template-v2/plan.md",
+      "classification": "LOCAL",
+      "sha256": "f4a71536bbcafd1b100b1a19dca8029df6b83940568f1b859a7939396c3371e3"
+    },
+    {
+      "path": "runs/v1.0.2-gobernanza/17-adopcion-template-v2/rollback.md",
+      "classification": "LOCAL",
+      "sha256": "2681857ab0f1a01003ae7de47b6af6075248bd28b6c45a4f3252fb2bf0ead15b"
+    },
+    {
+      "path": "runs/v1.0.2-gobernanza/17-adopcion-template-v2/routing.json",
+      "classification": "LOCAL",
+      "sha256": "d4df1f81b99cd57c9ef2f41debf2611545f67cdc2a4863684c823b4da40ea1ea"
+    },
+    {
+      "path": "runs/v1.0.2-gobernanza/17-adopcion-template-v2/sdd.json",
+      "classification": "LOCAL",
+      "sha256": "4dbfaf4362e702ecf143e6e9e6e1e49646119d77f860f14af06e97c453ee87f7"
+    },
+    {
+      "path": "runs/v1.0.2-gobernanza/17-adopcion-template-v2/spec.md",
+      "classification": "LOCAL",
+      "sha256": "1dd7de2a69521d19c13512a115c4c63efd71785ecf48c19004a1e883bed9eda6"
+    },
+    {
+      "path": "runs/v1.0.2-gobernanza/17-adopcion-template-v2/SUMMARY.md",
+      "classification": "LOCAL",
+      "sha256": "61577c089918baaafed279e4985e6fd25abe42f3aa8faa07c94fc68685d48fcf"
+    },
+    {
+      "path": "runs/v1.0.2-gobernanza/17-adopcion-template-v2/tasks.md",
+      "classification": "LOCAL",
+      "sha256": "73dc4875c95ad554f4feea3d2233600f8fdc4ab8c91d1b60d6a0384c4e5f86d6"
+    },
+    {
+      "path": "runs/v1.0.2-gobernanza/17-adopcion-template-v2/test-report-1.md",
+      "classification": "LOCAL",
+      "sha256": "c5eb5d6c7087fc0fcab82c12d0564afa0934ea4acacfd8dc093da4ad2d9d905d"
+    },
+    {
+      "path": "runs/v1.0.2-gobernanza/17-adopcion-template-v2/test-report-2.md",
+      "classification": "LOCAL",
+      "sha256": "3362826b6a600063730ce22ad5aacc11c00ffedc8359fad2139e58a37615ce9e"
+    },
+    {
+      "path": "runs/v1.0.2-gobernanza/17-adopcion-template-v2/work-unit.json",
+      "classification": "LOCAL",
+      "sha256": "2e091bbdc3ba598cb0165bfe5438f831068806897a38e2bf26a326238dad1288"
+    },
+    {
+      "path": "runs/v1.0.2-gobernanza/18-validacion-identidad-lifecycle/assess.jsonl",
+      "classification": "LOCAL",
+      "sha256": "19bdfda87822c1c78df158326e491d8dfc46f3aa1ae9b5fbfd7308e877387568"
+    },
+    {
+      "path": "runs/v1.0.2-gobernanza/18-validacion-identidad-lifecycle/audit-1.md",
+      "classification": "LOCAL",
+      "sha256": "4e41759113abc084807c053a1cc630ba00eb8bb418652ecdc13fc0e7895da0fa"
+    },
+    {
+      "path": "runs/v1.0.2-gobernanza/18-validacion-identidad-lifecycle/audit-2.md",
+      "classification": "LOCAL",
+      "sha256": "501dde11d0f8bb2220de8c91ae7de14382d02ab51754870e2886263c655d0999"
+    },
+    {
+      "path": "runs/v1.0.2-gobernanza/18-validacion-identidad-lifecycle/audit-3.md",
+      "classification": "LOCAL",
+      "sha256": "1f71ef33f10e6acd33377ffacef421428c752c74abd435227526aaa6351ffdc9"
+    },
+    {
+      "path": "runs/v1.0.2-gobernanza/18-validacion-identidad-lifecycle/audit-4.md",
+      "classification": "LOCAL",
+      "sha256": "d17bcb589246c3db6384dc68de2770d736e71a7e8b97b8549ed2076d34a73179"
+    },
+    {
+      "path": "runs/v1.0.2-gobernanza/18-validacion-identidad-lifecycle/audit-5.md",
+      "classification": "LOCAL",
+      "sha256": "9bc9a4265ff6504f5d42d991ef1f54f668b38393d9350054d7c27851f08eef04"
+    },
+    {
+      "path": "runs/v1.0.2-gobernanza/18-validacion-identidad-lifecycle/audit-6.md",
+      "classification": "LOCAL",
+      "sha256": "a96adbd76f839c9f88274fefeb03d4fd59c948a72e5b9b35da582e84e105dba0"
+    },
+    {
+      "path": "runs/v1.0.2-gobernanza/18-validacion-identidad-lifecycle/audit-7.md",
+      "classification": "LOCAL",
+      "sha256": "7e200adf27afdc991040581decaf8d30cdf426f20ae1764a01ff043bfc655ebf"
+    },
+    {
+      "path": "runs/v1.0.2-gobernanza/18-validacion-identidad-lifecycle/audit-8.md",
+      "classification": "LOCAL",
+      "sha256": "f3c51d7653136730d1c6083b391db128ee0f59a69e990aa0b06da1f3988f9c16"
+    },
+    {
+      "path": "runs/v1.0.2-gobernanza/18-validacion-identidad-lifecycle/audit-9.md",
+      "classification": "LOCAL",
+      "sha256": "e738470cb13f9ee8ea04c3d666471624f8317d515742e90bbbec945bd6aa2685"
+    },
+    {
+      "path": "runs/v1.0.2-gobernanza/18-validacion-identidad-lifecycle/decision.md",
+      "classification": "LOCAL",
+      "sha256": "cbebb8d17845c62018ec3c3a71ac4a239a5a0a493bd60e07be7099128bd87990"
+    },
+    {
+      "path": "runs/v1.0.2-gobernanza/18-validacion-identidad-lifecycle/lifecycle.json",
+      "classification": "LOCAL",
+      "sha256": "226b7eacae5a0df68c7a762c7249ed3ec010c3f3ff0243cd7d86cbce7143a9fc"
+    },
+    {
+      "path": "runs/v1.0.2-gobernanza/18-validacion-identidad-lifecycle/plan.md",
+      "classification": "LOCAL",
+      "sha256": "abe68024c5971f26e6b3e584f9f201565d0155004f2776ad2e93d78cd1643e19"
+    },
+    {
+      "path": "runs/v1.0.2-gobernanza/18-validacion-identidad-lifecycle/spec.md",
+      "classification": "LOCAL",
+      "sha256": "39084259f3455fd160a64b9dbb7a54804d94216e76dee13cadf895dc1ce79f01"
+    },
+    {
+      "path": "runs/v1.0.2-gobernanza/18-validacion-identidad-lifecycle/tasks.md",
+      "classification": "LOCAL",
+      "sha256": "da8094c5bb5f7774db73293ba30683604e0e680c67c7610f733c6520ce9fdc3c"
+    },
+    {
+      "path": "runs/v1.0.2-gobernanza/18-validacion-identidad-lifecycle/test-report-1.md",
+      "classification": "LOCAL",
+      "sha256": "84c1f918dbd6559603b70d67122552b16a5cad97a8c13a20775b0b7a090dd430"
+    },
+    {
+      "path": "runs/v1.0.2-gobernanza/18-validacion-identidad-lifecycle/test-report-2.md",
+      "classification": "LOCAL",
+      "sha256": "f8e6151b19641efc938755ce4331f5959384fa3868f18decbf288d30a761b43c"
+    },
+    {
+      "path": "runs/v1.0.2-gobernanza/18-validacion-identidad-lifecycle/test-report-3.md",
+      "classification": "LOCAL",
+      "sha256": "8cd4c91d746374ff243d43d5b24f972dc0a89b4b94c61c89b316a20fe7f5d1f5"
+    },
+    {
+      "path": "runs/v1.0.2-gobernanza/18-validacion-identidad-lifecycle/test-report-4.md",
+      "classification": "LOCAL",
+      "sha256": "0daff9b6dac282f6cf3769385576760af5196b4c5f8a4fca7e0b163068591eaa"
+    },
+    {
+      "path": "runs/v1.0.2-gobernanza/18-validacion-identidad-lifecycle/test-report-5.md",
+      "classification": "LOCAL",
+      "sha256": "b9a5fb970aec4d9c1f5e39f9155491f070b76fc287b540a01e5109a53c917da7"
+    },
+    {
+      "path": "runs/v1.0.2-gobernanza/18-validacion-identidad-lifecycle/test-report-6.md",
+      "classification": "LOCAL",
+      "sha256": "61267268c93af18738d7661d87108017b92ff33bfc553a2369d9d335809bfd31"
+    },
+    {
+      "path": "runs/v1.0.2-gobernanza/18-validacion-identidad-lifecycle/work-unit.json",
+      "classification": "LOCAL",
+      "sha256": "c61ad808e9a9524607c4ebf8c02f623a9254adcc1c6bc2808465258d572b9ff3"
+    },
+    {
+      "path": "runs/v2.0.0-producto/19-planificacion-producto-v2/assess.jsonl",
+      "classification": "LOCAL",
+      "sha256": "16587d228e653c5e66d718206d23eb24867c6a5393ee74a90221336e62c46eed"
+    },
+    {
+      "path": "runs/v2.0.0-producto/19-planificacion-producto-v2/audit-1.md",
+      "classification": "LOCAL",
+      "sha256": "756c454b73360631e75224e27c2384db6dbfd7182a6aa024cd25c4d7cb01ed22"
+    },
+    {
+      "path": "runs/v2.0.0-producto/19-planificacion-producto-v2/audit-2.md",
+      "classification": "LOCAL",
+      "sha256": "a0511e2b2607331400a85efee130dab225c70e3f74f607313b54ebc541847ffd"
+    },
+    {
+      "path": "runs/v2.0.0-producto/19-planificacion-producto-v2/audit-3.md",
+      "classification": "LOCAL",
+      "sha256": "df86cc73fa120c08bad33616e75e7f58bfa5e8aee24f8e87de53f8e86a3d0a1d"
+    },
+    {
+      "path": "runs/v2.0.0-producto/19-planificacion-producto-v2/audit-4.md",
+      "classification": "LOCAL",
+      "sha256": "f054d2753c020f629dae9197264098b722a47ed0f8dd4a83e165f1a5b9c47f2d"
+    },
+    {
+      "path": "runs/v2.0.0-producto/19-planificacion-producto-v2/audit-5.md",
+      "classification": "LOCAL",
+      "sha256": "cf65424afa3ae98e18b95feb4ae46df374d65966a65c3bb1aa24ef00413e2046"
+    },
+    {
+      "path": "runs/v2.0.0-producto/19-planificacion-producto-v2/audit-6.md",
+      "classification": "LOCAL",
+      "sha256": "471a128880f999b400ab93895bc7b7f2e0da6c86cdd85d2b626c56299131d331"
+    },
+    {
+      "path": "runs/v2.0.0-producto/19-planificacion-producto-v2/decision.md",
+      "classification": "LOCAL",
+      "sha256": "e9cf54bea5658b8e48db4dad1dd5088d7af44a8da8babe9911f633e85745b201"
+    },
+    {
+      "path": "runs/v2.0.0-producto/19-planificacion-producto-v2/lifecycle.json",
+      "classification": "LOCAL",
+      "sha256": "53556b24f5267e9a8e4e297466498209624082d0847192bf76ba86b7fad54470"
+    },
+    {
+      "path": "runs/v2.0.0-producto/19-planificacion-producto-v2/plan.md",
+      "classification": "LOCAL",
+      "sha256": "764a23fdf5e9efe30565fbd40fe1beaf5a0e433a5488d55f7ec6295c1ec6b537"
+    },
+    {
+      "path": "runs/v2.0.0-producto/19-planificacion-producto-v2/spec.md",
+      "classification": "LOCAL",
+      "sha256": "b8d3887ae01588133b8da24e561100ba3240b83588a9dbf0824152f461658fd4"
+    },
+    {
+      "path": "runs/v2.0.0-producto/19-planificacion-producto-v2/tasks.md",
+      "classification": "LOCAL",
+      "sha256": "be35490d7732d781625673c22529321908cd037e0dd5abe4d9a62fea805df683"
+    },
+    {
+      "path": "runs/v2.0.0-producto/19-planificacion-producto-v2/test-report-1.md",
+      "classification": "LOCAL",
+      "sha256": "22fe93062d97476151a7973e33553e3976a294a64366fd3065b57d5689faafb1"
+    },
+    {
+      "path": "runs/v2.0.0-producto/19-planificacion-producto-v2/work-unit.json",
+      "classification": "LOCAL",
+      "sha256": "6665f5418ed208cc683d771fc8f827e309fba998fb117b9f6861a758cc63d847"
+    },
+    {
+      "path": "script.js",
+      "classification": "LOCAL",
+      "sha256": "db5ab36dc9b8161997cc50a88eead737d61d49cd77fcb5d23d6a06ad0fc35b1f"
+    },
+    {
+      "path": "script.test.js",
+      "classification": "LOCAL",
+      "sha256": "15cb619696707ec327700642c9817bd2fbb3248c6872a0b7855af4afeac4f783"
+    },
+    {
+      "path": "scripts/assess-work-unit.ps1",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "14fc66b334fdf4999fde52419fb731c6a0bddc7b54dff73def11002c8e33486e",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "scripts/build-branding-icons.py",
+      "classification": "LOCAL",
+      "sha256": "2d31b8f942e35c2088c1771b4c73e82713ad05bedd681fc45716317f999e787b"
+    },
+    {
+      "path": "scripts/build-site.js",
+      "classification": "LOCAL",
+      "sha256": "693acf6e3302506bf5c54607cd47920c3bf30c7dd44566776b9059dfdf454687"
+    },
+    {
+      "path": "scripts/check-integrity.ps1",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "e27351e04783040622ca24289e889911eb5d090d397914a13b3ed5ea8531fa94",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "scripts/close-feature.ps1",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "3d1d65ddc881bb0fcfd7c8d52a39529190c67e9d261b480f643d0b7d31b7fc04",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "scripts/convergence.ps1",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "5fc4a3def7a200fcc5641cf4954cb7cf294b39eae02ca9525a1780b67b6d29a0",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "scripts/feature-contract.ps1",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "f946b8681d37a9770c94f077e28a0bd57d25ff814bd7cf13668daea8cfc0ecc2",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "scripts/feature-titles.json",
+      "classification": "LOCAL",
+      "sha256": "3d28913179f89ca89b7cfbfb110d27df8139742aaebbf56ac9e4775234d53728"
+    },
+    {
+      "path": "scripts/identity-contract.ps1",
+      "classification": "LOCAL",
+      "sha256": "3e6690e7b722c6cf904849ef650f1a4e5e41d8d641c18e660bfc4fcd06be11ae"
+    },
+    {
+      "path": "scripts/lib/clinic-config.js",
+      "classification": "LOCAL",
+      "sha256": "1cccbbc00db1b230c2891cbc83a67621398f2d112b1156d9c7b488b3a713797e"
+    },
+    {
+      "path": "scripts/materialize-sdd.ps1",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "667b0347673b2c3eb63b95002113e0ecd01060cb120d572db726ef61096da5db",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "scripts/ready-for-pr.ps1",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "131114cbf7dcf35c103e8bd7fe82554db99049b9a7e6c911eaae16587b15c940",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "scripts/reconcile-local-feature.ps1",
+      "classification": "LOCAL",
+      "sha256": "ea01d97256f3bdf9826a66ace262988fdecc0935b873ad4cdc3cc7e21db49a1f"
+    },
+    {
+      "path": "scripts/release-readiness.ps1",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "3012dae2741c20d56304c41420950b090746f322be04194ce254cb73378c02b4",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "scripts/resolve-agentic-model.ps1",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "c2c0f5943852e779d591baa46173d23aeff32c293d3fc560bc9aa75ead7311d3",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "scripts/start-local-reconciler.ps1",
+      "classification": "LOCAL",
+      "sha256": "43a71bc3b159f40f6cad70b96ed1c528a19a3285377d82c330ffb0572684d5cc"
+    },
+    {
+      "path": "scripts/sync-agentic-adapters.ps1",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "ae7a933d9fc10000b723dfbd52284709548f322ec83d85ba5e5b2c1c1c4bd8fa",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "scripts/unit-lifecycle.ps1",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "fa94a7a48603898a8db36a5be71939b5973dd8af79897850186ef91959369556",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "scripts/update-doc-indexes.ps1",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "ad909b76c5363ec5108537ca294a6878f0cfa23f833f634e91104112d0b3582c",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "scripts/validate-supply-chain.ps1",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "512b684ec1feac53c388559a0e60a1888eb08d285cb4fa6dcc1fd092758299f2",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "scripts/validate-unit-identities.ps1",
+      "classification": "LOCAL",
+      "sha256": "e60476303f9694a08f0f579e9ce32ce0b80194d1020761b3468459d18ba1cbd0"
+    },
+    {
+      "path": "scripts/wait-pr-ci.ps1",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "7bcd90748a2cae75a3c3a9b4fca3495d21fd18edb88528fa2cae2447d289c13f",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "spec.md",
+      "classification": "LOCAL",
+      "sha256": "c785e50462446ef56fbfa82b75b46949eeb1e5b629f8b07c0546c847d5413c7b"
+    },
+    {
+      "path": "static/images/equipo-dental.webp",
+      "classification": "LOCAL",
+      "sha256": "79ec05bd50606a831c158e785fa31dcd0d19ae8562424ae48076f6bb0e266a71"
+    },
+    {
+      "path": "static/images/interior-clinica.webp",
+      "classification": "LOCAL",
+      "sha256": "eda0b2fa0febddc1a3936a81ab9aac0cca7b335c6dd2824f000648354e915054"
+    },
+    {
+      "path": "static/images/og-social.webp",
+      "classification": "LOCAL",
+      "sha256": "6c9b132fa89f146505bd1e6ba0dc7954846ca7b13e5e3da1fd682e75977c10ba"
+    },
+    {
+      "path": "static/images/paciente-sonrisa.webp",
+      "classification": "LOCAL",
+      "sha256": "833434345dd439830ddfb87604c98f8dace75e4e53dfcea2663748eb06487e95"
+    },
+    {
+      "path": "STATUS.md",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "44860fb56e5931b353c5a4a5313addba0af9e802a8f3eb7a1befc41300f9e3ed",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "style.css",
+      "classification": "LOCAL",
+      "sha256": "fcd2817da697b62ceb6b97ebf4d2511b31c6e62987a93413fb5b8c767b1f91ed"
+    },
+    {
+      "path": "SUMMARY.md",
+      "classification": "LOCAL",
+      "sha256": "2220e011c170aff4c61d0eab8de5f794f10ef6b6003db27e28f437755f18a0aa"
+    },
+    {
+      "path": "supabase/migrations/20260819210130_create_leads_table.sql",
+      "classification": "LOCAL",
+      "sha256": "7346b3e6e72945461053734fde7ae8336f56298e7d465bb2a1714c17c1a23e1c"
+    },
+    {
+      "path": "supabase/migrations/20260907093000_add_estado_comunicacion.sql",
+      "classification": "LOCAL",
+      "sha256": "432c0ce9077a31b72f0888b121719237ddbccda49b8558d9840a83641d3364ef"
+    },
+    {
+      "path": "templates/404.html",
+      "classification": "LOCAL",
+      "sha256": "c3a34616595a3735990ec29740a03f2fa0f6b9527fde6e1c1084ee300e008bd0"
+    },
+    {
+      "path": "templates/index.html",
+      "classification": "LOCAL",
+      "sha256": "7b12ced805d10cffd969af7d3572cf41c4a4839ec1a22b0bf88cfa5f1503567d"
+    },
+    {
+      "path": "templates/partials/aviso-demo-formulario.html",
+      "classification": "LOCAL",
+      "sha256": "d6f7c463de191452f2874081d08b9b803bf9fed6a301a7ef85faae0dd7bb23dc"
+    },
+    {
+      "path": "templates/partials/politica-aviso-demo.html",
+      "classification": "LOCAL",
+      "sha256": "80b28b028d851e7c162bc964f6c8e57319d22e275ce01be2d8692af274d7be9d"
+    },
+    {
+      "path": "templates/partials/politica-cuerpo.html",
+      "classification": "LOCAL",
+      "sha256": "168e5eca611a6aa4c3784a2fb1b53b04ddfba6b1a4ece583c2a24915c72f01c8"
+    },
+    {
+      "path": "templates/partials/politica-responsable-demo.html",
+      "classification": "LOCAL",
+      "sha256": "894b9eeb8112b8840a66f625a409c622519c2015637e5e38defa427b5e9f00c8"
+    },
+    {
+      "path": "templates/partials/politica-responsable-real.html",
+      "classification": "LOCAL",
+      "sha256": "3e523e535ff80e2d1dcd6b4fb82beee87b13593af851f556b98ee72a17e3a869"
+    },
+    {
+      "path": "templates/politica-de-privacidad.html",
+      "classification": "LOCAL",
+      "sha256": "5ac11534ddc4521eb0a6286cafb56043a0328e710bb56c67d5f1c06b17e00e07"
+    },
+    {
+      "path": "tests/test_assets_de_marca.py",
+      "classification": "LOCAL",
+      "sha256": "002279367494707b4bec1a0018fa3e421f531fcab7c5ca36b34e49e2ded95a18"
+    },
+    {
+      "path": "tests/test_close_feature_script.py",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "f3dc30a9e7a5d9cae3bc619779c2a1030991e16c99f904db23a9c7bd96e1c2e6",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_configuracion_y_secretos.py",
+      "classification": "LOCAL",
+      "sha256": "57c4facd1aed26beb4a0cbdd4a6341c379f288b2874ce45f0e259cb8095919ee"
+    },
+    {
+      "path": "tests/test_contraste_visual.py",
+      "classification": "LOCAL",
+      "sha256": "4c406854038b8ab42d6f5d818f1e4683efbe2c482d7c835611b8fe9e66ab9d7d"
+    },
+    {
+      "path": "tests/test_dialogo_resultado.py",
+      "classification": "LOCAL",
+      "sha256": "b16876627d1812e98a9508acde673a40c6e8b102c68dae7c725398deee28c025"
+    },
+    {
+      "path": "tests/test_feature_contract_scripts.py",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "0377c6a9ad1454cc2a46c3eb9eb62d5f4ecdd1812d46ae23cadd65b3a88de691",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_identity_contract.py",
+      "classification": "LOCAL",
+      "sha256": "d4eca751c5e5136a727fafd61adc7517062830c80323c262a5eada9b2d773972"
+    },
+    {
+      "path": "tests/test_local_reconciler_scripts.py",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "6c51e749cd98c2ce78b3212c4c9e9df1598aa653da71847be9832d3eee6ef7a6",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_marca_publica.py",
+      "classification": "LOCAL",
+      "sha256": "c8e073e9bf466ca8866a8b158c9245f1efb376838c79fb31e601041dc1dccfcf"
+    },
+    {
+      "path": "tests/test_migracion_estado_comunicacion.py",
+      "classification": "LOCAL",
+      "sha256": "9174723415378739e6f88338e6a17562f788d4a9a8048067c9ea4de01350eb01"
+    },
+    {
+      "path": "tests/test_navegacion_de_documentacion.py",
+      "classification": "LOCAL",
+      "sha256": "847f316a8e46f4a0ee844c2150d11bfe3ceb68fd53d9c6f79e11e6cdce84c391"
+    },
+    {
+      "path": "tests/test_nomenclatura_de_etapa.py",
+      "classification": "LOCAL",
+      "sha256": "ab39cf7f684db980d5d75febe85ab769b26c4c01cf416ec345fda24f575e5bcc"
+    },
+    {
+      "path": "tests/test_responsive_movil.py",
+      "classification": "LOCAL",
+      "sha256": "f8dddb18e5fed3c086e59862873c7eecc1bcf0d005c544bca7e8a379c9ab57ba"
+    },
+    {
+      "path": "tests/test_titulo_canonico.py",
+      "classification": "LOCAL",
+      "sha256": "0e4fa247947ea42f3c09c6098c277956ab059a2b065d4d7ea423f4d684089bb8"
+    },
+    {
+      "path": "vercel.json",
+      "classification": "LOCAL",
+      "sha256": "f44a79963d9cdc9c18ac01a21b93b1a6e99c42881cfba47054e0ebc53a79cee6"
+    }
+  ]
+}

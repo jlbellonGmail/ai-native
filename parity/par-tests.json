@@ -66,7 +66,7 @@
     { "id": "PAR-ROLLBACK-WITH-NEWER-ARTIFACTS", "phase": "M4.1", "status": "PLANNED" },
     { "id": "PAR-REPRODUCIBLE-INIT", "phase": "M4.1", "status": "PLANNED" },
     { "id": "PAR-REPRODUCIBLE-BUNDLE", "phase": "M4.2", "status": "PLANNED" },
-    { "id": "PAR-MIGRATE-CLASSIFY", "phase": "M1.2", "status": "PLANNED" },
+    { "id": "PAR-MIGRATE-CLASSIFY", "phase": "M1.2", "status": "IMPLEMENTED", "implementedBy": "parity/migrate-inventory.test.mjs" },
     { "id": "PAR-BROWNFIELD-SAFETY", "phase": "M1.2/M5.3", "status": "PLANNED" },
     { "id": "PAR-MIGRATION-REVERT", "phase": "M1.2", "status": "PLANNED" },
     { "id": "PAR-POLICY-ENFORCED", "phase": "M3.4", "status": "PLANNED" },

@@ -1,0 +1,2834 @@
+{
+  "schemaVersion": 1,
+  "generatedBy": "parity/migrate-inventory.mjs",
+  "generatedAt": "2026-09-30T19:42:23.496Z",
+  "target": "C:\\Proyectos\\gi-common-crm",
+  "hashDbTags": [
+    "v2.0.0",
+    "v2.0.1",
+    "v2.0.2",
+    "v2.0.3",
+    "v2.0.4",
+    "v2.0.5"
+  ],
+  "declaredVersion": null,
+  "manifestSchemaVersion": null,
+  "preflight": {
+    "isGitRepo": true,
+    "clean": false,
+    "inFlightRoadmapItems": [],
+    "worktrees": 1
+  },
+  "totalFiles": 294,
+  "counts": {
+    "IDENTICAL_TO_TEMPLATE": 151,
+    "MODIFIED_FROM_TEMPLATE": 21,
+    "LOCAL": 122,
+    "DUPLICATED_CAPABILITY": 0,
+    "UNKNOWN": 0
+  },
+  "files": [
+    {
+      "path": ".agentic/agents.json",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "7f81d9efff215c1868f2d59a93b1169c3deff40b430f13072f6944a4ffe6afcc",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".agentic/mcp.json",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "6270b542b246c9ef9583999d97744a610fa9218bbf60e1c14d8dcaf647206db2",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".agentic/models.json",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "6729036d40956e09cf002e360fea20157bfaeaadf1e30000d81482027291b99a",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".agentic/README.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "da38d0a6bd163f804f0080338d9b1cec21bb856476ff5835502d838bbe35b417",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".agentic/roles/builder.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "dc486681f0f9cb7410e2eb163647d7aedfdf9f21ccbea108cb26b93fb840b1f2",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".agentic/roles/planner.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "f349357377c52ee0795e42df9b83f1009b94cbf454791271d5dbdac814b80138",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".agentic/roles/reviewer.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "43b8545444965d25f532b5e50a1d2ae5ea9f585c0275c1a7c685d7a6dea7562d",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".agentic/run.example.yaml",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "9c277aef6f21c5a407d44e3e27855f320a840bb4b9c3f10a083e8cbaa6ab1771",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".agentic/schemas/agentic-eval-result.schema.json",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "3655ab6866634c798578239eb22b6adc21b364db0ce9d1c67c2760b06f398a8d",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".agentic/schemas/agents.schema.json",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "b7900a2a18f9b7b540d9fda655e6fd8684fbdb8de08c4dce65a941f55d89c00f",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".agentic/schemas/mcp.schema.json",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "6bd681e4991ff080ef365298de3ab6a4f194655cb7c1dd66139d6770019ecb0a",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".agentic/schemas/models.schema.json",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "5aad14dfd4a1819c0c2b4307ce4efe6bd20c0f72d8cc4c5279755394c73f26ff",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".agentic/schemas/security-policy.schema.json",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "f21ff3acf0d48f86c14cedb75374b1fa303c552de71a8a31e2d7081cba5792fd",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".agentic/schemas/unit-identity.schema.json",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "03a10f3dadd3b18b730de207f00b0d64636ab2cd18b01f8d3f2556bdd87453e6",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".agentic/schemas/work-unit.schema.json",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "e7747e78d00e2384a5048e4ffb19955cd2f76bb8150af43439aef52cdf717c92",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".agentic/security-policy.json",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "eb875f0767d43f470096ba7f8a8757eb4a384ae4d6e0b557892b7ddbc80e2455",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".agents/skills/.gitkeep",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".agents/skills/README.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "9fc416582f5d5147fcc27067e9c5ba222a14da26fd20e4f6f6664cee0391c828",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".audit/AUDIT_PROMPT.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "dff735f01b0d10f246816e284f2f2a36e019d24464fd4cac1a9d99cf12633a7b",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".audit/AUDIT_RULES.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "7f779b3b8c024ed1b008f137a4f63e290aa3a12810f9d0b4138c401660fa4c88",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".audit/evidence/README.md",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "eeb5ad441e759c5d784c993771faa327159398ad2a378d1c779d7a63cb6410e3",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".audit/profiles/APPLICATION.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "e65e7e47f1b9b8fc5a6de2f36a924eed2990f1d00b9b826938f5681c47d2a9d1",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".audit/profiles/LIBRARY.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "ba095b1a05d6279f5ad31b119f2e2d3f8a31664fb6cb915bdc02a168929701f9",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".audit/profiles/TEMPLATE.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "f937cb5b42545692f0410d8da9dc179a872066e030f8e191f580e6a50f570d5b",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".audit/QUALITY_SCORE.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "764a92f38e6ce67a22c1c9afc40c92243cbc6687a9ed523fe31e8838d46fe55b",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".audit/README.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "b4ff7247fdb9e403d78ca2f7cb7b73897a59ad842810d3d0e1b10381fddcd388",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".audit/reports/README.md",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "ed27efb00134d7c87d541d23373fd9869ac26d5bbf800e509dded7b195a6572e",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".claude/agents/builder.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "e19426efce5932b4f55494891df22a621cbc328a838ef76f0eb89c6efde9e742",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".claude/agents/planner.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "2ced2f6493b083fe19f863d2a0a417ccfdbe6b3a5d84c348d42e402be1accb28",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".claude/agents/reviewer.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "91fd14e028009c2b037df7df5073273756449db23371614601dee2c3022d9d9a",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".claude/rules/.gitkeep",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".claude/rules/README.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "67ee6578609ae2f804857d39b6add51b684410eca98c3630539452cfc089c5ca",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".claude/skills/.gitkeep",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".claude/skills/README.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "9fc416582f5d5147fcc27067e9c5ba222a14da26fd20e4f6f6664cee0391c828",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".codex/.gitignore",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "e5106644cba6d4802a502e447d2ef46a5276985171d8e39f93ac4d7a14ac92e3",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".codex/builder.config.toml",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "6e292ebadf434f775a329c42fceef509a84c77d7b269366be771279263f78607",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".codex/config.toml",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "8a8624d5916d9eb2f5c50e270580f3303797ad5b8bea01876d7c76fe3fb09dfc",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".codex/planner.config.toml",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "6e292ebadf434f775a329c42fceef509a84c77d7b269366be771279263f78607",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".codex/README.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "76f6a2416d328d0821f947e745c2799bd818b48cdf2def751744dfdf3935ce16",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".codex/reviewer.config.toml",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "6e292ebadf434f775a329c42fceef509a84c77d7b269366be771279263f78607",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "4242dd1a9a9fb2d0b85b301165ef66b4a0a0fb1aa5b6ce9a4e6e075492a92cef",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".github/workflows/docs.yml",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "ca19ac4cfc4aa641e1c6492e5040b33bb38823aaa0124a33991c77f8b78c11ef",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".github/workflows/guard-develop-branch.yml",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "81604f0068a53dd7904f8ebbe49073f8e68ce3766d0315c3925c27dd8254c8fb",
+      "matchedTags": [
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4"
+      ]
+    },
+    {
+      "path": ".github/workflows/post-hitl-merge-gate.yml",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "b909c7d654a374d0bc484d2390a5a857bb9e0b3604a84a111f7b1b84fbee62ca",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".github/workflows/post-merge-close-feature.yml",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "7bfd66df1ad7f41bfaa2698e387132126cb6459449c070e39f4138260c1b2033",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".gitignore",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "a722dbf4a6e4a9bdfa59ed39b9a28ca256b27081bb12c216da31dc75a58ad2c8",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".mcp.json",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "d8e397af03b5b032f21d0aa967086f0c78b33c87b76f2e9898ae0a144df7de02",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".opencode/package.json",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "5c9a30456576bfed97d6c33daab9cbd167dd29ee7ca91f4c9ad40c3b31781e8d",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".opencode/skills/.gitkeep",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".opencode/skills/README.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "9fc416582f5d5147fcc27067e9c5ba222a14da26fd20e4f6f6664cee0391c828",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "AGENTS.md",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "ab95fe8bc5498853cf47d900439f261d33acf35b0fed64296ac7e382c2576d2e",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "CLAUDE.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "CONSTITUTION.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "82b090731f844a612d036b88fe0f5990da599fe42c1d78584b69e8305d1c73a4",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/index.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "61edf802276677ee5f43ff3303da84410a5f926ef672dcddd87e8b419d12b1fc",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/producto/contexto-producto.md",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "8efe668099dbdd894ccb3b104365b524fb97f1f0ac06d872d48088c62f0332c6",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/tecnica/adopcion-proyecto-existente.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "582eff103ba91c1237ae7a779435a11d395d9a547d4611a74eb0cf0f6f1e908f",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1"
+      ]
+    },
+    {
+      "path": "docs/tecnica/agentic-evals.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "7eb23f3cd717a8731128e9f30af37fb5ff3c4e6045b9d4023a4b4159e55694fe",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/tecnica/api-publica.md",
+      "classification": "LOCAL",
+      "sha256": "051822983cdccb2ed9f9809eb06129df4d82ddf5302a81f13f953ea7bafc24a4"
+    },
+    {
+      "path": "docs/tecnica/arquitectura-crm.md",
+      "classification": "LOCAL",
+      "sha256": "9965465bbef0cbcc430cf9f47b7a041783222ac5b3f2fc12f82f18423460be49"
+    },
+    {
+      "path": "docs/tecnica/arquitectura-roles.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "be556e1b2bab426c0ce3896aae3bd33a46b79684b228d4031dded702c88b9bed",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/tecnica/arquitectura.md",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "716b0a0dabdc72b0293f3f94a0d347106268121af3262dc13aa54dc6414162f6",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/tecnica/assess-motor-adaptativo.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "254d39229df2a7a42df7cbb5ee788456aa410b8cbf3acfc81bdda86ff79bd6f2",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/tecnica/auditoria-release-v2.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "a080e4aee0ce5d98994366c3e7581be3ed6cdba4de62924b0e9ed1fa6deb7fa3",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/tecnica/ci-wiring-product-tests.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "63114d1d5088f5d70351f9a493eafbc033fe0dfb679bb7b5a42f1e3406a86b41",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/tecnica/circuito-agentico.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "402cfd302c0392ad0aec6f5543cbd02d3148aad75e3601a95978969d039860fe",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/tecnica/code-reviewer-y-sdd.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "843e42186979b9824abd308f4e67c5853e03e5a21287ee585a4a0790176a83a0",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/tecnica/contratos-integracion.md",
+      "classification": "LOCAL",
+      "sha256": "2501ae9610e6c8521509cd385834ef78c172f25ef1c3c7e8c995d8c9cd59f41b"
+    },
+    {
+      "path": "docs/tecnica/convergence.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "2213c420b4ca8e09481995bc8d9e4da6391f618a90df18c41e86ef9d9873722a",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/tecnica/criterios-evaluacion-repo.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "7cf35e16876e04c9efbc83e98cb59a42b0070e0215c531a9eb878851d0bd2d6f",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/tecnica/dominio-leads.md",
+      "classification": "LOCAL",
+      "sha256": "ba2066b12ee9781fe195190ac59676e6178de0a33f0449195350d217f9ca40ed"
+    },
+    {
+      "path": "docs/tecnica/evidencias-adaptativas.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "af11fb38cf3a9634cec84c3afde8eb366322213e691f275f31cde17333384a67",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/tecnica/fuente-unica-router-modelos.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "0677c104b4d66d01c18db0c00131e2335eae3d82082fcfede31678805bcbe425",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/tecnica/index.md",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "f49492f1df5cf7d4c5c7cd70715e138c0eb8b402c4321d908da35b10ff7ca587",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/tecnica/integridad-post-hitl-y-ready-for-pr.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "4161141f61373e27b345a3804a62e14ca8fcc7d2a78065a8a57e4479142e568a",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/tecnica/mcp-herramientas.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "e9a95829562e46168288c80f7f43933066f65b7248c350ebadcd3026e94c6d15",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/tecnica/operational-readiness-docs.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "a207ad0c011568b9f2e823f71dd6015944c3018169b9ef6f1ad938df9b82612d",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/tecnica/persistencia-aislamiento.md",
+      "classification": "LOCAL",
+      "sha256": "554a99ab8b32c5b30826fdb2fecbed5d792395a2c52cf758cd04d3c8c5c46ff1"
+    },
+    {
+      "path": "docs/tecnica/persistencia-supabase-real.md",
+      "classification": "LOCAL",
+      "sha256": "541c863e15b878e34cfa13404454bef7e6dd508d7c749b3782c0adb29ae2b0e4"
+    },
+    {
+      "path": "docs/tecnica/plan-crm.md",
+      "classification": "LOCAL",
+      "sha256": "094c1c24d5e3e86909a8ae0c2a56e302f949c501d70f2af4e9a539fb88decfe1"
+    },
+    {
+      "path": "docs/tecnica/post-merge-close-mode-fix.md",
+      "classification": "LOCAL",
+      "sha256": "2fe95a3115596f873732dc9908e17d4fadd8dc5adf543f97e33035a2b13760fb"
+    },
+    {
+      "path": "docs/tecnica/readiness-integracion.md",
+      "classification": "LOCAL",
+      "sha256": "e5d31b416c67b7d74e0f2719d01f89aabb575d0a43ad79e53eb7b179ae02661b"
+    },
+    {
+      "path": "docs/tecnica/releases-evolucion.md",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "ac7b9b604c242e3b5d04ab65b5a429c2a4b47faa5bc8e057afe25793058f371e",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/tecnica/routing-dinamico.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "c7c66574057de32ef5e7549b44694a9714dc4778842f55def29f7c36ddca9f05",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/tecnica/sdd-adaptativo.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "8a3f73f10f6fdd2cb088b2cebe17b8d609de5b41c3e6f79a890e5778969f7a7c",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/tecnica/seguimiento-multivertical.md",
+      "classification": "LOCAL",
+      "sha256": "ef83638d0b4cd0cba578a6f295bdcb86e2ec2aa2076f4db4dcf4a22a403d9064"
+    },
+    {
+      "path": "docs/tecnica/seguridad-profesional.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "7ed672c00b86b19cb82960dc318737c750d640c1a3c201727318254c59712590",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/tecnica/status-observabilidad.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "740fa9c650743a21c9ddfa9b4eb04165770b4e44c6dc55119f76d4c22dc0fde5",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1"
+      ]
+    },
+    {
+      "path": "docs/tecnica/supply-chain-cicd.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "d6c8bc3764415534820c56ce881398b339a7c472dc714a175e2fd4e67953c069",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/tecnica/tests-ci-audit.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "b7a42b506c508840f248f0f4fd5c98eb1a52628323e88e650ef35740fe01e106",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/tecnica/unidades-paralelizacion.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "660d2944caf80f2a7e09a7ee243a88e35d910ee3f928bfbb76b5475c4e0bbad9",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/tecnica/validacion-integral-v2.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "2990bb07389ab93d0aec1cb1f64b90899279ad2ff507094958611d301d059b88",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/usuario/adopcion-proyecto-existente.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "e4b7f744fa76aa174e9382b83223632a38acaf08afc349be5991c79c301eee87",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1"
+      ]
+    },
+    {
+      "path": "docs/usuario/agentic-evals.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "38ea0fe45c71aabe15a52c2da7aa22b04b84110a580826187fc6df18a3997be1",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/usuario/api-publica.md",
+      "classification": "LOCAL",
+      "sha256": "0cf12f5a70f2d497e0711742fc21b50a2af639fd7b4a1746bae2a96eb917689b"
+    },
+    {
+      "path": "docs/usuario/arquitectura-roles.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "0a1577b4dc0e676011e564d45b39a0662d4564650a22acd7469f957d1ac1680c",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/usuario/assess-motor-adaptativo.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "fad429db4e2bc8dd5be9dc25833671396f4911211d9d7f93029fbeea5aa3633d",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/usuario/auditoria-release-v2.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "11559acb88641d604e5cd9c33d69a339027d3e9d8907abf2f9ffe0e6433da83c",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/usuario/ci-wiring-product-tests.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "f5378c7d92a2dcf4edc3563cb9862c32fa956bb64d67a483f30884803bf5f7f1",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/usuario/circuito-agentico.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "cf83ac0bd815fe485a08d5890ca7991a025d9bc5df3546df48e6fec9d00b8f38",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/usuario/code-reviewer-y-sdd.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "d9facb32c7d84bf870077778b9fcf6ded4c6c38490deecb66d1e3d475bac1edd",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/usuario/contratos-integracion.md",
+      "classification": "LOCAL",
+      "sha256": "0db76620678e2185ba2112d1cbaa4a84cd050350408b920443dd47945394405f"
+    },
+    {
+      "path": "docs/usuario/convergence.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "074f6c1e958945a93bf04749648880e5fffcd4e3914e84e74a86845b8219e353",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/usuario/dominio-leads.md",
+      "classification": "LOCAL",
+      "sha256": "204b7f68a8fec1f47436423d9e5d9cab3383a5a69569cf5daacfece7c5ea88d5"
+    },
+    {
+      "path": "docs/usuario/evidencias-adaptativas.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "7623202aa062854490bd4338fd8b819f9198ff804b69f6de62d219e2d1f91765",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/usuario/fuente-unica-router-modelos.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "6e01958504e16f6621d5c14a10b956c1c1810fabf912d4b7783baaf245840d8f",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/usuario/index.md",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "2faebe8b9dcef31d0bef550ece83a1974051ef77dff3ac39f15f354286926472",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/usuario/integridad-post-hitl-y-ready-for-pr.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "34956f10775a732ecc08b8bc8ed9e8871d13b99d3c8e2ba78b6dfbfdf6df2097",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/usuario/mcp-herramientas.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "4998f385bebcb176247921198e3a6130b14ef1436a2b11b04e9782c64440828e",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/usuario/operational-readiness-docs.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "37f7e2b034fc2e27daf9707fcc4cf8454f231435bf15a4bca95f4df98d07b849",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/usuario/persistencia-aislamiento.md",
+      "classification": "LOCAL",
+      "sha256": "4a51aa96b626976fc597232d0441990de53536a210ce4e2baa14a54bc78e51ee"
+    },
+    {
+      "path": "docs/usuario/persistencia-supabase-real.md",
+      "classification": "LOCAL",
+      "sha256": "18452dca81d99f92a3a508356b71c13ca19b80c315eedce558b5a3e4267d1678"
+    },
+    {
+      "path": "docs/usuario/readiness-integracion.md",
+      "classification": "LOCAL",
+      "sha256": "e3a0f1a35380add6786ee330e926ac202ed22b3e283bba7a7ffd896bd35386ac"
+    },
+    {
+      "path": "docs/usuario/releases-evolucion.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "27137a300b53c3e709382c7c4066e7d1947e9dd8634e0fe38d9dd378f2602fd8",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/usuario/routing-dinamico.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "93895b0eb124b61f940874b0cc96ec82ab039dac63a9a2c4aed86a3f6feb5f72",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/usuario/sdd-adaptativo.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "cac426f599588aaf745176b55b7d2d7207654dfee688b6fe7311aaa88706d653",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/usuario/seguimiento-multivertical.md",
+      "classification": "LOCAL",
+      "sha256": "c562a1cec6b75f80cd86d01e1ce29a3a72fe2b30b22fb38c629ff6745e6ef090"
+    },
+    {
+      "path": "docs/usuario/seguridad-profesional.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "2b323c592f7702ed825a3b007227447553bace4c1789f8fecfc859314038b5da",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/usuario/status-observabilidad.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "b31e8b5207d412e7fd9d435ca99ac3fd52d03ecb548ed48194bc9adc728f402e",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1"
+      ]
+    },
+    {
+      "path": "docs/usuario/supply-chain-cicd.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "5d33480e5e415fe73e80af635099c84b9179c55ec95d493a59bd8c96d9907196",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/usuario/tests-ci-audit.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "808665c9841b8de4104c43b00be14c319297395befe29d1e99401e4773f90f01",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/usuario/unidades-paralelizacion.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "b0c0f24c01e5ba267df914962cc9576c28412a459ebcc5c9db71606c38de1710",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/usuario/validacion-integral-v2.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "9e73beeb28b17570386453a5ae527456cf4e91adace83dcee046f509f11857ac",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "evals/scenarios.json",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "176137e8f4dbd237651c904693a4d08799c25f71316c5514ebb7356257a3c5d5",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "gi_common_crm.egg-info/dependency_links.txt",
+      "classification": "LOCAL",
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "path": "gi_common_crm.egg-info/PKG-INFO",
+      "classification": "LOCAL",
+      "sha256": "5049667f60eb95150ecc93e95f32c5a4011c8605e80f0a2cd3821f869b3c5d59"
+    },
+    {
+      "path": "gi_common_crm.egg-info/requires.txt",
+      "classification": "LOCAL",
+      "sha256": "54e0c457fcbd7cfebbf6f6e04c3d15966754763a0ccc358cad148da9c968b831"
+    },
+    {
+      "path": "gi_common_crm.egg-info/SOURCES.txt",
+      "classification": "LOCAL",
+      "sha256": "5379f6319f65696bb147528c07644b0a5021ce091d6fde1f90cbcb6b67ba3455"
+    },
+    {
+      "path": "gi_common_crm.egg-info/top_level.txt",
+      "classification": "LOCAL",
+      "sha256": "870a2c093a18b0c148c8a55bd42c0bf0abdaa32889512734eebe189914414759"
+    },
+    {
+      "path": "gi_crm/adapters/core_http.py",
+      "classification": "LOCAL",
+      "sha256": "ac629f544fcffc42427be2c6d3c1a8b8bb052b442c66eae1609f88ca7c8bd6bd"
+    },
+    {
+      "path": "gi_crm/adapters/persons_http.py",
+      "classification": "LOCAL",
+      "sha256": "ee5be7bb23efce8caa78ddc6ade4f7ff24b857fea3fae4f501a39f5b7e0d865b"
+    },
+    {
+      "path": "gi_crm/adapters/__init__.py",
+      "classification": "LOCAL",
+      "sha256": "81590f3851a0532529668c3bc8b30296c496a0d50b070290ff083089ddd4f783"
+    },
+    {
+      "path": "gi_crm/api.py",
+      "classification": "LOCAL",
+      "sha256": "cfbe7588eea548ceda64508bc97289e15dde105321c4139bc920a03736682102"
+    },
+    {
+      "path": "gi_crm/authorization.py",
+      "classification": "LOCAL",
+      "sha256": "95956f22eb3f98dfd94dd7aac4fb4156d00dc0a8575dc6e5efe9306d970faff6"
+    },
+    {
+      "path": "gi_crm/dbapi.py",
+      "classification": "LOCAL",
+      "sha256": "bddbfaffb490085fddde51635e227a737225ed03e75b1d6d18bb8144b8139448"
+    },
+    {
+      "path": "gi_crm/errors.py",
+      "classification": "LOCAL",
+      "sha256": "2f76f53b7086764e988f3f0c144600cf4d1126f27bed2889eeea2fad0c5c58a2"
+    },
+    {
+      "path": "gi_crm/http/app.py",
+      "classification": "LOCAL",
+      "sha256": "23087c8a90ace66d6f8df9a4f9ff379ef374e510a89d4c6797c33c4b8e55070f"
+    },
+    {
+      "path": "gi_crm/http/errors.py",
+      "classification": "LOCAL",
+      "sha256": "6a6133ba6d5b98ff44a616dfea0bffad4a199ee39a0e5d175bfa0714a4e2c396"
+    },
+    {
+      "path": "gi_crm/http/schemas.py",
+      "classification": "LOCAL",
+      "sha256": "aa08062c472ad0504c89528fba8cd8f07b3413a018519113c34e96a5451d46c2"
+    },
+    {
+      "path": "gi_crm/http/__init__.py",
+      "classification": "LOCAL",
+      "sha256": "88c16fbee8e916457f427330544e94f97f92ac94ae5a177c10e6366ec7884b02"
+    },
+    {
+      "path": "gi_crm/memory.py",
+      "classification": "LOCAL",
+      "sha256": "25fe9aa806dcd69c2929010abed464a05d043eae7f63737a469de2e995e42a05"
+    },
+    {
+      "path": "gi_crm/models.py",
+      "classification": "LOCAL",
+      "sha256": "674c32779615813c1f322de0160366fbcbd17a3eae3ce0b086ea2cb71de14e6c"
+    },
+    {
+      "path": "gi_crm/ports.py",
+      "classification": "LOCAL",
+      "sha256": "e4dfed4697d3014ac405fe2a77b8221920b1a3e2941999fc7a02101965dfffb5"
+    },
+    {
+      "path": "gi_crm/service.py",
+      "classification": "LOCAL",
+      "sha256": "db71bc4801a63183c49e727576f4f9147f23360ee7649d3448922c70e40b45e1"
+    },
+    {
+      "path": "gi_crm/__init__.py",
+      "classification": "LOCAL",
+      "sha256": "8d7c889518b0de9445bfcf97c0540e121b3ef94a631072f79a5bea00cb57a7dc"
+    },
+    {
+      "path": "mkdocs.yml",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "a58f6e05a43608a14a1f051f11d52652536041a75c49cc403b9a46ab53da461b",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "opencode.json",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "182cdad8089616f28a3d005d2db7e10ea8cae4fee5e4455b38deb69d26f84903",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "pyproject.toml",
+      "classification": "LOCAL",
+      "sha256": "ead314696fc38a4b8ec6f148331bd5d004acb26619c4d354c2879cbc8c8f97a4"
+    },
+    {
+      "path": "pytest.ini",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "37b7898dd0df68d7bacac4726b4836010200403a1abe9542fe229caebe39b8a3",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "README.md",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "7dd9ceb059904c17f00444bd6096fa972c05580529f0e17231a1caa105e7b2b7",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "requirements-crm-dev.txt",
+      "classification": "LOCAL",
+      "sha256": "72cc25fe2d7a8bd463c6358c989fb219c2c460c555e159ade0aa41112973c892"
+    },
+    {
+      "path": "requirements-dev.txt",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "eaf4dae0b8f5059a291c8798ff8ffd2fcefc1d869fd77f6ce17ce7f4d5069d1e",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "requirements-docs.txt",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "41a5d09fb506c78f92e94224699bcae39061df07c5a86bdc953bbe8e02d44baf",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "ROADMAP.md",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "48cc6cb934459ea54bea74b309f16562d440c2249a0e06937856274a359e67c6",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "runs/01-fundacion-diseno/assess.jsonl",
+      "classification": "LOCAL",
+      "sha256": "4f7e3eec76f09031f68eb2422fabaf562d020a26b55fdbe696807c141eb36fed"
+    },
+    {
+      "path": "runs/01-fundacion-diseno/code-review-1.md",
+      "classification": "LOCAL",
+      "sha256": "2f87642e585538a20c10d99d6858b8bda353190135c8aa1aa27c99f7ffeca2aa"
+    },
+    {
+      "path": "runs/01-fundacion-diseno/mini-spec.md",
+      "classification": "LOCAL",
+      "sha256": "17d3c6ab0145a50f4f68bcfbf7932931d425d82d62dc8ca790608a33d4cf4c7e"
+    },
+    {
+      "path": "runs/01-fundacion-diseno/sdd.json",
+      "classification": "LOCAL",
+      "sha256": "88cc3d3430857fc68a8dc7e54966ac6247bce7ef0b3806b04bb7c50dc62ed974"
+    },
+    {
+      "path": "runs/01-fundacion-diseno/SUMMARY.md",
+      "classification": "LOCAL",
+      "sha256": "b4f700dabf5bc5cf79a9f12d72d35d4fe83f76db6d26b13eb144fc969bc18357"
+    },
+    {
+      "path": "runs/07-readiness-integracion/assess.jsonl",
+      "classification": "LOCAL",
+      "sha256": "cc17d24d06add7c27ccba49e2842f81382299859cef1f21f81937eee53fe431c"
+    },
+    {
+      "path": "runs/07-readiness-integracion/audit-1.md",
+      "classification": "LOCAL",
+      "sha256": "0c30f9f67af073c9d74f613810ddde44bcb59c5e437a3e01166d3bde667cd6a5"
+    },
+    {
+      "path": "runs/07-readiness-integracion/code-review-1.md",
+      "classification": "LOCAL",
+      "sha256": "d50196b07314a6a4057d380f08e3bd1757479e99d9d175cbaa9bc9a41ec8ec03"
+    },
+    {
+      "path": "runs/07-readiness-integracion/decision.md",
+      "classification": "LOCAL",
+      "sha256": "9f16e3f0268ba78b595911f43d495835c9c5efdecc3737917495a78d8135f13b"
+    },
+    {
+      "path": "runs/07-readiness-integracion/human-authorization.md",
+      "classification": "LOCAL",
+      "sha256": "d63cde74f600a2760cdb10f91ae7e4deef0cd4c93c3f42986f84632258f4845a"
+    },
+    {
+      "path": "runs/07-readiness-integracion/independent-review.md",
+      "classification": "LOCAL",
+      "sha256": "acd5e4d094ce91c4c1a88f360b09d13999dfbb243ed0633398d362673d686217"
+    },
+    {
+      "path": "runs/07-readiness-integracion/integrity-evidence.md",
+      "classification": "LOCAL",
+      "sha256": "7165dbd285e7368043096c90b81b070134462e9334ed0c176ee7801a0694c152"
+    },
+    {
+      "path": "runs/07-readiness-integracion/plan.md",
+      "classification": "LOCAL",
+      "sha256": "f65e7e76781e7834614809e07262162491d25aaf953a1ef63701ba8cdb00e11f"
+    },
+    {
+      "path": "runs/07-readiness-integracion/release-readiness.md",
+      "classification": "LOCAL",
+      "sha256": "b5000b8ca3733336b9d976ca9c18807f561447a7cdba66725afd23356056efc8"
+    },
+    {
+      "path": "runs/07-readiness-integracion/sdd.json",
+      "classification": "LOCAL",
+      "sha256": "2c454f7659e61c8ea9e294ce8efb9b022ca637ef1656f96db08d34606d81a41d"
+    },
+    {
+      "path": "runs/07-readiness-integracion/spec.md",
+      "classification": "LOCAL",
+      "sha256": "ea35066eda78e81f6d6d30d59f40554bac18acaf5aaaca380d3d93eb901e9faf"
+    },
+    {
+      "path": "runs/07-readiness-integracion/SUMMARY.md",
+      "classification": "LOCAL",
+      "sha256": "dbde4a4eac4384453c08562a6760081e70a3043ecc1c64daaf048d56ef58c2c1"
+    },
+    {
+      "path": "runs/07-readiness-integracion/tasks.md",
+      "classification": "LOCAL",
+      "sha256": "8b7270807c8ae5d6c7ce99bf09d1d85028c077605c25194e20c3ffcf3c20dfbe"
+    },
+    {
+      "path": "runs/07-readiness-integracion/test-report-1.md",
+      "classification": "LOCAL",
+      "sha256": "cbe67a4976022978f031782a2e861c03df83cd9dc5e3a7393f343843bee5566b"
+    },
+    {
+      "path": "runs/08-persistencia-supabase-real/assess.jsonl",
+      "classification": "LOCAL",
+      "sha256": "4319e31ef001109dfa22a3db555a975ce950b681a0b103923f28384e10a91923"
+    },
+    {
+      "path": "runs/08-persistencia-supabase-real/audit-1.md",
+      "classification": "LOCAL",
+      "sha256": "844396cad56a3b89924ef950d86dabaeda19d5c918fb2f4b6b803c046d330afa"
+    },
+    {
+      "path": "runs/08-persistencia-supabase-real/code-review-1.md",
+      "classification": "LOCAL",
+      "sha256": "8490d43f414cec900e67f38bd7e68574d1396e098aec459636b85a8de4beb756"
+    },
+    {
+      "path": "runs/08-persistencia-supabase-real/decision.md",
+      "classification": "LOCAL",
+      "sha256": "37399b16889b32c7e7ee9efeda9f097e4c29213e941a460df1ac5cbe271c6de8"
+    },
+    {
+      "path": "runs/08-persistencia-supabase-real/plan.md",
+      "classification": "LOCAL",
+      "sha256": "fca59c56996ab2501d7336f1b193b9776f28fd197f8b75060bdd144b18f2b8b2"
+    },
+    {
+      "path": "runs/08-persistencia-supabase-real/sdd.json",
+      "classification": "LOCAL",
+      "sha256": "fc97e4955d2d1479e7c99a3b5870e21dd8f60fddba6a5ee9154f6b5f04b53f8c"
+    },
+    {
+      "path": "runs/08-persistencia-supabase-real/spec.md",
+      "classification": "LOCAL",
+      "sha256": "222c0a36172d6a3e6da3eab6ed62cdf840f680fa0f296d3b28faf4489ab2a917"
+    },
+    {
+      "path": "runs/08-persistencia-supabase-real/SUMMARY.md",
+      "classification": "LOCAL",
+      "sha256": "ee5c1f7af648e96e6f669c9db6d44a8dac1b7dd40fca94738c240bc7dfa5d9f1"
+    },
+    {
+      "path": "runs/08-persistencia-supabase-real/tasks.md",
+      "classification": "LOCAL",
+      "sha256": "7446df99a2cc0924b4cf42c7d83eb3548a804996119337fab42768a0161c8506"
+    },
+    {
+      "path": "runs/08-persistencia-supabase-real/test-report-1.md",
+      "classification": "LOCAL",
+      "sha256": "f2f94f1705df303d8db43af2d22e1b546190b77746f20190242f29c70e68383c"
+    },
+    {
+      "path": "runs/09-maintenance-release-readiness-project-scope/assess.jsonl",
+      "classification": "LOCAL",
+      "sha256": "2fdbcd8792e787d9d92ca4df2af1142b653245bd3393c9eda32f6fea47950a3f"
+    },
+    {
+      "path": "runs/09-maintenance-release-readiness-project-scope/audit-1.md",
+      "classification": "LOCAL",
+      "sha256": "c37a695a32524ed75f066da585d2303ce9c46fc13dbbf9b747ad5a16a4b4636e"
+    },
+    {
+      "path": "runs/09-maintenance-release-readiness-project-scope/code-review-1.md",
+      "classification": "LOCAL",
+      "sha256": "77ab2e71cc907c7f69279c0fa0d177c6ff36cbcb3cbfc2d4e85b088e4c5a519c"
+    },
+    {
+      "path": "runs/09-maintenance-release-readiness-project-scope/decision.md",
+      "classification": "LOCAL",
+      "sha256": "706df245053a1d7817d00f199f6aa1f67086cc0d0fefc9b68748ed855630edf6"
+    },
+    {
+      "path": "runs/09-maintenance-release-readiness-project-scope/plan.md",
+      "classification": "LOCAL",
+      "sha256": "91e21767ff0aaf4861ab0dc87684a4c9ebcd0a0ef181e591be7a9243421ad034"
+    },
+    {
+      "path": "runs/09-maintenance-release-readiness-project-scope/sdd.json",
+      "classification": "LOCAL",
+      "sha256": "41bf3414b92b518dbaedb10a26b361869e4725ffb7eafd42a381bcbbcd2954e6"
+    },
+    {
+      "path": "runs/09-maintenance-release-readiness-project-scope/spec.md",
+      "classification": "LOCAL",
+      "sha256": "7bc96c33f2f59dbf4665372796957cd5c71e0f797197c1a33ec7fee48089145e"
+    },
+    {
+      "path": "runs/09-maintenance-release-readiness-project-scope/SUMMARY.md",
+      "classification": "LOCAL",
+      "sha256": "06c59205eb05a8e9672f4cd9018af99146b834740f5c0cb7ed29adb1b1f18f49"
+    },
+    {
+      "path": "runs/09-maintenance-release-readiness-project-scope/tasks.md",
+      "classification": "LOCAL",
+      "sha256": "4d25e6d5975baf171a60e7f0a2bf5294c511018fe9b0df43606f65a1e26452f9"
+    },
+    {
+      "path": "runs/09-maintenance-release-readiness-project-scope/test-report-1.md",
+      "classification": "LOCAL",
+      "sha256": "8cfe57e2aa9573a1617311c19b98324de8b4de32a548dee42f780f8d8d077af6"
+    },
+    {
+      "path": "runs/milestone-leads-core-implementation/assess.jsonl",
+      "classification": "LOCAL",
+      "sha256": "83c10ab1ecfa170b6eda57934c38f330f2fadd544bf720ffd16f3d73e9959a36"
+    },
+    {
+      "path": "runs/milestone-leads-core-implementation/audit-1.md",
+      "classification": "LOCAL",
+      "sha256": "f61272604f9c1ec5e431f279fe8a815b9272936e4b91aef8ee9789764539559f"
+    },
+    {
+      "path": "runs/milestone-leads-core-implementation/code-review-1.md",
+      "classification": "LOCAL",
+      "sha256": "f63722084e530d0f093716acd30a1451a208e061ab952370ee07a69049ef67c5"
+    },
+    {
+      "path": "runs/milestone-leads-core-implementation/decision.md",
+      "classification": "LOCAL",
+      "sha256": "98f5861cbbb9f974d71733adfeb64b0eb48f338e47132a7df915baa00f7b604a"
+    },
+    {
+      "path": "runs/milestone-leads-core-implementation/plan.md",
+      "classification": "LOCAL",
+      "sha256": "c3ca6095a9da7f13949645978fc497fefe5918c2cdf69f66083a37cb1fdf19f7"
+    },
+    {
+      "path": "runs/milestone-leads-core-implementation/sdd.json",
+      "classification": "LOCAL",
+      "sha256": "8f0cbf837afc740409afbbbfa52a8792b5e63fe9da167f908874b30e89dbe9db"
+    },
+    {
+      "path": "runs/milestone-leads-core-implementation/spec.md",
+      "classification": "LOCAL",
+      "sha256": "cd3c63d28bc2a6a07052b57818950563b4d4f542f18af559c34c1367bf23d9f4"
+    },
+    {
+      "path": "runs/milestone-leads-core-implementation/SUMMARY.md",
+      "classification": "LOCAL",
+      "sha256": "233b4234150aa7cae7fe4ccd5430e6b9c906603b9c54d73f0f6a4e552cf11515"
+    },
+    {
+      "path": "runs/milestone-leads-core-implementation/tasks.md",
+      "classification": "LOCAL",
+      "sha256": "bc1cf5294458a342d75580ead983d20a5f84f9e8584ebb9296723e60ec5f0174"
+    },
+    {
+      "path": "runs/milestone-leads-core-implementation/test-report-1.md",
+      "classification": "LOCAL",
+      "sha256": "a8a412dd14e58eec356544e58caa769dd7867bf185ade313a3dc0c3e98d92431"
+    },
+    {
+      "path": "runs/milestone-leads-core-implementation/work-unit.json",
+      "classification": "LOCAL",
+      "sha256": "98a7e7c4c684a8515162576ce5846b8ab2506a3f41acee17ce055574a0f90fcd"
+    },
+    {
+      "path": "runs/T01-fix-post-merge-close-mode/assess.jsonl",
+      "classification": "LOCAL",
+      "sha256": "15c97bde5ee29ca3ca5601126527df18c81e18a9818167008eb51311e78d70e3"
+    },
+    {
+      "path": "runs/T01-fix-post-merge-close-mode/audit-1.md",
+      "classification": "LOCAL",
+      "sha256": "b1029cb72b62417ab69493c80ecd74c9ae9e3b26c07c776d27dfebc4e3e577f3"
+    },
+    {
+      "path": "runs/T01-fix-post-merge-close-mode/code-review-1.md",
+      "classification": "LOCAL",
+      "sha256": "17b83b87549fa42e455e30654dce5ecf6d6be67b8dce26cf1c06e8b0cddf97c7"
+    },
+    {
+      "path": "runs/T01-fix-post-merge-close-mode/decision.md",
+      "classification": "LOCAL",
+      "sha256": "b49f9f227c46f7dede1740869850b64fd5de7be0dcacf9953747ae3a2a401811"
+    },
+    {
+      "path": "runs/T01-fix-post-merge-close-mode/integrity-evidence.md",
+      "classification": "LOCAL",
+      "sha256": "8b7401c635feff077331926a4dcc9a7947f40cb4b0c2eb070bfe2e79ee8bbfef"
+    },
+    {
+      "path": "runs/T01-fix-post-merge-close-mode/plan.md",
+      "classification": "LOCAL",
+      "sha256": "385c23a462887598c0a998bf02d1f19a55db400ac29bb9321dbe58d65a5a4786"
+    },
+    {
+      "path": "runs/T01-fix-post-merge-close-mode/sdd.json",
+      "classification": "LOCAL",
+      "sha256": "c87a8af021843adbead933731fb2a442492b8e222834f5f8d4487c9ddadd2848"
+    },
+    {
+      "path": "runs/T01-fix-post-merge-close-mode/spec.md",
+      "classification": "LOCAL",
+      "sha256": "effb0fdf808a9b9b81e6cec0e72fe57d34f7fcc854ede89764445836e2065b67"
+    },
+    {
+      "path": "runs/T01-fix-post-merge-close-mode/SUMMARY.md",
+      "classification": "LOCAL",
+      "sha256": "836df5ceb81dc0e5cf9edde0197e0439ced6170873ce290c585376e06c3bafb6"
+    },
+    {
+      "path": "runs/T01-fix-post-merge-close-mode/tasks.md",
+      "classification": "LOCAL",
+      "sha256": "c47582a73435d5701cf9b2f6fa87671028c363bae2655d3afaa4a3ccff304366"
+    },
+    {
+      "path": "runs/T01-fix-post-merge-close-mode/test-report-1.md",
+      "classification": "LOCAL",
+      "sha256": "9cf5b76db108e9430f56dc1fdefe23b73b4fdc53faae04b7d8beae157d7386c4"
+    },
+    {
+      "path": "runs/v0.1.0/22-auditoria-release-v2/audit-1.md",
+      "classification": "LOCAL",
+      "sha256": "53d1754a146e5d0a3fafd903115b12ccb9b9fdaff6c03c16bfd4be3fce0cf82c"
+    },
+    {
+      "path": "runs/v0.1.0/22-auditoria-release-v2/code-review-1.md",
+      "classification": "LOCAL",
+      "sha256": "9f7104fd4e6750e0eec6f8d17f35b4cb306ee54297cb40c1857b167f06f0f900"
+    },
+    {
+      "path": "runs/v0.1.0/22-auditoria-release-v2/SUMMARY.md",
+      "classification": "LOCAL",
+      "sha256": "e5d02f751bb491d017ae69090c3b302466d09b30760b6868f19d39b4190f7cc0"
+    },
+    {
+      "path": "runs/v0.1.0/22-auditoria-release-v2/test-report-1.md",
+      "classification": "LOCAL",
+      "sha256": "a888bdbde7315bb8be32cb63ded35b68bdc1843a80f7a836e24959294d9ea640"
+    },
+    {
+      "path": "scripts/agentic-evals.ps1",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "06a136456432f637cef52b6f32ac37c8ea926b3f563567829c5d715b8b0d5016",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "scripts/assess-work-unit.ps1",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "7cb011f613d79eba8207c7cca340b4cb503b25d18ab3682a650b48b564a3cd3f",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "scripts/check-adoption-conflicts.ps1",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "030570c85b641a5ec51839075cd957796e5b66cc2066f44c4d6ee40af8a24647",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "scripts/check-integrity.ps1",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "d8e62e7994047d69b64b3fde42c7e5dcc4ace4b7ae29d42ef352621ce05f38ac",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1"
+      ]
+    },
+    {
+      "path": "scripts/check-status.ps1",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "9ea28b4a2ad04d2d193c3eba5be8be365db96d5e09aacbb88a6d872ddff20374",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1"
+      ]
+    },
+    {
+      "path": "scripts/cleanup-work-unit.ps1",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "526b96f37161af2ee6f8652682976521797405abb3703d2873bc7be86a65aeb3",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "scripts/close-feature.ps1",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "4a87ce36d64673693eb8719462ac03f594eea562639cc1762e7a9290d5b0114b",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "scripts/complete-approved-pr.ps1",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "174ec900417f65de050b7a5077f1ae32ef0ce5915e79bd388ab93e2f473a86ac",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "scripts/convergence.ps1",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "cbc5fe4adb9da44aa2be6c191565e0bfb5ba8cb1c786de25e3491a8c6289f1fa",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "scripts/feature-contract.ps1",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "00a547b77c830cc7c08c8d90921f6a9659000b3604555c06ae014ed6d9530846",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "scripts/local-feature-reconcile.ps1",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "50053e319dfabacd4c3434cfb5203dbf9f223b7372be15a301daa6281fb191ff",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1"
+      ]
+    },
+    {
+      "path": "scripts/materialize-sdd.ps1",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "794c7571100b6fada638a5fc4031bcd31e179343e73e9be9d6378c0dfa546a29",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "scripts/mcp-tools.ps1",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "684f37436210c52d519e0a3b64cc0263fdf027eb73b103ebb96c2ffee72131bc",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "scripts/ready-for-pr.ps1",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "c71ba2d3e5f06d6719cee3e8b8a038337adabd6f4c6ca1a05a4a1a84f2b4773d",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "scripts/release-readiness.ps1",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "a29e38293ebc9dc0a79137d591546d8952c23a8f91bcaa5ecfa1e2f264b5422d",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "scripts/resolve-agentic-model.ps1",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "05691a37150acf154b9956f69b9f4eb9b0b47d3fc482690e6c811bda32af59e6",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "scripts/security-policy.ps1",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "256233566f56ba544b017496ab2ec1397cef2fe83ed1d88cfa630a19237d9726",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "scripts/start-work-unit.ps1",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "9e274724ee134ec5a581208fa8c25985868d2bc69bcad9bda192538647568ddf",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1"
+      ]
+    },
+    {
+      "path": "scripts/sync-agentic-adapters.ps1",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "7d66212e34288b22e62ab45ac01da461d9cb8f299060b39fd44d6113fb5bf3df",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "scripts/unit-lifecycle.ps1",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "e887b4882ef2f1cd265f034cc952e72c8d9668d003d83b84152b579e60286ab1",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "scripts/update-doc-indexes.ps1",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "80d554f3e9c5151486907a1cca018105fd3a5d7bdb256f7b330edefacb7441f3",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "scripts/update-status.ps1",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "251d6a7d3da1f2f0ac93780d80b8335371817681ad2f189285ca13548e9c6152",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "scripts/validate-supply-chain.ps1",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "a5d2693aea1907b58156c3859879689dba9c05724f1de291a7d4092e7b712e56",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "scripts/wait-pr-ci.ps1",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "7ed19189d9f7d9c8933328b268fe9a1f0da1ba37b59ae4abbd95b84067dd04b5",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "scripts/workunit-lib.ps1",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "dd386562ed56cbbde7e997b490897a9daa067adbe47c7d20889f1c796cae4bff",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "STATUS.md",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "83eec8b009f9dc4cc19bd3b9667d6c15df4f0deb8c13a210e7cf179fb4a19cae",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "supabase/migrations/20260921000100_crm.sql",
+      "classification": "LOCAL",
+      "sha256": "d4835711a399177d2fbbfc2d74626f2cffb3f1132f573f3001e7cd652bca671d"
+    },
+    {
+      "path": "tests/test_adaptive_evidence.py",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "7018ecf559534a7ec4b53c7fbdb06631a53ef5c7973212a6f09b124361feffba",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_agentic_evals.py",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "37d13eac3d4fed1d3f43afc5fa6e7ce7a771914c1c7f4e4d4068fdf2fcdba340",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_agentic_schemas.py",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "8da7d6ce2eab20c6331f2df43d90d8b616759b99d2adbb99eade29b46b8e4eee",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_agentic_sync_scripts.py",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "1798352903b4c843cd32055a9e59776fa858658e8a3ab9c026a5b125ea1fa30a",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_agents_e2e.py",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "195f0fca1450eead854d6c196ab0a76eef3ad3cca30c72d4a7ea8eccf365d4f9",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3"
+      ]
+    },
+    {
+      "path": "tests/test_assess_work_unit.py",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "634382b711a79d19eb6522c5e30b31e86ca8e5d35c591188705ef38601257d77",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_audit_framework.py",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "be1a5c42b18b27bfeadaeee50ccf3c4f63955c3b37dd91cceb6911f478aff9ef",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_canonical_workunit_identity.py",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "bb28627d07376bfe4fe31e36318a90bbdb1ff5b2df0011a1fd974f4ec49978e1",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_check_adoption_conflicts.py",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "f114b273f7b6f51f96a0c0b87616318d313150fd48863088158734bad3dfb57c",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_check_integrity.py",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "611d79945802129c9fc002c03e450b61a5110b52c03ed5d78ceb999006c2d01f",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4"
+      ]
+    },
+    {
+      "path": "tests/test_ci_integration.py",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "77898bf00d0f8be346024adcae482143818764b730e5504b8ae9f0a5aaebb8ef",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_ci_workflow.py",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "1f3c825ea96a24ad27a8ce51d19a769e6d062b44c674dcbdfcf77513ae8d1e4c",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_close_feature_script.py",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "7ad4418baffe2769b03529e21648c49875d0ed029fcdb574db42c2e3067a52ba",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_complete_approved_pr_script.py",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "02764f5fa95104d386af4ad98ab89a602340c60135c9a41324b84ad7c8a68b07",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_convergence.py",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "300f3254434c69f8e1e5b61d0e693aca98f85046bde38b922ffcfcc798757e78",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_feature_contract_scripts.py",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "9d83f45ab2e5591383ac205dc2009da9c48f44d7d1f81e1ab17896c8726069bc",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_guard_develop_branch_workflow.py",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "3f02d6bc9e7ebd34688d41d19ea55e4b71cf222625b1dd0c246c914f4073d21a",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4"
+      ]
+    },
+    {
+      "path": "tests/test_local_reconciler_scripts.py",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "544d1a08caa91506de8382d127cc4ca9a75b41a946af9ae01ac77f3884528d78",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_maintenance_scope.py",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "4e14325737f9430968779bfd11d5a751fedfe1042c02eb05f43a4fe2cb6f7c4d",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_materialize_sdd.py",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "f85ed4befb7c07b1c98fddf5265ac9071f1399196d9843b29c106003da2eb622",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_mcp_tools.py",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "e2c6dc246335b1d07ea12bc6f9edaa1c710420dde524fce64eb65823e9cd2e5d",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_milestone_close_feature.py",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "e2ab366b65d6f6008f5912942a3b893a70445ea5093c72004a95f4c364828fd9",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_milestone_contract.py",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "42d4fd9bdaf922773d8d9e5a73b2d5d5e2834e19e94031b847f9e6426c2bd317",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_milestone_ready_for_pr.py",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "eb033d7c1a42d818af032a848f7e11e09b3eeec56a14f45278cd1bf01d91a2e7",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_model_router_scripts.py",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "b5fd3927f19a0d4a0d1495b7e1c7e0864bbf846f2e0fa8f0879cc3c162cc5986",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_parallel_units_f14.py",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "4190223140d5d8166d1edd45ec016c6f26519ec851e4e5911b5484cb289b36db",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_product_context_compatibility.py",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "19b28e0424c62039301fb8dd8be8dbb2cb847a315d41a330e25a4278f744b45e",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_release_readiness.py",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "dab6fb74bf5d1a77b171e41b9bf0b9cf0e0349c825851b6a2d150c5beb204450",
+      "matchedTags": [
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4"
+      ]
+    },
+    {
+      "path": "tests/test_security_policy.py",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "34763ec61d65eec7fc1e2d161e5da85a45858ecc57c99d1409bc52d140110ac6",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_start_work_unit.py",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "5073b3d7bbfae0c2fcdd3593ca63b76557fbaecb6cf2df29a3c305d337ce1a76",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_status_scripts.py",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "bd8870ca442c15013d3a68d9e0deaba26fb1b00b43fc0e43392930df996cfd9f",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1"
+      ]
+    },
+    {
+      "path": "tests/test_supply_chain_policy.py",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "f235c378569e6c33b5dfc886068a5896c4fb30b0dc3cf532409c57f892b929f8",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_workunit_lib.py",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "4daf63bda6c3779ab56af2656bacdedddfcdce42bf25aa911240a4c28a5f46bf",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests_crm/conftest.py",
+      "classification": "LOCAL",
+      "sha256": "96171cac1af83581fb17c33be8049b74661c5aa880f6915b39a0cf51f374cced"
+    },
+    {
+      "path": "tests_crm/fakes.py",
+      "classification": "LOCAL",
+      "sha256": "000d103bd330676cca9eba7b2c603067e836141cafa5312a9026fa470ea90967"
+    },
+    {
+      "path": "tests_crm/test_adapters_http.py",
+      "classification": "LOCAL",
+      "sha256": "033274626e55cff8ea6897c6d1f54eeef0863e828ed381dab1db6fdf2b4a202c"
+    },
+    {
+      "path": "tests_crm/test_api_library.py",
+      "classification": "LOCAL",
+      "sha256": "871292acd380ebb6bd19bc3cccc8d199cb030e1da7afcb8a1d8d5015e4271c96"
+    },
+    {
+      "path": "tests_crm/test_authorization.py",
+      "classification": "LOCAL",
+      "sha256": "fe34874ad6a7fa497d26bd2bfa604064ec64ca393a79e123958f6cd8eba04c11"
+    },
+    {
+      "path": "tests_crm/test_cardinality.py",
+      "classification": "LOCAL",
+      "sha256": "9d19a4060f813fd094018f218ff9896d6e2a55ab0dad7d0143769220419c43b5"
+    },
+    {
+      "path": "tests_crm/test_contract_and_migration.py",
+      "classification": "LOCAL",
+      "sha256": "c64b2aa5417cac6134ca043a84f20c4ee9b9639829e526868784deb9346f3a9b"
+    },
+    {
+      "path": "tests_crm/test_dbapi_postgres.py",
+      "classification": "LOCAL",
+      "sha256": "6567fe3ad7f382ac5a27342bfcc6eea17f1a0d24bc17c5941511206919677299"
+    },
+    {
+      "path": "tests_crm/test_external_reference.py",
+      "classification": "LOCAL",
+      "sha256": "8bcb4fb146215de5e3be56705ebd9b2edbc7afbd09fb0bde1819a319a22b8356"
+    },
+    {
+      "path": "tests_crm/test_http_contract.py",
+      "classification": "LOCAL",
+      "sha256": "afb7d53f7cf02a0e813a7edaf3fb606c6d971de928dc0f705a6ca9a2f680cb18"
+    },
+    {
+      "path": "tests_crm/test_no_vertical_coupling.py",
+      "classification": "LOCAL",
+      "sha256": "c989d30e486fba169d985b3f2ce07f473ff11361dbb8a91e8a0d0c9571d49f7c"
+    },
+    {
+      "path": "tests_crm/test_ports_contract.py",
+      "classification": "LOCAL",
+      "sha256": "9a5b32a322f418241faba4a8276c8dd2253a7e72af4f97b7d7efe627ec6f634d"
+    },
+    {
+      "path": "tests_crm/test_service_concurrency.py",
+      "classification": "LOCAL",
+      "sha256": "3c56104c46ce3ffbfb0ddc21d88dd33e9598a9d0ca74acf8e6e2e750c76c5211"
+    },
+    {
+      "path": "tests_crm/test_service_domain.py",
+      "classification": "LOCAL",
+      "sha256": "146ceca2350175f47840ba012df44da7b7fefd8d613d6c0cd9b0e5f5b3deb5f7"
+    },
+    {
+      "path": "tests_crm/test_service_duplicates.py",
+      "classification": "LOCAL",
+      "sha256": "59335a7a59259f6cff69a20cc0efcdbd87e14181cfd17df7d8b0cfaa8d5c5ac5"
+    },
+    {
+      "path": "tests_crm/test_tenant_isolation.py",
+      "classification": "LOCAL",
+      "sha256": "0aa98b716d232c834ccc63f62757415908c0232532a94d483bc478ae7a2c7b89"
+    }
+  ]
+}
