@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, writeFileSync, rmSync, mkdirSync } from "node:fs";
+import { mkdtempSync, writeFileSync, rmSync, mkdirSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
@@ -231,7 +231,14 @@ test("gitCommonDir is shared between the primary checkout and a linked worktree"
     const linked = join(dir, "..", `${join(dir).split(/[\\/]/).pop()}-common-linked`);
     try {
       git(dir, "worktree", "add", "-q", "-b", "feature/x", linked, "develop");
-      assert.equal(gitCommonDir(linked), gitCommonDir(dir));
+      // Compared by filesystem identity (inode/device), not string
+      // equality: on Windows, git can report the short (8.3) or long
+      // path form for the exact same directory depending on which
+      // worktree it is invoked from.
+      const a = statSync(gitCommonDir(linked));
+      const b = statSync(gitCommonDir(dir));
+      assert.equal(a.ino, b.ino);
+      assert.equal(a.dev, b.dev);
     } finally {
       rmSync(linked, { recursive: true, force: true });
     }
