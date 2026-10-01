@@ -25,8 +25,8 @@ No se abre una fase M(n+1) sin que las condiciones P de salida de M(n) estén en
 ## M1 — Baseline
 
 - [x] M1.1 — Importar TEMPLATE v2.0.5 **filtrado** (sin `runs/`, sin autorizaciones commiteadas, sin `AGENTS.md`/`CLAUDE.md` anidados) a `legacy/template-v2/`; correr los ~285 casos en Ubuntu y Windows como baseline medida (no asumida). PR #4. **Baseline real: Ubuntu 275 passed / 10 skipped / 0 failed; Windows 285 passed / 0 skipped / 0 failed** (corrida `36758193220`, jobs `110033715681` y `110033716341`). El primer intento local en esta máquina dio 202 failed por contención de recursos del entorno, no del código (confirmado: cada test aislado pasaba); la CI de GitHub es la medición autoritativa.
-- [ ] M1.2 — Hash DB v2.0.0–v2.0.6 + `migrate --inventory` (solo lectura).
-- [ ] M1.3 — Informe de solo lectura del estado real de los repos GI y el Starter (versión declarada, drift).
+- [x] M1.2 — Hash DB v2.0.0–v2.0.5 (v2.0.6 todavía no existe; M0.0b no se ejecutó) + `migrate --inventory` (solo lectura). `parity/hash-db/build-hash-db.mjs`, `parity/migrate-inventory.mjs`. **Hallazgo real durante la construcción:** comparar bytes crudos daba ~85 % de falsos "MODIFIED_FROM_TEMPLATE" en `gi-common-persons` (174/310) por CRLF de Windows vs LF de los blobs de `template`, el mismo patrón de B08-adyacente ya visto en M0.2; corregido normalizando CRLF→LF antes de hashear (archivos binarios detectados por byte nulo y excluidos de la normalización), bajando a 20/310 reales. También se encontró y corrigió un crash (`EPERM`) del recorrido de directorios ante carpetas bloqueadas por el SO.
+- [x] M1.3 — Informe de solo lectura del estado real de los 8 repos GI disponibles + el Starter (versión declarada, drift). `parity/inventory-reports/SUMMARY.md` + 9 JSON. **Ningún consumidor declara su versión de plantilla** (confirma la auditoría original). `gi-ot` es el más alejado de TEMPLATE (1/297 idéntico); `template-starter` el más cercano (164/175). 6 archivos `DUPLICATED_CAPABILITY` detectados (heurística conservadora). Ningún repo GI fue modificado.
 
 ## M2 — Contratos y core
 

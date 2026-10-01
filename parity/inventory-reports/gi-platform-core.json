@@ -1,0 +1,3952 @@
+{
+  "schemaVersion": 1,
+  "generatedBy": "parity/migrate-inventory.mjs",
+  "generatedAt": "2026-09-30T19:42:20.731Z",
+  "target": "C:\\Proyectos\\gi-platform-core",
+  "hashDbTags": [
+    "v2.0.0",
+    "v2.0.1",
+    "v2.0.2",
+    "v2.0.3",
+    "v2.0.4",
+    "v2.0.5"
+  ],
+  "declaredVersion": null,
+  "manifestSchemaVersion": 1,
+  "preflight": {
+    "isGitRepo": true,
+    "clean": true,
+    "inFlightRoadmapItems": [],
+    "worktrees": 1
+  },
+  "totalFiles": 509,
+  "counts": {
+    "IDENTICAL_TO_TEMPLATE": 126,
+    "MODIFIED_FROM_TEMPLATE": 52,
+    "LOCAL": 331,
+    "DUPLICATED_CAPABILITY": 0,
+    "UNKNOWN": 0
+  },
+  "files": [
+    {
+      "path": ".agentic/agents.json",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "10ea24137946ec102f4663f02ef96bd74ad83ba670f7981090d2203e02962370",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".agentic/mcp.json",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "6270b542b246c9ef9583999d97744a610fa9218bbf60e1c14d8dcaf647206db2",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".agentic/models.json",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "edd81768fd04aac40e906189cd84645d493364393559c4e3f09b6bb4ee0f88ff",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".agentic/README.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "da38d0a6bd163f804f0080338d9b1cec21bb856476ff5835502d838bbe35b417",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".agentic/roles/builder.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "dc486681f0f9cb7410e2eb163647d7aedfdf9f21ccbea108cb26b93fb840b1f2",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".agentic/roles/planner.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "f349357377c52ee0795e42df9b83f1009b94cbf454791271d5dbdac814b80138",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".agentic/roles/reviewer.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "43b8545444965d25f532b5e50a1d2ae5ea9f585c0275c1a7c685d7a6dea7562d",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".agentic/run.example.yaml",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "9c277aef6f21c5a407d44e3e27855f320a840bb4b9c3f10a083e8cbaa6ab1771",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".agentic/schemas/agentic-eval-result.schema.json",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "3655ab6866634c798578239eb22b6adc21b364db0ce9d1c67c2760b06f398a8d",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".agentic/schemas/agents.schema.json",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "b7900a2a18f9b7b540d9fda655e6fd8684fbdb8de08c4dce65a941f55d89c00f",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".agentic/schemas/mcp.schema.json",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "6bd681e4991ff080ef365298de3ab6a4f194655cb7c1dd66139d6770019ecb0a",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".agentic/schemas/models.schema.json",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "7af0be46377e0d91bad08713cb397055bd5b2feef336e47d3c034054989523db",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".agentic/schemas/security-policy.schema.json",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "f21ff3acf0d48f86c14cedb75374b1fa303c552de71a8a31e2d7081cba5792fd",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".agentic/schemas/unit-identity.schema.json",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "03a10f3dadd3b18b730de207f00b0d64636ab2cd18b01f8d3f2556bdd87453e6",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".agentic/schemas/work-unit.schema.json",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "e7747e78d00e2384a5048e4ffb19955cd2f76bb8150af43439aef52cdf717c92",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".agentic/security-policy.json",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "eb875f0767d43f470096ba7f8a8757eb4a384ae4d6e0b557892b7ddbc80e2455",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".agents/skills/.gitkeep",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".agents/skills/README.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "9fc416582f5d5147fcc27067e9c5ba222a14da26fd20e4f6f6664cee0391c828",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".audit/AUDIT_PROMPT.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "dff735f01b0d10f246816e284f2f2a36e019d24464fd4cac1a9d99cf12633a7b",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".audit/AUDIT_RULES.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "7f779b3b8c024ed1b008f137a4f63e290aa3a12810f9d0b4138c401660fa4c88",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".audit/evidence/README.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "8ebb25b61cd9963455e972c062f336f3ae8a7e695ff4716f9c8261494c0ef43d",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".audit/history/README.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "213363a210bfd4d28942e07ee34f026dff37032b201a835436ecab6a5564c1fa",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".audit/profiles/APPLICATION.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "e65e7e47f1b9b8fc5a6de2f36a924eed2990f1d00b9b826938f5681c47d2a9d1",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".audit/profiles/LIBRARY.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "ba095b1a05d6279f5ad31b119f2e2d3f8a31664fb6cb915bdc02a168929701f9",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".audit/profiles/TEMPLATE.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "f937cb5b42545692f0410d8da9dc179a872066e030f8e191f580e6a50f570d5b",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".audit/QUALITY_SCORE.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "764a92f38e6ce67a22c1c9afc40c92243cbc6687a9ed523fe31e8838d46fe55b",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".audit/README.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "b4ff7247fdb9e403d78ca2f7cb7b73897a59ad842810d3d0e1b10381fddcd388",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".audit/reports/README.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "1fd9004d842f0182faa59167d741a7ca0f9956be9c79611c1f0f17b4fb0c994e",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".claude/agents/builder.md",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "f0a847cc9a43e3e6f0bc000e5990302c4821ea6604fc62c6a56612560e9bb090",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".claude/agents/planner.md",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "de6a79f4e1345d1175df26f089a7cc8207ed087bac2f83891bf30e06d9fe6e79",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".claude/agents/reviewer.md",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "79b6cd1ceaa75a8d4fc7561cde16b2cc5204ea306304bf22a8621ac2df216f17",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".claude/rules/.gitkeep",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".claude/rules/README.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "67ee6578609ae2f804857d39b6add51b684410eca98c3630539452cfc089c5ca",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".claude/skills/.gitkeep",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".claude/skills/README.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "9fc416582f5d5147fcc27067e9c5ba222a14da26fd20e4f6f6664cee0391c828",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".codex/.gitignore",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "e5106644cba6d4802a502e447d2ef46a5276985171d8e39f93ac4d7a14ac92e3",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".codex/builder.config.toml",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "6986ae9f9b130717600a9348db0b0825d42cd2fa948cb01220187920df842700",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".codex/config.toml",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "3706fa34a6f3d993c83ef49f72551d60d6351a72d1dd74ec4f7bc00393987439",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".codex/planner.config.toml",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "6986ae9f9b130717600a9348db0b0825d42cd2fa948cb01220187920df842700",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".codex/README.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "76f6a2416d328d0821f947e745c2799bd818b48cdf2def751744dfdf3935ce16",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".codex/reviewer.config.toml",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "6986ae9f9b130717600a9348db0b0825d42cd2fa948cb01220187920df842700",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".env",
+      "classification": "LOCAL",
+      "sha256": "68056f43948ad561f775710f3ba7143aafb3a3dae20e9b3e12f599291acfa0ae"
+    },
+    {
+      "path": ".env.example",
+      "classification": "LOCAL",
+      "sha256": "27e98b8954fa68834a229577cb4cb9c7173417d770ea02c14131a6bfa1c59ff4"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "504224fa488f20bae177c99becd26a028acfc72cb688e93aef026b2b9e463e37",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".github/workflows/docs.yml",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "ca19ac4cfc4aa641e1c6492e5040b33bb38823aaa0124a33991c77f8b78c11ef",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".github/workflows/guard-develop-branch.yml",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "feab4ba33bee62e80d4dfdedc92227a27a4ccaeea865b0c8b0fb121e26a07922",
+      "matchedTags": [
+        "v2.0.0"
+      ]
+    },
+    {
+      "path": ".github/workflows/post-hitl-merge-gate.yml",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "14becab3195d38f19adcc01e564507f1d09aa97997a529ade2e4caca008417f8",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".github/workflows/post-merge-close-feature.yml",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "6ff60b34df05ab3d35b087a5eb442d5c10044c861e8d8fd173c58f9050725c14",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".github/workflows/publish-core-package.yml",
+      "classification": "LOCAL",
+      "sha256": "32280f96a13d18ed20ce6fe904af1579cdcd0ed7ba2d6bb7b896d2114724be06"
+    },
+    {
+      "path": ".gitignore",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "44473fd2b1daeaf861927b85654f921bb9b87e2799f2bfc1ca9c64e3a1ab40f8",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".mcp.json",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "d8e397af03b5b032f21d0aa967086f0c78b33c87b76f2e9898ae0a144df7de02",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".opencode/package.json",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "5c9a30456576bfed97d6c33daab9cbd167dd29ee7ca91f4c9ad40c3b31781e8d",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".opencode/skills/.gitkeep",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": ".opencode/skills/README.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "9fc416582f5d5147fcc27067e9c5ba222a14da26fd20e4f6f6664cee0391c828",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "AGENTS.md",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "27c5aed64b9fce882b61d1485e00408e2f5c97803d4f4cffc9e2c19e9eabeb40",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "CLAUDE.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "CONSTITUTION.md",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "6b886347696d27dc5cfff36c84520e6a1e2d03461aabdc64ae7b6a4a4fbfb3b3",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "contracts/core-api-v0.1.0.json",
+      "classification": "LOCAL",
+      "sha256": "1b4a5243d933a0039275362e5e32914bc026257ec334ca57570e1a104529038d"
+    },
+    {
+      "path": "contracts/core-api-v0.1.0.manifest.json",
+      "classification": "LOCAL",
+      "sha256": "15bd0156ad4a6ab41627c8cae247dae432ee13fdf640536c038d0c7d88e6fab8"
+    },
+    {
+      "path": "contracts/core-api-v0.2.0.json",
+      "classification": "LOCAL",
+      "sha256": "1205d2211475c259f9450e128781ab4000421a337db8e2d29e7594b786146d17"
+    },
+    {
+      "path": "contracts/core-api-v0.2.0.manifest.json",
+      "classification": "LOCAL",
+      "sha256": "b349214e844204f46e443c3c016a4c6729f82343a4d654946bc9d49443c0821f"
+    },
+    {
+      "path": "contracts/core-api-v0.3.0.manifest.json",
+      "classification": "LOCAL",
+      "sha256": "a70caaef24f1d1165eececd9a061b20d5ba3185ff2bfb6c5bee86289d2775974"
+    },
+    {
+      "path": "contracts/core-http-v0.2.0.openapi.json",
+      "classification": "LOCAL",
+      "sha256": "ed9151bac746a0c296fcf6bbf39a976b14e40090926a0c7272421d54e8e70ea3"
+    },
+    {
+      "path": "docs/index.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "61edf802276677ee5f43ff3303da84410a5f926ef672dcddd87e8b419d12b1fc",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/producto/contexto-producto.md",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "b1f18775b5641ea23fbf95a7e65d1d3e44f84216c0ed6193fb4877a262211b19",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/tecnica/adopcion-proyecto-existente.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "582eff103ba91c1237ae7a779435a11d395d9a547d4611a74eb0cf0f6f1e908f",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1"
+      ]
+    },
+    {
+      "path": "docs/tecnica/agentic-evals.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "7eb23f3cd717a8731128e9f30af37fb5ff3c4e6045b9d4023a4b4159e55694fe",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/tecnica/arquitectura-roles.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "be556e1b2bab426c0ce3896aae3bd33a46b79684b228d4031dded702c88b9bed",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/tecnica/arquitectura.md",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "644424bfb9d9b9d25266dddc27ed227071412e6b94796d3d874b57e33274c8a3",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/tecnica/assess-motor-adaptativo.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "254d39229df2a7a42df7cbb5ee788456aa410b8cbf3acfc81bdda86ff79bd6f2",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/tecnica/auditoria-release-v2.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "a080e4aee0ce5d98994366c3e7581be3ed6cdba4de62924b0e9ed1fa6deb7fa3",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/tecnica/ci-wiring-product-tests.md",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "4770a8c189cb9608f5bdab88af3052108274e1e3af8e5e2cf07df9dc36f246ec",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/tecnica/circuito-agentico.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "402cfd302c0392ad0aec6f5543cbd02d3148aad75e3601a95978969d039860fe",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/tecnica/code-reviewer-y-sdd.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "843e42186979b9824abd308f4e67c5853e03e5a21287ee585a4a0790176a83a0",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/tecnica/convergence.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "2213c420b4ca8e09481995bc8d9e4da6391f618a90df18c41e86ef9d9873722a",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/tecnica/core-contract-v010.md",
+      "classification": "LOCAL",
+      "sha256": "24091ffd0e19e8c451f91d516f8f1ae0758132d378ba5c69068d2baa96620c3f"
+    },
+    {
+      "path": "docs/tecnica/core-platform-v010.md",
+      "classification": "LOCAL",
+      "sha256": "69e2118a10554355eb237fa4e88a79e3a36945993be20cb4205a080b0ce6480e"
+    },
+    {
+      "path": "docs/tecnica/core03-tenant-readiness.md",
+      "classification": "LOCAL",
+      "sha256": "e687dbfdc423f7c9c17099b3b25876cd40630575bad2f2cd89cac8afd849e2b8"
+    },
+    {
+      "path": "docs/tecnica/criterios-evaluacion-repo.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "7cf35e16876e04c9efbc83e98cb59a42b0070e0215c531a9eb878851d0bd2d6f",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/tecnica/evidencias-adaptativas.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "af11fb38cf3a9634cec84c3afde8eb366322213e691f275f31cde17333384a67",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/tecnica/fuente-unica-router-modelos.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "0677c104b4d66d01c18db0c00131e2335eae3d82082fcfede31678805bcbe425",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/tecnica/fundamentos-v2.md",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "37f92dabe33b87b2a0865797a2830fb48faab3ac7993604cc29ab839a4170a24",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/tecnica/index.md",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "ec653318ef11b63537daa647a2373a8c5a642dab9b38e4ca7f09e4947f042b4c",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/tecnica/integridad-post-hitl-y-ready-for-pr.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "4161141f61373e27b345a3804a62e14ca8fcc7d2a78065a8a57e4479142e568a",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/tecnica/mcp-herramientas.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "e9a95829562e46168288c80f7f43933066f65b7248c350ebadcd3026e94c6d15",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/tecnica/operational-readiness-docs.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "a207ad0c011568b9f2e823f71dd6015944c3018169b9ef6f1ad938df9b82612d",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/tecnica/package-version-consistency.md",
+      "classification": "LOCAL",
+      "sha256": "ad3cf3d03691a568fec9b23f9d4701746cc329563bf8612a7298eb0f9705af56"
+    },
+    {
+      "path": "docs/tecnica/person-identity-linking.md",
+      "classification": "LOCAL",
+      "sha256": "31e5f4d71a3df053522e92df7f5ea62ea08f4130f0afc69d0b4bd667931c657e"
+    },
+    {
+      "path": "docs/tecnica/post-hitl-versioned-evidence.md",
+      "classification": "LOCAL",
+      "sha256": "5756cd676fa02d7e5ecd0143a1360a6fb7da34e841485ed34670475920e630e7"
+    },
+    {
+      "path": "docs/tecnica/post-merge-close-dispatch.md",
+      "classification": "LOCAL",
+      "sha256": "8e64ed1d9970c5b78d2d034afd016a0b2f8240c35a000a3fb28e496fac382ee4"
+    },
+    {
+      "path": "docs/tecnica/release-evidence.md",
+      "classification": "LOCAL",
+      "sha256": "e1cf43f030a810b82a47658f554dbfa24ab2d6a98f5611416b79015c56828195"
+    },
+    {
+      "path": "docs/tecnica/release-history-manifest.md",
+      "classification": "LOCAL",
+      "sha256": "41ff2fe4f526badc6476a19de8ee40ee842514a42c2f96a0ec22b959b4f96883"
+    },
+    {
+      "path": "docs/tecnica/release-readiness-current-roadmap.md",
+      "classification": "LOCAL",
+      "sha256": "5630283cf5cd8ebbbd849c0e4c86d7c3c7f55ba86c61f5028943032e8f911371"
+    },
+    {
+      "path": "docs/tecnica/release-v021-final-readiness.md",
+      "classification": "LOCAL",
+      "sha256": "c19c0868a3ca3eeebd7acf68d8cd91cb43e81043987020b4f0b7692a4de9ef6d"
+    },
+    {
+      "path": "docs/tecnica/releases-evolucion.md",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "a468c0afda565dbb3307b58fa4ab11759f6d719e2f1a68eb087ff7cea4c552af",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/tecnica/routing-dinamico.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "c7c66574057de32ef5e7549b44694a9714dc4778842f55def29f7c36ddca9f05",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/tecnica/sdd-adaptativo.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "8a3f73f10f6fdd2cb088b2cebe17b8d609de5b41c3e6f79a890e5778969f7a7c",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/tecnica/seguridad-profesional.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "7ed672c00b86b19cb82960dc318737c750d640c1a3c201727318254c59712590",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/tecnica/status-observabilidad.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "3e3a0a006d21493784b5e89e1e1302a3bdf4b6f5ff88534fccd7ae10f91e2410",
+      "matchedTags": [
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4"
+      ]
+    },
+    {
+      "path": "docs/tecnica/supabase-gi-dev-validation.md",
+      "classification": "LOCAL",
+      "sha256": "4c6c5d7b0b4897b5c2093b4a044c78cea2f537f763c393f873b7f57486af4cee"
+    },
+    {
+      "path": "docs/tecnica/supply-chain-cicd.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "d6c8bc3764415534820c56ce881398b339a7c472dc714a175e2fd4e67953c069",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/tecnica/tests-ci-audit.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "b7a42b506c508840f248f0f4fd5c98eb1a52628323e88e650ef35740fe01e106",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/tecnica/unidades-paralelizacion.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "660d2944caf80f2a7e09a7ee243a88e35d910ee3f928bfbb76b5475c4e0bbad9",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/tecnica/validacion-integral-v2.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "2990bb07389ab93d0aec1cb1f64b90899279ad2ff507094958611d301d059b88",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/usuario/adopcion-proyecto-existente.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "e4b7f744fa76aa174e9382b83223632a38acaf08afc349be5991c79c301eee87",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1"
+      ]
+    },
+    {
+      "path": "docs/usuario/agentic-evals.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "38ea0fe45c71aabe15a52c2da7aa22b04b84110a580826187fc6df18a3997be1",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/usuario/arquitectura-roles.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "0a1577b4dc0e676011e564d45b39a0662d4564650a22acd7469f957d1ac1680c",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/usuario/assess-motor-adaptativo.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "fad429db4e2bc8dd5be9dc25833671396f4911211d9d7f93029fbeea5aa3633d",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/usuario/auditoria-release-v2.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "11559acb88641d604e5cd9c33d69a339027d3e9d8907abf2f9ffe0e6433da83c",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/usuario/ci-wiring-product-tests.md",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "1cbdadff028900045384372382f37106e77e163d9ccb361a0719156e1707e483",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/usuario/circuito-agentico.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "cf83ac0bd815fe485a08d5890ca7991a025d9bc5df3546df48e6fec9d00b8f38",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/usuario/code-reviewer-y-sdd.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "d9facb32c7d84bf870077778b9fcf6ded4c6c38490deecb66d1e3d475bac1edd",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/usuario/convergence.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "074f6c1e958945a93bf04749648880e5fffcd4e3914e84e74a86845b8219e353",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/usuario/core-platform-v010.md",
+      "classification": "LOCAL",
+      "sha256": "88c6e683eba0a22b5b65df6e3ba9b005db0dda9e95db194a7b32b5dfc9b55638"
+    },
+    {
+      "path": "docs/usuario/core03-tenant-integration.md",
+      "classification": "LOCAL",
+      "sha256": "71a15978fd481a5852937bd85f7a227a477f9206da92c265dc606d3af8167830"
+    },
+    {
+      "path": "docs/usuario/core03-tenant-readiness.md",
+      "classification": "LOCAL",
+      "sha256": "f47c8a8ddec6862eccec51bc55c33793304bbfc1816eb28b898aa70b9ec9a9dd"
+    },
+    {
+      "path": "docs/usuario/evidencias-adaptativas.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "7623202aa062854490bd4338fd8b819f9198ff804b69f6de62d219e2d1f91765",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/usuario/fuente-unica-router-modelos.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "6e01958504e16f6621d5c14a10b956c1c1810fabf912d4b7783baaf245840d8f",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/usuario/index.md",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "6d0cd3bc70bd81f520c392a0c48030bc7c9b96ace4a6efa2ea3500c5c47c9869",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/usuario/integridad-post-hitl-y-ready-for-pr.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "34956f10775a732ecc08b8bc8ed9e8871d13b99d3c8e2ba78b6dfbfdf6df2097",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/usuario/mcp-herramientas.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "4998f385bebcb176247921198e3a6130b14ef1436a2b11b04e9782c64440828e",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/usuario/operational-readiness-docs.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "37f7e2b034fc2e27daf9707fcc4cf8454f231435bf15a4bca95f4df98d07b849",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/usuario/package-version-consistency.md",
+      "classification": "LOCAL",
+      "sha256": "252f9f470d100a83388ac413cffcc5e541f4c7b640d706a8bf9fa40fa4077e96"
+    },
+    {
+      "path": "docs/usuario/person-identity-linking.md",
+      "classification": "LOCAL",
+      "sha256": "efcc73024724b6cffcbf7348c16691b9e5981593096dad623cf3438f95a92123"
+    },
+    {
+      "path": "docs/usuario/post-hitl-versioned-evidence.md",
+      "classification": "LOCAL",
+      "sha256": "dff780b041183c927f132a88900f5fd8b85ca27414846ce63a4a4199254ffbfa"
+    },
+    {
+      "path": "docs/usuario/post-merge-close-dispatch.md",
+      "classification": "LOCAL",
+      "sha256": "479dcf797cc5da2d60fa563d915a48576dfe54f9403e21ce9949ff6e27f1c774"
+    },
+    {
+      "path": "docs/usuario/release-evidence.md",
+      "classification": "LOCAL",
+      "sha256": "26d3b9f108d62e1c7460e87021567c47fc0f31cda6fcaac11b603c5f75a5bda8"
+    },
+    {
+      "path": "docs/usuario/release-history-manifest.md",
+      "classification": "LOCAL",
+      "sha256": "86710254312376defa128f94d018ca93a468bd15521b04865b4ce9a4615dca06"
+    },
+    {
+      "path": "docs/usuario/release-readiness-current-roadmap.md",
+      "classification": "LOCAL",
+      "sha256": "870b611ae367b8ec44dd83ca6a248650ffecc0eb464956f88580a525f50650bd"
+    },
+    {
+      "path": "docs/usuario/releases-evolucion.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "27137a300b53c3e709382c7c4066e7d1947e9dd8634e0fe38d9dd378f2602fd8",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/usuario/routing-dinamico.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "93895b0eb124b61f940874b0cc96ec82ab039dac63a9a2c4aed86a3f6feb5f72",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/usuario/sdd-adaptativo.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "cac426f599588aaf745176b55b7d2d7207654dfee688b6fe7311aaa88706d653",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/usuario/seguridad-profesional.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "2b323c592f7702ed825a3b007227447553bace4c1789f8fecfc859314038b5da",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/usuario/status-observabilidad.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "af7d6bbbb923961b4287e681cd9c97d61d2f404d5f35300407fa7b666870d213",
+      "matchedTags": [
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4"
+      ]
+    },
+    {
+      "path": "docs/usuario/supabase-gi-dev-validation.md",
+      "classification": "LOCAL",
+      "sha256": "3393413fc0c2bf7fc1310c62291c5a2ed0625c2bd3350d9a82c6d1caff9dabd0"
+    },
+    {
+      "path": "docs/usuario/supply-chain-cicd.md",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "5fb5ddd70bd4e115f6a67539e677324a4366f5b7f8195e9578e9234a5a2bb03f",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/usuario/tests-ci-audit.md",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "8038ef76f5e018f95a22b1a805178f06fad3889c119aa1cbf1fe2c14ef91fa99",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/usuario/unidades-paralelizacion.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "b0c0f24c01e5ba267df914962cc9576c28412a459ebcc5c9db71606c38de1710",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "docs/usuario/validacion-integral-v2.md",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "9e73beeb28b17570386453a5ae527456cf4e91adace83dcee046f509f11857ac",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "evals/scenarios.json",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "176137e8f4dbd237651c904693a4d08799c25f71316c5514ebb7356257a3c5d5",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "examples/core_integration.py",
+      "classification": "LOCAL",
+      "sha256": "610c4b35c1cabb7c1fe4c1112524dd3e6154aac3313630be7f17a03c90938223"
+    },
+    {
+      "path": "gi_platform_core/adapters.py",
+      "classification": "LOCAL",
+      "sha256": "fb80771c7f312bd7999c89389a3a5f2f3558b1ed5baf1f2b1c51a9ef0e0780bd"
+    },
+    {
+      "path": "gi_platform_core/application.py",
+      "classification": "LOCAL",
+      "sha256": "e1292e60bc69892c03b6421a86572cab34b53d8fee130ef4f42b80256938c546"
+    },
+    {
+      "path": "gi_platform_core/authorization.py",
+      "classification": "LOCAL",
+      "sha256": "6510edb89c5f264fc96fa502473f5566f76e7451ac8fb4b59c5e718f19cf9bf1"
+    },
+    {
+      "path": "gi_platform_core/contracts.py",
+      "classification": "LOCAL",
+      "sha256": "b972b9152a91372dab12f1605e7eddf1367ff6001e7074a77c590be44aa53df6"
+    },
+    {
+      "path": "gi_platform_core/domain.py",
+      "classification": "LOCAL",
+      "sha256": "e5a5fe40aec5f5effdc9cf24dd4604e672b2bbe2e44b7498d5e14ec00bc0ebe2"
+    },
+    {
+      "path": "gi_platform_core/errors.py",
+      "classification": "LOCAL",
+      "sha256": "feefdc6013f2698957a3215178d56f7235267f42548d18d4e3485f281d9d3eb6"
+    },
+    {
+      "path": "gi_platform_core/http.py",
+      "classification": "LOCAL",
+      "sha256": "47d2d6e7acd52d69b0995bd85888387c76e234656c43fb01a30243992d186578"
+    },
+    {
+      "path": "gi_platform_core/http_server.py",
+      "classification": "LOCAL",
+      "sha256": "6bbcf01f7c479c9729aa57d2c0ae2e5ffbd5d19f0329d9a7d58756e46fd0fde5"
+    },
+    {
+      "path": "gi_platform_core/ports.py",
+      "classification": "LOCAL",
+      "sha256": "1e490e0e5bed674dc7de0e20a2f2c1545b4ce407abc3ace8e58b01a70565c07f"
+    },
+    {
+      "path": "gi_platform_core/supabase_adapter.py",
+      "classification": "LOCAL",
+      "sha256": "969912be647ee9a0c3fd6631371068999fca13b6cfdeb4eaf57a4c1427f3db72"
+    },
+    {
+      "path": "gi_platform_core/__init__.py",
+      "classification": "LOCAL",
+      "sha256": "3763d46f12d05758515bd317b06b55cc172b06649bd2771a9a6a77224f4e70ef"
+    },
+    {
+      "path": "GOAL.md",
+      "classification": "LOCAL",
+      "sha256": "dbffb69f9d78d67ab99ceebc65e92df73833c75cffc84c7d14ed0a9a9c994597"
+    },
+    {
+      "path": "mkdocs.yml",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "ba78e51675aeb4c1578847b947008763eb842f50b343496ceda24e019d1e00e4",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "opencode.json",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "7e2cd938af1688eaf760dd6570bd8c17d85929288ed6b94f11d5a91ccb2a06e3",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "pyproject.toml",
+      "classification": "LOCAL",
+      "sha256": "0b0ec62ba8eecfa781928874d7fef7eb855f651313719c707f6bd556ec00575d"
+    },
+    {
+      "path": "pytest.ini",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "37b7898dd0df68d7bacac4726b4836010200403a1abe9542fe229caebe39b8a3",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "README.md",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "2eabde9767dc18fe758e90203cec58a0c4e43fe2b5fe0b1bf787735b535eb31f",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "requirements-dev.txt",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "70f4f0276439ad81a40431705ae7a2368ff0ebfc0e76c957cb8f25ba9fb47c11",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "requirements-docs.txt",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "41a5d09fb506c78f92e94224699bcae39061df07c5a86bdc953bbe8e02d44baf",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "ROADMAP.md",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "f7c4dbbc38ecbcad14393d52f1d519bbc7413bb4fe2938b78c7e761a20750b8f",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "runs/.gitkeep",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "runs/README.md",
+      "classification": "LOCAL",
+      "sha256": "4e9ce9c108fa419e9251a7fb3cded8cd211bf6340f004b76d061bf1e161110ee"
+    },
+    {
+      "path": "runs/v0.1.0/01-core-platform-v010/audit-1.md",
+      "classification": "LOCAL",
+      "sha256": "2963d5733848c354c690cc024ed95e4c5f82e6f5928df3e0d0dfee10d60c1187"
+    },
+    {
+      "path": "runs/v0.1.0/01-core-platform-v010/code-review-1.md",
+      "classification": "LOCAL",
+      "sha256": "c2b8267c0a584814279c9af6de5c8d72aaa3b45a3aecaf0238c89cc33efeac42"
+    },
+    {
+      "path": "runs/v0.1.0/01-core-platform-v010/decision.md",
+      "classification": "LOCAL",
+      "sha256": "04bee738f2f168888ed69b2160a155f2947dc7bd58c5dfe648911e3bfaa2b87e"
+    },
+    {
+      "path": "runs/v0.1.0/01-core-platform-v010/plan.md",
+      "classification": "LOCAL",
+      "sha256": "585afb4c27c4b200c263b3b65b3d903cd5a7d3f10690a36d432d03f9e761e9e3"
+    },
+    {
+      "path": "runs/v0.1.0/01-core-platform-v010/spec.md",
+      "classification": "LOCAL",
+      "sha256": "7a7fd3525939a778d9900793c91e557cf6fae5ee43e8c70ed2f9393519f55723"
+    },
+    {
+      "path": "runs/v0.1.0/01-core-platform-v010/SUMMARY.md",
+      "classification": "LOCAL",
+      "sha256": "c8590ab740ff8db1a1a20ad2db1d2e95e52b83b1ac9ae9c05b0d09a7c7b14582"
+    },
+    {
+      "path": "runs/v0.1.0/01-core-platform-v010/tasks.md",
+      "classification": "LOCAL",
+      "sha256": "f9d97553e7c12447dcad06b9b529bf0742a624e752d4fa06abd0d5ff42e09d60"
+    },
+    {
+      "path": "runs/v0.1.0/01-core-platform-v010/test-report-1.md",
+      "classification": "LOCAL",
+      "sha256": "85117619edfc2e3898b1b5f0a70216859cc00bfd73670260f6272148ce0e6611"
+    },
+    {
+      "path": "runs/v0.1.0/02-supabase-gi-dev-validation/assess.json",
+      "classification": "LOCAL",
+      "sha256": "9edcd70cbffdcd87de82197d1dcc1d85ad7ea92b5ca070f7b487fdf4ff877c0b"
+    },
+    {
+      "path": "runs/v0.1.0/02-supabase-gi-dev-validation/audit-1.md",
+      "classification": "LOCAL",
+      "sha256": "2f5cb0c29e15e8082e7ea3ca8897e58923085b2986f71546cd74112bbb318498"
+    },
+    {
+      "path": "runs/v0.1.0/02-supabase-gi-dev-validation/code-review-1.md",
+      "classification": "LOCAL",
+      "sha256": "9a26fe3cf37ae4e4534c91e1e7f73c1d5ab8837e235f3d0e185bacab352acfc2"
+    },
+    {
+      "path": "runs/v0.1.0/02-supabase-gi-dev-validation/convergence-input.json",
+      "classification": "LOCAL",
+      "sha256": "009d4383e9651e4ab1289f9d40c46abea1e69e08df5eb7e1730aeb8abe070537"
+    },
+    {
+      "path": "runs/v0.1.0/02-supabase-gi-dev-validation/convergence.json",
+      "classification": "LOCAL",
+      "sha256": "f6a1ade3511e4d143adaa077acce5b3a9a73f44b8858580616ea19d3c89678ed"
+    },
+    {
+      "path": "runs/v0.1.0/02-supabase-gi-dev-validation/decision.md",
+      "classification": "LOCAL",
+      "sha256": "428283042735d1b019923b2bb0fec3fbe54e3efb5a2ad2d5a5550a6bd03ef8ae"
+    },
+    {
+      "path": "runs/v0.1.0/02-supabase-gi-dev-validation/human-authorization.md",
+      "classification": "LOCAL",
+      "sha256": "548b2a153f6c90016219ac120aaaf01720a6b70d83dd6ddc3db7de6c16f6db30"
+    },
+    {
+      "path": "runs/v0.1.0/02-supabase-gi-dev-validation/independent-review.md",
+      "classification": "LOCAL",
+      "sha256": "b5e34d32db8bfaac125e0330aa09ceccdaf2da54f2142a944983668472938974"
+    },
+    {
+      "path": "runs/v0.1.0/02-supabase-gi-dev-validation/integrity-evidence.md",
+      "classification": "LOCAL",
+      "sha256": "66b9e752e8ce2ee2873a85c81c2d1d1c90b2024ca6ae5e3e251a8b084904adc9"
+    },
+    {
+      "path": "runs/v0.1.0/02-supabase-gi-dev-validation/plan.md",
+      "classification": "LOCAL",
+      "sha256": "be4a03ee983ddbb5c147054cc8d13e9c01170314b0b6e59a8748e0b576873f59"
+    },
+    {
+      "path": "runs/v0.1.0/02-supabase-gi-dev-validation/sdd-evidence.json",
+      "classification": "LOCAL",
+      "sha256": "2d247c93a65d8059da45ea1b5dc01797a5c91416217f3b876078240b33d76278"
+    },
+    {
+      "path": "runs/v0.1.0/02-supabase-gi-dev-validation/sdd.json",
+      "classification": "LOCAL",
+      "sha256": "96b3019f989c7475e49d9589fb578159cd8f014aed2266184994d7431ca04931"
+    },
+    {
+      "path": "runs/v0.1.0/02-supabase-gi-dev-validation/spec.md",
+      "classification": "LOCAL",
+      "sha256": "6b0f5c2736727393d251666b497a55b8c06f8f156779751f12bc6c0b642f2e30"
+    },
+    {
+      "path": "runs/v0.1.0/02-supabase-gi-dev-validation/SUMMARY.md",
+      "classification": "LOCAL",
+      "sha256": "520ec0687aa69c670ec9917a88b4e1736dee327b768f350a6231934b59dba7f5"
+    },
+    {
+      "path": "runs/v0.1.0/02-supabase-gi-dev-validation/tasks.md",
+      "classification": "LOCAL",
+      "sha256": "6607aa7b7dbac0764e8f46d9af27da21883204d6e68f37515fb5c7682e932ced"
+    },
+    {
+      "path": "runs/v0.1.0/02-supabase-gi-dev-validation/test-report-1.md",
+      "classification": "LOCAL",
+      "sha256": "18fac7c2c1a5a51cf3d5d3b5305ecedf76714d911e0ccf11c7c5d82067f56b3c"
+    },
+    {
+      "path": "runs/v0.1.0/02-supabase-gi-dev-validation/validation-evidence.md",
+      "classification": "LOCAL",
+      "sha256": "0051d894d26988eb14cc164604d8093424ec835130b5adbf42bdb710ce34d09f"
+    },
+    {
+      "path": "runs/v0.1.0/03-post-hitl-versioned-evidence/assess.jsonl",
+      "classification": "LOCAL",
+      "sha256": "eb78d0f3274fdef91f2fe4130c23c121631b9af4bb67f578adc67015e0e4c176"
+    },
+    {
+      "path": "runs/v0.1.0/03-post-hitl-versioned-evidence/audit-1.md",
+      "classification": "LOCAL",
+      "sha256": "e8b32a2b5912942fc693aaff32c8414c663d43d143b63328de4c16c12d2de08d"
+    },
+    {
+      "path": "runs/v0.1.0/03-post-hitl-versioned-evidence/code-review-1.md",
+      "classification": "LOCAL",
+      "sha256": "63164b140a679878aa164f4b9ac6885ba55f233c6b7f1370a0c637f2268a5b38"
+    },
+    {
+      "path": "runs/v0.1.0/03-post-hitl-versioned-evidence/decision.md",
+      "classification": "LOCAL",
+      "sha256": "2d494d8a3919560562a14eda3fafacb86c377a683730425c9790ffa02f04e4a6"
+    },
+    {
+      "path": "runs/v0.1.0/03-post-hitl-versioned-evidence/plan.md",
+      "classification": "LOCAL",
+      "sha256": "658f3da53f8ba8ed35a7d332b22dfa68435b1198fc4bab14998fecd18d95b559"
+    },
+    {
+      "path": "runs/v0.1.0/03-post-hitl-versioned-evidence/sdd-evidence.jsonl",
+      "classification": "LOCAL",
+      "sha256": "e9024111bf96f57541be6cbcec31d9d0a50cfdfdf2180fa193c578ca24894380"
+    },
+    {
+      "path": "runs/v0.1.0/03-post-hitl-versioned-evidence/sdd.json",
+      "classification": "LOCAL",
+      "sha256": "e9024111bf96f57541be6cbcec31d9d0a50cfdfdf2180fa193c578ca24894380"
+    },
+    {
+      "path": "runs/v0.1.0/03-post-hitl-versioned-evidence/spec.md",
+      "classification": "LOCAL",
+      "sha256": "2e32e357cbfc40fa68b181c648d0cc77ceddc66dc9a426fa97bfee393a7fd3c8"
+    },
+    {
+      "path": "runs/v0.1.0/03-post-hitl-versioned-evidence/SUMMARY.md",
+      "classification": "LOCAL",
+      "sha256": "5f76ef7ef2ac859262c363143395cb0074b43ceb77c75e351402d585f328d243"
+    },
+    {
+      "path": "runs/v0.1.0/03-post-hitl-versioned-evidence/tasks.md",
+      "classification": "LOCAL",
+      "sha256": "7b9ced147fef8530c178ce0d67d8cfb8f8b7060330f36cf6fcda792bd2934622"
+    },
+    {
+      "path": "runs/v0.1.0/03-post-hitl-versioned-evidence/test-report-1.md",
+      "classification": "LOCAL",
+      "sha256": "a4d8fa514de7346a3c4deba59351b9b93994fc9eed92808df96e66719c6a16f8"
+    },
+    {
+      "path": "runs/v0.1.0/04-post-merge-close-dispatch/assess.jsonl",
+      "classification": "LOCAL",
+      "sha256": "67bf55debd660020bcc228ecd58ab7ba5e4ef0beb1b1efd233947720eca1319f"
+    },
+    {
+      "path": "runs/v0.1.0/04-post-merge-close-dispatch/audit-1.md",
+      "classification": "LOCAL",
+      "sha256": "b9d250493e34e548a7497fbed9e155c42a0245bb98bb2a46fb36a300d9735beb"
+    },
+    {
+      "path": "runs/v0.1.0/04-post-merge-close-dispatch/code-review-1.md",
+      "classification": "LOCAL",
+      "sha256": "0dd895bd96946a8131917d18c1173f6c44fb599c32da1274d745d44cd86b3d7a"
+    },
+    {
+      "path": "runs/v0.1.0/04-post-merge-close-dispatch/decision.md",
+      "classification": "LOCAL",
+      "sha256": "19c5ef04e69b997970144ec64d3c5736287efd96b9e83e781f6e9a229956374e"
+    },
+    {
+      "path": "runs/v0.1.0/04-post-merge-close-dispatch/human-authorization.md",
+      "classification": "LOCAL",
+      "sha256": "a0ead95f55545e2e12a016117315c65905ee76e8b2371e1a4867b33c58554feb"
+    },
+    {
+      "path": "runs/v0.1.0/04-post-merge-close-dispatch/independent-review.md",
+      "classification": "LOCAL",
+      "sha256": "fffc17f87fe8333060c92d158d9ca4a95129a3fd30c03c90b66c33ab808ecc14"
+    },
+    {
+      "path": "runs/v0.1.0/04-post-merge-close-dispatch/integrity-evidence.md",
+      "classification": "LOCAL",
+      "sha256": "89b0bda3734597b639d33502bdd6fc3434f121cd3d5c50f5f7ba00c7383f9d76"
+    },
+    {
+      "path": "runs/v0.1.0/04-post-merge-close-dispatch/plan.md",
+      "classification": "LOCAL",
+      "sha256": "045b8971c094f1748e9c43fba24241f183a26f686a928079753b2409e06565e0"
+    },
+    {
+      "path": "runs/v0.1.0/04-post-merge-close-dispatch/sdd-evidence.jsonl",
+      "classification": "LOCAL",
+      "sha256": "9d8f3d5c4fbba2a6540f57f2c4115d5a38b6aab1055e509d0d4b9a63676fc018"
+    },
+    {
+      "path": "runs/v0.1.0/04-post-merge-close-dispatch/sdd.json",
+      "classification": "LOCAL",
+      "sha256": "9d8f3d5c4fbba2a6540f57f2c4115d5a38b6aab1055e509d0d4b9a63676fc018"
+    },
+    {
+      "path": "runs/v0.1.0/04-post-merge-close-dispatch/spec.md",
+      "classification": "LOCAL",
+      "sha256": "36da2172853d05a8e6c4684d4fd61051f49e9c540a4f598c0fabb9b457fd3806"
+    },
+    {
+      "path": "runs/v0.1.0/04-post-merge-close-dispatch/SUMMARY.md",
+      "classification": "LOCAL",
+      "sha256": "b3794c2a892d3a07bd0c17e1b45c07e1312749ebedf4b80a93abfbc5a9092ff5"
+    },
+    {
+      "path": "runs/v0.1.0/04-post-merge-close-dispatch/tasks.md",
+      "classification": "LOCAL",
+      "sha256": "192434d998760080b5602a94f87c64002bdde863ca57e9315a65fccfd9de9607"
+    },
+    {
+      "path": "runs/v0.1.0/04-post-merge-close-dispatch/test-report-1.md",
+      "classification": "LOCAL",
+      "sha256": "1c9537588decc53c84b70df3883cbd915087100240ee9f0544f83d95d0709bf2"
+    },
+    {
+      "path": "runs/v0.2.0/05-person-identity-linking/assess.jsonl",
+      "classification": "LOCAL",
+      "sha256": "fbe27bc3f94a2979c28f82bc05896153ec0a5947a2cfd9e0d63d368160d99129"
+    },
+    {
+      "path": "runs/v0.2.0/05-person-identity-linking/audit-1.md",
+      "classification": "LOCAL",
+      "sha256": "27680f1654564d1efa0220ab76862814b74738265d8f9d8f6a70c63df8fa3551"
+    },
+    {
+      "path": "runs/v0.2.0/05-person-identity-linking/code-review-1.md",
+      "classification": "LOCAL",
+      "sha256": "425f74c259f77875153ac27086bb3c0034d2f7e1b5831bcb7b5555c13632ff0c"
+    },
+    {
+      "path": "runs/v0.2.0/05-person-identity-linking/decision.md",
+      "classification": "LOCAL",
+      "sha256": "fd1c57a9c56612a3ee868e2a59c7753989c218370bb54f4daff8d803b7c663ee"
+    },
+    {
+      "path": "runs/v0.2.0/05-person-identity-linking/human-authorization.md",
+      "classification": "LOCAL",
+      "sha256": "167eef054c8107c724ead61d9954ec15dc4885922dc8e33501a3d23cfdb53ddc"
+    },
+    {
+      "path": "runs/v0.2.0/05-person-identity-linking/independent-review.md",
+      "classification": "LOCAL",
+      "sha256": "2b216d2da57a2ccabaeaa0dd30a0fd1b81e17cb558d41de77ebfdf11fb305bba"
+    },
+    {
+      "path": "runs/v0.2.0/05-person-identity-linking/integrity-evidence.md",
+      "classification": "LOCAL",
+      "sha256": "032c9f77d2efbb095e44cd0be3a86155066a1f27590eb39ef0f9f4927c700a82"
+    },
+    {
+      "path": "runs/v0.2.0/05-person-identity-linking/plan.md",
+      "classification": "LOCAL",
+      "sha256": "01dd6c47291bd94f0d61824f82199cb4697e4e2f6529d08d6a33422a5d2f0b43"
+    },
+    {
+      "path": "runs/v0.2.0/05-person-identity-linking/sdd-evidence.jsonl",
+      "classification": "LOCAL",
+      "sha256": "ca0849843cb964f028ca91c687831f4b0ab9b59c4d290b3edd53e027ee5e9cc9"
+    },
+    {
+      "path": "runs/v0.2.0/05-person-identity-linking/sdd.json",
+      "classification": "LOCAL",
+      "sha256": "ca0849843cb964f028ca91c687831f4b0ab9b59c4d290b3edd53e027ee5e9cc9"
+    },
+    {
+      "path": "runs/v0.2.0/05-person-identity-linking/spec.md",
+      "classification": "LOCAL",
+      "sha256": "e0cd4f23df1a3521c49ae64ca1710dbac5c1c3b5d1a3b91837cf4cd9659c8a44"
+    },
+    {
+      "path": "runs/v0.2.0/05-person-identity-linking/SUMMARY.md",
+      "classification": "LOCAL",
+      "sha256": "5d24e8807feb769012161ba1e173eb0d4b45c69f33bea0e371d059606f06fa64"
+    },
+    {
+      "path": "runs/v0.2.0/05-person-identity-linking/tasks.md",
+      "classification": "LOCAL",
+      "sha256": "8b841fbb593c9beb0b103c654c6a81ecb498ecaa7d7a99c673a877d59fda2e80"
+    },
+    {
+      "path": "runs/v0.2.0/05-person-identity-linking/test-report-1.md",
+      "classification": "LOCAL",
+      "sha256": "176c701223b448f2074ebc31bad87e51d8928b82ebcaa6798ed82621bbad1a59"
+    },
+    {
+      "path": "runs/v0.2.1/06-release-readiness-current-roadmap/assess.jsonl",
+      "classification": "LOCAL",
+      "sha256": "924bca93f60efc0f2286165c2aeded09b9478dc115d4c5ceae97a3345b966e78"
+    },
+    {
+      "path": "runs/v0.2.1/06-release-readiness-current-roadmap/audit-1.md",
+      "classification": "LOCAL",
+      "sha256": "09bcd079302d30031225d28e1d1347096d7b44a8b524ab53dda9a22cc79b6a01"
+    },
+    {
+      "path": "runs/v0.2.1/06-release-readiness-current-roadmap/code-review-1.md",
+      "classification": "LOCAL",
+      "sha256": "e3a5a4f013a203245f0beedbfe3ed2263e92c5a5d83318619560bc5e5081c2ca"
+    },
+    {
+      "path": "runs/v0.2.1/06-release-readiness-current-roadmap/decision.md",
+      "classification": "LOCAL",
+      "sha256": "a7fb3da9834bf6c71febc2ed994175ee020674350ec0ee573155ce744928d6c3"
+    },
+    {
+      "path": "runs/v0.2.1/06-release-readiness-current-roadmap/human-authorization.md",
+      "classification": "LOCAL",
+      "sha256": "8a3ac329fe4f74af1b1fb6be89519228fc2dfa587d679d30dbdaab07f1ccc197"
+    },
+    {
+      "path": "runs/v0.2.1/06-release-readiness-current-roadmap/independent-review.md",
+      "classification": "LOCAL",
+      "sha256": "68bebe73f42ee56cecd169033210e9d0038596c86bb12e7a229fc89dcab46132"
+    },
+    {
+      "path": "runs/v0.2.1/06-release-readiness-current-roadmap/integrity-evidence.md",
+      "classification": "LOCAL",
+      "sha256": "6f4af9777905e0b1f1550b02afe0818fd0f2073d66467974094f736ddc694b60"
+    },
+    {
+      "path": "runs/v0.2.1/06-release-readiness-current-roadmap/plan.md",
+      "classification": "LOCAL",
+      "sha256": "60a2159e4d407476c23e264e07712d9f13b80b7421e8743e9deade769b88d8ac"
+    },
+    {
+      "path": "runs/v0.2.1/06-release-readiness-current-roadmap/sdd-evidence.jsonl",
+      "classification": "LOCAL",
+      "sha256": "66bfc564310014a46c020dcf7b387986ad518101965074082d140a6e1fcceeab"
+    },
+    {
+      "path": "runs/v0.2.1/06-release-readiness-current-roadmap/sdd.json",
+      "classification": "LOCAL",
+      "sha256": "66bfc564310014a46c020dcf7b387986ad518101965074082d140a6e1fcceeab"
+    },
+    {
+      "path": "runs/v0.2.1/06-release-readiness-current-roadmap/spec.md",
+      "classification": "LOCAL",
+      "sha256": "be2877522df63560820e8bc7ec8c6d406bb944658bd07a5f5d3f3d1a4c6ca321"
+    },
+    {
+      "path": "runs/v0.2.1/06-release-readiness-current-roadmap/SUMMARY.md",
+      "classification": "LOCAL",
+      "sha256": "88285f97cc59183b2a911eaf112b7ee10d0895bc00b73f97a3ee429d71a94cbd"
+    },
+    {
+      "path": "runs/v0.2.1/06-release-readiness-current-roadmap/tasks.md",
+      "classification": "LOCAL",
+      "sha256": "5fdee975040defde6e9d88b3b581d4d8f8d02b73d262073fe5a39f7a9b12b0f9"
+    },
+    {
+      "path": "runs/v0.2.1/06-release-readiness-current-roadmap/test-report-1.md",
+      "classification": "LOCAL",
+      "sha256": "7a93f4c2ae643e2f54fbdd410b4e0dae5641a5a75928b56569d385dd731b8bfe"
+    },
+    {
+      "path": "runs/v0.2.1/06-release-readiness-current-roadmap/validation-evidence.md",
+      "classification": "LOCAL",
+      "sha256": "fbefb6630521e4174adfe01d22b4e2322c3f84c675aefb5e44e4c0d1c6f94d49"
+    },
+    {
+      "path": "runs/v0.2.1/07-release-evidence/assess.jsonl",
+      "classification": "LOCAL",
+      "sha256": "176e5529c23e1268a479795021d37af42fd019ea8f66ae9e711e1c7ae14f4c0b"
+    },
+    {
+      "path": "runs/v0.2.1/07-release-evidence/audit-1.md",
+      "classification": "LOCAL",
+      "sha256": "4413f65d7e21ae2f84b13ecf5b91b957253df3f7bba8194287f1bc1d405561ea"
+    },
+    {
+      "path": "runs/v0.2.1/07-release-evidence/code-review-1.md",
+      "classification": "LOCAL",
+      "sha256": "ced1f5b94093d2deef80e6525241128cf86ad0a821afc2c26921abeb122303a4"
+    },
+    {
+      "path": "runs/v0.2.1/07-release-evidence/decision.md",
+      "classification": "LOCAL",
+      "sha256": "576ad18d2bf2321b87d471274933cc851948be87f3172155409b3fe530cd3e82"
+    },
+    {
+      "path": "runs/v0.2.1/07-release-evidence/human-authorization.md",
+      "classification": "LOCAL",
+      "sha256": "e63485dd1e1d2fbb0716eca98f1aa4f4908db7555b285b7860ceddd9f12e2156"
+    },
+    {
+      "path": "runs/v0.2.1/07-release-evidence/independent-review.md",
+      "classification": "LOCAL",
+      "sha256": "d533dd8e41e115d43f40f4afa469725c864dae8979803856e93e048b51221ce9"
+    },
+    {
+      "path": "runs/v0.2.1/07-release-evidence/integrity-evidence.md",
+      "classification": "LOCAL",
+      "sha256": "f8e9a0ba1d87b103d0ff608aae27aeb54ce79a54f5ae92a01594f742b4fa6c79"
+    },
+    {
+      "path": "runs/v0.2.1/07-release-evidence/plan.md",
+      "classification": "LOCAL",
+      "sha256": "a239094e1de21a816927f070ef51bfd8ad4855330de08356640244f5fc74aab0"
+    },
+    {
+      "path": "runs/v0.2.1/07-release-evidence/sdd-evidence.jsonl",
+      "classification": "LOCAL",
+      "sha256": "d505bab236740bc7e8d28a61f68483b8e549f1af5c33a0ea98f73272d6e7d58b"
+    },
+    {
+      "path": "runs/v0.2.1/07-release-evidence/sdd.json",
+      "classification": "LOCAL",
+      "sha256": "d505bab236740bc7e8d28a61f68483b8e549f1af5c33a0ea98f73272d6e7d58b"
+    },
+    {
+      "path": "runs/v0.2.1/07-release-evidence/spec.md",
+      "classification": "LOCAL",
+      "sha256": "027a447ee8ff2a0a518511594c65d75069e4d0875547abe63ed47477fd8720bc"
+    },
+    {
+      "path": "runs/v0.2.1/07-release-evidence/SUMMARY.md",
+      "classification": "LOCAL",
+      "sha256": "f2caa8dfba65c976ecec7c33982fe5856d0907b32443e9edba2adef59d2d1cd5"
+    },
+    {
+      "path": "runs/v0.2.1/07-release-evidence/tasks.md",
+      "classification": "LOCAL",
+      "sha256": "2ecea3c0c80f774c0074065fa70d22a08a195b631261c35fa32cb9bcfa61396b"
+    },
+    {
+      "path": "runs/v0.2.1/07-release-evidence/test-report-1.md",
+      "classification": "LOCAL",
+      "sha256": "a5445ce7095b88ccf6370c5a4f87219b9363e816861462c06be30889140139e2"
+    },
+    {
+      "path": "runs/v0.2.1/07-release-evidence/validation-evidence.md",
+      "classification": "LOCAL",
+      "sha256": "b375f2f429760f28cec476f92811d8d13fb2c1fc0b949718993a841d7190ff9f"
+    },
+    {
+      "path": "runs/v0.2.1/09-release-history-manifest/assess.jsonl",
+      "classification": "LOCAL",
+      "sha256": "00bbd8bf5599a6feb98a7870d6b8dd4a7b0e54a19013ea9580f3a0772013df38"
+    },
+    {
+      "path": "runs/v0.2.1/09-release-history-manifest/audit-1.md",
+      "classification": "LOCAL",
+      "sha256": "abd54b68cc50e6326eb01d3ee909383e1138af3e07b0a9ae748d93b488b9a3f0"
+    },
+    {
+      "path": "runs/v0.2.1/09-release-history-manifest/code-review-1.md",
+      "classification": "LOCAL",
+      "sha256": "abd54b68cc50e6326eb01d3ee909383e1138af3e07b0a9ae748d93b488b9a3f0"
+    },
+    {
+      "path": "runs/v0.2.1/09-release-history-manifest/decision.md",
+      "classification": "LOCAL",
+      "sha256": "c5ff5323c69a0d1a0547000f26ab298b85c36d57504dea0bb5c1e76bdceff46a"
+    },
+    {
+      "path": "runs/v0.2.1/09-release-history-manifest/human-authorization.md",
+      "classification": "LOCAL",
+      "sha256": "409127c2bee5a5b6f230e25bfccd2ae60355c3454e4881dbfcc2c1387fe674ca"
+    },
+    {
+      "path": "runs/v0.2.1/09-release-history-manifest/independent-review.md",
+      "classification": "LOCAL",
+      "sha256": "e44d2788e45d6d0ca17065c42e5456d143ca8efe9d136a93e69370ccb670640d"
+    },
+    {
+      "path": "runs/v0.2.1/09-release-history-manifest/integrity-evidence.md",
+      "classification": "LOCAL",
+      "sha256": "3bbcb67a956387eaac36d65ccf5819998c4ce062ed7175d6d13564dce694efb2"
+    },
+    {
+      "path": "runs/v0.2.1/09-release-history-manifest/plan.md",
+      "classification": "LOCAL",
+      "sha256": "db6aa9eedd57cf69cba6be6279e21a4300909edf4b884c3e72c04d58236cd0d5"
+    },
+    {
+      "path": "runs/v0.2.1/09-release-history-manifest/sdd-evidence.jsonl",
+      "classification": "LOCAL",
+      "sha256": "ce4f53c36ea15adec7c34708ff315b00159450926693dffd80c46ef03073adf1"
+    },
+    {
+      "path": "runs/v0.2.1/09-release-history-manifest/sdd.json",
+      "classification": "LOCAL",
+      "sha256": "ce4f53c36ea15adec7c34708ff315b00159450926693dffd80c46ef03073adf1"
+    },
+    {
+      "path": "runs/v0.2.1/09-release-history-manifest/spec.md",
+      "classification": "LOCAL",
+      "sha256": "bb2ac2b4e323c1a1cc69defd129b09bc300b5c01bd6e793964c9971d12c5d1e3"
+    },
+    {
+      "path": "runs/v0.2.1/09-release-history-manifest/SUMMARY.md",
+      "classification": "LOCAL",
+      "sha256": "c4602738c3237f693b25715a5bd2bc95ae66be48e56c2920f5245132478c3e0f"
+    },
+    {
+      "path": "runs/v0.2.1/09-release-history-manifest/tasks.md",
+      "classification": "LOCAL",
+      "sha256": "a746834d2c9967ce398591c6f425d370dedf40ccdcb8839796a90ae56040fcb1"
+    },
+    {
+      "path": "runs/v0.2.1/09-release-history-manifest/test-report-1.md",
+      "classification": "LOCAL",
+      "sha256": "abd54b68cc50e6326eb01d3ee909383e1138af3e07b0a9ae748d93b488b9a3f0"
+    },
+    {
+      "path": "runs/v0.2.1/09-release-history-manifest/validation-evidence.md",
+      "classification": "LOCAL",
+      "sha256": "720ccf8004efb25c7a0d47a1212864af9073afd872c7f731cfe98103f4cdd07d"
+    },
+    {
+      "path": "runs/v0.2.1/10-package-version-consistency/audit-1.md",
+      "classification": "LOCAL",
+      "sha256": "fe46669f808043a5214ec9a27ac85d3ca2652c22f16652a0fc832064ba17e6f8"
+    },
+    {
+      "path": "runs/v0.2.1/10-package-version-consistency/code-review-1.md",
+      "classification": "LOCAL",
+      "sha256": "359f16f8d3101a6079755dff31750b36c6baf90d2da0e2493244279f7af798fe"
+    },
+    {
+      "path": "runs/v0.2.1/10-package-version-consistency/decision.md",
+      "classification": "LOCAL",
+      "sha256": "a124501ecd663bdfb9186f4dc81886df88f3653e0b860791642647f7731cf1cb"
+    },
+    {
+      "path": "runs/v0.2.1/10-package-version-consistency/human-authorization.md",
+      "classification": "LOCAL",
+      "sha256": "5e937a452832b1b9ca6c3ce97a88cc3c0a7f44effc001529f10e21657b78754d"
+    },
+    {
+      "path": "runs/v0.2.1/10-package-version-consistency/independent-review.md",
+      "classification": "LOCAL",
+      "sha256": "dab2561eeff137c9b44ae56e4140204a2ad6d95307b6cd0c3f5daa1af86ebf8a"
+    },
+    {
+      "path": "runs/v0.2.1/10-package-version-consistency/integrity-evidence.md",
+      "classification": "LOCAL",
+      "sha256": "823cf4f625633fcd4293dcdeef723bc2f6a24df00e8e842c7a04976b7d697a0f"
+    },
+    {
+      "path": "runs/v0.2.1/10-package-version-consistency/plan.md",
+      "classification": "LOCAL",
+      "sha256": "cb522092fefffdd337bdcfd3ee2dc471e54b98a884e9b78a6ccdea213fb6c3c9"
+    },
+    {
+      "path": "runs/v0.2.1/10-package-version-consistency/spec.md",
+      "classification": "LOCAL",
+      "sha256": "8d7f295473045dfd841db1b0e9c2410be60ebeca1da15a39a3c3acc59bd6c984"
+    },
+    {
+      "path": "runs/v0.2.1/10-package-version-consistency/SUMMARY.md",
+      "classification": "LOCAL",
+      "sha256": "2193ece743e73eeb66c697225b0aeb053b9837aa6b6436da28b0670e59993749"
+    },
+    {
+      "path": "runs/v0.2.1/10-package-version-consistency/tasks.md",
+      "classification": "LOCAL",
+      "sha256": "0ff2b480b7ace7ac281ee84362ad45225d809a8f6dfb915469676fb6670cd798"
+    },
+    {
+      "path": "runs/v0.2.1/10-package-version-consistency/test-report-1.md",
+      "classification": "LOCAL",
+      "sha256": "b89d8b82dc9f5b318f685e95c22fdd7cecfeed748d1a1daa089ceb0bdfd7acd4"
+    },
+    {
+      "path": "runs/v0.2.1/10-package-version-consistency/work-unit.json",
+      "classification": "LOCAL",
+      "sha256": "ed7fb8c06c523e7db1ef76bb6462c62607a3f8325b57c440f325cfb37a9cee88"
+    },
+    {
+      "path": "runs/v0.2.1/release-readiness/audit-1.md",
+      "classification": "LOCAL",
+      "sha256": "a92454eb0dd04b8acce918d452cfd607264534a145ffe3e6898fc8e27ff33256"
+    },
+    {
+      "path": "runs/v0.2.1/release-readiness/code-review-1.md",
+      "classification": "LOCAL",
+      "sha256": "41afecc42dbdbfe6177c9180639f02753fa06eddb22fabc52918322cd0147476"
+    },
+    {
+      "path": "runs/v0.2.1/release-readiness/manifest.json",
+      "classification": "LOCAL",
+      "sha256": "e98673f818e7a55d30baefda5438734adbe1433e3e8f2b80a944b9742892a1ee"
+    },
+    {
+      "path": "runs/v0.2.1/release-readiness/SUMMARY.md",
+      "classification": "LOCAL",
+      "sha256": "abb43980166d35911aab604a14411fa022e9958878a22d7cf1290867d718521d"
+    },
+    {
+      "path": "runs/v0.2.1/release-readiness/test-report-1.md",
+      "classification": "LOCAL",
+      "sha256": "4bbeb1a3ec6c756b04170f1515999b32450cf89b48c524ea815822c57ec967e2"
+    },
+    {
+      "path": "runs/v0.2.2/T01-release-governance-reconciliation/SUMMARY.md",
+      "classification": "LOCAL",
+      "sha256": "499f7272bd90cb4846890ee5bd1f8edfe06bbbbdd452f3b128d65ab38fd9781d"
+    },
+    {
+      "path": "runs/v0.3.0/11-core03-tenant-readiness/assess.jsonl",
+      "classification": "LOCAL",
+      "sha256": "84e4433dd157936e5d3f39aebdb9e135bfba7093692d2a2eee26bd1975c6d2c3"
+    },
+    {
+      "path": "runs/v0.3.0/11-core03-tenant-readiness/audit-1.md",
+      "classification": "LOCAL",
+      "sha256": "a553584cd3127b140e4d46800f4f078cd6caf8a7aefd4647bbaf9c8a14bbbcc5"
+    },
+    {
+      "path": "runs/v0.3.0/11-core03-tenant-readiness/code-review-1.md",
+      "classification": "LOCAL",
+      "sha256": "6abd39c06ff1d867853d6e7a6d5a3260810802565bdf7f027c4f14b146ff2eeb"
+    },
+    {
+      "path": "runs/v0.3.0/11-core03-tenant-readiness/decision.md",
+      "classification": "LOCAL",
+      "sha256": "f75e100fb4eafed497afc438ab4ac9503ee731410dc41e5d8ea3c6918690a9b1"
+    },
+    {
+      "path": "runs/v0.3.0/11-core03-tenant-readiness/human-authorization.md",
+      "classification": "LOCAL",
+      "sha256": "f945ca89ad3550014d775057a67e17f88d1c31d60539fc2f1b759153ed21e4ee"
+    },
+    {
+      "path": "runs/v0.3.0/11-core03-tenant-readiness/independent-review.md",
+      "classification": "LOCAL",
+      "sha256": "874ee361522473489b46e846e9d140059e85a2301aa3e945552187d6cd201fc1"
+    },
+    {
+      "path": "runs/v0.3.0/11-core03-tenant-readiness/integrity-evidence.md",
+      "classification": "LOCAL",
+      "sha256": "1242e696320fc382ce94ac7825d45b19d2c9a91c63b3d13de2726ee3db5cc390"
+    },
+    {
+      "path": "runs/v0.3.0/11-core03-tenant-readiness/plan.md",
+      "classification": "LOCAL",
+      "sha256": "296067086815afbb3867ea6d14f6f99076994c3f884f246a71744f92ff3ead16"
+    },
+    {
+      "path": "runs/v0.3.0/11-core03-tenant-readiness/sdd.json",
+      "classification": "LOCAL",
+      "sha256": "0d5953f09885926ea9b4a13fb4b085aed1c3fc44253bcf9045217dcbf2545b77"
+    },
+    {
+      "path": "runs/v0.3.0/11-core03-tenant-readiness/spec.md",
+      "classification": "LOCAL",
+      "sha256": "35781056de245f5c2c060078b780e21955ac6bfc6523de7c51653bbd51183fc5"
+    },
+    {
+      "path": "runs/v0.3.0/11-core03-tenant-readiness/SUMMARY.md",
+      "classification": "LOCAL",
+      "sha256": "830be632ce10758c69eccf590931bf2500ccf5b4e59384222cc98276ebaea14a"
+    },
+    {
+      "path": "runs/v0.3.0/11-core03-tenant-readiness/tasks.md",
+      "classification": "LOCAL",
+      "sha256": "93df08ab9859a43899fa0963e7c2a15171c243d28e0e8f307e7316ab429bda24"
+    },
+    {
+      "path": "runs/v0.3.0/11-core03-tenant-readiness/test-report-1.md",
+      "classification": "LOCAL",
+      "sha256": "18ad1a3ba857665979689c891472e023a58283973eba98c00b47d132e0ab7d3c"
+    },
+    {
+      "path": "runs/v0.3.0/11-core03-tenant-readiness/validation-evidence.md",
+      "classification": "LOCAL",
+      "sha256": "52d56181686af383ed9056cc77799bfabe492ec1317822aba9bb66a77bd2dad0"
+    },
+    {
+      "path": "runs/v0.3.0/release-readiness/audit-1.md",
+      "classification": "LOCAL",
+      "sha256": "9c469a8a5380638b40b9079c011fe109d53354f911e4c0fa1f32d2b6fce01113"
+    },
+    {
+      "path": "runs/v0.3.0/release-readiness/code-review-1.md",
+      "classification": "LOCAL",
+      "sha256": "1b39d2744ba6543ef8f259dc1fe41d9dc31572479f0b21bc7f38b2220136a613"
+    },
+    {
+      "path": "runs/v0.3.0/release-readiness/manifest.json",
+      "classification": "LOCAL",
+      "sha256": "fcb5d0a8aaadd0accca231fa96fa96d811bd7bfe6bea1d1bc3d4a30076a8cbc9"
+    },
+    {
+      "path": "runs/v0.3.0/release-readiness/SUMMARY.md",
+      "classification": "LOCAL",
+      "sha256": "4077f2b2a891d52923c49d2e13d8ed76aa0e8e6ecaff7522b65ae9f37ba1e97a"
+    },
+    {
+      "path": "runs/v0.3.0/release-readiness/test-report-1.md",
+      "classification": "LOCAL",
+      "sha256": "1a3968ea4ad9c979a6d4adf6ce22bcdad92a9cb2227d611aa4bad37480a9ad80"
+    },
+    {
+      "path": "scripts/agentic-evals.ps1",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "06a136456432f637cef52b6f32ac37c8ea926b3f563567829c5d715b8b0d5016",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "scripts/assess-work-unit.ps1",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "7cb011f613d79eba8207c7cca340b4cb503b25d18ab3682a650b48b564a3cd3f",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "scripts/bootstrap_validate_supabase.py",
+      "classification": "LOCAL",
+      "sha256": "1dfb730534b27cee6c08f5d8d86badcb4b2ccd1e3df1c8121a3cf2153a18908a"
+    },
+    {
+      "path": "scripts/check-adoption-conflicts.ps1",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "030570c85b641a5ec51839075cd957796e5b66cc2066f44c4d6ee40af8a24647",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "scripts/check-integrity.ps1",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "12401f8ae3eee0d3758053b2574f028aff70e125f3ccacf965b231a415ed7e86",
+      "matchedTags": [
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4"
+      ]
+    },
+    {
+      "path": "scripts/check-status.ps1",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "c46a3f08967ea6b0b653c96c55f6fcd693f45f7bfedcf5227e8dfdae00422d89",
+      "matchedTags": [
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4"
+      ]
+    },
+    {
+      "path": "scripts/cleanup-work-unit.ps1",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "526b96f37161af2ee6f8652682976521797405abb3703d2873bc7be86a65aeb3",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "scripts/close-feature.ps1",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "4a87ce36d64673693eb8719462ac03f594eea562639cc1762e7a9290d5b0114b",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "scripts/complete-approved-pr.ps1",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "174ec900417f65de050b7a5077f1ae32ef0ce5915e79bd388ab93e2f473a86ac",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "scripts/convergence.ps1",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "cbc5fe4adb9da44aa2be6c191565e0bfb5ba8cb1c786de25e3491a8c6289f1fa",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "scripts/feature-contract.ps1",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "00a547b77c830cc7c08c8d90921f6a9659000b3604555c06ae014ed6d9530846",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "scripts/local-feature-reconcile.ps1",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "4840942b7497bc70b8ea0f18a1c278280e66e9b7da3873489c74604b579c79c6",
+      "matchedTags": [
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "scripts/materialize-sdd.ps1",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "794c7571100b6fada638a5fc4031bcd31e179343e73e9be9d6378c0dfa546a29",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "scripts/mcp-tools.ps1",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "684f37436210c52d519e0a3b64cc0263fdf027eb73b103ebb96c2ffee72131bc",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "scripts/ready-for-pr.ps1",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "c71ba2d3e5f06d6719cee3e8b8a038337adabd6f4c6ca1a05a4a1a84f2b4773d",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "scripts/release-readiness.ps1",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "34a161fc2b6ea889409ed2d7d863f715f7bb8310e60e39916e41efb373f0264c",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "scripts/resolve-agentic-model.ps1",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "25db4b5395a71f337a3964cf5012c877fedd1580d436041407c730a360f8bd7e",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "scripts/security-policy.ps1",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "256233566f56ba544b017496ab2ec1397cef2fe83ed1d88cfa630a19237d9726",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "scripts/start-work-unit.ps1",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "0ce7c1bf67b6fd1a7e6e1cb2b662f33a34bd195accdfda1a387424a710081658",
+      "matchedTags": [
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "scripts/status-lib.ps1",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "105a0fca982fbc7061d1e172cba37d5d38760da46af6aad1fbe9f3483d7b55e2",
+      "matchedTags": [
+        "v2.0.4"
+      ]
+    },
+    {
+      "path": "scripts/sync-agentic-adapters.ps1",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "7d66212e34288b22e62ab45ac01da461d9cb8f299060b39fd44d6113fb5bf3df",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "scripts/sync-template-starter.ps1",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "94ee1fa0abe36cd57d81a68fdbb452ea75c8ba3cfa23e049323c1d6ffcda48c4",
+      "matchedTags": [
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4"
+      ]
+    },
+    {
+      "path": "scripts/template-starter-manifest.json",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "10a6b60c057d778b79fccce2ebaa8cc20438aa4c2ede57ed34670e8bbeeda7ce",
+      "matchedTags": [
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4"
+      ]
+    },
+    {
+      "path": "scripts/unit-lifecycle.ps1",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "e887b4882ef2f1cd265f034cc952e72c8d9668d003d83b84152b579e60286ab1",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "scripts/update-doc-indexes.ps1",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "80d554f3e9c5151486907a1cca018105fd3a5d7bdb256f7b330edefacb7441f3",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "scripts/update-status.ps1",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "2c5f4dccc861a5044685f295b9ef26126d850a7cdcc6900687b12dd838d03a63",
+      "matchedTags": [
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "scripts/validate-supply-chain.ps1",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "7683e291b59dd3989cdd7026d47be783be9978ebc74344ac344194191d13d161",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "scripts/validate_supabase_core.py",
+      "classification": "LOCAL",
+      "sha256": "d260e2e0f110d39db91db374b1105ad29f81727c0dd06c33b6a2f2e3b60a294a"
+    },
+    {
+      "path": "scripts/wait-pr-ci.ps1",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "7ed19189d9f7d9c8933328b268fe9a1f0da1ba37b59ae4abbd95b84067dd04b5",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "scripts/workunit-lib.ps1",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "dd386562ed56cbbde7e997b490897a9daa067adbe47c7d20889f1c796cae4bff",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "site/404.html",
+      "classification": "LOCAL",
+      "sha256": "8de88243220ad8b62505dde7817686b9dbae04d9cc05c9bc001176e76ef56790"
+    },
+    {
+      "path": "site/assets/images/favicon.png",
+      "classification": "LOCAL",
+      "sha256": "023854c43fc4b25b795ee4951c8019e3de0593ffeb6f918b5d1f2a9b47a57cfe"
+    },
+    {
+      "path": "site/assets/javascripts/bundle.92b07e13.min.js",
+      "classification": "LOCAL",
+      "sha256": "51e25d438f875f90c313e2f5a6ca1a458b4eca94e8f3dddd11f6ac3971f4da2f"
+    },
+    {
+      "path": "site/assets/javascripts/bundle.92b07e13.min.js.map",
+      "classification": "LOCAL",
+      "sha256": "d5e439f5feb93dc59647671eef01e40f777a1423ef17cd683562a485ddafa01c"
+    },
+    {
+      "path": "site/assets/javascripts/lunr/min/lunr.ar.min.js",
+      "classification": "LOCAL",
+      "sha256": "89a1dcb094a8491d968c151ab254a03195c87ff2adaa2408c769928284847125"
+    },
+    {
+      "path": "site/assets/javascripts/lunr/min/lunr.da.min.js",
+      "classification": "LOCAL",
+      "sha256": "2a12734048eae74e0a05e5c108fdf24c2b71dfcd8da712336ca9e3d27ab92956"
+    },
+    {
+      "path": "site/assets/javascripts/lunr/min/lunr.de.min.js",
+      "classification": "LOCAL",
+      "sha256": "bcaa7c5c19bc730c05bb91e22ae0e386e1ac4a0580c42b7d94f9b8757aadadab"
+    },
+    {
+      "path": "site/assets/javascripts/lunr/min/lunr.du.min.js",
+      "classification": "LOCAL",
+      "sha256": "452da04fe449b9c65c61384fec582dc63824bd4e559fae2c3926a7790b68e976"
+    },
+    {
+      "path": "site/assets/javascripts/lunr/min/lunr.el.min.js",
+      "classification": "LOCAL",
+      "sha256": "a6fd5cbbb21d127407bc31c6c4298bf92ec7e1496a1ea83d5e4add14325a0c21"
+    },
+    {
+      "path": "site/assets/javascripts/lunr/min/lunr.es.min.js",
+      "classification": "LOCAL",
+      "sha256": "dec4ec90bd6f478ca3e65636a8e3fedf512b23d01a51a01d7e7822f67ebbaaf8"
+    },
+    {
+      "path": "site/assets/javascripts/lunr/min/lunr.fi.min.js",
+      "classification": "LOCAL",
+      "sha256": "681541fcf5b1987ad8b00766e9c06389ecf99c3d7ae817fa891f923f691b8668"
+    },
+    {
+      "path": "site/assets/javascripts/lunr/min/lunr.fr.min.js",
+      "classification": "LOCAL",
+      "sha256": "4dd56aa2551e770ad26ef4b85092cd31447671e0e84b39514278547f54177377"
+    },
+    {
+      "path": "site/assets/javascripts/lunr/min/lunr.he.min.js",
+      "classification": "LOCAL",
+      "sha256": "3f7d5c28ada94d78c9bc8041e271c355800ba36dbab98ad95d57b6bc25993621"
+    },
+    {
+      "path": "site/assets/javascripts/lunr/min/lunr.hi.min.js",
+      "classification": "LOCAL",
+      "sha256": "631fff52e3623f2dfba35af076c6b8b5a450eeffe30a5cfac7458dab77cbe0a6"
+    },
+    {
+      "path": "site/assets/javascripts/lunr/min/lunr.hu.min.js",
+      "classification": "LOCAL",
+      "sha256": "876c969bbf4a2b84738f4e0a14922ee331cb7c2193a621f65db7f836fdd33a38"
+    },
+    {
+      "path": "site/assets/javascripts/lunr/min/lunr.hy.min.js",
+      "classification": "LOCAL",
+      "sha256": "0efbcb902bdb7ec0dddffa5e2ba347b74c49ffc5f43fd73ffed83528eba12e95"
+    },
+    {
+      "path": "site/assets/javascripts/lunr/min/lunr.it.min.js",
+      "classification": "LOCAL",
+      "sha256": "00a5073df2e922e5fded1c5a4d4011aec02472ab9d9182a7c6508d60b625c453"
+    },
+    {
+      "path": "site/assets/javascripts/lunr/min/lunr.ja.min.js",
+      "classification": "LOCAL",
+      "sha256": "c4fded308f633681a6ed53b6c10d8ca5916fdfd50f6b82ec914d725be0cb8bd6"
+    },
+    {
+      "path": "site/assets/javascripts/lunr/min/lunr.jp.min.js",
+      "classification": "LOCAL",
+      "sha256": "04114edc36dc114edce5afbb3c7f795f45c77d8673c1edcdca5675ddab5d5199"
+    },
+    {
+      "path": "site/assets/javascripts/lunr/min/lunr.kn.min.js",
+      "classification": "LOCAL",
+      "sha256": "a064d0d7438334957a442b626140fb72f4ede8ebe17eb5c4e25682d87c88bbf8"
+    },
+    {
+      "path": "site/assets/javascripts/lunr/min/lunr.ko.min.js",
+      "classification": "LOCAL",
+      "sha256": "73d1bdb1de4aef6c5920f516924c5ab1c440db50a6f5c6126bd0fb7cf5d37664"
+    },
+    {
+      "path": "site/assets/javascripts/lunr/min/lunr.multi.min.js",
+      "classification": "LOCAL",
+      "sha256": "9761f475ae79f36420ff714df9950efb264effcf9230efd55b511a0de899e979"
+    },
+    {
+      "path": "site/assets/javascripts/lunr/min/lunr.nl.min.js",
+      "classification": "LOCAL",
+      "sha256": "399ef26d61ed2d5806f58ea723dfaca09f4a7c9b51e315bdd17482c8e3013a3e"
+    },
+    {
+      "path": "site/assets/javascripts/lunr/min/lunr.no.min.js",
+      "classification": "LOCAL",
+      "sha256": "57f9db9290f9ed36080755f53ee342a04f55a5954e4add915d1c301a37464573"
+    },
+    {
+      "path": "site/assets/javascripts/lunr/min/lunr.pt.min.js",
+      "classification": "LOCAL",
+      "sha256": "3a25d2abaa23063cf13fc56c19ae4cc5050cb6215115e9d08f4a6f4b78780067"
+    },
+    {
+      "path": "site/assets/javascripts/lunr/min/lunr.ro.min.js",
+      "classification": "LOCAL",
+      "sha256": "cfa26a8ea4293d81e8547ba2321d703a0fe9881f0721fca5f33a3f80bf156ee9"
+    },
+    {
+      "path": "site/assets/javascripts/lunr/min/lunr.ru.min.js",
+      "classification": "LOCAL",
+      "sha256": "50ef3c0fab4a3f2d260e8973c63363aa0dcf02b559ea9d11d5f02b6197585c17"
+    },
+    {
+      "path": "site/assets/javascripts/lunr/min/lunr.sa.min.js",
+      "classification": "LOCAL",
+      "sha256": "41c558a4355c3eae8f0a27ae870712738f14b0bd88038042ac8ab8b411e5817f"
+    },
+    {
+      "path": "site/assets/javascripts/lunr/min/lunr.stemmer.support.min.js",
+      "classification": "LOCAL",
+      "sha256": "2e7213605846a18014ec750910cb18a8a4c60bb23200103b3fad9ef27b10c705"
+    },
+    {
+      "path": "site/assets/javascripts/lunr/min/lunr.sv.min.js",
+      "classification": "LOCAL",
+      "sha256": "942b165bcc8218e3246fc4735af9b1c2f66514366d0000be051bf1bb896d413e"
+    },
+    {
+      "path": "site/assets/javascripts/lunr/min/lunr.ta.min.js",
+      "classification": "LOCAL",
+      "sha256": "17a32dc49c27c9d27945625a7e8d066d42f64ea1ce5a5b34de427723fbf9ae2a"
+    },
+    {
+      "path": "site/assets/javascripts/lunr/min/lunr.te.min.js",
+      "classification": "LOCAL",
+      "sha256": "079c8fcf028aeef388e98ec8607c8ea50ba9660c46797c8a119d05f8f8205838"
+    },
+    {
+      "path": "site/assets/javascripts/lunr/min/lunr.th.min.js",
+      "classification": "LOCAL",
+      "sha256": "348461266843e316b26820004a96d3fd87a1579829d244ce510c17293eef0439"
+    },
+    {
+      "path": "site/assets/javascripts/lunr/min/lunr.tr.min.js",
+      "classification": "LOCAL",
+      "sha256": "e8bf57b1033b8bd92ea04a94c533015aa1a7f0a8d6830194b974e94e1e4aca3c"
+    },
+    {
+      "path": "site/assets/javascripts/lunr/min/lunr.vi.min.js",
+      "classification": "LOCAL",
+      "sha256": "2e39c3fd7305f6e66fc0424796a7696cb8e36dc0f5c3a83ea1bc44dfe3fecb56"
+    },
+    {
+      "path": "site/assets/javascripts/lunr/min/lunr.zh.min.js",
+      "classification": "LOCAL",
+      "sha256": "d8c5b72c36ec9c3197602546e9ba5b57ada3f725d564a551bf16eabafb548e88"
+    },
+    {
+      "path": "site/assets/javascripts/lunr/tinyseg.js",
+      "classification": "LOCAL",
+      "sha256": "1b044c239610ef65fceff6039567442bb1692d413f5ee8686fee81b1a3067761"
+    },
+    {
+      "path": "site/assets/javascripts/lunr/wordcut.js",
+      "classification": "LOCAL",
+      "sha256": "3d38fde68af348915288e45eeb338af8256c8611fa2cfef307e6ab95808b3567"
+    },
+    {
+      "path": "site/assets/javascripts/workers/search.973d3a69.min.js",
+      "classification": "LOCAL",
+      "sha256": "fbe3b55a59bf786d521fb5282232c7dcf7357116e707ae18adce54de73195497"
+    },
+    {
+      "path": "site/assets/javascripts/workers/search.973d3a69.min.js.map",
+      "classification": "LOCAL",
+      "sha256": "4f9f737cb680be8dd201c8ce9aa3a27256149bc56f5a8a6883b50aecfa01f669"
+    },
+    {
+      "path": "site/assets/stylesheets/main.7e37652d.min.css",
+      "classification": "LOCAL",
+      "sha256": "7e37652d548b51b07fa9b4030644bdb9a7c5ea773f44cab9fd211d3ee86cce4d"
+    },
+    {
+      "path": "site/assets/stylesheets/main.7e37652d.min.css.map",
+      "classification": "LOCAL",
+      "sha256": "8f3640549fb99a9366233c88932a02f9e0f8d0053ebbd24a8814dc26118f3366"
+    },
+    {
+      "path": "site/assets/stylesheets/palette.06af60db.min.css",
+      "classification": "LOCAL",
+      "sha256": "06af60dbce60d47a167fcab982f7cfa8d2d654a2f2a13d68e5a5fe5ae66df6c0"
+    },
+    {
+      "path": "site/assets/stylesheets/palette.06af60db.min.css.map",
+      "classification": "LOCAL",
+      "sha256": "34adeb4bd64dc0a09c193db755f6e2e79e2d99423cc18724042de2a797dea2e7"
+    },
+    {
+      "path": "site/index.html",
+      "classification": "LOCAL",
+      "sha256": "50760f2eb21fb612d12d807db4619f405644af46037419a878a7f0af15138afb"
+    },
+    {
+      "path": "site/producto/contexto-producto/index.html",
+      "classification": "LOCAL",
+      "sha256": "315f35284f8473c5f11510255d4d2f8c7fd40f2c8e28937f0a94a17d047f78e0"
+    },
+    {
+      "path": "site/search/search_index.json",
+      "classification": "LOCAL",
+      "sha256": "453fc83b7039e8081eb6297b2490cef3c0f6ee058d5907d168a0878710a389a7"
+    },
+    {
+      "path": "site/sitemap.xml",
+      "classification": "LOCAL",
+      "sha256": "33f57ce73974cb669d46fcc9027a02c65647fc797b4cb9c86f503eea5ff11a62"
+    },
+    {
+      "path": "site/sitemap.xml.gz",
+      "classification": "LOCAL",
+      "sha256": "5810d39c070f4a6ebb2969b25515a9d6ef95a93bd86e0ef3413d097bc498443f"
+    },
+    {
+      "path": "site/tecnica/adopcion-proyecto-existente/index.html",
+      "classification": "LOCAL",
+      "sha256": "bb079f86a6806052e48262bc1ca40cebf155799b9758ccb4279d9d13ad618e67"
+    },
+    {
+      "path": "site/tecnica/agentic-evals/index.html",
+      "classification": "LOCAL",
+      "sha256": "771fdddf7b69bd52c4ac5127b39ba03da687622e50242b39df743f109cf8ff77"
+    },
+    {
+      "path": "site/tecnica/arquitectura/index.html",
+      "classification": "LOCAL",
+      "sha256": "321b0f59a18ab5ea1b0f1c7f9bd5276db6ee9edadd1c835835407220c2aea73e"
+    },
+    {
+      "path": "site/tecnica/arquitectura-roles/index.html",
+      "classification": "LOCAL",
+      "sha256": "b1e3737970e41bea7743e883f80c5cb5b168c90494c73db89bc36a6841418203"
+    },
+    {
+      "path": "site/tecnica/assess-motor-adaptativo/index.html",
+      "classification": "LOCAL",
+      "sha256": "b621014029c09c4096fe8f2b57e92597e291c82f905ae9c9453be6d441c80414"
+    },
+    {
+      "path": "site/tecnica/auditoria-release-v2/index.html",
+      "classification": "LOCAL",
+      "sha256": "9e04adc60b84ace4747f6ee109e4fb708252ddab3a779bc86924646d01de858b"
+    },
+    {
+      "path": "site/tecnica/ci-wiring-product-tests/index.html",
+      "classification": "LOCAL",
+      "sha256": "a645052a247e029e9b258aae9229fe061489c7c639b73883ef13bc92ce42e5a9"
+    },
+    {
+      "path": "site/tecnica/circuito-agentico/index.html",
+      "classification": "LOCAL",
+      "sha256": "5f01d20fd736092c52393a4bbaa4e9e92601a1e0e8687b494bc9226badb6fcf2"
+    },
+    {
+      "path": "site/tecnica/code-reviewer-y-sdd/index.html",
+      "classification": "LOCAL",
+      "sha256": "598c037f330d483a3bcb5f25a45091febf25d47d502b465c696b013e877646a9"
+    },
+    {
+      "path": "site/tecnica/convergence/index.html",
+      "classification": "LOCAL",
+      "sha256": "de73e4ad6c586ea24520f760677468302126fd5a1a0c399bfc855118314f444f"
+    },
+    {
+      "path": "site/tecnica/core-contract-v010/index.html",
+      "classification": "LOCAL",
+      "sha256": "3fe0360a1b9e4ef21ba75e4c2cee0c93483a8c22166bf32694597591d7579067"
+    },
+    {
+      "path": "site/tecnica/core-platform-v010/index.html",
+      "classification": "LOCAL",
+      "sha256": "3a9a6f72ff0597cd396aa64f6dd7939d1852810a2e34c6e1b96da29642f4d3be"
+    },
+    {
+      "path": "site/tecnica/core03-tenant-readiness/index.html",
+      "classification": "LOCAL",
+      "sha256": "b8b8a001aec89ba155dc5607b92ceaca5d44c84db7525f20890f405ca8c2e8e3"
+    },
+    {
+      "path": "site/tecnica/criterios-evaluacion-repo/index.html",
+      "classification": "LOCAL",
+      "sha256": "3c0b8361e4cfb6411c740c7eb5b60ad5b262c8b5f3a0299be5bf0c9130c862bd"
+    },
+    {
+      "path": "site/tecnica/evidencias-adaptativas/index.html",
+      "classification": "LOCAL",
+      "sha256": "0b4a1dee150ce73c60d06409f5d6d54d79c658c4a4194d19d01f98ad7eb1a389"
+    },
+    {
+      "path": "site/tecnica/fuente-unica-router-modelos/index.html",
+      "classification": "LOCAL",
+      "sha256": "09f3773bf156d27616c33ee1afe336c09c07d83bc18ed99f0dcd9d672fe15ae8"
+    },
+    {
+      "path": "site/tecnica/fundamentos-v2/index.html",
+      "classification": "LOCAL",
+      "sha256": "6f36af6fddf42b6ece85dde4d80aa3cbcf85fd0dec0be666de3eb1a909a022b2"
+    },
+    {
+      "path": "site/tecnica/index.html",
+      "classification": "LOCAL",
+      "sha256": "74994fdb1df3ca846d998f9c440b853213bfbb5f517a7261e024645f0e1b4efb"
+    },
+    {
+      "path": "site/tecnica/integridad-post-hitl-y-ready-for-pr/index.html",
+      "classification": "LOCAL",
+      "sha256": "935c74bb187d6e17ff225bb22013a7787798983635aefa5022176819b93f61f7"
+    },
+    {
+      "path": "site/tecnica/mcp-herramientas/index.html",
+      "classification": "LOCAL",
+      "sha256": "448d66a4bdef392af6a6ab6a34c1060d34d6ef2e58f8abbe49be2612a3797d65"
+    },
+    {
+      "path": "site/tecnica/operational-readiness-docs/index.html",
+      "classification": "LOCAL",
+      "sha256": "6b1bb0a32fc398575809442b06e2901adfa42eef0bb076335ecde34286ce74e7"
+    },
+    {
+      "path": "site/tecnica/package-version-consistency/index.html",
+      "classification": "LOCAL",
+      "sha256": "b8371dc4cb3ed6fdbc1ea9f1bedfd51acaf31833526e40d6522da426b9adc185"
+    },
+    {
+      "path": "site/tecnica/person-identity-linking/index.html",
+      "classification": "LOCAL",
+      "sha256": "41a64d84bd6666d130a665e63260f5dc3a585af6f257cb3e08b1cc6503a6aa2f"
+    },
+    {
+      "path": "site/tecnica/post-hitl-versioned-evidence/index.html",
+      "classification": "LOCAL",
+      "sha256": "10803c69f86ff1dd005385802241048eca935e5f39719ab4a4405183ec278f52"
+    },
+    {
+      "path": "site/tecnica/post-merge-close-dispatch/index.html",
+      "classification": "LOCAL",
+      "sha256": "3911be4a0574d26b86a668126f2c29690513ee20e734f623c932abd44c3e67fb"
+    },
+    {
+      "path": "site/tecnica/release-evidence/index.html",
+      "classification": "LOCAL",
+      "sha256": "48679aa09b960334b3e24a4840a3bbf561b0444f0b8dcf4e9076574e0cb24e1f"
+    },
+    {
+      "path": "site/tecnica/release-history-manifest/index.html",
+      "classification": "LOCAL",
+      "sha256": "2d457ac6e0ab4e18ee9dfddbdd666c1060fa23da48dc74a6654c7e8e5eabb6f9"
+    },
+    {
+      "path": "site/tecnica/release-readiness-current-roadmap/index.html",
+      "classification": "LOCAL",
+      "sha256": "54d70ee9e8729f7478953882b542a0f795d803ebf2bcecfba1a45523a94d8b69"
+    },
+    {
+      "path": "site/tecnica/release-v021-final-readiness/index.html",
+      "classification": "LOCAL",
+      "sha256": "673ad49f8ba0224fe111a18aca31d1a70153c59e454693d7d8b8787da0e93fef"
+    },
+    {
+      "path": "site/tecnica/releases-evolucion/index.html",
+      "classification": "LOCAL",
+      "sha256": "052f88dd9845aa90859aae8a1e03327526ab9fef87d934f482c498607fe3b0c9"
+    },
+    {
+      "path": "site/tecnica/routing-dinamico/index.html",
+      "classification": "LOCAL",
+      "sha256": "93a95b9effbdecb0a4ef2124205c1e03cd1e644756d1df2d7abbfa85e994ab30"
+    },
+    {
+      "path": "site/tecnica/sdd-adaptativo/index.html",
+      "classification": "LOCAL",
+      "sha256": "55868d5c13b6658dea2425cb5912e0cd1c89462e40d129a15bc53e9b2e4e2eaf"
+    },
+    {
+      "path": "site/tecnica/seguridad-profesional/index.html",
+      "classification": "LOCAL",
+      "sha256": "331d61017e8c724cf8993c69347b84098bdbb8c05e688610faf08aeff01c93da"
+    },
+    {
+      "path": "site/tecnica/status-observabilidad/index.html",
+      "classification": "LOCAL",
+      "sha256": "6b9590cbe0f3920e703680e4271f6203f6029783b6205de5a9ee237a7575d33c"
+    },
+    {
+      "path": "site/tecnica/supabase-gi-dev-validation/index.html",
+      "classification": "LOCAL",
+      "sha256": "78271c4e6bd83fa728d0ff859e64e655307413efcf72d1c239117dc5beb70b32"
+    },
+    {
+      "path": "site/tecnica/supply-chain-cicd/index.html",
+      "classification": "LOCAL",
+      "sha256": "2cb87f9e633e4a812cd59e94daddcd491ef9fe6c1907534e34b1d89b86de4936"
+    },
+    {
+      "path": "site/tecnica/tests-ci-audit/index.html",
+      "classification": "LOCAL",
+      "sha256": "aae61d770c028741f7e2bcb8e8ec1e5ce56590d04c18f1766156991e2fe3e9c1"
+    },
+    {
+      "path": "site/tecnica/unidades-paralelizacion/index.html",
+      "classification": "LOCAL",
+      "sha256": "ad3cd2065f63206f021db980499687925b5fcd3a500dbd243a0162a0e5fa9f67"
+    },
+    {
+      "path": "site/tecnica/validacion-integral-v2/index.html",
+      "classification": "LOCAL",
+      "sha256": "9e3962f3a87c6a44b0a457acc3e66043a5ecb6939b229d4e56a8e818f19f40f8"
+    },
+    {
+      "path": "site/usuario/adopcion-proyecto-existente/index.html",
+      "classification": "LOCAL",
+      "sha256": "1c0f01004745c89bdd8a9927fc9a8e2d102f638033c9f7152d34c18e0b1647db"
+    },
+    {
+      "path": "site/usuario/agentic-evals/index.html",
+      "classification": "LOCAL",
+      "sha256": "2d73d9adfc2df656e832bc10e364be7a8091676c3661f796522c27c29eb0473e"
+    },
+    {
+      "path": "site/usuario/arquitectura-roles/index.html",
+      "classification": "LOCAL",
+      "sha256": "30262b10f1877992a69fc173da31ac170c333ec0a06649dc8a396f7e5af17a0c"
+    },
+    {
+      "path": "site/usuario/assess-motor-adaptativo/index.html",
+      "classification": "LOCAL",
+      "sha256": "82c1202b56c7595858eb52901b6ef5a2d80dd91f0852941d53bb34cb4a33d354"
+    },
+    {
+      "path": "site/usuario/auditoria-release-v2/index.html",
+      "classification": "LOCAL",
+      "sha256": "44e709e9be8c4560d60a575bde481157997429b89c143180cbbbfc4424e81443"
+    },
+    {
+      "path": "site/usuario/ci-wiring-product-tests/index.html",
+      "classification": "LOCAL",
+      "sha256": "903c64811282ef601814e6ea6c823fce136f760f3c7c9a7ce133768560a6a9ef"
+    },
+    {
+      "path": "site/usuario/circuito-agentico/index.html",
+      "classification": "LOCAL",
+      "sha256": "4c0e6bcc97daa4a87992745a2745d917ae2b5a78d444bb40a325748986749516"
+    },
+    {
+      "path": "site/usuario/code-reviewer-y-sdd/index.html",
+      "classification": "LOCAL",
+      "sha256": "08de6d4c3d558cb79c7bac4188cbb0b1f8e687cca038fed149f29227c3609c82"
+    },
+    {
+      "path": "site/usuario/convergence/index.html",
+      "classification": "LOCAL",
+      "sha256": "c39b7a61ee593198f6f0e0a3eab88cb6ca2fea05b245afafd60d7551214dbf36"
+    },
+    {
+      "path": "site/usuario/core-platform-v010/index.html",
+      "classification": "LOCAL",
+      "sha256": "059bceaf0b0c4e8bf82b24b817871ddd490d2508edd577fc090ebdf298e7eb36"
+    },
+    {
+      "path": "site/usuario/core03-tenant-integration/index.html",
+      "classification": "LOCAL",
+      "sha256": "ad3fe80069ba68b43645083e91ba6a43fe866196cdd7911ae1bff958574e95d9"
+    },
+    {
+      "path": "site/usuario/core03-tenant-readiness/index.html",
+      "classification": "LOCAL",
+      "sha256": "46506fa66e13efaaf765fa0f809af097c3b87f8150f46e15858497653a5de28d"
+    },
+    {
+      "path": "site/usuario/evidencias-adaptativas/index.html",
+      "classification": "LOCAL",
+      "sha256": "fcd32ea57dda8749edab3afb8df7483d1f955f150ebbe5240ff76bc4039d3a35"
+    },
+    {
+      "path": "site/usuario/fuente-unica-router-modelos/index.html",
+      "classification": "LOCAL",
+      "sha256": "9c42bb70c1faaf15f8645f8b387a0ee3a2c3a653fe6403b817bfc9b28a4902d8"
+    },
+    {
+      "path": "site/usuario/index.html",
+      "classification": "LOCAL",
+      "sha256": "48ac56bb91178a8ae8ec95f52125d59473fcd85a62d06b93646a03a6a7f7ccd1"
+    },
+    {
+      "path": "site/usuario/integridad-post-hitl-y-ready-for-pr/index.html",
+      "classification": "LOCAL",
+      "sha256": "a595760d5d00a8ab96c764e005d2882ccf7b23a6a4dd7cc2b4b7e5a3b4ef1e32"
+    },
+    {
+      "path": "site/usuario/mcp-herramientas/index.html",
+      "classification": "LOCAL",
+      "sha256": "722e1d85b5b020c39c6127b48360156617d2c826d69236120e825b5e3c5b6f50"
+    },
+    {
+      "path": "site/usuario/operational-readiness-docs/index.html",
+      "classification": "LOCAL",
+      "sha256": "9570f201b4b5a420e5018fda2c61985bd9bdade700679bb262bfbc3bdb980342"
+    },
+    {
+      "path": "site/usuario/package-version-consistency/index.html",
+      "classification": "LOCAL",
+      "sha256": "281dbd1d7b11de33296bef47e92861237884bbaeb39b01e144884916266eb2fa"
+    },
+    {
+      "path": "site/usuario/person-identity-linking/index.html",
+      "classification": "LOCAL",
+      "sha256": "f1a7bec7046789bb741fd859986df855ebaffaea8a5bf879796c379d47266906"
+    },
+    {
+      "path": "site/usuario/post-hitl-versioned-evidence/index.html",
+      "classification": "LOCAL",
+      "sha256": "032e29ed5d35be63348b968d10c14cb9184a5a3f9c4f8bfbae572a4dc175d041"
+    },
+    {
+      "path": "site/usuario/post-merge-close-dispatch/index.html",
+      "classification": "LOCAL",
+      "sha256": "9f3764038791552b0be8cf00017e2088f15bd6603b0bf7e68ee5827b03069f5e"
+    },
+    {
+      "path": "site/usuario/release-evidence/index.html",
+      "classification": "LOCAL",
+      "sha256": "094152710db55b639d771aaf1289de7a63f7103cd8805a4f73368f95dc1ecf92"
+    },
+    {
+      "path": "site/usuario/release-history-manifest/index.html",
+      "classification": "LOCAL",
+      "sha256": "91dfef8f9ad3dd1ec82a675a84ea3b4fb5b660272f9b6e7c5dec53d39fb80c22"
+    },
+    {
+      "path": "site/usuario/release-readiness-current-roadmap/index.html",
+      "classification": "LOCAL",
+      "sha256": "ab10bde87b4847e043a02e3fd11f7bfda7c8a6beb26882137bc86a2748c94636"
+    },
+    {
+      "path": "site/usuario/releases-evolucion/index.html",
+      "classification": "LOCAL",
+      "sha256": "c20e03146cd4f2ca9b3aeae13c1376865473bcd281a14ba6a3ef8ef7e21321c5"
+    },
+    {
+      "path": "site/usuario/routing-dinamico/index.html",
+      "classification": "LOCAL",
+      "sha256": "5732416d35509b9a4e86b15ad367a6fe4599f966879f7ffb2ae543401ec5439f"
+    },
+    {
+      "path": "site/usuario/sdd-adaptativo/index.html",
+      "classification": "LOCAL",
+      "sha256": "64027a772040b037ee0464ddd9c2c5bf7479d28c5a6b420c3c1417ca78c534be"
+    },
+    {
+      "path": "site/usuario/seguridad-profesional/index.html",
+      "classification": "LOCAL",
+      "sha256": "a1235e1c9a51c306aa59687e680c603e364aa9e8b3c7cc1c979bfc2b7a91833e"
+    },
+    {
+      "path": "site/usuario/status-observabilidad/index.html",
+      "classification": "LOCAL",
+      "sha256": "3595c03993510731ab28c606763fd28878a1c887cc73e27725c343b1fe680c36"
+    },
+    {
+      "path": "site/usuario/supabase-gi-dev-validation/index.html",
+      "classification": "LOCAL",
+      "sha256": "925853a786efd2180b9295ab414224117bcea30c3447e83817513ba3634ff4a4"
+    },
+    {
+      "path": "site/usuario/supply-chain-cicd/index.html",
+      "classification": "LOCAL",
+      "sha256": "021193cd80c5dabbc4750db8a54582df9f6f61876e56e671c05e922a128911a2"
+    },
+    {
+      "path": "site/usuario/tests-ci-audit/index.html",
+      "classification": "LOCAL",
+      "sha256": "fafea1b5e974e3a5e39b4d03fb698f8901aa67ae80c68c107bc5f9d95383d82e"
+    },
+    {
+      "path": "site/usuario/unidades-paralelizacion/index.html",
+      "classification": "LOCAL",
+      "sha256": "b10841e8a5ed424176dc1c65505407b57b1a0559bc66ce9fab287829f8fc0f58"
+    },
+    {
+      "path": "site/usuario/validacion-integral-v2/index.html",
+      "classification": "LOCAL",
+      "sha256": "7f291e1ca3915f3668e5a1955d3371ce676c2a600af1134fc87a4c3609b54413"
+    },
+    {
+      "path": "STATUS.md",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "6474d63415bb531d310da13fe3649320e3c54bf093e3fedd094724863c2970ba",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "supabase/migrations/20260918000000_core_schema.sql",
+      "classification": "LOCAL",
+      "sha256": "ca1755662da44f59fae833dddfa27ea66dd0771b6f86348ffac29ab64594a3c0"
+    },
+    {
+      "path": "supabase/migrations/20260918010000_rename_sites_to_locations.sql",
+      "classification": "LOCAL",
+      "sha256": "f21ad7702fc03b7de3c056f834dc7c2947e5b0b7b46d6fac5cf3c393c0fc7862"
+    },
+    {
+      "path": "supabase/migrations/20260920000000_identity_links.sql",
+      "classification": "LOCAL",
+      "sha256": "8318c9886c99f96e66e09ea933dad7f29feb41465a1d09a1476d4b6d9b430ace"
+    },
+    {
+      "path": "supabase/migrations/20260921000000_core03_tenants.sql",
+      "classification": "LOCAL",
+      "sha256": "cbb8e50134209fb89ef04fc6d44a1241799981f7e7d134d542e6fe1c7e494282"
+    },
+    {
+      "path": "tests/test_adaptive_evidence.py",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "7018ecf559534a7ec4b53c7fbdb06631a53ef5c7973212a6f09b124361feffba",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_agentic_evals.py",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "37d13eac3d4fed1d3f43afc5fa6e7ce7a771914c1c7f4e4d4068fdf2fcdba340",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_agentic_schemas.py",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "a061d5c23d2e153409a0f9c9ec3d1f03768ec80818f6754ab06a9126cbeb98ea",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_agentic_sync_scripts.py",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "6fb6810a745baa30939908b2e70428bfbc9a91b0d7ed894dae93394ef51ae668",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_agents_e2e.py",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "7dda57921f21eb7467fd3a9e29c09b2f7f64b85b670acbd7675eec80cae8fa39",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_assess_work_unit.py",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "634382b711a79d19eb6522c5e30b31e86ca8e5d35c591188705ef38601257d77",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_audit_framework.py",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "be1a5c42b18b27bfeadaeee50ccf3c4f63955c3b37dd91cceb6911f478aff9ef",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_canonical_workunit_identity.py",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "bb28627d07376bfe4fe31e36318a90bbdb1ff5b2df0011a1fd974f4ec49978e1",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_check_adoption_conflicts.py",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "c282d40aaa41d93196839aed514f2459b41d7028a6aaf3d63e73e012090a03e6",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_check_integrity.py",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "611d79945802129c9fc002c03e450b61a5110b52c03ed5d78ceb999006c2d01f",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4"
+      ]
+    },
+    {
+      "path": "tests/test_ci_integration.py",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "d89ae6f36b50c1a5484d1d30fde0d11f613c4488c737497d0885a4aa366e4837",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_ci_workflow.py",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "7382b826cf3c6c50f022364d09a582fbdd32f77ff7c78ad6481f00c09031925f",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_close_feature_script.py",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "1f974f0e1ea78e1c300cfb1b8d4b219472442d3603d0d6ace1d3bda6304a1683",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_complete_approved_pr_script.py",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "530555346973cfc11c9b92762ffbb245d75070332f664f8c7533866d7b9ee223",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_convergence.py",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "300f3254434c69f8e1e5b61d0e693aca98f85046bde38b922ffcfcc798757e78",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_core_migration.py",
+      "classification": "LOCAL",
+      "sha256": "beb2c937a17688aa850d90db17bfc3e2e6f781653590e37375828ef802f3d090"
+    },
+    {
+      "path": "tests/test_core_platform.py",
+      "classification": "LOCAL",
+      "sha256": "51b9134b778c86abdcb19ece8b3cd0b0559ae1dcb6be168b6ddc8bbe15fd3fce"
+    },
+    {
+      "path": "tests/test_feature_contract_scripts.py",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "67ed4e22fb1a991725947ddbe33fd3090445a1120b44a7a5e9baeaebaf37c38a",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_guard_develop_branch_workflow.py",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "3f02d6bc9e7ebd34688d41d19ea55e4b71cf222625b1dd0c246c914f4073d21a",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4"
+      ]
+    },
+    {
+      "path": "tests/test_identity_contract.py",
+      "classification": "LOCAL",
+      "sha256": "d855ccd109ef72bf39c36191b71f481f3d21e1e1ea520f56b568f9ffb044a754"
+    },
+    {
+      "path": "tests/test_identity_linking.py",
+      "classification": "LOCAL",
+      "sha256": "eb4ea293988309d702addd6dea12e7f2f88159ac2014a174c506a317f98e1ae3"
+    },
+    {
+      "path": "tests/test_local_reconciler_scripts.py",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "544d1a08caa91506de8382d127cc4ca9a75b41a946af9ae01ac77f3884528d78",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_maintenance_scope.py",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "4e14325737f9430968779bfd11d5a751fedfe1042c02eb05f43a4fe2cb6f7c4d",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_materialize_sdd.py",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "c9b26a3736239cc7d1088c2c66945371b43522e6a1a276c67418a3eb6a6a938c",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_mcp_tools.py",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "e2c6dc246335b1d07ea12bc6f9edaa1c710420dde524fce64eb65823e9cd2e5d",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_milestone_close_feature.py",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "a1b7f082df9ef541847468a1009c53271f7bf49fa7ce5d9439404a3fdcb365ca",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_milestone_contract.py",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "7121ac80270d47b59c905e59d6c6fe2336cf93f22145b53c68e5cdb552aac641",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_milestone_ready_for_pr.py",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "c486a42404f092230fdb3e55cff358a8234796b5793fb2cc68897cf9922816a0",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_model_router_scripts.py",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "124460df1e621b0a5a3c18f60000b0d60fe5b16c2d3a2ce2b47c32fc995aa72d",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_parallel_units_f14.py",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "4190223140d5d8166d1edd45ec016c6f26519ec851e4e5911b5484cb289b36db",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_post_hitl_versioned_evidence.py",
+      "classification": "LOCAL",
+      "sha256": "636ad970b44e6352b911342846c54cdbc467343e117bbbbe40eead4cf4314ea7"
+    },
+    {
+      "path": "tests/test_post_merge_close_dispatch.py",
+      "classification": "LOCAL",
+      "sha256": "62d8f219543b4969a08dc16084fce4bbfd3cdc6ecd4f22d4a0013b337133dc8b"
+    },
+    {
+      "path": "tests/test_product_context_compatibility.py",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "74ec67c2c15311718d5caa3ea911a481c2ab1d45652304a14f8db8dfd118c860",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_release_readiness.py",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "650d61841fe9a5a7e23c08734d6396307bd77b792b27b53e24087ada90044721",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_security_policy.py",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "34763ec61d65eec7fc1e2d161e5da85a45858ecc57c99d1409bc52d140110ac6",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_start_work_unit.py",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "1196deb5e24a1d93b89d64bbebe24378ceb74a566712454926cecc202287090e",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_status_scripts.py",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "2649dc81e350bdc3abcc163d4cd6964feb60f63a503d396965c33f0d75a9dd40",
+      "matchedTags": [
+        "v2.0.3",
+        "v2.0.4"
+      ]
+    },
+    {
+      "path": "tests/test_supabase_adapter.py",
+      "classification": "LOCAL",
+      "sha256": "b0458d72714e5697d3cfb66446ff71147dc9361de9479a686c0c03c779caaa7d"
+    },
+    {
+      "path": "tests/test_supabase_bootstrap.py",
+      "classification": "LOCAL",
+      "sha256": "59cccc3eff374fd4002de2837a6b8af718ade390dcbc5c86d2da44209baba21b"
+    },
+    {
+      "path": "tests/test_supply_chain_policy.py",
+      "classification": "IDENTICAL_TO_TEMPLATE",
+      "sha256": "f235c378569e6c33b5dfc886068a5896c4fb30b0dc3cf532409c57f892b929f8",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    },
+    {
+      "path": "tests/test_validate_supabase_core.py",
+      "classification": "LOCAL",
+      "sha256": "76640ed8d55ec4bbdbb92d447ade1407f63d44ba05aabf66734fc48e6965373f"
+    },
+    {
+      "path": "tests/test_workunit_lib.py",
+      "classification": "MODIFIED_FROM_TEMPLATE",
+      "sha256": "8cbec0fcd386928634154c79da96702b2ea86c13689f36d86dd9916ea6931cce",
+      "matchedTags": [
+        "v2.0.0",
+        "v2.0.1",
+        "v2.0.2",
+        "v2.0.3",
+        "v2.0.4",
+        "v2.0.5"
+      ]
+    }
+  ]
+}

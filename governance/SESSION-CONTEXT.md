@@ -2862,3 +2862,71 @@ Restricciones vigentes:
   M1.3 (informe de solo lectura de los repos GI y el Starter) son la
   continuacion, recien despues del merge de PR #4.
 * No tocar repos GI sin autorizacion explicita por oleada (M6).
+
+---
+
+## Ultima ejecucion valida
+
+Tipo:
+AI-NATIVE V3 — M1.2 (Hash DB + migrate --inventory) y M1.3 (inventario real de repos GI)
+
+Estado:
+M1.2 y M1.3 FORMALLY_CLOSED (pendiente merge humano); M1 completo; M2 siguiente
+
+Repositorio impactado:
+
+* `ai-native`: rama `feature/m1-2-hash-db-migrate-inventory`.
+
+Accion ejecutada:
+
+* `parity/hash-db/build-hash-db.mjs`: genera `parity/hash-db/hash-db.json`
+  leyendo (solo lectura) los 6 tags reales de `template`
+  (`v2.0.0`..`v2.0.5`; `v2.0.6` no existe todavia, M0.0b no se ejecuto) via
+  `git ls-tree`/`git show`. 3272 entradas de archivo totales.
+* `parity/migrate-inventory.mjs`: clasifica cada archivo de un `--target`
+  en IDENTICAL_TO_TEMPLATE(vX)/MODIFIED_FROM_TEMPLATE(vX)/LOCAL/
+  DUPLICATED_CAPABILITY/UNKNOWN contra el Hash DB. Solo lectura sobre el
+  target (nunca escribe ahi); con `--out` escribe el reporte fuera del
+  target.
+* Corrido contra los 9 checkouts locales disponibles (8 repos GI + el
+  Starter), todos en modo solo lectura: `parity/inventory-reports/*.json`
+  + `SUMMARY.md`.
+
+Validado:
+
+* **Hallazgo real durante la construccion (corregido antes de confiar en
+  los numeros):** la primera version de `build-hash-db.mjs`/
+  `migrate-inventory.mjs` comparaba bytes crudos. Contra `gi-common-persons`
+  eso daba 174/310 archivos "MODIFIED_FROM_TEMPLATE" — verificado que
+  `scripts/status-lib.ps1` en `template` es LF puro en el blob de git,
+  mientras que el checkout de `gi-common-persons` (sin `.gitattributes`
+  propio, `core.autocrlf=true` en esta maquina) lo tiene en CRLF. Mismo
+  patron de causa raiz que el bug de sha256 corregido en M0.2
+  (`knowledge/registries/*/registry.storage.json`). Corregido
+  normalizando CRLF->LF antes de hashear en ambos scripts (deteccion de
+  binarios por byte nulo en los primeros 8000 bytes, sin normalizar esos).
+  Tras el fix: 20/310 MODIFIED_FROM_TEMPLATE reales en `gi-common-persons`,
+  verificados a mano (ROADMAP.md, STATUS.md, AGENTS.md, scripts con
+  personalizacion real).
+* **Segundo hallazgo real:** `migrate-inventory.mjs` crasheaba
+  (`EPERM: operation not permitted`) al recorrer directorios bloqueados
+  por el sistema operativo (6 carpetas `.pytest-tmp*` en
+  `gi-vertical-dental`, residuos de corridas de test). Corregido: el
+  recorrido ahora captura el error, salta el directorio y lo reporta en
+  `unreadableDirs` (no cuenta en `totalFiles`, se ve como warning).
+* Baseline completa re-verificada tras ambos fixes: 45 validadores node +
+  7 tests de `runtime/lib` + `parity/validate-parity.mjs`, todos PASS.
+* `gi-vertical-dental` corrido contra su checkout local (el remoto sigue
+  vacio, ver auditoria original); el resto contra su checkout real.
+* Ningun repo GI ni el Starter fue modificado (verificado: solo lectura
+  por diseno del propio script, mas `git status --short` sin cambios
+  atribuibles a esta tarea en cada uno).
+
+Restricciones vigentes:
+
+* PR pendiente de revision y merge humano (HITL real).
+* M1 completo (M1.1, M1.2, M1.3). Siguiente: M2 (contracts/core), una vez
+  mergeado.
+* No tocar (escribir en) repos GI sin autorizacion explicita por oleada
+  (M6); el inventario de solo lectura de M1.3 no cuenta como esa
+  autorizacion.
