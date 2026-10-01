@@ -16,6 +16,7 @@
 // parent touches nothing but the ignored paths.
 import { spawnSync } from "node:child_process";
 import { resolve } from "node:path";
+import { realpathSync } from "node:fs";
 
 export class GitError extends Error {}
 
@@ -43,10 +44,18 @@ export function gitRoot(cwd) {
 
 /** The real git-dir shared by every worktree of this repository (not the
  * per-worktree .git file) -- the right place for state that must be
- * visible to every worktree of the same repo (M3.2, PAR-PARALLEL-UNITS). */
+ * visible to every worktree of the same repo (M3.2, PAR-PARALLEL-UNITS).
+ * Resolved through realpathSync: on Windows, `git rev-parse
+ * --git-common-dir` can return the short (8.3) path form or the long
+ * form depending on which worktree it is invoked from (e.g.
+ * `RUNNER~1` vs `runneradmin`), even though both name the same real
+ * directory -- without this, two worktrees of the same repo could
+ * compute two different-looking (but equally valid) strings for "the
+ * same" shared directory, which would be a real correctness risk for
+ * anything that compares these paths as strings (claims.mjs's lock). */
 export function gitCommonDir(cwd) {
   const raw = run(cwd, ["rev-parse", "--git-common-dir"]).stdout;
-  return resolve(cwd, raw);
+  return realpathSync(resolve(cwd, raw));
 }
 
 /** null when HEAD is detached (git branch --show-current prints nothing). */
