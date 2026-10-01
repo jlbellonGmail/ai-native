@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-native.local/contracts/work-unit-manifest.schema.json",
+  "title": "work-unit.json (Milestone manifest, runs/milestone-<slug>/work-unit.json)",
+  "description": "CIR-01/CIR-23 (M3.2): a Milestone is N ROADMAP.md items grouped under one branch/worktree/PR/HITL (PAR-WU-MILESTONE, PAR-MILESTONE-SINGLE-CIRCUIT). `items` is the TEMPLATE v2.0.5-compatible flat list (workunit-lib.ps1's Write-WorkUnitManifest, schemaVersion 1). `tasks`, when present, adds an explicit dependency DAG over those same items (PAR-TASK-DAG) -- optional because a Milestone with no stated order is still valid (items may run in any order).",
+  "type": "object",
+  "required": ["schemaVersion", "mode", "slug", "items"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "mode": { "const": "milestone" },
+    "slug": { "type": "string", "pattern": "^(?!\\d{2}-)[a-z0-9]+(-[a-z0-9]+)*$" },
+    "items": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string" },
+      "description": "Feature/Maintenance slugs this Milestone groups, same shape as Get-WorkUnitInfo -Mode Feature/Maintenance."
+    },
+    "tasks": {
+      "type": "array",
+      "description": "Optional explicit DAG over `items`. When present, every item must appear in exactly one task and every dependsOn must reference another task's id.",
+      "items": {
+        "type": "object",
+        "required": ["id", "dependsOn"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string" },
+          "dependsOn": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    }
+  }
+}

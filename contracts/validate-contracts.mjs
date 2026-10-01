@@ -38,6 +38,7 @@ for (const file of schemaFiles) {
 const DATA_FILES = [
   { data: "sdd-levels.json", schema: "sdd-levels.schema.json" },
   { data: "state-machine.json", schema: "state-machine.schema.json" },
+  { data: "assess-rules.json", schema: "assess-rules.schema.json" },
 ];
 for (const { data, schema } of DATA_FILES) {
   if (!schemas[schema]) {

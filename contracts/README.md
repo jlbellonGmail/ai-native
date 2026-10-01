@@ -18,12 +18,15 @@ fields; a consumer on `schemaVersion` N or N-1 must still be readable.
 | `unit-event.schema.json` | one line of a Work Unit's `events.jsonl` (append-only; `unit.json` is the derived view, never stored) | `runtime/circuit/*` | `ai-native status`, `review run`, gates |
 | `sdd-levels.schema.json` + `sdd-levels.json` | the LIGHT/STANDARD/FULL contract: steps, required artifacts, convergence budget | this repo (data) | `runtime/circuit/assess`, `runtime/circuit/contract` |
 | `state-machine.schema.json` + `state-machine.json` | the Work Unit state machine: states, transitions, preconditions | this repo (data) | `runtime/circuit/*` |
+| `assess-rules.schema.json` + `assess-rules.json` | ASSESS signal weights, breadth rules and score thresholds (M3.2) | this repo (data) | `runtime/circuit/assess` |
+| `work-unit-manifest.schema.json` | `work-unit.json`, a Milestone's grouped-items manifest (+ optional task DAG) (M3.2) | `runtime/circuit/start-unit` | `runtime/circuit/identity`, `runtime/circuit/contract` |
 | `result-status.schema.json` | the PASS/PASS_WITH_WARNINGS/FAIL/ERROR/NOT_RUN/NOT_APPLICABLE envelope every gate returns | every validator/gate | CI, `ai-native status` |
 | `audit-report.schema.json` | a `.audit/reports/*.md` report's required front matter | the `audit` skill | `release-gate`, `ai-native status` |
 | `eval-result.schema.json` | one evaluation result (L1/L2/L3), extends TEMPLATE v2.0.5's `agentic-eval-result.schema.json` | the evaluation harness (M4.6) | `release-gate`, `compat-matrix` |
 | `waiver.schema.json` | `waivers.json`, a time-boxed exception to a control | a human, via PR | `pr-gate` |
 | `revocations.schema.json` | `revocations-<n>.json`, the signed list of revoked platform/pack releases | `release.yml` | `bootstrap.ps1`, `pr-gate` |
 | `roadmap.md` | the ROADMAP.md contract (states, item id shapes) — prose, not JSON; ROADMAP is markdown, not data | — | `runtime/circuit/identity` |
+| `run-layout.md` | the `runs/<unit>/` directory layout contract (M3.2) — prose, not JSON | — | `runtime/circuit/*` |
 
 ## Provenance
 

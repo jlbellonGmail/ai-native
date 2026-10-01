@@ -41,6 +41,14 @@ export function gitRoot(cwd) {
   return run(cwd, ["rev-parse", "--show-toplevel"]).stdout;
 }
 
+/** The real git-dir shared by every worktree of this repository (not the
+ * per-worktree .git file) -- the right place for state that must be
+ * visible to every worktree of the same repo (M3.2, PAR-PARALLEL-UNITS). */
+export function gitCommonDir(cwd) {
+  const raw = run(cwd, ["rev-parse", "--git-common-dir"]).stdout;
+  return resolve(cwd, raw);
+}
+
 /** null when HEAD is detached (git branch --show-current prints nothing). */
 export function currentBranch(cwd) {
   const branch = run(cwd, ["branch", "--show-current"]).stdout;

@@ -12,6 +12,7 @@ import {
   diffTreeNameOnly,
   worktreeList,
   getObservedCommit,
+  gitCommonDir,
   GitError,
 } from "./git.mjs";
 
@@ -217,6 +218,23 @@ test("getObservedCommit treats an empty commit as real, not ignore-only", () => 
     const result = getObservedCommit(dir, head);
     assert.equal(result.observedCommit, head);
     void real;
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("gitCommonDir is shared between the primary checkout and a linked worktree", () => {
+  const dir = makeRepo();
+  try {
+    git(dir, "checkout", "-q", "-b", "develop");
+    writeAndCommit(dir, "a.txt", "1\n", "init");
+    const linked = join(dir, "..", `${join(dir).split(/[\\/]/).pop()}-common-linked`);
+    try {
+      git(dir, "worktree", "add", "-q", "-b", "feature/x", linked, "develop");
+      assert.equal(gitCommonDir(linked), gitCommonDir(dir));
+    } finally {
+      rmSync(linked, { recursive: true, force: true });
+    }
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
