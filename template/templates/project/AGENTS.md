@@ -802,7 +802,7 @@ Every executable project task must be treated as one feature unless project gove
 
 For feature-per-task, Git, GitHub, GitHub Actions, worktree, Engram, MCP, context-window, documentation, Security by Design, DevSecOps and monitoring rules, use:
 
-- .agents/skills/project-delivery-governance/SKILL.md
+- .agents/skills/delivery-governance/SKILL.md
 - .specify/templates/documentation-template.md
 - .specify/templates/security-template.md
 

@@ -1,27 +1,35 @@
 ---
-name: project-delivery-governance
-description: Apply generated project delivery governance for feature-per-task execution, Git, GitHub, GitHub Actions, worktrees, Engram, MCP, documentation, Security by Design, DevSecOps and monitoring.
+name: delivery-governance
+description: Apply delivery governance for feature-per-task execution, Git, GitHub, GitHub Actions, worktrees, Engram, MCP, documentation, Security by Design, DevSecOps and monitoring.
 ---
 
-# Project Delivery Governance Skill
+# Factory Delivery Governance Skill
+
+## Scope
+
+This is the single canonical skill for both the AI-NATIVE factory repository and generated projects (it replaces the former duplicated `factory-*` / `project-*` pair; PAR-CANONICAL-SOURCE).
+
+Where the text below says "the factory" or "the workspace", read it as the repository that contains this skill and its own governance. A generated project is operable from its own repository: it must not assume the factory workspace exists locally or depend on factory workspace paths.
+
+---
 
 ## Purpose
 
-Use this skill for executable generated project tasks that involve implementation, validation, documentation, security, observability, commits, GitHub, CI, Engram or MCP.
+Use this skill for executable AI-NATIVE factory tasks that involve implementation, validation, documentation, security, observability, commits, GitHub, CI, Engram or MCP.
 
 This skill complements:
 
 - AGENTS.md
 - .specify/memory/constitution.md
-- .agents/skills/project-task-execution/SKILL.md
+- .agents/skills/task-execution/SKILL.md
 
-Project governance remains the source of truth.
+Governance remains the source of truth.
 
 ---
 
 ## Feature Per Task Policy
 
-Every executable task must be treated as one feature unless project governance explicitly classifies it as audit-only, documentation-only or governance-only.
+Every executable task must be treated as one feature unless governance explicitly classifies it as audit-only, documentation-only or governance-only.
 
 One feature means:
 
@@ -88,7 +96,7 @@ Engram may store:
 
 Engram never overrides:
 
-- project governance
+- governance
 - git
 - validators
 - explicit human approval
@@ -114,12 +122,13 @@ Every executable feature must evaluate documentation impact.
 Documentation categories:
 
 - technical documentation
-- user/project documentation
+- project/user/generated-project documentation
 
 Documentation must be updated when a feature changes:
 
 - behavior
 - setup
+- generated project behavior
 - CLI behavior
 - configuration
 - validation commands
@@ -149,6 +158,7 @@ Design checks:
 - auth/authz impact
 - supply-chain impact
 - configuration risks
+- generated-project security impact
 
 Development checks:
 

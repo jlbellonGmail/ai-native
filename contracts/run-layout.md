@@ -20,8 +20,8 @@ platform versions runs per release
 | `events.jsonl` | always, from the first event onward | `contracts/unit-event.schema.json` (append-only, hash-chained; `runtime/circuit/events.mjs`) |
 | `work-unit.json` | Milestone only | `contracts/work-unit-manifest.schema.json` |
 | `SUMMARY.md` | always (every SDD depth requires it) | `contracts/sdd-levels.json` + the 7-section/6-field contract, `runtime/circuit/contract.mjs#checkSummaryContract` |
-| `spec.md` | STANDARD, FULL | `contracts/sdd-levels.json.levels.<depth>.requiredArtifacts` |
-| `plan.md`, `tasks.md`, `decision.md` | FULL | `contracts/sdd-levels.json.levels.<depth>.requiredArtifacts` |
+| `spec.md` | STANDARD, FULL | `levels.<depth>.requiredArtifacts` in `contracts/sdd-levels.json` |
+| `plan.md`, `tasks.md`, `decision.md` | FULL | `levels.<depth>.requiredArtifacts` in `contracts/sdd-levels.json` |
 
 There is no separate `sdd.json`, `assess.jsonl`, `convergence.json` or
 `model-routing.jsonl` in v3 (TEMPLATE v2.0.5 had one file per machine

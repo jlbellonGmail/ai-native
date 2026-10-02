@@ -1,31 +1,33 @@
 ---
-name: project-task-execution
-description: Execute exactly one generated project task using local governance, SDD, Builder + Inspector, real validations, auditable commits and human approval discipline.
+name: task-execution
+description: Execute exactly one task using governance, SDD, Builder + Inspector, real validations, auditable commits and human approval discipline.
 ---
 
 ---
 
-# Project Task Execution Skill
+# AI-NATIVE Task Execution Skill
+
+## Scope
+
+This is the single canonical skill for both the AI-NATIVE factory repository and generated projects (it replaces the former duplicated `factory-*` / `project-*` pair; PAR-CANONICAL-SOURCE).
+
+Where the text below says "the factory" or "the workspace", read it as the repository that contains this skill and its own governance. A generated project is operable from its own repository: it must not assume the factory workspace exists locally or depend on factory workspace paths.
+
+---
 
 ## Purpose
 
-Use this skill to execute exactly one task inside a generated AI-NATIVE project.
+Use this skill to execute exactly one task inside the AI-NATIVE factory.
 
-This skill applies to a real project generated from AI-NATIVE templates.
-
-This project is not the AI-NATIVE factory.
-
-The project must be operable from its own repository using its own:
+This skill applies to the factory workspace that contains:
 
 ```text
-AGENTS.md
-.agents/skills/
 governance/
-source code
-tests
-validators
-documentation
+foundation/
+knowledge/
+template/
 ```
+
 
 ---
 
@@ -41,7 +43,7 @@ AGENTS.md defines the stable operating rules.
 
 This skill defines the repeatable task execution procedure.
 
-Project governance defines the active task and state.
+Governance defines the active task and state.
 
 ---
 
@@ -56,7 +58,6 @@ The agent must obey:
 - Do not reimplement closed tasks.
 - Do not modify files outside scope.
 - Do not infer task state from memory.
-- Do not assume the AI-NATIVE factory workspace exists locally.
 - Do not claim validation PASS without command evidence.
 - Do not record human approval without explicit user approval.
 ```
@@ -65,9 +66,9 @@ The agent must obey:
 
 ## Phase 0 — Preflight
 
-Before changing files, inspect the project state.
+Before changing files, inspect the factory state.
 
-Inspect project governance:
+From the factory root, inspect governance:
 
 ```text
 governance/roadmaps/
@@ -79,7 +80,7 @@ governance/execution/archive/
 Determine:
 
 ```text
-- active roadmap or workstream
+- active roadmap
 - current task
 - eligible task
 - closed tasks
@@ -89,7 +90,9 @@ Determine:
 - human approval requirements
 ```
 
-Inspect git state:
+Inspect git state in every relevant repository.
+
+Minimum per relevant repository:
 
 ```bash
 git status --short
@@ -97,9 +100,18 @@ git branch --show-current
 git log --oneline --decorate -5
 ```
 
-Do not implement anything until task eligibility is confirmed from project governance.
+If scope is unclear, inspect all factory repositories:
 
-If governance is missing, incomplete or inconsistent, stop and report the gap unless the user explicitly asked to create or repair governance.
+```text
+governance/
+foundation/
+knowledge/
+template/
+```
+
+Do not implement anything until task eligibility is confirmed from governance.
+
+If governance is inconsistent, stop and report the inconsistency.
 
 ---
 
@@ -113,7 +125,7 @@ The SPEC must include:
 TASK:
 OBJECTIVE:
 ENGINEERING PURPOSE:
-AFFECTED MODULES:
+AFFECTED REPOSITORIES:
 EXPECTED FILES OR AREAS:
 NON-GOALS:
 ACCEPTANCE CRITERIA:
@@ -124,7 +136,7 @@ RISKS:
 Rules:
 
 ```text
-- The SPEC must be based on project governance and repository evidence.
+- The SPEC must be based on governance and repository evidence.
 - The SPEC must not expand the task.
 - The SPEC must explicitly define what will not be done.
 - No file modification is allowed in this phase unless the user explicitly requested a planning artifact.
@@ -140,7 +152,7 @@ The PLAN must include:
 
 ```text
 CHANGE STRATEGY:
-MODULE SCOPE:
+REPOSITORY SCOPE:
 FILES ALLOWED TO CHANGE:
 VALIDATORS TO RUN:
 GOVERNANCE UPDATE STRATEGY:
@@ -155,8 +167,8 @@ Rules:
 - Avoid broad repository traversal.
 - Avoid unrelated cleanup.
 - Avoid generated junk.
-- Avoid touching unrelated modules.
-- Respect the project architecture.
+- Avoid touching unrelated repositories.
+- Cross-repository work requires explicit justification.
 ```
 
 ---
@@ -178,15 +190,16 @@ Rules:
 - No next-task preparation unless explicitly part of the current task.
 ```
 
-Architecture rules:
+For generated project behavior, distinguish between:
 
 ```text
-- Keep domain logic in the appropriate layer.
-- Keep adapters isolated when applicable.
-- Keep tests aligned with the changed boundary.
-- Do not bypass public interfaces to make tests pass.
-- Do not hardcode business rules outside the appropriate layer.
+factory operating files
+template assets
+generator behavior
+generated project output
 ```
+
+If the task affects generated project behavior, verify the template and generator path.
 
 ---
 
@@ -194,7 +207,7 @@ Architecture rules:
 
 Run real validations.
 
-Minimum:
+Minimum per affected repository:
 
 ```bash
 git status --short
@@ -203,16 +216,13 @@ git log --oneline --decorate -5
 git diff --check
 ```
 
-Then run project-specific validators discovered from:
+Then run task-specific validators discovered from:
 
 ```text
 package.json
-pyproject.toml
-requirements.txt
 scripts/
 validation/
 tests/
-docs/
 governance/
 README files
 task-specific documentation
@@ -255,7 +265,6 @@ Check:
 - no closed task reopened
 - no next task opened
 - no broad formatting churn
-- architecture boundaries are respected
 ```
 
 If the diff contains unrelated changes, revert or isolate them before committing.
@@ -269,7 +278,7 @@ Commit only after validation and diff inspection.
 Commit strategy:
 
 ```text
-- implementation changes and governance changes should be committed separately when practical
+- product changes and governance changes should be committed separately when practical
 - each commit must be atomic
 - each commit message must describe the actual change
 - do not claim broader completion than evidence supports
@@ -300,7 +309,7 @@ only if the applicable governance policy allows it.
 
 ## Phase 7 — Governance Update
 
-Update project governance only if the task requires it.
+Update governance only if the task requires it.
 
 Potential governance areas:
 
@@ -333,7 +342,6 @@ Inspector checklist:
 SPEC satisfied:
 PLAN respected:
 Scope controlled:
-Architecture respected:
 No closed task reopened:
 No next task opened:
 Validations real:
@@ -357,6 +365,7 @@ The final report must include:
 ```text
 STATUS:
 SCOPE:
+REPOSITORIES:
 FILES CHANGED:
 VALIDATIONS:
 COMMITS:
@@ -414,7 +423,7 @@ Stop immediately if:
 - user approval is required for a risky action
 ```
 
-<!-- AI_NATIVE_PROJECT_DELIVERY_GOVERNANCE_GATE_START -->
+<!-- AI_NATIVE_FACTORY_DELIVERY_GOVERNANCE_GATE_START -->
 
 ---
 
@@ -422,7 +431,7 @@ Stop immediately if:
 
 Before final closure, use:
 
-- .agents/skills/project-delivery-governance/SKILL.md
+- .agents/skills/delivery-governance/SKILL.md
 
 The agent must evaluate:
 
@@ -439,4 +448,4 @@ The agent must evaluate:
 
 Do not close a feature without classifying each item as PASS, UPDATED, NOT_APPLICABLE, NOT_RUN, BLOCKED or CONTEXTUAL_NON_BLOCKING.
 
-<!-- AI_NATIVE_PROJECT_DELIVERY_GOVERNANCE_GATE_END -->
+<!-- AI_NATIVE_FACTORY_DELIVERY_GOVERNANCE_GATE_END -->
