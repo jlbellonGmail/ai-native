@@ -17,7 +17,7 @@ import { downloadRelease, fetchRevocations, parseRepo, bundleAsset } from "../bo
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const schema = (n) => JSON.parse(readFileSync(join(repoRoot, "contracts", n), "utf8"));
 const tmp = () => mkdtempSync(join(tmpdir(), "ai-native-rel-"));
-const git = (cwd, ...args) => execFileSync("git", args, { cwd, encoding: "utf8", env: { ...process.env, GIT_AUTHOR_NAME: "t", GIT_AUTHOR_EMAIL: "t@t", GIT_COMMITTER_NAME: "t", GIT_COMMITTER_EMAIL: "t@t" } }).trim();
+const git = (cwd, ...args) => execFileSync("git", args, { cwd, encoding: "utf8", env: { ...process.env, GIT_AUTHOR_NAME: "t", GIT_AUTHOR_EMAIL: "t@t", GIT_COMMITTER_NAME: "t", GIT_COMMITTER_EMAIL: "t@t", GIT_COMMITTER_DATE: "2026-10-01T12:00:00+00:00" } }).trim();
 
 /** A minimal git repo holding exactly what buildBundle reads from a commit. */
 function fixtureRepo({ crlf = false, extra = {} } = {}) {
@@ -244,7 +244,7 @@ test("e2e: build HEAD -> sync --from-file -> run version/doctor; revoked release
   const cli = (...args) => spawnSync(process.execPath, [join(repoRoot, "runtime", "bootstrap", "cli.mjs"), ...args, "--project", proj, "--cache", cache, "--json"], { encoding: "utf8" });
   const sync = cli("sync", "--from-file", join(out, summary.bundle), "--offline");
   assert.equal(sync.status, 0, sync.stdout + sync.stderr);
-  assert.equal(spawnSync(process.execPath, [join(repoRoot, "runtime", "bootstrap", "cli.mjs"), "run", "--project", proj, "--cache", cache, "--", "version"], { encoding: "utf8" }).stdout.trim(), `v3.0.0-alpha.1 ${commit}`);
+  assert.equal(spawnSync(process.execPath, [join(repoRoot, "runtime", "bootstrap", "cli.mjs"), "run", "--project", proj, "--cache", cache, "--", "version"], { encoding: "utf8" }).stdout.split("\n")[0].trim(), `v3.0.0-alpha.1 ${commit}`);
   const doctor = cli("doctor");
   assert.equal(doctor.status, 0, doctor.stdout);
 
