@@ -1,0 +1,11 @@
+{
+  "auditMethod": "1.2",
+  "description": "AUD-01/AUD-05. Audit method shipped by the platform (platform.json components.auditMethod). 1.1 = TEMPLATE v2.0.5 .audit (QUALITY_SCORE/AUDIT_RULES/AUDIT_PROMPT, imported unchanged under audit/method/). 1.2 adds, outside the normative text: a mandatory report front matter contract with exact targetCommit (contracts/audit-report.schema.json), certification only of the exact commit or an audit-only/STATUS-only descendant (runtime/audit/report.mjs), release-gate use with a score tolerance and never a merge gate, and the PLATFORM/APPLICATION/LIBRARY/FACTORY profiles alongside TEMPLATE.",
+  "profiles": {
+    "PLATFORM": "Activo",
+    "APPLICATION": "Activo",
+    "LIBRARY": "Activo",
+    "FACTORY": "Activo",
+    "TEMPLATE": "Activo"
+  }
+}
