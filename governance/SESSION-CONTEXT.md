@@ -3825,3 +3825,10 @@ Pendientes que NO se ejecutaron y por que:
 * PAR pendientes de fases futuras: ver `parity/par-tests.json` (status PLANNED).
 
 Restricciones vigentes: no tocar repos GI sin autorizacion por oleada (M6); ninguna evaluacion L2 real ni auditoria real se ejecuto; `mcp/catalog.json` sigue vacio.
+
+---
+
+## 2026-10-02 — M0.3b (workflows de seguridad, D1 resuelta)
+
+* D1 resuelta por el humano: `ai-native` PUBLIC de forma deliberada y temporal (migrar a PRIVATE es una tarea posterior independiente; no replantear).
+* M0.3b implementada en `feature/m0-3b-security-workflows` (PR #20): CodeQL, dependency-review, Trivy, SBOM, supply-chain; todo fijado por SHA. CI verde en la PR. Detalle y hallazgos en el roadmap.
