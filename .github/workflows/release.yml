@@ -197,12 +197,12 @@ jobs:
           cp "$BUNDLE_PATH" "dist/ai-native-$VERSION.sigstore.json"
           flags=""
           case "$VERSION" in *-alpha.*|*-rc.*) flags="--prerelease" ;; esac
-          gh release create "$VERSION" $flags --draft --verify-tag \
+          gh release create "$VERSION" --repo "$GITHUB_REPOSITORY" $flags --draft --verify-tag \
             --title "ai-native $VERSION" \
             --notes "Platform release $VERSION at $GITHUB_SHA. Bundle digest: ${{ needs.build.outputs.digest }}. Verify: \`gh attestation verify ai-native-$VERSION.tar.gz --repo $GITHUB_REPOSITORY\`." \
             dist/ai-native-"$VERSION".tar.gz dist/ai-native-"$VERSION".sbom.cdx.json dist/ai-native-"$VERSION".sigstore.json \
             dist/platform.json dist/SHA256SUMS dist/revocations-*.json
-          gh release edit "$VERSION" --draft=false
+          gh release edit "$VERSION" --repo "$GITHUB_REPOSITORY" --draft=false
 
   verify:
     name: verify (public assets, attestations, bootstrap sync)
