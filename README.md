@@ -41,7 +41,7 @@ ai-native/
 
 ## Quick Start
 
-`scripts/ai-cli.mjs` and `scripts/quality-gates.mjs` are **deprecated** pending repair
+`scripts/_deprecated/ai-cli.mjs` and `scripts/_deprecated/quality-gates.mjs` are **deprecated** pending repair
 (tracked in `governance/roadmaps/AI-NATIVE-V3-ROADMAP.md`, M0.2): `ai-cli.mjs` calls
 `require()` inside an ESM package and `quality-gates.mjs` never exits non-zero on
 failure. Do not rely on them until that phase closes. Validate each area directly:

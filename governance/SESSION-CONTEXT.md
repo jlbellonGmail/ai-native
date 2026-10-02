@@ -3788,3 +3788,13 @@ Restricciones vigentes:
   explicita, no un efecto secundario de este merge.
 * No tocar (escribir en) repos GI sin autorizacion explicita por oleada
   (M6).
+
+
+---
+
+## 2026-10-02 — M3.5 (skills core, fuente canonica, doc drift)
+
+* M3.5 implementado en `feature/m3-5-skills-doc-drift`; M3.4 mergeado (PR #12, main `5b04fb6`, CI post-merge verde).
+* Skills canonicas unicas en `.agents/skills/` (task-execution, recovery, delivery-governance); copias `factory-*`/`project-*` eliminadas.
+* `runtime/docs/validate-doc-drift.mjs` corre en CI. Ver detalle y limites en el roadmap (M3.5).
+* Siguiente elegible segun DAG: M4.1, M4.4, M4.5 (sin D1/A1/A3). M4.2 (D1) y M4.3 (A1/A3) bloqueadas por decision humana.

@@ -13,7 +13,7 @@ Execute exactly one task inside the AI-NATIVE factory.
 Use:
 
 - AGENTS.md
-- .agents/skills/factory-task-execution/SKILL.md
+- .agents/skills/task-execution/SKILL.md
 - governance/
 - real git state
 - real validators
@@ -76,7 +76,7 @@ NEXT ELIGIBLE is informational only. Do not open it.
 
 Additional required gate:
 
-Use .agents/skills/factory-delivery-governance/SKILL.md.
+Use .agents/skills/delivery-governance/SKILL.md.
 
 Before closure, report:
 

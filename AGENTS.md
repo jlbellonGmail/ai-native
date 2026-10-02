@@ -846,7 +846,7 @@ Every executable factory task must be treated as one feature unless governance e
 
 For feature-per-task, Git, GitHub, GitHub Actions, worktree, Engram, MCP, context-window, documentation, Security by Design, DevSecOps and monitoring rules, use:
 
-- .agents/skills/factory-delivery-governance/SKILL.md
+- .agents/skills/delivery-governance/SKILL.md
 - .specify/templates/documentation-template.md
 - .specify/templates/security-template.md
 

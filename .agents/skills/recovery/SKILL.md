@@ -1,23 +1,27 @@
 ---
-name: project-recovery
-description: Recover the real state of one generated project task from local governance, git, diffs, commits and validation evidence before continuing.
+name: recovery
+description: Recover the real state of one task from governance, git, diffs, commits and validation evidence before continuing.
 ---
 
 ---
 
-# Project Recovery Skill
+# AI-NATIVE Recovery Skill
+
+## Scope
+
+This is the single canonical skill for both the AI-NATIVE factory repository and generated projects (it replaces the former duplicated `factory-*` / `project-*` pair; PAR-CANONICAL-SOURCE).
+
+Where the text below says "the factory" or "the workspace", read it as the repository that contains this skill and its own governance. A generated project is operable from its own repository: it must not assume the factory workspace exists locally or depend on factory workspace paths.
+
+---
 
 ## Purpose
 
-Use this skill to recover a partially completed or interrupted task inside a generated AI-NATIVE project.
+Use this skill to recover a partially completed or interrupted task inside the AI-NATIVE factory.
 
 Recovery is diagnostic first.
 
 Do not implement new changes until the task state is classified.
-
-This project is not the AI-NATIVE factory.
-
-Do not assume that the AI-NATIVE factory workspace exists locally.
 
 ---
 
@@ -33,7 +37,7 @@ AGENTS.md defines the stable operating rules.
 
 This skill defines the recovery procedure.
 
-Project governance and git define the truth.
+Governance and git define the truth.
 
 ---
 
@@ -50,14 +54,13 @@ The agent must obey:
 - Do not reimplement closed tasks.
 - Do not create commits before recovery classification.
 - Do not claim validation PASS without command evidence.
-- Do not depend on factory workspace paths.
 ```
 
 ---
 
 ## Phase 1 — Governance Inspection
 
-Inspect local project governance first.
+Inspect governance first.
 
 Read relevant files under:
 
@@ -71,7 +74,7 @@ governance/execution/archive/
 Determine:
 
 ```text
-ACTIVE ROADMAP OR WORKSTREAM:
+ACTIVE ROADMAP:
 CURRENT TASK:
 ELIGIBLE TASK:
 TASK STATE:
@@ -82,15 +85,24 @@ ARCHIVE STATE:
 GOVERNANCE INCONSISTENCIES:
 ```
 
-If governance is missing, incomplete or inconsistent, record the gap and continue only with diagnostic inspection unless the user explicitly asked to create or repair governance.
+If governance is inconsistent, record the inconsistency and continue only with diagnostic inspection.
 
 ---
 
 ## Phase 2 — Git Inspection
 
-Inspect git state.
+Inspect git state in relevant repositories.
 
-Minimum commands:
+If scope is unclear, inspect all factory repositories:
+
+```text
+governance/
+foundation/
+knowledge/
+template/
+```
+
+Minimum commands per inspected repository:
 
 ```bash
 git status --short
@@ -168,7 +180,7 @@ VALIDATED_UNCOMMITTED:
 Relevant implementation is validated but not committed.
 
 COMMITTED_UNGOVERNED:
-Relevant commits exist, but governance/current/archive does not reflect them.
+Relevant commits exist, but governance/execution (current and archive) does not reflect them.
 
 CLOSED_LOCALLY_HUMAN_APPROVAL_REQUIRED:
 Implementation, validation, commits and governance closure exist, but human approval is pending.
@@ -205,7 +217,7 @@ COMMITTED_UNGOVERNED:
 Inspect commits and update governance only if commits are valid.
 
 CLOSED_LOCALLY_HUMAN_APPROVAL_REQUIRED:
-Do not change implementation. Prepare human approval summary.
+Do not change product. Prepare human approval summary.
 
 FORMALLY_CLOSED:
 Stop. Do not reopen.
@@ -227,10 +239,9 @@ Continuation is allowed only if:
 - no closed task is being reopened
 - no next task is being opened
 - no unrelated dirty changes would be overwritten
-- project architecture boundaries are respected
 ```
 
-If continuation is allowed, use the project task execution skill from the recovered point.
+If continuation is allowed, use the task execution skill from the recovered point.
 
 Do not restart from scratch unless evidence proves the task was not started.
 
@@ -243,15 +254,15 @@ The recovery report must include:
 ```text
 RECOVERED STATE:
 TASK:
-ROADMAP OR WORKSTREAM:
-BRANCH:
+ROADMAP:
+REPOSITORIES:
+BRANCHES:
 COMMITS FOUND:
 UNCOMMITTED CHANGES:
 UNTRACKED FILES:
 GOVERNANCE STATE:
 VALIDATIONS FOUND:
 VALIDATIONS MISSING:
-ARCHITECTURE RISKS:
 RISKS:
 SAFE NEXT ACTION:
 HUMAN APPROVAL:
@@ -276,7 +287,7 @@ Stop immediately if:
 - governance contradicts git state
 - unrelated dirty changes exist
 - task identity is unclear
-- commits exist without clear scope
+- product commits exist without clear scope
 - archive records conflict with current state
 - formal closure already exists
 - human approval is pending

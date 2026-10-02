@@ -7,7 +7,7 @@ Recover the real state of exactly one interrupted or partially completed project
 Use:
 
 - AGENTS.md
-- .agents/skills/project-recovery/SKILL.md
+- .agents/skills/recovery/SKILL.md
 - governance/
 - real git state
 - real validation evidence
