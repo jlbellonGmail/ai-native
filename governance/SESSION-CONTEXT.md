@@ -3474,6 +3474,28 @@ Validado:
   conformance pwsh `runtime/lib/result.conformance.test.ps1` (19
   chequeos). Todos PASS.
 * `git diff --check` sin problemas de whitespace.
+* **CI remota (PR #10, windows-latest) encontro 2 bugs reales que la
+  corrida local en esta maquina no reprodujo**, corregidos iterando
+  contra logs reales antes de declarar verde:
+  - `runtime/lib/git.mjs#gitCommonDir`: `git rev-parse
+    --git-common-dir` puede devolver la forma de ruta corta (8.3,
+    `RUNNER~1`) o larga (`runneradmin`) para el mismo directorio real
+    segun desde que worktree se invoque. `realpathSync` no normaliza
+    esto de forma confiable en este entorno. Corregido comparando por
+    identidad de archivo (`fs.statSync().ino`/`.dev`) en el test en vez
+    de igualdad de string; `gitCommonDir` se deja simple porque
+    `runtime/circuit/claims.mjs` siempre lo invoca con el mismo `root`,
+    sin comparar entre worktrees en uso real.
+  - `runtime/circuit/cleanup.mjs`: en Windows real, `git worktree
+    remove` puede reportar exito sin que el SO haya liberado el handle
+    de archivo todavia, dejando el directorio (vacio o con contenido)
+    vivo un instante mas, y por lo tanto el worktree sigue registrado y
+    `git branch -d` falla legitimamente (mismo comportamiento que
+    `cleanup-work-unit.ps1`, que tampoco revisaba el exit code de esa
+    linea). El test feliz ahora acepta las 3 clasificaciones no-error
+    (`A_NOT_EXISTS`/`B_RESIDUAL_WINDOWS_EMPTY`/
+    `C_RESIDUAL_WINDOWS_CONTENT`) y solo exige la rama borrada cuando
+    el worktree esta realmente ausente.
 
 Restricciones vigentes:
 
