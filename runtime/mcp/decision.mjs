@@ -83,7 +83,7 @@ export function loadMcpCatalog(path = defaultCatalogPath) {
  * - required secretEnv missing from `environment` -> FALLBACK if optional, BLOCKED otherwise.
  * - otherwise -> ALLOW.
  */
-export function resolveMcpDecision({ server, scope, role, operation = "read", catalog = loadMcpCatalog(), authorizationPath = "", environment = {} }) {
+export function resolveMcpDecision({ server, scope, role, operation = "read", catalog = loadMcpCatalog(), authorizationPath = "", approved = false, environment = {} }) {
   const entry = catalog.servers[server];
   if (!entry) return { decision: "FALLBACK", reason: "capability_not_configured", server };
 
@@ -95,9 +95,14 @@ export function resolveMcpDecision({ server, scope, role, operation = "read", ca
   }
 
   if (policyDecision.decision === "GATE") {
-    if (!authorizationPath) return { decision: "DENY", reason: "authorization_required", server };
-    const text = readFileSync(authorizationPath, "utf8");
-    assertScopedAuthorization(text, { expectedDecision: "ALLOW", expectedScope: scope, expectedAction: operation });
+    // `approved` is set only by runtime/mcp-gateway after it verified a
+    // step-up grant bound to server+operation+args digest (M4.4); the
+    // file-based authorization remains the path for other callers.
+    if (!approved) {
+      if (!authorizationPath) return { decision: "DENY", reason: "authorization_required", server };
+      const text = readFileSync(authorizationPath, "utf8");
+      assertScopedAuthorization(text, { expectedDecision: "ALLOW", expectedScope: scope, expectedAction: operation });
+    }
   }
 
   if (entry.mode !== "read-only" && operation === "read") {
