@@ -202,6 +202,10 @@ jobs:
         shell: bash
         run: node runtime/audit/cli.mjs check
 
+      - name: runtime/packs tests (M4.7, PAR-PACK-RULES)
+        shell: bash
+        run: node --test runtime/packs/*.test.mjs
+
   legacy-template-baseline:
     name: legacy/template-v2 baseline (${{ matrix.os }})
     strategy:

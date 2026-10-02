@@ -86,7 +86,7 @@
     { "id": "PAR-ROLES", "phase": "M2.2", "status": "IMPLEMENTED", "implementedBy": "core/validate-core.test.mjs" },
     { "id": "PAR-SCHEMAS", "phase": "M2.1", "status": "IMPLEMENTED", "implementedBy": "contracts/validate-contracts.test.mjs" },
     { "id": "PAR-PRODUCT-CONTEXT", "phase": "M3.5", "status": "PLANNED" },
-    { "id": "PAR-PACK-RULES", "phase": "M4.7", "status": "PLANNED" },
+    { "id": "PAR-PACK-RULES", "phase": "M4.7", "status": "IMPLEMENTED", "implementedBy": "runtime/packs/pack.test.mjs" },
     { "id": "PAR-RELEASE", "phase": "M4.2", "status": "PLANNED" },
     { "id": "PAR-DOCTOR", "phase": "M4.1", "status": "IMPLEMENTED", "implementedBy": "runtime/bootstrap/bootstrap.test.mjs" },
     { "id": "PAR-TRUSTED-CALLER", "phase": "M4.3", "status": "PLANNED" },
