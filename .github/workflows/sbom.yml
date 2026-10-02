@@ -1,0 +1,50 @@
+name: SBOM
+
+# M0.3b: CycloneDX SBOM of the repository, produced on every change to main
+# and kept as a workflow artifact. The release SBOM (attested) is M4.2.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sbom:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Generate CycloneDX SBOM
+        uses: anchore/sbom-action@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c # v0.24.3
+        with:
+          path: .
+          format: cyclonedx-json
+          output-file: sbom.cdx.json
+          upload-artifact: false
+
+      - name: Validate SBOM is non-empty CycloneDX
+        shell: bash
+        run: |
+          node -e '
+            const s = JSON.parse(require("fs").readFileSync("sbom.cdx.json", "utf8"));
+            if (s.bomFormat !== "CycloneDX" || !Array.isArray(s.components)) {
+              console.error("SBOM is not a CycloneDX document"); process.exit(1);
+            }
+            console.log("CycloneDX", s.specVersion, "components:", s.components.length);
+          '
+
+      - name: Upload SBOM
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: sbom-cyclonedx
+          path: sbom.cdx.json
+          if-no-files-found: error

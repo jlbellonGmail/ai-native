@@ -18,7 +18,8 @@ name: CI
 #
 # Deliberately excluded from this workflow (tracked in the roadmap):
 # - Security workflows (CodeQL/Trivy/SBOM/dependency-review/supply-chain):
-#   M0.3b, blocked on D1 (repository visibility decision).
+#   M0.3b, live as separate workflows (codeql.yml, trivy.yml, sbom.yml,
+#   dependency-review.yml, supply-chain.yml) since D1 resolved (public).
 
 on:
   push:
