@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "skills": [
+    {
+      "id": "factory-delivery-governance",
+      "profiles": ["factory"],
+      "roles": ["builder", "reviewer"],
+      "levels": ["*"]
+    },
+    {
+      "id": "factory-recovery",
+      "profiles": ["factory"],
+      "roles": ["*"],
+      "levels": ["*"]
+    },
+    {
+      "id": "factory-task-execution",
+      "profiles": ["factory"],
+      "roles": ["planner", "builder"],
+      "levels": ["*"]
+    }
+  ]
+}

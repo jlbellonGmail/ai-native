@@ -3499,9 +3499,8 @@ Validado:
 
 Restricciones vigentes:
 
-* PR #10 (`feature/m3-2-circuit-completo`) pendiente de CI y de revision
-  y merge humano (HITL real) — regla estandar, sin excepcion para esta
-  Work Unit.
+* PR #10 (`feature/m3-2-circuit-completo`) mergeada a `main`
+  (`4303cde`); CI post-merge verificada en verde.
 * M3.2 cerrado. Siguiente: M3.3 (adaptadores derivados por herramienta +
   materializacion de skills lazy), una vez mergeado M3.2.
 * El cruce completo ROADMAP.md<->`runs/`/SUMMARY.md con identidad Txx
@@ -3513,5 +3512,139 @@ Restricciones vigentes:
   git/fs); no expone todavia un CLI `ai-native unit ...`/`ai-native
   review run` — esa superficie de comando es trabajo de M3.3 (adaptadores
   por herramienta).
+* No tocar (escribir en) repos GI sin autorizacion explicita por oleada
+  (M6).
+
+## Ultima ejecucion valida
+
+Tipo:
+AI-NATIVE V3 — M3.3 (Adaptadores derivados por herramienta + materializacion
+de skills lazy)
+
+Estado:
+M3.3 FORMALLY_CLOSED (pendiente merge humano); M3.4 siguiente
+
+Repositorio impactado:
+
+* `ai-native`: rama `feature/m3-3-adapters-skills-lazy`.
+
+Accion ejecutada:
+
+* `runtime/adapters/sources.mjs` (+ `sources.test.mjs`, 7 tests): carga
+  canonica de `core/agents.json`/`mcp/catalog.json`/prompts de rol +
+  `checkEntryPoints` ("check de puntos de entrada"): valida que cada rol
+  tenga prompt real y bloque de ruteo `claude`/`codex`/`opencode`, sin
+  generar nada a medio camino si falta algo.
+* `runtime/adapters/claude.mjs` (+ `claude.test.mjs`, 7 tests):
+  `CLAUDE.md` (puente `@AGENTS.md`), `.mcp.json`, `.claude/agents/<rol>.md`.
+  Documenta `$CLAUDE_PROJECT_DIR` como regla obligatoria para hooks
+  futuros (hallazgo #1 de M2.3), sin generar ningun hook todavia (no
+  existe fuente canonica de hooks en `core/` aun).
+* `runtime/adapters/codex.mjs` (+ `codex.test.mjs`, 6 tests):
+  `.codex/config.toml`, `.codex/<rol>.config.toml`, y **nuevo**
+  `.codex/README.md` que documenta las reglas reales de M2.3: `codex exec`
+  siempre con stdin cerrado (`< /dev/null`, hallazgo #2) y que
+  `sandbox_mode`/`approval_policy` no bloquean en Windows (hallazgo #3,
+  riesgo residual aceptado documentado, no asumido como control real).
+* `runtime/adapters/opencode.mjs` (+ `opencode.test.mjs`, 6 tests):
+  `opencode.json` con `permission` llevado tal cual desde
+  `core/agents.json` (hallazgo #4 de M2.3: `permission.bash` de OpenCode
+  bloquea de verdad). No genera un campo `plugin` especulativo: C2/C3
+  siguen abiertos segun el spike de M2.3, sin inventar evidencia.
+* `runtime/adapters/skills.mjs` (+ `skills.test.mjs`, 12 tests):
+  materializacion lazy — `selectSkills(registry, {profile, role, level})`
+  filtra `.agents/skills/registry.json` (nuevo, + `contracts/
+  skills-registry.schema.json`) y `materialize()`/`check()` sincronizan
+  **solo** el subconjunto aplicable hacia `.claude/skills/` **y**
+  `.opencode/skills/`, podando archivos de skills ya no seleccionadas.
+* `runtime/adapters/sync.mjs` (+ `sync.test.mjs`, 11 tests): orquestador
+  y superficie CLI (`node runtime/adapters/sync.mjs [--check] [--profile]
+  [--role] [--level] [--json]`). `sync()`/`check()` comparten el mismo
+  mapa de contenido esperado (`buildToolFiles`); tambien limpia rutas
+  legacy de TEMPLATE v2.0.5 (`.codex/prompts/*`, `.opencode/agent/*`) y
+  poda adaptadores generados huerfanos (rol ya no existe en
+  `core/agents.json`).
+* `runtime/adapters/validate-entrypoints.mjs`: gate real de CI, corre
+  `checkEntryPoints` contra el propio `ai-native` en cada ejecucion.
+  Deliberadamente NO corre `sync()`/`check()` completos contra la raiz
+  del propio repo (ver Hallazgos).
+* `.agents/skills/registry.json`: entradas reales para los 3 skills
+  existentes (`factory-delivery-governance`, `factory-recovery`,
+  `factory-task-execution`), perfil `factory`, roles y niveles segun el
+  proposito real de cada skill.
+* `.github/workflows/ci.yml`: 2 pasos nuevos (tests de
+  `runtime/adapters/*`, gate `validate-entrypoints.mjs`).
+* `parity/par-tests.json`: `PAR-ADAPTERS`, `PAR-SKILLS-LAZY` →
+  IMPLEMENTED (49/95 implementados en total).
+
+Hallazgos reales (ninguno inferido, encontrados leyendo
+`sync-agentic-adapters.ps1`):
+
+* **`-AutoFix` roto para "Skill mirror divergente":** el caso construia
+  `$source = Join-Path $root ".agents/skills/$relativePath"`, pero
+  `$relativePath` ya era la ruta COMPLETA relativa al target (ej.
+  `.claude/skills/ping/SKILL.md`), asi que `$source` resultaba
+  `.agents/skills/.claude/skills/ping/SKILL.md` — una ruta que nunca
+  existe. El `if (Test-Path -LiteralPath $source)` posterior era
+  entonces siempre falso, y el AutoFix no hacia absolutamente nada,
+  sin avisar.
+* **`-AutoFix` solo tocaba `.claude/skills`:** `Sync-Skills` define DOS
+  targets (`.claude/skills`, `.opencode/skills`) y los chequea ambos en
+  `-Check`, pero el bloque de AutoFix tenia hardcodeado un unico
+  `$targetRoot = Join-Path $Root ".claude/skills"` — una divergencia
+  real detectada en `.opencode/skills` nunca se arreglaba.
+* **Casos "Falta mirror generado de skill" y "Adaptador generado
+  obsoleto" sin rama en el switch de AutoFix:** caian al `default`
+  ("Problema no reconocido para Auto-Fix"), es decir, el AutoFix nunca
+  los resolvia, solo los registraba como no reconocidos.
+* Los tres bugs comparten la misma causa raiz: AutoFix re-derivaba rutas
+  a partir de parsear el STRING del mensaje de error, en vez de
+  reutilizar la misma logica de generacion que `-Check`. `sync()`/
+  `check()` en v3 comparten literalmente el mismo mapa `buildToolFiles`/
+  seleccion de skills, eliminando esa re-derivacion por diseno.
+* **AGT-10 nunca generaba ningun README para `.codex/`:** confirmado
+  leyendo el script completo — no existia ninguna funcion ni bloque que
+  produjera documentacion de setup para Codex. `.codex/README.md` es
+  nuevo en M3.3.
+
+Validado:
+
+* Baseline completa re-verificada: 45 validadores node (foundation +
+  knowledge + template) + `scripts/validate-audit-safe-script-mode.mjs`
+  + `contracts/validate-contracts.mjs` + `core/validate-core.mjs` +
+  `evaluation/compat/validate-compat-matrix.mjs` + `runtime/status/
+  validate-integrity.mjs` + `runtime/adapters/validate-entrypoints.mjs`
+  (PASS contra el propio repo) + `parity/validate-parity.mjs` (PASS, 95
+  registrados/49 implementados) + 262 tests node en total (49 nuevos de
+  esta Work Unit en `runtime/adapters/*`). Todos PASS.
+* `node runtime/adapters/sync.mjs --check` corrido manualmente contra la
+  raiz de `ai-native` (no en CI): reporta 17 diferencias esperadas
+  (`CLAUDE.md` real diverge del puente generico; `.mcp.json`/
+  `opencode.json`/`.codex/*`/mirrors de skills nunca generados en esta
+  raiz) — confirma que el mecanismo funciona y que, correctamente, NO
+  se aplico (`sync()`) contra el propio repo en esta Work Unit.
+* `git diff --check` sin problemas de whitespace.
+
+Restricciones vigentes:
+
+* PR #11 (`feature/m3-3-adapters-skills-lazy`) pendiente de CI y de
+  revision y merge humano; unico HITL: merge humano, sin excepcion para
+  esta Work Unit.
+* M3.3 cerrado. Siguiente: M3.4 (routing, policy aplicada, decision MCP),
+  una vez mergeado M3.3.
+* `runtime/adapters/*` queda implementado y probado como libreria + CLI,
+  pero **no se aplico a la raiz de `ai-native`**: dogfooding real de
+  `profiles/factory.json` sobre el propio repo (reemplazar o complementar
+  `CLAUDE.md`/`OPENCLAW.md` hand-authored con los generados) queda como
+  decision humana separada, explicita, no un efecto secundario de este
+  merge.
+* C2 (sintaxis real de hooks de Codex) y C3 (`config.toml`/`mcp_servers`
+  funcional) siguen sin verificacion funcional real; `opencode.json` no
+  genera un campo `plugin` especulativo. Quedan explicitamente abiertos
+  para M3.3/M4.4, documentado, no inventado.
+* No se creo ningun hook real (Claude, Codex u OpenCode): no existe
+  fuente canonica de hooks en `core/` todavia; `CLAUDE_HOOK_PATH_RULE`
+  en `runtime/adapters/claude.mjs` documenta la regla para cuando se
+  construya esa fuente.
 * No tocar (escribir en) repos GI sin autorizacion explicita por oleada
   (M6).

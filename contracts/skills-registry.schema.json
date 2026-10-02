@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-native.local/contracts/skills-registry.schema.json",
+  "title": "Skills registry (.agents/skills/registry.json)",
+  "description": "AGT-05 (M3.3): declares, per canonical skill under .agents/skills/<id>/, which profiles/roles/SDD levels it applies to. runtime/adapters/skills.mjs uses this to materialize only the applicable subset per tool instead of TEMPLATE v2.0.5's unconditional mirror-everything (sync-agentic-adapters.ps1 Sync-Skills).",
+  "type": "object",
+  "required": ["schemaVersion", "skills"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "skills": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "profiles", "roles", "levels"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "description": "Directory name under .agents/skills/." },
+          "profiles": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "profiles/*.json ids this skill applies to, or [\"*\"] for every profile."
+          },
+          "roles": {
+            "type": "array",
+            "items": { "type": "string", "enum": ["planner", "builder", "reviewer", "*"] }
+          },
+          "levels": {
+            "type": "array",
+            "items": { "type": "string", "enum": ["LIGHT", "STANDARD", "FULL", "*"] }
+          }
+        }
+      }
+    }
+  }
+}
