@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, writeFileSync, rmSync, mkdirSync } from "node:fs";
+import { mkdtempSync, writeFileSync, rmSync, mkdirSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
@@ -12,6 +12,7 @@ import {
   diffTreeNameOnly,
   worktreeList,
   getObservedCommit,
+  gitCommonDir,
   GitError,
 } from "./git.mjs";
 
@@ -217,6 +218,30 @@ test("getObservedCommit treats an empty commit as real, not ignore-only", () => 
     const result = getObservedCommit(dir, head);
     assert.equal(result.observedCommit, head);
     void real;
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("gitCommonDir is shared between the primary checkout and a linked worktree", () => {
+  const dir = makeRepo();
+  try {
+    git(dir, "checkout", "-q", "-b", "develop");
+    writeAndCommit(dir, "a.txt", "1\n", "init");
+    const linked = join(dir, "..", `${join(dir).split(/[\\/]/).pop()}-common-linked`);
+    try {
+      git(dir, "worktree", "add", "-q", "-b", "feature/x", linked, "develop");
+      // Compared by filesystem identity (inode/device), not string
+      // equality: on Windows, git can report the short (8.3) or long
+      // path form for the exact same directory depending on which
+      // worktree it is invoked from.
+      const a = statSync(gitCommonDir(linked));
+      const b = statSync(gitCommonDir(dir));
+      assert.equal(a.ino, b.ino);
+      assert.equal(a.dev, b.dev);
+    } finally {
+      rmSync(linked, { recursive: true, force: true });
+    }
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

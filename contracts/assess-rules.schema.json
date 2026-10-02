@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-native.local/contracts/assess-rules.schema.json",
+  "title": "ASSESS signal rules (deterministic path-based classification)",
+  "description": "CIR-03 (M3.2): the single declarative source of the ASSESS signal weights and breadth/score thresholds runtime/circuit/assess.mjs applies. Ported from TEMPLATE v2.0.5's assess-work-unit.ps1, where these numbers were hardcoded in pwsh; here they are data so the rule set can be audited/changed without touching the engine.",
+  "type": "object",
+  "required": ["schemaVersion", "pathSignals", "defaultSignal", "breadthRules", "thresholds"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "pathSignals": {
+      "type": "array",
+      "description": "Evaluated in order against each changed path (normalized to lowercase, forward slashes); the first match wins, same as the elseif chain it replaces.",
+      "items": {
+        "type": "object",
+        "required": ["code", "level", "weight", "pattern"],
+        "additionalProperties": false,
+        "properties": {
+          "code": { "type": "string" },
+          "level": { "type": "string", "enum": ["low", "medium", "high"] },
+          "weight": { "type": "number" },
+          "pattern": { "type": "string", "description": "A JS RegExp source string." },
+          "forcesHigh": { "type": "boolean", "default": false },
+          "reason": { "type": "string" }
+        }
+      }
+    },
+    "defaultSignal": {
+      "type": "object",
+      "required": ["code", "level", "weight", "reason"],
+      "additionalProperties": false,
+      "properties": {
+        "code": { "type": "string" },
+        "level": { "type": "string", "enum": ["low", "medium", "high"] },
+        "weight": { "type": "number" },
+        "reason": { "type": "string" }
+      }
+    },
+    "breadthRules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["minFiles", "addScore"],
+        "additionalProperties": false,
+        "properties": {
+          "minFiles": { "type": "integer", "minimum": 1 },
+          "addScore": { "type": "number" },
+          "forcesHigh": { "type": "boolean", "default": false }
+        }
+      }
+    },
+    "thresholds": {
+      "type": "object",
+      "required": ["fullScore", "standardScore"],
+      "additionalProperties": false,
+      "properties": {
+        "fullScore": { "type": "number", "description": "high=true OR score >= this -> risk=HIGH, depth=FULL." },
+        "standardScore": { "type": "number", "description": "score >= this (and not FULL) -> risk=MEDIUM, depth=STANDARD. Below it -> risk=LOW, depth=LIGHT." }
+      }
+    }
+  }
+}

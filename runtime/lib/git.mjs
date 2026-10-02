@@ -41,6 +41,20 @@ export function gitRoot(cwd) {
   return run(cwd, ["rev-parse", "--show-toplevel"]).stdout;
 }
 
+/** The real git-dir shared by every worktree of this repository (not the
+ * per-worktree .git file) -- the right place for state that must be
+ * visible to every worktree of the same repo (M3.2, PAR-PARALLEL-UNITS).
+ * Note: on Windows, `git rev-parse --git-common-dir` can return the
+ * short (8.3) or long path form for the exact same real directory
+ * depending on which worktree it is invoked from (e.g. `RUNNER~1` vs
+ * `runneradmin`) -- callers that need to compare two gitCommonDir()
+ * results for identity should compare the files/directories they
+ * resolve to (e.g. fs.statSync().ino/dev), not the strings themselves. */
+export function gitCommonDir(cwd) {
+  const raw = run(cwd, ["rev-parse", "--git-common-dir"]).stdout;
+  return resolve(cwd, raw);
+}
+
 /** null when HEAD is detached (git branch --show-current prints nothing). */
 export function currentBranch(cwd) {
   const branch = run(cwd, ["branch", "--show-current"]).stdout;

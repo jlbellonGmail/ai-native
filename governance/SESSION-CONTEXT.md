@@ -3368,3 +3368,150 @@ Restricciones vigentes:
   lectura, no crea nada.
 * No tocar (escribir en) repos GI sin autorizacion explicita por oleada
   (M6).
+
+## Ultima ejecucion valida
+
+Tipo:
+AI-NATIVE V3 — M3.2 (Circuito completo: identidad, ASSESS, SDD, contrato
+de evidencia, spec review, QA/verify, code review, convergence, maquina
+de estados, cierre por merge, `review run`/P45)
+
+Estado:
+M3.2 FORMALLY_CLOSED (pendiente merge humano); M3.3 siguiente
+
+Repositorio impactado:
+
+* `ai-native`: rama `feature/m3-2-circuit-completo`.
+
+Accion ejecutada:
+
+* `runtime/circuit/events.mjs` (+ `events.test.mjs`, 9 tests): log
+  `events.jsonl` append-only, encadenado por `prevHash` (sha256 de la
+  linea anterior, o `genesis`), validado contra `contracts/
+  unit-event.schema.json` (M2.1) en cada `appendEvent`. Consolida los 5
+  archivos maquina de TEMPLATE v2.0.5 (assess.jsonl/sdd.json/
+  convergence.json/model-routing.jsonl/veredictos YAML) detras de un
+  unico log; `unit.json` nunca se guarda, siempre se deriva reproduciendo
+  el log (mismo principio que la vista STATUS derivada de M3.1).
+* `runtime/circuit/identity.mjs` (+ `identity.test.mjs`, 22 tests):
+  identidad Feature/Milestone/Maintenance y parser central de
+  ROADMAP.md (`contracts/roadmap.md`, ya existente desde M2.1):
+  `getItemState`/`markItemsDone`/`assertItemsTransition`,
+  `resolveMaintenanceScope` (canonical-unit/auxiliary/FAILED_SAFELY) y
+  `validateTaskDag` (deteccion de ciclos + orden topologico para
+  Milestones con `tasks[]`).
+* `runtime/circuit/assess.mjs` (+ `assess.test.mjs`, 11 tests): ASSESS
+  determinista, backed por el nuevo `contracts/assess-rules.json`
+  (+schema) en vez de pesos hardcodeados en un elseif de pwsh.
+* `runtime/circuit/contract.mjs` (+ `contract.test.mjs`, 17 tests):
+  contrato de evidencia con **unica fuente** `contracts/sdd-levels.json`
+  (PAR-SDD-NO-RECLASSIFY), contrato de SUMMARY (7 secciones/6 campos +
+  seccion `Intent` compacta en LIGHT), y lector de solo lectura de
+  veredictos legacy v2 (`audit-N.md`/`test-report-N.md`/
+  `code-review-N.md`, YAML, "mayor intento entero real gana").
+* `runtime/circuit/state-machine.mjs` (+ `state-machine.test.mjs`, 13
+  tests): deriva el estado actual reproduciendo eventos `transition`
+  contra `contracts/state-machine.json` (M2.1); valida cada transicion
+  contra esa misma tabla (nunca redeclarada); gate CLARIFY (abrir
+  SPECIFIED exige `openQuestions=[]` o escalar a NEEDS_HUMAN_DECISION).
+* `runtime/circuit/review-run.mjs` (+ `review-run.test.mjs`, 6 tests):
+  `review run` (P45) — `reviewInvocationId`/`nonce`/`inputDigest`
+  (sha256 del contenido mostrado), independencia reviewer/builder
+  verificada, "ultimo veredicto en events.jsonl gana" (PAR-VERDICT-COMPAT).
+* `runtime/circuit/verify.mjs` (+ `verify.test.mjs`, 5 tests): verify
+  determinista atado a `treeSha`; un verify es stale en cuanto el arbol
+  avanza (PAR-STALE-EVIDENCE).
+* `runtime/circuit/converge.mjs` (+ `converge.test.mjs`, 12 tests):
+  puerto determinista 1:1 de `convergence.ps1` — presupuestos LIGHT=2/
+  STANDARD=4/FULL=6 desde `contracts/sdd-levels.json`, fingerprint de
+  findings OPEN, no-progress, escalaciones (BLOCKED/NEEDS_HUMAN_DECISION/
+  FAILED_SAFELY).
+* `runtime/circuit/claims.mjs` (+ `claims.test.mjs`, 5 tests): registro
+  atomico de reclamos (`circuit-claims.json`) con lock exclusivo
+  (`O_CREAT|O_EXCL`) en el git common dir — reemplaza el scan sin lock de
+  `start-work-unit.ps1`.
+* `runtime/circuit/start-unit.mjs` (+ `start-unit.test.mjs`, 8 tests):
+  creacion de worktree/rama/run-dir (+ manifest Milestone), usando
+  `claims.mjs` para reclamar items antes de tocar git; libera el reclamo
+  si `git worktree add` falla.
+* `runtime/circuit/ready.mjs` (+ `ready.test.mjs`, 6 tests): `unit ready`
+  — valida el contrato de evidencia completo (artefactos + SUMMARY +
+  reviews aprobados) y produce la mutacion `[ ]`→`[x]` de ROADMAP.md.
+* `runtime/circuit/closure.mjs` (+ `closure.test.mjs`, 9 tests):
+  verificacion de solo lectura de merge real (`gh pr view`), cierre
+  atomico de ROADMAP.md, interpretacion de CI (PAR-WAIT-CI), y
+  `recordTrace` (evento `trace`, PAR-TRACE).
+* `runtime/circuit/cleanup.mjs` (+ `cleanup.test.mjs`, 4 tests):
+  clasificacion A_NOT_EXISTS/B_RESIDUAL_WINDOWS_EMPTY/
+  C_RESIDUAL_WINDOWS_CONTENT, nunca borra contenido residual.
+* `runtime/circuit/reconcile.mjs` (+ `reconcile.test.mjs`, 7 tests):
+  `inspect`/`reconcile` (merge de la rama base, aborta limpio en
+  conflicto real) + `buildReconcilerArgs` (argv como array, nunca string
+  de shell — elimina la clase de bug de escaping manual de
+  `Convert-ToPowerShellLiteral`/`Convert-ToStartProcessArgument`).
+* `runtime/circuit/recovery.mjs` (+ `recovery.test.mjs`, 11 tests):
+  clasificacion de reentrada usando el vocabulario de 8 estados ya
+  declarado en `AGENTS.md` (Recovery Policy), no uno nuevo.
+* `contracts/assess-rules.schema.json` + `.json`, `contracts/
+  work-unit-manifest.schema.json`, `contracts/run-layout.md`: 2 contratos
+  de datos + 1 schema + 1 contrato en prosa nuevos, registrados en
+  `contracts/validate-contracts.mjs`/README.md.
+* `.github/workflows/ci.yml`: `runtime/circuit/*.test.mjs` (144 tests) +
+  2 pasos de `runtime/lib/git` nuevos (gitCommonDir).
+* `parity/par-tests.json`: 33 PAR-* → IMPLEMENTED (47/95 implementados
+  en total, hasta ahora).
+
+Validado:
+
+* Baseline completa re-verificada: 45 validadores node (foundation +
+  knowledge + template) + `scripts/validate-audit-safe-script-mode.mjs`
+  + `contracts/validate-contracts.mjs` + `core/validate-core.mjs` +
+  `evaluation/compat/validate-compat-matrix.mjs` + `runtime/status/
+  validate-integrity.mjs` + `parity/validate-parity.mjs` (PASS, 95
+  registrados/47 implementados) + 213 tests node (`runtime/lib/*`,
+  `runtime/status/*`, `runtime/circuit/*` [144 nuevos de esta Work Unit],
+  `contracts/*`, `core/*`, `parity/*`, `evaluation/compat/*`) + la
+  conformance pwsh `runtime/lib/result.conformance.test.ps1` (19
+  chequeos). Todos PASS.
+* `git diff --check` sin problemas de whitespace.
+* **CI remota (PR #10, windows-latest) encontro 2 bugs reales que la
+  corrida local en esta maquina no reprodujo**, corregidos iterando
+  contra logs reales antes de declarar verde:
+  - `runtime/lib/git.mjs#gitCommonDir`: `git rev-parse
+    --git-common-dir` puede devolver la forma de ruta corta (8.3,
+    `RUNNER~1`) o larga (`runneradmin`) para el mismo directorio real
+    segun desde que worktree se invoque. `realpathSync` no normaliza
+    esto de forma confiable en este entorno. Corregido comparando por
+    identidad de archivo (`fs.statSync().ino`/`.dev`) en el test en vez
+    de igualdad de string; `gitCommonDir` se deja simple porque
+    `runtime/circuit/claims.mjs` siempre lo invoca con el mismo `root`,
+    sin comparar entre worktrees en uso real.
+  - `runtime/circuit/cleanup.mjs`: en Windows real, `git worktree
+    remove` puede reportar exito sin que el SO haya liberado el handle
+    de archivo todavia, dejando el directorio (vacio o con contenido)
+    vivo un instante mas, y por lo tanto el worktree sigue registrado y
+    `git branch -d` falla legitimamente (mismo comportamiento que
+    `cleanup-work-unit.ps1`, que tampoco revisaba el exit code de esa
+    linea). El test feliz ahora acepta las 3 clasificaciones no-error
+    (`A_NOT_EXISTS`/`B_RESIDUAL_WINDOWS_EMPTY`/
+    `C_RESIDUAL_WINDOWS_CONTENT`) y solo exige la rama borrada cuando
+    el worktree esta realmente ausente.
+
+Restricciones vigentes:
+
+* PR #10 (`feature/m3-2-circuit-completo`) pendiente de CI y de revision
+  y merge humano (HITL real) — regla estandar, sin excepcion para esta
+  Work Unit.
+* M3.2 cerrado. Siguiente: M3.3 (adaptadores derivados por herramienta +
+  materializacion de skills lazy), una vez mergeado M3.2.
+* El cruce completo ROADMAP.md<->`runs/`/SUMMARY.md con identidad Txx
+  (verificacion cruzada real tipo `check-integrity.ps1`, mas alla del
+  layout documentado en `contracts/run-layout.md`) y el enforcement de
+  servidor de P44/P45 (trust-gate, GitHub App) quedan explicitamente
+  diferidos a M4.3.
+* `runtime/circuit/*` es una libreria (funciones puras + helpers de
+  git/fs); no expone todavia un CLI `ai-native unit ...`/`ai-native
+  review run` — esa superficie de comando es trabajo de M3.3 (adaptadores
+  por herramienta).
+* No tocar (escribir en) repos GI sin autorizacion explicita por oleada
+  (M6).
