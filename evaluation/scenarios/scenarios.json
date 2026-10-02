@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "suite": "circuit-behavior",
+  "suiteVersion": "2.0.0",
+  "description": "EVL-01. Escenarios A-J de TEMPLATE v2.0.5 (legacy/template-v2/evals/scenarios.json) reconvertidos de 'actual escrito a mano igual a expected' (D-4) a un dataset con `input` real: el harness (runtime/evals/harness.mjs) ejecuta el codigo real del circuito y calcula `actual`. Un escenario con campo `actual` es rechazado. `kind` elige el ejecutor; `expected` es lo que debe producir; la comparacion es por subconjunto sobre las claves de `expected`.",
+  "scenarios": [
+    { "id": "A-trivial", "version": "2.0.0", "kind": "assess", "question": "Un cambio trivial evita ceremonia innecesaria?", "input": { "changedPaths": ["docs/readme.md"] }, "expected": { "depth": "LIGHT", "risk": "LOW", "requiredReviewsInclude": ["code"] } },
+    { "id": "B-normal", "version": "2.0.0", "kind": "assess", "question": "Una feature normal usa SDD proporcional?", "input": { "changedPaths": ["src/a.js", "src/b.js"] }, "expected": { "depth": "STANDARD", "risk": "MEDIUM" } },
+    { "id": "C-high-risk", "version": "2.0.0", "kind": "assess", "question": "Un cambio de alto riesgo exige evidencia reforzada (SDD FULL)?", "input": { "changedPaths": ["src/auth/login.js"] }, "expected": { "depth": "FULL", "risk": "HIGH", "requiredReviewsInclude": ["spec", "code"], "requiredArtifactsInclude": ["plan.md", "tasks.md", "decision.md"] } },
+    { "id": "D-ambiguity", "version": "2.0.0", "kind": "converge", "question": "Una ambiguedad funcional material escala correctamente?", "input": { "steps": [{ "depth": "STANDARD", "iteration": 1, "reviewer": { "verdict": "CHANGES_REQUESTED", "needsHumanDecision": true, "findings": [] }, "tests": { "status": "green" } }] }, "expected": { "terminal": true, "verdict": "NEEDS_HUMAN_DECISION", "escalation": "material_decision" } },
+    { "id": "E-technical-retry", "version": "2.0.0", "kind": "converge", "question": "Un fallo corregible vuelve a Builder sin humano y termina APPROVED?", "input": { "steps": [
+      { "depth": "STANDARD", "iteration": 1, "reviewer": { "verdict": "CHANGES_REQUESTED", "findings": [{ "id": "F1", "severity": "major", "description": "missing test", "status": "OPEN" }] }, "tests": { "status": "red" } },
+      { "depth": "STANDARD", "iteration": 2, "reviewer": { "verdict": "APPROVED", "findings": [{ "id": "F1", "severity": "major", "description": "missing test", "status": "RESOLVED" }] }, "tests": { "status": "green" } }
+    ] }, "expected": { "stepVerdicts": ["CHANGES_REQUESTED", "APPROVED"], "terminal": true, "verdict": "APPROVED", "escalation": null } },
+    { "id": "F-external-block", "version": "2.0.0", "kind": "converge", "question": "Un bloqueo externo termina de forma segura?", "input": { "steps": [{ "depth": "STANDARD", "iteration": 1, "reviewer": { "verdict": "CHANGES_REQUESTED", "blockedExternal": true, "findings": [] }, "tests": { "status": "green" } }] }, "expected": { "terminal": true, "verdict": "BLOCKED", "escalation": "external_dependency" } },
+    { "id": "G-no-progress", "version": "2.0.0", "kind": "converge", "question": "CONVERGENCE evita un loop sin progreso?", "input": { "steps": [
+      { "depth": "FULL", "iteration": 1, "reviewer": { "verdict": "CHANGES_REQUESTED", "findings": [{ "id": "F1", "severity": "major", "description": "same issue", "status": "OPEN" }] }, "tests": { "status": "red" } },
+      { "depth": "FULL", "iteration": 2, "reviewer": { "verdict": "CHANGES_REQUESTED", "findings": [{ "id": "F1", "severity": "major", "description": "same issue", "status": "OPEN" }] }, "tests": { "status": "red" } }
+    ] }, "expected": { "stepVerdicts": ["CHANGES_REQUESTED", "FAILED_SAFELY"], "terminal": true, "verdict": "FAILED_SAFELY", "escalation": "convergence_stalled", "noProgress": true } },
+    { "id": "H-stale-review", "version": "2.0.0", "kind": "stale-verify", "question": "Una verificacion ligada a un arbol viejo es rechazada?", "input": { "verifyTreeSha": "1111111111111111111111111111111111111111", "currentTreeSha": "2222222222222222222222222222222222222222" }, "expected": { "stale": true, "freshPassing": false } },
+    { "id": "I-insufficient-evidence", "version": "2.0.0", "kind": "evidence", "question": "El contrato exige evidencia adecuada a SDD?", "input": { "depth": "STANDARD", "present": ["spec.md"] }, "expected": { "ok": false, "missingInclude": ["SUMMARY.md"] } },
+    { "id": "J-out-of-scope", "version": "2.0.0", "kind": "policy", "question": "El builder no puede escribir fuera de su worktree?", "input": { "role": "builder", "capability": "MODIFY_LOCAL", "scope": "/etc/outside-the-worktree" }, "expected": { "decision": "DENY" } }
+  ]
+}

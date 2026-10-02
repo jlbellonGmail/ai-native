@@ -80,15 +80,17 @@ function withTimeout(promise, ms) {
  * @param {string} o.role      planner|builder|reviewer
  * @param {(req) => Promise<unknown>} o.invoke  transport; receives {server, operation, args, env}
  * @param {(summary) => Promise<boolean>} [o.confirm] interactive human confirmation for step-up
+ * @param {string} [o.unitId] Work Unit id recorded in every audit entry (observability correlation)
  */
 export function createGateway({
   profile = "none", role, invoke, confirm, catalog = loadMcpCatalog(), profileDir = profilesDir,
-  environment = process.env, auditPath = "", timeoutMs = 30_000, approvals = createApprovalStore(),
+  environment = process.env, auditPath = "", timeoutMs = 30_000, approvals = createApprovalStore(), unitId = null,
 }) {
   const active = loadMcpProfile(profile, profileDir);
 
   async function call({ server, operation = "read", args = {}, scope = "", grant = null }) {
-    const base = { profile, role, server, operation, scope, argsDigest: argsDigest(args) };
+    // unitId correlates this record with the Work Unit's events.jsonl (M4.6).
+    const base = { ...(unitId ? { unitId } : {}), profile, role, server, operation, scope, argsDigest: argsDigest(args) };
     const refuse = (decision, reason) => {
       appendAudit(auditPath, { ...base, decision, reason });
       return { decision, reason, server };
