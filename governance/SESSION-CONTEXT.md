@@ -3627,7 +3627,8 @@ Validado:
 
 Restricciones vigentes:
 
-* PR pendiente de apertura; unico HITL: merge humano, sin excepcion para
+* PR #11 (`feature/m3-3-adapters-skills-lazy`) pendiente de CI y de
+  revision y merge humano; unico HITL: merge humano, sin excepcion para
   esta Work Unit.
 * M3.3 cerrado. Siguiente: M3.4 (routing, policy aplicada, decision MCP),
   una vez mergeado M3.3.
