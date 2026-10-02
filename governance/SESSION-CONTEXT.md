@@ -3648,3 +3648,143 @@ Restricciones vigentes:
   construya esa fuente.
 * No tocar (escribir en) repos GI sin autorizacion explicita por oleada
   (M6).
+
+## Ultima ejecucion valida
+
+Tipo:
+AI-NATIVE V3 — M3.4 (Routing, policy aplicada, decision MCP)
+
+Estado:
+M3.4 FORMALLY_CLOSED (pendiente merge humano); M3.5 siguiente
+
+Repositorio impactado:
+
+* `ai-native`: rama `feature/m3-4-routing-policy-mcp` (desde `main` limpio,
+  con PR #11/M3.3 ya mergeada — `main` en `13bc163`, CI post-merge
+  verificada en verde antes de abrir esta rama).
+
+Accion ejecutada:
+
+* `runtime/policy/policy.mjs` (+ `policy.test.mjs`, 18 tests): motor real
+  de politica (AGT-07) sobre `core/security-policy.json` — `loadSecurityPolicy`
+  (fail-closed: `defaultDecision` debe ser `"deny"`) y `resolvePolicyDecision
+  ({role, capability, scope, unitId})`, que resuelve rol x capacidad (no
+  nivel SDD x capacidad como `security-policy.ps1` de TEMPLATE v2.0.5, que
+  ademas nunca fue consumido por nada mas que `mcp-tools.ps1`). Mapea los 6
+  valores reales de la matriz: `allow`→ALLOW, `deny`/`n/a`/no declarado/rol
+  desconocido→DENY, `approves-step-up`→ALLOW (el humano concede el step-up,
+  no esta gateado por el), `step-up`→GATE (aprobacion interactiva real es
+  PAR-STEP-UP, M4.4), `scoped:<patron>`→ALLOW solo si `scope` calza
+  (soporta el placeholder `<unit>` y alternancia `{a,b,c}`, los dos patrones
+  reales presentes hoy en `core/security-policy.json`).
+* `runtime/policy/authorization.mjs` (+ `authorization.test.mjs`, 6 tests):
+  generaliza `Assert-ScopedAuthorization` de TEMPLATE v2.0.5 — ya no exige
+  el literal `decision: MERGE` para cualquier autorizacion scoped (B14,
+  documentado desde M2.2 en la `description` de `core/security-policy.json`);
+  el llamador declara `expectedDecision` (`MERGE` para el HITL real de PR,
+  `ALLOW` para un grant de capacidad MCP/step-up). Preserva el rechazo de
+  documentos con `token`/`secret`/`password`/`api[-_]key`.
+* `runtime/mcp/decision.mjs` (+ `decision.test.mjs`, 10 tests): migra AGT-08
+  — `resolveMcpDecision({server, scope, role, operation, catalog,
+  authorizationPath, environment})` sobre `mcp/catalog.json` (vacio hoy;
+  PAR-MCP-TRUST/gateway real es M4.4) + `runtime/policy`. **Dos bugs reales
+  corregidos, encontrados leyendo `Get-McpCapabilityDecision` en
+  `mcp-tools.ps1`:**
+  1. **DENY→ALLOW:** la funcion legada solo trataba explicitamente el caso
+     GATE sin `AuthorizationPath` (`return DENY`); cualquier OTRO valor
+     distinto de ALLOW (es decir, un DENY real: capacidad no declarada para
+     el rol) seguia ejecutando `Assert-ScopedAuthorization` si se pasaba una
+     ruta, y si el archivo validaba, el flujo caia hasta el final de la
+     funcion y devolvia ALLOW — un DENY se podia revertir con una
+     autorizacion. Corregido: un DENY de politica es terminal, ninguna
+     autorizacion lo puede convertir en ALLOW (test de regresion:
+     "reviewer EXTERNAL_WRITE is a straight DENY... no authorization can
+     override it").
+  2. **`decision: MERGE` forzado para MCP:** ya cubierto por la
+     generalizacion de `assertScopedAuthorization` — `resolveMcpDecision`
+     ahora exige `expectedDecision: "ALLOW"` para un grant de capacidad MCP,
+     nunca `MERGE` (test de regresion: una autorizacion `decision: MERGE`
+     es rechazada para un grant MCP que espera `ALLOW`).
+* `runtime/routing/resolve-model.mjs` (+ `resolve-model.test.mjs`, 14
+  tests): migra AGT-06/AGT-11 — `resolveModel(...)` sobre `core/models.json`
+  (preparado desde M2.2 con esta migracion en mente, ver su campo `notes`).
+  Puerto deliberadamente SIN la interfaz `-RunFile`/`run.yaml` de
+  TEMPLATE v2.0.5: ningun consumidor de `ai-native` lee `run.yaml` hoy
+  (`executionDeclaration` en `core/models.json` documenta el formato solo
+  como dato), reproducir ese parser hubiera sido especulativo. Salvaguardas
+  preservadas (AGT-11): `RoutingBlockedError` determinista cuando ninguna
+  implementacion satisface capacidades/contexto/perfil de seguridad, o
+  cuando ninguna candidata de la cadena de fallback tiene credenciales;
+  desempate determinista por alias; senal F07 (`readEvalSignal`) solo
+  relativa/auditable, nunca inventa un resultado si falta evidencia;
+  OpenRouter solo se usa si esta explicitamente en el fallback solicitado.
+  **Sin ninguna ruta de codigo que consulte un catalogo remoto o consuma
+  credito real** (a diferencia de v2.0.5, que exponia `-UseLiveCatalog` y lo
+  bloqueaba en runtime vía `AGENTIC_TEST_MODE`; v3 directamente no tiene esa
+  superficie). **Mejora explicita sobre v2.0.5:** `metricStatus.cost` es
+  siempre el string `NOT_AVAILABLE_FROM_TOOL`, nunca un `null` silencioso
+  (`model-routing.jsonl` de v2.0.5 siempre tenia `cost=null` sin
+  explicacion; ver `contracts/unit-event.schema.json`, variante `routing`,
+  ya preparada desde M3.2 exactamente para esto). `recordRoutingDecision`
+  reutiliza `runtime/circuit/events.mjs` (`appendEvent`) para escribir la
+  resolucion como evento `routing` en el mismo `events.jsonl` hash-chained
+  del Work Unit — **no** un `model-routing.jsonl` separado; la
+  consolidacion ya estaba prevista desde M3.2 ("consolida los 5 archivos
+  maquina de v2.0.5... detras de un unico evento con 8 variantes").
+* `.github/workflows/ci.yml`: 3 pasos nuevos (tests de `runtime/policy/*`,
+  `runtime/mcp/*`, `runtime/routing/*`).
+* `parity/par-tests.json`: `PAR-POLICY-ENFORCED`, `PAR-ROUTING-EVIDENCE`,
+  `PAR-ROUTING-SAFEGUARDS` → IMPLEMENTED (52/95 implementados en total).
+
+Decision de alcance (no un hallazgo de bug, una decision deliberada):
+
+* AGT-07 pide politica "aplicada en cada accion mutante". La unica
+  superficie de accion mutante real que existe hoy y que la propia
+  TEMPLATE v2.0.5 realmente gateaba con este motor es la decision de
+  capacidad MCP (`Get-SecurityDecision` en v2.0.5 no tenia ningun otro
+  consumidor real mas que `mcp-tools.ps1`, verificado leyendo los 29
+  scripts). Por eso `runtime/mcp/decision.mjs` es el unico punto de
+  aplicacion real en esta Work Unit; no se reabrio ni se modifico el
+  circuito ya cerrado de M3.2 (`runtime/circuit/*`) para insertar chequeos
+  de politica en sus funciones mutantes internas (claims, start-unit,
+  closure), lo cual hubiera significado reabrir una fase cerrada sin
+  instruccion explicita para ese alcance especifico.
+* Se respeta expresamente el hallazgo de M2.3: los permisos de cliente no
+  bloquean realmente en Codex sobre Windows, asi que el enforcement fuerte
+  de escritura/merge de git permanece server-side (M4.3, trust-gate/
+  merge-gate P44/P45). `runtime/policy`/`runtime/mcp` dan decision y
+  evidencia reales para la superficie MCP, no una afirmacion de que
+  reemplazan ese enforcement de servidor.
+
+Validado:
+
+* Baseline completa re-verificada: 45 validadores node (foundation +
+  knowledge + template) + `scripts/validate-audit-safe-script-mode.mjs`
+  + `contracts/validate-contracts.mjs` + `core/validate-core.mjs` +
+  `evaluation/compat/validate-compat-matrix.mjs` + `runtime/status/
+  validate-integrity.mjs` + `runtime/adapters/validate-entrypoints.mjs`
+  (PASS contra el propio repo) + `parity/validate-parity.mjs` (PASS, 95
+  registrados/52 implementados) + 310 tests node en total (48 nuevos de
+  esta Work Unit en `runtime/policy/*`, `runtime/mcp/*`, `runtime/routing/*`:
+  18+6+10+14). Suites existentes re-corridas sin regresion: `runtime/
+  circuit/*.test.mjs` (145), `runtime/adapters/*.test.mjs` (49), `runtime/
+  status/*.test.mjs` + `runtime/lib/*.test.mjs` (54). Todos PASS.
+* `git diff --check` sin problemas de whitespace.
+
+Restricciones vigentes:
+
+* PR de `feature/m3-4-routing-policy-mcp` pendiente de CI y de revision y
+  merge humano; unico HITL: merge humano, sin excepcion para esta Work Unit.
+* M3.4 cerrado. Siguiente: M3.5 (Skills core + reconciliacion de las 13
+  contradicciones doc-codigo de TEMPLATE), una vez mergeado M3.4.
+* PAR-MCP-TRUST (gateway MCP real, servidores reales registrados en
+  `mcp/catalog.json`) y PAR-STEP-UP (aprobacion interactiva real ligada a
+  servidor+operacion+digest de argumentos) siguen explicitamente fuera de
+  alcance: quedan para M4.4, sin inventar evidencia.
+* `runtime/policy`/`runtime/mcp` no se aplicaron dentro de
+  `runtime/circuit/*` (M3.2, ya cerrado): ver "Decision de alcance" arriba.
+  Extender el enforcement de politica a otras acciones mutantes del
+  circuito (GIT_WRITE/REMOTE_WRITE/MERGE) queda como decision separada,
+  explicita, no un efecto secundario de este merge.
+* No tocar (escribir en) repos GI sin autorizacion explicita por oleada
+  (M6).
