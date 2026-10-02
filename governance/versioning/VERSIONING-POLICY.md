@@ -76,7 +76,7 @@ Cada contrato (schema, skill del core, perfil, workflow reutilizable) declara:
 - `removalTarget` (MAJOR en la que se retira),
 - `migration` (referencia al mecanismo de migración).
 
-Una deprecación se anuncia como *warning* durante al menos una MINOR antes de convertirse en error, salvo vulnerabilidad de seguridad crítica, que puede retirarse de inmediato con revocación (`governance/versioning/revocations.json`, a crear en M4.2).
+Una deprecación se anuncia como *warning* durante al menos una MINOR antes de convertirse en error, salvo vulnerabilidad de seguridad crítica, que puede retirarse de inmediato con revocación (`governance/versioning/revocations-<n>.json`, publicada por `release.yml` como asset atestado de cada release; el consumidor toma la de mayor `n` que verifica).
 
 Ventana de soporte: la MAJOR de plataforma vigente completa, más la MAJOR anterior solo con correcciones de seguridad.
 

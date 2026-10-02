@@ -191,6 +191,10 @@ jobs:
         shell: bash
         run: node --test runtime/bootstrap/*.test.mjs
 
+      - name: runtime/release tests (M4.2, PAR-REPRODUCIBLE-BUNDLE/PAR-RELEASE)
+        shell: bash
+        run: node --test runtime/release/*.test.mjs
+
       - name: runtime/mcp-gateway tests (M4.4, PAR-MCP-TRUST/PAR-STEP-UP)
         shell: bash
         run: node --test runtime/mcp-gateway/*.test.mjs
