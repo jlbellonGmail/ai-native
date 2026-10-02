@@ -1,0 +1,33 @@
+name: Supply chain
+
+# M0.3b: every third-party action referenced by an active workflow must be
+# pinned by a full 40-hex commit SHA (P-supply-chain; ADR-004: no floating
+# tags). Fails closed on any tag/branch reference.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pin-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Action pin validator tests
+        shell: bash
+        run: node --test scripts/validate-actions-pinned.test.mjs
+
+      - name: Every action pinned by full SHA
+        shell: bash
+        run: node scripts/validate-actions-pinned.mjs
