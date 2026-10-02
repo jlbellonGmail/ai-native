@@ -20,6 +20,7 @@ fields; a consumer on `schemaVersion` N or N-1 must still be readable.
 | `state-machine.schema.json` + `state-machine.json` | the Work Unit state machine: states, transitions, preconditions | this repo (data) | `runtime/circuit/*` |
 | `assess-rules.schema.json` + `assess-rules.json` | ASSESS signal weights, breadth rules and score thresholds (M3.2) | this repo (data) | `runtime/circuit/assess` |
 | `work-unit-manifest.schema.json` | `work-unit.json`, a Milestone's grouped-items manifest (+ optional task DAG) (M3.2) | `runtime/circuit/start-unit` | `runtime/circuit/identity`, `runtime/circuit/contract` |
+| `skills-registry.schema.json` | `.agents/skills/registry.json`, profile/role/level applicability per skill (M3.3) | this repo (data) | `runtime/adapters/skills` |
 | `result-status.schema.json` | the PASS/PASS_WITH_WARNINGS/FAIL/ERROR/NOT_RUN/NOT_APPLICABLE envelope every gate returns | every validator/gate | CI, `ai-native status` |
 | `audit-report.schema.json` | a `.audit/reports/*.md` report's required front matter | the `audit` skill | `release-gate`, `ai-native status` |
 | `eval-result.schema.json` | one evaluation result (L1/L2/L3), extends TEMPLATE v2.0.5's `agentic-eval-result.schema.json` | the evaluation harness (M4.6) | `release-gate`, `compat-matrix` |
