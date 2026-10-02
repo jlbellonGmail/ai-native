@@ -3798,3 +3798,30 @@ Restricciones vigentes:
 * Skills canonicas unicas en `.agents/skills/` (task-execution, recovery, delivery-governance); copias `factory-*`/`project-*` eliminadas.
 * `runtime/docs/validate-doc-drift.mjs` corre en CI. Ver detalle y limites en el roadmap (M3.5).
 * Siguiente elegible segun DAG: M4.1, M4.4, M4.5 (sin D1/A1/A3). M4.2 (D1) y M4.3 (A1/A3) bloqueadas por decision humana.
+
+
+---
+
+## 2026-10-02 — Cierre de ejecución autónoma: M3.5, M4.1, M4.4, M4.5, M4.6, M4.7
+
+Fases cerradas (cada una: CI verde en Ubuntu + Windows en la PR, merge, CI post-merge verde en `main`):
+
+* M3.5 — PR #13, merge `49f733c`. Skills canonicas unicas + validador de doc drift.
+* M4.1 — PR #14, merge `1cbe8df`. Bootstrap, cache content-addressed, sync --from-file, rollback, doctor.
+* M4.4 — PR #15, merge `722b550`. Gateway MCP default-deny + step-up + output injection.
+* M4.5 — PR #16, merge `877c9fe`. `audit/` central + certificacion exact-commit.
+* M4.7 — PR #17, merge `2efb523`. Contrato de packs.
+* M4.6 — PR #18, merge `127280e`. Harness L1/L2 + correlacion de observabilidad.
+
+`parity/par-tests.json`: 73/95 implementados; `UNMAPPED=0`.
+
+Pendientes que NO se ejecutaron y por que:
+
+* M4.2 (`release.yml`, alpha.1): depende de D1 (visibilidad de `ai-native`).
+* M4.3 (pr-gate/trust-gate/merge-gate, P44): depende de A1 (identidad `ai-native-agent`) y A3 (GitHub App `ai-native-gate`).
+* M0.3b: depende de D1. M0.0b: modifica el repo `template` y requiere A2.
+* M5.x: no se abre sin las condiciones P de salida de M4 (M4.2/M4.3 pendientes).
+* M3.5 — limite explicito: el listado original de las 13 contradicciones vive en el plan de sesion y no esta en el repo; P22/P35 no estan definidas en el repo. Ver roadmap.
+* PAR pendientes de fases futuras: ver `parity/par-tests.json` (status PLANNED).
+
+Restricciones vigentes: no tocar repos GI sin autorizacion por oleada (M6); ninguna evaluacion L2 real ni auditoria real se ejecuto; `mcp/catalog.json` sigue vacio.
