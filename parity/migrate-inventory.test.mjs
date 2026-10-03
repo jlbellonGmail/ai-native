@@ -158,3 +158,14 @@ test("PAR-MIGRATE-CLASSIFY regression guard: unreadable directories are skipped 
     rmSync(work, { recursive: true, force: true });
   }
 });
+
+test("--json output is complete when piped, even far above the pipe buffer (regression: process.exit() truncated it on Linux)", () => {
+  const dir = mkdtempSync(join(tmpdir(), "inv-big-"));
+  for (let i = 0; i < 1500; i += 1) writeFileSync(join(dir, `file-${String(i).padStart(4, "0")}.md`), `local ${i}\n`);
+  const db = makeSyntheticHashDb(dir);
+  const out = execFileSync(process.execPath, [SCRIPT, "--target", dir, "--json", "--hash-db", db], { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
+  assert.ok(out.length > 150000, `expected a large report, got ${out.length} bytes`);
+  const report = JSON.parse(out); // throws if truncated
+  assert.equal(report.files.length, report.totalFiles);
+  rmSync(dir, { recursive: true, force: true });
+});

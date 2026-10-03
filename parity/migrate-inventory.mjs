@@ -242,4 +242,5 @@ if (outPath) {
   if (!jsonOutput) console.log(`  report written to ${resolve(outPath)}`);
 }
 
-process.exit(exitCodeFor(status, { strict: false }));
+// exitCode, not process.exit(): with stdout on a pipe (Linux) process.exit() truncates output larger than the pipe buffer.
+process.exitCode = exitCodeFor(status, { strict: false });
