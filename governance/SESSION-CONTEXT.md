@@ -3897,3 +3897,11 @@ Restricciones vigentes: no tocar repos GI sin autorizacion por oleada (M6); ning
 * El test `PAR-CACHE-CONCURRENT` fallo en `windows-latest` en una PR solo documental (#37): `EPERM` al abrir `*.json.lock` con `wx` mientras otro proceso lo borraba. No es flakiness: el lock trataba solo `EEXIST` como contencion; en Windows el archivo en borrado reporta `EPERM`/`EBUSY`. Mismo patron en `runtime/circuit/claims.mjs`.
 * Corregido en `runtime/lib/lock.mjs` (`isLockContention`, solo `win32` acepta EPERM/EBUSY) usado por ambos locks, con test propio. Habia pasado en 3 PRs anteriores por azar de timing.
 * Hallazgo en #38: el `trust-gate` fallo una vez porque `refs/pull/N/head` aun no existia al dispararse el evento (carrera con la creacion de la PR). Se agrega reintento con backoff al fetch del workflow; antes, el fallo dejaba la PR BLOCKED hasta reejecutar a mano.
+
+---
+
+## 2026-10-03 — Cierre de M5: autorizaciones y avance
+
+* Autorizacion humana vigente (mensaje del maintainer): publicar `v3.0.0-rc.1` si los requisitos pre-RC estan en PASS (sin inferir), canary real D4 sobre `template-starter@v2.0.4` por PR revertible, `v3.0.0` si todo M5 queda verde, y merge automatico de PRs tecnicas con CI verde, parity verde, reviewer ACCEPT y sin findings, **salvo** que una regla del repo exija merge humano por diseno. Registrado aqui porque la constitucion (principio 5) y H4 del plan fijan el merge humano durante pilotos: el maintainer los relaja explicitamente para PRs tecnicas de M5; ningun gate ni ruleset se debilita.
+* Requisitos pre-RC leidos del Plan Maestro (seccion 21): P4-P9, P12, P14, P20, P21, P27-P31, P33, P34, P36, P39, P41-P45 (P45 incluido el review-gate en CI). C1-C6/P11 y P32 son previos al canary, no al rc.
+* Esta PR agrega el review-gate de P45, `status` del bootstrap, y la matriz determinista de M5.2 (ver roadmap).

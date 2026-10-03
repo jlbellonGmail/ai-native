@@ -8,13 +8,14 @@
 //            Revocations come from the repo's releases unless --offline.
 //   run      [-- <args for the release>]
 //   rollback [--force]
+//   status   [--offline] [--revocations <file>] [--check]   READY|NEEDS_SYNC|DEGRADED_READONLY|REVOKED|NOT_ADOPTED
 //   doctor
 // Common: --project <dir> (default cwd), --cache <dir> (default $AI_NATIVE_CACHE
 // or ~/.ai-native/cache), --json.
 import { readFileSync, existsSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { init, sync, run, rollback, doctor, readLock } from "./install.mjs";
+import { init, sync, run, rollback, doctor, status as bootstrapStatus, readLock } from "./install.mjs";
 import { defaultCacheRoot, verifyRelease } from "./cache.mjs";
 import { downloadRelease, fetchRevocations } from "./remote.mjs";
 import { renderOutput, exitCodeForReport, buildReport } from "../lib/json.mjs";
@@ -42,7 +43,7 @@ let result;
 try {
   switch (command) {
     case "init":
-      result = init({ projectRoot, bundleFile: value("--bundle"), repo: value("--repo"), profiles: values("--profile"), mcpProfiles: values("--mcp-profile"), force: flag("--force") });
+      result = init({ projectRoot, bundleFile: value("--bundle"), repo: value("--repo"), profiles: values("--profile"), mcpProfiles: values("--mcp-profile"), channel: value("--channel") ?? "stable", force: flag("--force") });
       break;
     case "sync":
       result = await syncCommand();
@@ -53,6 +54,9 @@ try {
     case "rollback":
       result = rollback({ projectRoot, cacheRoot, force: flag("--force") });
       break;
+    case "status":
+      result = statusCommand();
+      break;
     case "doctor":
       result = doctor({ projectRoot, cacheRoot });
       break;
@@ -61,6 +65,16 @@ try {
   }
 } catch (error) {
   result = { status: "ERROR", errors: [error.message], warnings: [] };
+}
+
+function statusCommand() {
+  const revFile = value("--revocations");
+  if (revFile && !existsSync(revFile)) return { status: "ERROR", errors: [`--revocations not found: ${revFile}`], warnings: [] }; // never report READY on a typo
+  const revocations = revFile ? JSON.parse(readFileSync(revFile, "utf8")) : null;
+  const r = bootstrapStatus({ projectRoot, cacheRoot, revocations, offline: flag("--offline") });
+  // exit code: only a state that forbids work is a failure; --check makes anything but READY non-zero
+  const ok = r.state === "READY";
+  return flag("--check") && !ok ? { ...r, status: "FAIL", errors: [`${r.state}: ${r.detail}`] } : r;
 }
 
 async function syncCommand() {

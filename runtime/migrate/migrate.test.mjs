@@ -149,3 +149,19 @@ test("PAR-TRUST-BOUNDARY: policy > contenido -- content cannot elevate permissio
   assert.ok(JSON.stringify(out).includes("n0nce"));
   assert.doesNotMatch(JSON.stringify(out), /\u202e/);
 });
+
+test("PAR-BUMP-FOOTPRINT: a bump never changes the channel; a prerelease is refused from the stable channel", () => {
+  const root = tmp();
+  put(root, "ai-native.lock.json", JSON.stringify(lock("v3.0.0-alpha.1", "1")));
+  applyBump({ projectRoot: root, release });
+  assert.equal(JSON.parse(readFileSync(join(root, "ai-native.lock.json"), "utf8")).platform.channel, "rc");
+  const stable = lock("v3.0.0-alpha.1", "1");
+  stable.platform.channel = "stable";
+  put(root, "ai-native.lock.json", JSON.stringify(stable));
+  assert.throws(() => planBump({ projectRoot: root, release }), /prerelease/);
+  const noChannel = lock("v2.9.9", "1");
+  delete noChannel.platform.channel;
+  put(root, "ai-native.lock.json", JSON.stringify(noChannel));
+  assert.throws(() => planBump({ projectRoot: root, release }), /prerelease/);
+  rmSync(root, { recursive: true, force: true });
+});
