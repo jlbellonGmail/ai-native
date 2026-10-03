@@ -158,3 +158,22 @@ test("a Builder cannot reach the post-review states with a forged reviewInvocati
   const codes = checkEventLog("runs/x/events.jsonl", null, tampered).map((f) => f.code);
   assert.ok(codes.includes("CHAIN_BROKEN") || codes.includes("REVIEW_ID_INVALID"), codes.join(","));
 });
+
+test("review-gate fails closed: no assess, and a depth downgrade, on a post-review unit", () => {
+  const post = [{ eventType: "transition", toState: "GATES_PASSED" }];
+  assert.ok(checkReviewGate("p", post).some((f) => f.code === "REVIEW_GATE_NO_ASSESS"));
+  const approved = (stage) => ({ eventType: "review", stage, verdict: "approved" });
+  // FULL assessed first, then a Builder appends a LIGHT assess and only a code review exists
+  const downgraded = [
+    { eventType: "assess", depth: "FULL" },
+    { eventType: "assess", depth: "LIGHT" },
+    approved("code"),
+    { eventType: "transition", toState: "GATES_PASSED" },
+  ];
+  const codes = checkReviewGate("p", downgraded).map((f) => f.code);
+  assert.ok(codes.includes("REVIEW_GATE_DEPTH_DOWNGRADE"));
+  assert.ok(codes.includes("REVIEW_GATE_MISSING"), "the spec review of the strictest depth is still required");
+  // the same unit, honestly assessed once and fully reviewed, passes
+  const honest = [{ eventType: "assess", depth: "FULL" }, approved("spec"), approved("code"), { eventType: "transition", toState: "GATES_PASSED" }];
+  assert.deepEqual(checkReviewGate("p", honest), []);
+});

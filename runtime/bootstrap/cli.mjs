@@ -69,7 +69,8 @@ try {
 
 function statusCommand() {
   const revFile = value("--revocations");
-  const revocations = revFile && existsSync(revFile) ? JSON.parse(readFileSync(revFile, "utf8")) : null;
+  if (revFile && !existsSync(revFile)) return { status: "ERROR", errors: [`--revocations not found: ${revFile}`], warnings: [] }; // never report READY on a typo
+  const revocations = revFile ? JSON.parse(readFileSync(revFile, "utf8")) : null;
   const r = bootstrapStatus({ projectRoot, cacheRoot, revocations, offline: flag("--offline") });
   // exit code: only a state that forbids work is a failure; --check makes anything but READY non-zero
   const ok = r.state === "READY";

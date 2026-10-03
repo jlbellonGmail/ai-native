@@ -25,7 +25,8 @@ function build(version) {
   assert.equal(r.status, 0, r.stderr);
   const summary = JSON.parse(r.stdout);
   const published = JSON.parse(readFileSync(join(out, "platform.json"), "utf8"));
-  return { version, bundle: join(out, summary.bundle), digest: summary.digest, commit: published.commit ?? commit };
+  assert.equal(published.commit, commit, "platform.json must carry the built commit");
+  return { version, bundle: join(out, summary.bundle), digest: summary.digest, commit: published.commit };
 }
 const A = build("v3.0.0-alpha.1");
 const B = build("v3.0.0-rc.1");
@@ -96,7 +97,7 @@ test("bump A -> B changes only the lock; sync B; then rollback restores A from t
   assert.equal(lockOf(proj).platform.version, B.version);
   assert.equal(state(proj, cache), "NEEDS_SYNC"); // lock moved, cache has only A
 
-  assert.equal(c(proj, cache, "sync", "--from-file", B.bundle, "--offline").status !== 1, true);
+  assert.equal(c(proj, cache, "sync", "--from-file", B.bundle, "--offline").status, 0);
   assert.equal(state(proj, cache), "READY");
   assert.match(node([cli, "run", "--project", proj, "--cache", cache, "--", "version"]).stdout, /^v3\.0\.0-rc\.1 /);
 
@@ -131,3 +132,18 @@ test("the release entry point exposes status", () => {
   rmSync(proj, { recursive: true, force: true });
 });
 
+
+test("status: a corrupted cache entry is NEEDS_SYNC online and DEGRADED_READONLY offline; a missing --revocations file is an error, not READY", () => {
+  const proj = project();
+  const cache = tmp();
+  initLock(proj, cache, A);
+  assert.equal(c(proj, cache, "sync", "--from-file", A.bundle, "--offline").status, 0);
+  const rel = join(cache, "releases", A.digest.replace("sha256:", ""));
+  assert.ok(existsSync(rel), "release dir exists");
+  writeFileSync(join(rel, "planted-extra-file"), "x");
+  assert.equal(state(proj, cache), "NEEDS_SYNC");
+  assert.equal(state(proj, cache, "--offline"), "DEGRADED_READONLY");
+  const typo = c(proj, cache, "status", "--revocations", join(tmp(), "nope.json"));
+  assert.notEqual(typo.status, 0);
+  assert.match(typo.stdout, /not found/);
+});

@@ -68,14 +68,30 @@ export function checkEventLog(path, baseText, headText) {
   return findings;
 }
 
-/** Pure: findings when a post-review unit lacks an approved review for a required stage. */
+const DEPTH_RANK = { LIGHT: 0, STANDARD: 1, FULL: 2 };
+
+/**
+ * Pure. Fail-closed: a post-review unit must (a) have an assess event,
+ * (b) never lower its depth in a later assess (append-only logs allow
+ * appending, so a Builder could otherwise "downgrade" to LIGHT to drop the spec
+ * review), and (c) have an approved review for every stage of the STRICTEST
+ * depth it ever had.
+ */
 export function checkReviewGate(path, events) {
-  const assess = [...events].reverse().find((e) => e.eventType === "assess");
-  if (!assess || !POST_REVIEW_STATES.has(deriveState(events))) return [];
+  if (!POST_REVIEW_STATES.has(deriveState(events))) return [];
+  const assesses = events.filter((e) => e.eventType === "assess");
+  if (!assesses.length) return [{ code: "REVIEW_GATE_NO_ASSESS", path, detail: "unit reached a post-review state without an assess event (no depth to hold it to)" }];
   const findings = [];
-  for (const stage of getEvidenceContract(assess.depth).requiredReviews) {
+  let strictest = assesses[0].depth;
+  for (let i = 1; i < assesses.length; i++) {
+    if (DEPTH_RANK[assesses[i].depth] < DEPTH_RANK[assesses[i - 1].depth]) {
+      findings.push({ code: "REVIEW_GATE_DEPTH_DOWNGRADE", path, detail: `assess lowered depth ${assesses[i - 1].depth} -> ${assesses[i].depth}; the stricter depth still applies` });
+    }
+    if (DEPTH_RANK[assesses[i].depth] > DEPTH_RANK[strictest]) strictest = assesses[i].depth;
+  }
+  for (const stage of getEvidenceContract(strictest).requiredReviews) {
     const latest = getLatestVerdict(events, stage);
-    if (!latest) findings.push({ code: "REVIEW_GATE_MISSING", path, detail: `${assess.depth} unit is past code review but has no '${stage}' review event` });
+    if (!latest) findings.push({ code: "REVIEW_GATE_MISSING", path, detail: `${strictest} unit is past code review but has no '${stage}' review event` });
     else if (latest.verdict !== "approved") findings.push({ code: "REVIEW_GATE_NOT_APPROVED", path, detail: `latest '${stage}' review is '${latest.verdict}', not approved` });
   }
   return findings;
