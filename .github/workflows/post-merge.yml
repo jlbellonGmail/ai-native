@@ -1,0 +1,42 @@
+name: post-merge
+
+# M4.3 (PAR-POST-MERGE, PAR-HUMAN-MERGE). READ-ONLY: verifies after a merge that
+# the merge was done by a human maintainer (never the worker/bot identity),
+# that the merge commit is on main, and that a green merge-gate from the
+# `ai-native-trust` App existed on the merged head. It cannot push, tag or
+# comment; a red run is the alert.
+
+on:
+  pull_request_target:
+    branches: [main]
+    types: [closed]
+
+permissions:
+  contents: read
+  pull-requests: read
+  checks: read
+
+jobs:
+  post-merge:
+    name: post-merge
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main (trusted)
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.base.ref }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Verify merge was human and gated
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: node runtime/gates/post-merge.mjs
+
+      - name: STATUS/git integrity (read-only)
+        shell: bash
+        run: node runtime/status/validate-integrity.mjs

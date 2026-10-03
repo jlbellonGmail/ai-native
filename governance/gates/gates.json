@@ -6,7 +6,18 @@
     "appSlug": "ai-native-trust",
     "callerWorkflow": ".github/workflows/trust-gate.yml"
   },
+  "mergeGate": {
+    "checkName": "ai-native/merge-gate",
+    "callerWorkflow": ".github/workflows/merge-gate.yml"
+  },
   "reservedCheckNames": ["ai-native/trust-gate", "ai-native/merge-gate"],
+  "requiredChecks": [
+    { "name": "validators (ubuntu-latest)", "appSlug": "github-actions" },
+    { "name": "validators (windows-latest)", "appSlug": "github-actions" },
+    { "name": "pin-check", "appSlug": "github-actions" },
+    { "name": "pr-gate", "appSlug": "github-actions" },
+    { "name": "ai-native/trust-gate", "appSlug": "ai-native-trust" }
+  ],
   "controlPlane": [
     ".github/**",
     "governance/gates/**",
@@ -19,10 +30,23 @@
   ],
   "worker": {
     "appSlug": "ai-native-worker",
-    "botLogins": ["ai-native-worker[bot]"]
+    "botLogins": ["ai-native-worker[bot]"],
+    "permissions": { "contents": "write", "pull_requests": "write", "workflows": "write", "metadata": "read" }
+  },
+  "trustApp": {
+    "permissions": { "checks": "write", "pull_requests": "read", "actions": "read", "contents": "read", "metadata": "read" }
   },
   "governance": {
     "mode": "SingleMaintainer",
     "humanMergers": ["jlbellonGmail"]
+  },
+  "gatesByLevel": {
+    "LIGHT": ["ci", "trust-gate", "pr-gate"],
+    "STANDARD": ["ci", "trust-gate", "pr-gate", "spec-review"],
+    "FULL": ["ci", "trust-gate", "pr-gate", "spec-review", "security-scan", "spec-audit"]
+  },
+  "docGate": {
+    "relevantPaths": ["core/**", "contracts/**", "runtime/**", "governance/gates/**", ".github/workflows/**"],
+    "docPaths": ["governance/**", "README.md", "docs/**"]
   }
 }

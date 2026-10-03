@@ -1,0 +1,37 @@
+name: security-scan
+
+# M4.3 security-scan (PAR-SUPPLY-CHAIN). Reusable (workflow_call). Complements,
+# does not duplicate, the dedicated scanners already live in this repo
+# (codeql.yml, trivy.yml, dependency-review.yml, sbom.yml): this one enforces
+# the workflow supply-chain policy (permissions, SHA pinning, no
+# pull_request_target head checkout, no pipe-to-shell) and the secret-shape scan
+# over the files a PR changes.
+
+on:
+  workflow_call:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  security-scan:
+    name: security-scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Workflow supply-chain policy and secret-shape scan
+        shell: bash
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: node runtime/gates/pr-gate.mjs --base "origin/${BASE_REF:-main}" --json

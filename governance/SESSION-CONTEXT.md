@@ -3840,3 +3840,11 @@ Restricciones vigentes: no tocar repos GI sin autorizacion por oleada (M6); ning
 * M0.3b: PR #20, merge `eec8112`. CodeQL, dependency-review, Trivy, SBOM, supply-chain, todo fijado por SHA; 46 HIGH/CRITICAL reales de Trivy corregidos en lockfiles (gate intacto).
 * M4.2: PR #27 (merge `889d05c`) + PR #28 (fix `9e155b4`). `v3.0.0-alpha.1` publicado (prerelease, inmutable) sobre `9e155b4b77ef4331dae2926e9053abb792733e8d`; release run `37066111640` build/publish/verify success; digest `sha256:207bb0d71d76de479b722b106bd1c127ec31c9a8f36285f79578aa047db067a0`.
 * `parity/par-tests.json`: 75/95 implementados; `UNMAPPED=0`. Pendiente de lo desbloqueado por D1: nada. Siguiente en el DAG: M4.3 (requiere A1 y A3, acciones humanas). M0.0b requiere A2.
+
+---
+
+## 2026-10-02 — M4.3 en curso (A1/A3 resueltas)
+
+* A1 = GitHub App `ai-native-worker` (secrets `WORKER_APP_ID`/`WORKER_APP_PRIVATE_KEY`); A3 = GitHub App `ai-native-trust` (secrets `TRUST_APP_ID`/`TRUST_APP_PRIVATE_KEY`). Ambas instaladas solo en `jlbellonGmail/ai-native`. Estos son los nombres reales; no existen variantes `agent`/`gate`.
+* M4.3 se parte en PRs porque un check requerido emitido por una App solo puede producirlo un workflow que ya exista en `main` (`pull_request_target` corre la version base). PR #30 (trust-gate, P44) mergeada por el agente; PR-B (merge-gate, post-merge, pr-gate, security-scan, P45, ruleset); PR final de cierre sin merge del agente (unico HITL).
+* `runtime/gates/*` + `governance/gates/gates.json` (config leida SIEMPRE desde base) + `governance/rulesets/main.json`.

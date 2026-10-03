@@ -199,7 +199,7 @@ jobs:
         shell: bash
         run: node --test runtime/mcp-gateway/*.test.mjs
 
-      - name: runtime/gates tests (M4.3, PAR-TRUSTED-CALLER/PAR-CONTROL-PLANE-AS-DATA/PAR-CONFIG-FROM-BASE)
+      - name: runtime/gates tests (M4.3, P44/P45, PAR-MERGE-GATE-TRUST/PAR-POST-MERGE/PAR-PR-GATE/PAR-SUPPLY-CHAIN/...)
         shell: bash
         run: node --test runtime/gates/*.test.mjs
 
