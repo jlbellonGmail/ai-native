@@ -6,6 +6,7 @@
 //  - no attacker-controlled `${{ github.event.* }}` interpolated into a script (P43)
 // Plus a secret-shape scan over arbitrary text (added lines of a diff).
 import { findUnpinned } from "../../scripts/validate-actions-pinned.mjs";
+import { checkSecretExposure } from "./secret-exposure.mjs";
 
 const HEAD_REF = /github\.event\.pull_request\.head\.(sha|ref)|github\.head_ref/;
 
@@ -69,6 +70,7 @@ export function checkWorkflow(path, text) {
       if (m[1] !== "GITHUB_TOKEN") findings.push({ code: "SECRETS_IN_PR_EVENT", path, detail: `secrets.${m[1]} is reachable from a pull_request/pull_request_review workflow (it runs the PR's own file)` });
     }
   }
+  findings.push(...checkSecretExposure(path, text));
   for (const h of findScriptInjection(text)) findings.push({ code: "SCRIPT_INJECTION", path, detail: `line ${h.line}: untrusted expression interpolated into a script: ${h.text.slice(0, 120)}` });
   if (/(curl|wget)[^\n|]*\|\s*(ba)?sh\b/.test(text)) findings.push({ code: "PIPE_TO_SHELL", path, detail: "download piped into a shell" });
   return findings;

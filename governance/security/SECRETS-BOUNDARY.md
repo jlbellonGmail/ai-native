@@ -1,0 +1,36 @@
+# Frontera de los secretos de las Apps (`ai-native-trust`, `ai-native-worker`)
+
+## El problema (hallazgo H1 de la auditoría PLATFORM del 2026-10-03)
+
+GitHub ejecuta un workflow desde el **archivo del ref que lo dispara**. Con `push`, `pull_request`, `pull_request_review`,
+`workflow_dispatch` o `schedule` en una rama, es el archivo **de esa rama**; con `pull_request_target` o `workflow_run`, el de la rama por defecto.
+Cualquiera que pueda empujar una rama a este repo (la App `ai-native-worker` tiene `workflows: write`) puede añadir un workflow con
+`on: push` que imprima **todos los secretos del repositorio**, sin PR ni revisión. Un detector no lo impide: actúa cuando el secreto ya se usó.
+
+## Qué hace el repositorio (verificable, hoy)
+
+* `runtime/gates/secret-exposure.mjs` + `supply-chain.mjs` (pr-gate y security-scan): un workflow que referencia un secreto distinto de
+  `GITHUB_TOKEN` solo puede dispararse por eventos que ejecutan el archivo de la rama por defecto (`pull_request_target`, `workflow_run`,
+  `workflow_call`, `release`, `issue_comment`, `issues`). Cubre todas las formas de `on:` y de nombrar secretos (`secrets.X`, `secrets['X']`,
+  `toJSON(secrets)`, `secrets: inherit`). Probado con el `merge-gate.yml` que estuvo publicado (`pull_request_review` + clave de la App).
+* `merge-gate.yml` ya no escucha `pull_request_review`. `post-merge.yml` lee la config del `base.sha`.
+* Los cambios a `.github/**` marcan `trust-gate = neutral` (revisión humana obligatoria).
+
+## Qué NO impide eso (límite explícito)
+
+Un workflow malicioso en una rama **que no pase por una PR gateada** (un `push` directo a una rama nueva) se ejecuta antes de cualquier
+gate. La única defensa preventiva es **no entregar el secreto a esas ejecuciones**: un *Environment* con ramas de despliegue limitadas a `main`.
+
+## Acción del maintainer (no la puede hacer el agente: no puede leer ni mover el valor de un secreto)
+
+El Environment `ai-native-trust` **ya existe** y está restringido a la rama `main` (creado por el agente el 2026-10-03). Faltan, en este orden:
+
+1. **Rotar la clave privada** de la App `ai-native-trust` (GitHub → Settings → Developer settings → GitHub Apps → *Generate a new private key*) y revocar la anterior.
+   La ventana de exposición existió desde el merge de la PR #31 hasta la corrección de `merge-gate.yml`; no hay evidencia de abuso, pero no se puede descartar.
+2. Cargar `TRUST_APP_ID` y `TRUST_APP_PRIVATE_KEY` como **secretos del Environment** `ai-native-trust` (no del repositorio).
+3. **Borrar** `TRUST_APP_ID`, `TRUST_APP_PRIVATE_KEY`, `WORKER_APP_ID` y `WORKER_APP_PRIVATE_KEY` de los secretos **del repositorio**
+   (`WORKER_*` no se usa en ningún workflow hoy).
+4. Avisar al agente: añadirá `environment: ai-native-trust` a los jobs de `trust-gate.yml` y `merge-gate.yml` (hacerlo antes de tener los secretos en el
+   Environment dejaría los gates sin credenciales y bloquearía los merges).
+
+Hasta que eso ocurra, el riesgo residual es: **un actor con push de ramas puede leer los secretos del repositorio mediante un workflow de rama**.
