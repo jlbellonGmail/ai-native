@@ -157,8 +157,8 @@ async function runC3() {
   }
   const audit = join(proj, "audit.jsonl").split("\\").join("/");
   const catalog = JSON.parse(readFileSync(join(repoRoot, "evaluation", "fixtures", "mcp", "catalog.json"), "utf8"));
-  const g = governedCatalog({ catalog, root: fxRoot, profile: "evidence", script: `${R}/runtime/mcp-gateway/server.mjs` });
-  g.servers["ai-native-gateway"].args.push("--catalog", `${R}/evaluation/fixtures/mcp/catalog.json`, "--profile-dir", `${R}/evaluation/fixtures/mcp/profiles`, "--downstream", `${R}/evaluation/fixtures/mcp/downstream.mjs`, "--audit", audit);
+  const g = governedCatalog({ catalog, root: fxRoot, profile: "evidence", script: `${R}/runtime/mcp-gateway/server.mjs`, audit });
+  g.servers["ai-native-gateway"].args.push("--catalog", `${R}/evaluation/fixtures/mcp/catalog.json`, "--profile-dir", `${R}/evaluation/fixtures/mcp/profiles`, "--downstream", `${R}/evaluation/fixtures/mcp/downstream.mjs`);
   const toml = buildCodexConfigToml(loadAgents(repoRoot), g);
   writeFileSync(join(proj, ".codex", "config.toml"), toml);
   const home = join(base, "home");
