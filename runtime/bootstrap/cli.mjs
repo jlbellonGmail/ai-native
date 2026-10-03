@@ -43,7 +43,7 @@ let result;
 try {
   switch (command) {
     case "init":
-      result = init({ projectRoot, bundleFile: value("--bundle"), repo: value("--repo"), profiles: values("--profile"), mcpProfiles: values("--mcp-profile"), force: flag("--force") });
+      result = init({ projectRoot, bundleFile: value("--bundle"), repo: value("--repo"), profiles: values("--profile"), mcpProfiles: values("--mcp-profile"), channel: value("--channel") ?? "stable", force: flag("--force") });
       break;
     case "sync":
       result = await syncCommand();

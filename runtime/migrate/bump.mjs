@@ -5,7 +5,7 @@
 // of upgrade-template-consumer.ps1, without copying files).
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
-import { readLock, LOCK_FILE } from "../bootstrap/install.mjs";
+import { readLock, canonical, LOCK_FILE } from "../bootstrap/install.mjs";
 import { validate } from "../lib/schema-lite.mjs";
 
 export const CALLER_WORKFLOW = ".github/workflows/ai-native.yml";
@@ -30,7 +30,12 @@ export function planBump({ projectRoot, release, callerSha = null }) {
   const { lock, errors } = readLock(projectRoot);
   if (errors.length) throw new BumpError(errors.join("; "));
   if (lock.platform.version === release.version && lock.platform.digest === release.digest) throw new BumpError(`already pinned to ${release.version}`);
-  const next = { ...lock, platform: { ...lock.platform, version: release.version, commit: release.commit, digest: release.digest, ...(release.repo ? { repo: release.repo } : {}), channel: /-rc\./.test(release.version) ? "rc" : "stable" } };
+  // The channel is the consumer's own choice and a bump never changes it; but a prerelease
+  // must not be pinned from the stable channel by accident.
+  if (/-(alpha|rc)\./.test(release.version) && (lock.platform.channel ?? "stable") === "stable") {
+    throw new BumpError(`${release.version} is a prerelease; set platform.channel to "rc" explicitly before bumping to it`);
+  }
+  const next = { ...lock, platform: { ...lock.platform, version: release.version, commit: release.commit, digest: release.digest, ...(release.repo ? { repo: release.repo } : {}) } };
   const verrors = validate(next, lockSchema);
   if (verrors.length) throw new BumpError(`target release does not produce a valid lock: ${verrors.join("; ")}`);
   const files = { [LOCK_FILE]: `${JSON.stringify(next, null, 2)}\n` };

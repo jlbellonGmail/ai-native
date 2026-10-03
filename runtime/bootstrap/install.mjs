@@ -37,7 +37,7 @@ export function readLock(projectRoot) {
   return errors.length ? { errors: errors.map((e) => `${LOCK_FILE}: ${e}`) } : { lock, errors: [] };
 }
 
-function canonical(lock) {
+export function canonical(lock) {
   const order = ["schemaVersion", "platform", "profiles", "mcpProfiles", "packs", "overrides"];
   const p = lock.platform;
   const out = {};
