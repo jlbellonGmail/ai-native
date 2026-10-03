@@ -1,0 +1,158 @@
+name: l3-consumer
+
+# L3 consumer gate (M5; P41 / C6). REUSABLE across repositories (workflow_call): a consumer
+# calls it from its own PR workflow, pinned by full SHA:
+#
+#   on: { pull_request: { branches: [main] } }
+#   jobs:
+#     l3:
+#       permissions: { contents: read }
+#       uses: jlbellonGmail/ai-native/.github/workflows/l3-consumer.yml@<40-hex sha>
+#
+# TRUST ROOT (P44). The code that judges a PR must not be chosen by that PR:
+#   * the platform repository is fixed by the `platform-repo` input (default jlbellonGmail/ai-native);
+#     a lock that points anywhere else FAILS the gate;
+#   * the platform commit comes from the lock on the BASE branch when the base has one (a PR that
+#     bumps the lock is judged by the platform the base already trusts, and its NEW release is
+#     verified by `sync`); only a first adoption (no lock on base) falls back to the head lock;
+#   * either way the commit must be in the history of the platform repo's default branch, so an
+#     unreviewed or foreign commit never runs.
+# Then, all read-only with `contents: read` and no secrets:
+#   1. `bootstrap sync --require-attestation`: downloads the release pinned by the HEAD lock, checks its
+#      sha256 against that lock BEFORE caching and verifies the sigstore attestation (fail closed);
+#   2. `runtime/consumer/l3.mjs --require-base`: lock, bootstrap READY, integrity, ASSESS dry-run,
+#      P45 on touched events.jsonl, adoption drift, product tests. With no resolvable base it FAILS.
+# `platform-ref` (optional) overrides the platform commit, ONLY for evidence runs of a platform not yet
+# released; it must still be on the platform's default branch and it is reported as a warning.
+
+on:
+  workflow_call:
+    inputs:
+      platform-repo:
+        description: "The only platform repository this gate will run code from"
+        required: false
+        type: string
+        default: "jlbellonGmail/ai-native"
+      platform-ref:
+        description: "Evidence runs only: platform commit to run the gate from instead of the pinned one"
+        required: false
+        type: string
+        default: ""
+      base-ref:
+        description: "Branch the PR targets. Default: the event's base branch. No base -> the gate FAILS."
+        required: false
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  l3:
+    name: l3-consumer
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout consumer (PR head, no credentials)
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          path: consumer
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Resolve the base branch (required)
+        id: base
+        shell: bash
+        env:
+          BASE_REF: ${{ inputs.base-ref }}
+          EVENT_BASE: ${{ github.base_ref }}
+        run: |
+          set -euo pipefail
+          base="${BASE_REF:-${EVENT_BASE:-}}"
+          [ -n "$base" ] || { echo "::error::no base branch: call this workflow from a pull_request event or pass base-ref (a gate must not run without its base)"; exit 1; }
+          [[ "$base" =~ ^[A-Za-z0-9._/-]+$ ]] || { echo "::error::invalid base-ref"; exit 1; }
+          git -C consumer fetch --no-tags origin "$base"
+          git -C consumer rev-parse --verify "origin/$base" >/dev/null
+          echo "base=$base" >> "$GITHUB_OUTPUT"
+
+      - name: Read the locks and pick the trust root (base lock first, then the head lock)
+        id: lock
+        shell: bash
+        env:
+          BASE: ${{ steps.base.outputs.base }}
+          PLATFORM_REPO: ${{ inputs.platform-repo }}
+          INPUT_REF: ${{ inputs.platform-ref }}
+        run: |
+          set -euo pipefail
+          test -f consumer/ai-native.lock.json || { echo "::error::ai-native.lock.json not found: this repository is not adopted"; exit 1; }
+          # absence is checked explicitly: any other git failure must stop the job, not silently pick the PR-controlled lock
+          if git -C consumer cat-file -e "origin/$BASE:ai-native.lock.json" 2>/dev/null; then
+            git -C consumer show "origin/$BASE:ai-native.lock.json" > "$RUNNER_TEMP/base.lock.json"
+          else
+            rm -f "$RUNNER_TEMP/base.lock.json"
+          fi
+          node -e '
+            const fs = require("fs");
+            const read = (f) => (fs.existsSync(f) ? JSON.parse(fs.readFileSync(f, "utf8")).platform ?? {} : null);
+            const head = read("consumer/ai-native.lock.json");
+            const base = read(process.env.RUNNER_TEMP + "/base.lock.json");
+            const expected = "github:" + process.env.PLATFORM_REPO;
+            for (const [name, p] of [["head", head], ["base", base]]) {
+              if (!p) continue;
+              if (p.repo !== expected) throw new Error(`${name} lock points to ${p.repo}, this gate only runs code from ${expected}`);
+              if (!/^[0-9a-f]{40}$/.test(p.commit || "")) throw new Error(`${name} lock.platform.commit is not a full SHA`);
+            }
+            const source = base ? "base" : "head";
+            const pinned = (base ?? head).commit;
+            const ref = process.env.INPUT_REF;
+            if (ref && !/^[0-9a-f]{40}$/.test(ref)) throw new Error("platform-ref must be a full 40-hex SHA");
+            const commit = ref || pinned;
+            if (ref && ref !== pinned) console.log(`::warning::EVIDENCE RUN: gate code comes from platform-ref ${ref}, not from the ${source} lock pin ${pinned}`);
+            fs.appendFileSync(process.env.GITHUB_OUTPUT, `commit=${commit}\nsource=${ref ? "input" : source}\n`);
+            console.log(`trust root: platform ${process.env.PLATFORM_REPO} @ ${commit} (from ${ref ? "platform-ref input" : source + " lock"})`);
+          '
+
+      # The ref given to actions/checkout is NEVER derived from the PR: the platform's default branch is
+      # checked out (trusted), and only then is the pinned commit verified and selected.
+      - name: Checkout platform (default branch)
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          repository: ${{ inputs.platform-repo }}
+          path: platform
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Select the trusted platform commit (must be in the history of the default branch)
+        shell: bash
+        env:
+          COMMIT: ${{ steps.lock.outputs.commit }}
+        run: |
+          set -euo pipefail
+          [[ "$COMMIT" =~ ^[0-9a-f]{40}$ ]] || { echo "::error::invalid platform commit"; exit 1; }
+          default="$(git -C platform symbolic-ref --short HEAD)"
+          git -C platform merge-base --is-ancestor "$COMMIT" "origin/$default" || { echo "::error::platform commit $COMMIT is not in the history of origin/$default: refusing to run it"; exit 1; }
+          git -C platform checkout --detach "$COMMIT"
+
+      - name: Bootstrap sync (download, sha256 vs lock, sigstore attestation)
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          node platform/runtime/bootstrap/cli.mjs sync --require-attestation --project consumer --cache "$RUNNER_TEMP/ai-native-cache"
+          node platform/runtime/bootstrap/cli.mjs doctor --project consumer --cache "$RUNNER_TEMP/ai-native-cache"
+
+      - name: L3 consumer gate
+        shell: bash
+        env:
+          BASE: ${{ steps.base.outputs.base }}
+        run: |
+          set -euo pipefail
+          node platform/runtime/consumer/l3.mjs --project consumer --cache "$RUNNER_TEMP/ai-native-cache" --base "origin/$BASE" --require-base --out "$RUNNER_TEMP/l3.json"
+
+      - name: Upload the L3 result
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: l3-result
+          path: ${{ runner.temp }}/l3.json
+          if-no-files-found: warn

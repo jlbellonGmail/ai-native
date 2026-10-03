@@ -211,10 +211,15 @@ jobs:
         shell: bash
         run: node --test runtime/migrate/*.test.mjs
 
+      - name: runtime/consumer tests (L3 consumer gate)
+        shell: bash
+        run: node --test runtime/consumer/*.test.mjs
+
       - name: runtime/pilot fixtures - from scratch (M5.2) and real v2 starter v2.0.4 migration (M5.3 partial)
         shell: bash
         env:
           AI_NATIVE_REQUIRE_NETWORK: "1"
+          GH_TOKEN: ${{ github.token }}
         run: node --test runtime/pilot/*.test.mjs
 
       - name: runtime/audit tests (M4.5, PAR-AUDIT-METHOD/PAR-AUDIT-VALIDITY)
