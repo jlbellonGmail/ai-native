@@ -3873,3 +3873,10 @@ Restricciones vigentes: no tocar repos GI sin autorizacion por oleada (M6); ning
 
 * Hallazgo: la release no exponia ningun comando de adaptadores, asi que un consumidor con solo `ai-native.lock.json` no podia obtener los archivos por herramienta. Se agrega `adapters` a `runtime/main.mjs` (`runtime/adapters/consumer.mjs`), construido sobre `runtime/migrate/adopt.mjs` (no sobrescribe, journal, `--revert`).
 * `runtime/pilot/fixture.test.mjs` (7 tests) y `pilot.yml` (online real, alpha.1). M5.2 queda abierta: C5/C6 PLANNED sin definicion en el repo; no se lanzan las CLIs reales.
+
+---
+
+## 2026-10-03 — M5.2 mergeada (#35) y M5.3 en curso
+
+* PR #35 mergeada (`52976ae`): fixture desde cero, comando `adapters`, `pilot.yml`. Online real con `--require-attestation` verde en Ubuntu y Windows.
+* M5.3 (parcial): migracion real de `template-starter` v2.0.4 (`runtime/pilot/migration.test.mjs`, 5 tests). Pendiente: v2.0.0..v2.0.5 de `template` (solo local) y v2.0.6 (M0.0b/A2 humano).

@@ -207,8 +207,10 @@ jobs:
         shell: bash
         run: node --test runtime/migrate/*.test.mjs
 
-      - name: runtime/pilot fixture from scratch, 3 tools, offline, brownfield+revert (M5.2)
+      - name: runtime/pilot fixtures: from scratch (M5.2) + real v2 starter v2.0.4 migration (M5.3 partial)
         shell: bash
+        env:
+          AI_NATIVE_REQUIRE_NETWORK: "1"
         run: node --test runtime/pilot/*.test.mjs
 
       - name: runtime/audit tests (M4.5, PAR-AUDIT-METHOD/PAR-AUDIT-VALIDITY)
