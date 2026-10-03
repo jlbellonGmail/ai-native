@@ -11,7 +11,7 @@
 // with the captured stderr; support is never assumed.
 //   node evaluation/compat/run-c5.mjs [--tool claude|codex|opencode]...
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -82,9 +82,15 @@ function command(tool, { dir, audit, prompt, name }) {
 }
 
 function readAudit(path) {
-  if (!existsSync(path)) return [];
+  let text;
+  try {
+    text = readFileSync(path, "utf8");
+  } catch (error) {
+    if (error.code === "ENOENT") return [];
+    throw error;
+  }
   verifyAuditChain(path);
-  return readFileSync(path, "utf8").split("\n").filter(Boolean).map((l) => JSON.parse(l));
+  return text.split(/\r?\n/).filter(Boolean).map((l) => JSON.parse(l));
 }
 
 function judge(scenarioName, entries, nonce) {
@@ -164,7 +170,11 @@ async function runC3() {
   const home = join(base, "home");
   mkdirSync(home);
   const auth = join(homedir(), ".codex", "auth.json");
-  if (existsSync(auth)) writeFileSync(join(home, "auth.json"), readFileSync(auth));
+  try {
+    writeFileSync(join(home, "auth.json"), readFileSync(auth));
+  } catch (error) {
+    if (error.code !== "ENOENT") throw error; // no credential: the run records NOT_AVAILABLE_FROM_TOOL
+  }
   const key = proj.toLowerCase();
   const homeToml = (trusted) => `approval_policy = "never"\n${trusted ? `\n[projects.'${key}']\ntrust_level = "trusted"\n` : ""}`;
   const one = (trusted) => {
@@ -187,7 +197,16 @@ async function runC3() {
 
 const version = (cmd) => String(sh(cmd, ["--version"]).stdout ?? "").trim().split(/\r?\n/)[0];
 const platformCommit = spawnSync("git", ["rev-parse", "HEAD"], { cwd: repoRoot, encoding: "utf8" }).stdout.trim();
-const results = existsSync(OUT) ? JSON.parse(readFileSync(OUT, "utf8")) : { schemaVersion: 1, tools: {} };
+// read-or-default: no existsSync-then-read race
+function readJsonOr(path, fallback) {
+  try {
+    return JSON.parse(readFileSync(path, "utf8"));
+  } catch (error) {
+    if (error.code === "ENOENT") return fallback;
+    throw error;
+  }
+}
+const results = readJsonOr(OUT, { schemaVersion: 1, tools: {} });
 results.generatedAt = new Date().toISOString();
 results.platformCommit = platformCommit;
 results.method = "real CLI -> runtime/mcp-gateway/server.mjs (stdio) -> gateway.call; ground truth = the gateway's hash-chained audit, never the model's text";
