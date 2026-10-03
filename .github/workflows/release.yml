@@ -236,7 +236,7 @@ jobs:
             curl -fsSL --retry 3 -O "https://github.com/$GITHUB_REPOSITORY/releases/download/$VERSION/$a"
           done
           # the revocations asset is revocations-<n>.json with the HIGHEST n the release published: take its name from SHA256SUMS
-          REV="$(grep -oE 'revocations-[0-9]+\.json' SHA256SUMS | sort -V | tail -1)"
+          REV="$(awk '{print $2}' SHA256SUMS | { grep -E '^revocations-[0-9]+\.json$' || true; } | sort -V | tail -1)"
           [ -n "$REV" ] || { echo "no revocations asset listed in SHA256SUMS"; exit 1; }
           curl -fsSL --retry 3 -O "https://github.com/$GITHUB_REPOSITORY/releases/download/$VERSION/$REV"
           echo "$REV" > revocations.name

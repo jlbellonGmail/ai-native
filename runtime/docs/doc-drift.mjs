@@ -49,12 +49,16 @@ const CMD_RE = /\bnode\s+((?:[\w.-]+\/)*[\w.-]+\.mjs)\b/g;
 // A script a doc tells the reader to run must exist. `bootstrap.ps1` is the v2-era name that the node CLI replaced.
 const PS1_RE = /(?<![\w./-])((?:[\w.-]+\/)*[\w.-]+\.ps1)\b/g;
 
-let trackedCache = null;
+const trackedCache = new Map(); // per repo root: the list is never shared across roots
 function scriptExists(repoRoot, s) {
   if (existsSync(join(repoRoot, s))) return true;
   // a bare name matches any tracked file with that basename (docs say `status-lib.ps1`, the file lives under scripts/)
-  trackedCache ??= execFileSync("git", ["ls-files"], { cwd: repoRoot, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 }).split(/\r?\n/);
-  return trackedCache.some((f) => f === s || f.endsWith(`/${s}`));
+  if (!trackedCache.has(repoRoot)) {
+    const files = execFileSync("git", ["ls-files", "--cached", "--others", "--exclude-standard"], { cwd: repoRoot, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 }).split(/?
+/);
+    trackedCache.set(repoRoot, files.filter((f) => !f.startsWith("legacy/"))); // the legacy v2 baseline still ships a bootstrap.ps1: it must not hide drift
+  }
+  return trackedCache.get(repoRoot).some((f) => f === s || f.endsWith(`/${s}`));
 }
 
 function expandDocs(repoRoot) {

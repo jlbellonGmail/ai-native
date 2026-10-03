@@ -1,7 +1,7 @@
 # Kernel (bloque gestionado, ≤60 líneas — PAR-CONTEXT-BUDGET)
 
 No editar a mano en un consumidor: lo reemplaza `ai-native sync` desde
-`kernelContract` (SemVer entero). Fuente: `core/kernel.md` en `ai-native`.
+`kernelContract` (digest sha256 en `platform.json`). Fuente: `core/kernel.md` en `ai-native`.
 
 ## Identidad
 
