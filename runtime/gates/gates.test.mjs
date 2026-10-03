@@ -176,7 +176,7 @@ test("PAR-SUPPLY-CHAIN: every real workflow in this repo satisfies the policy", 
 
 test("PAR-SUPPLY-CHAIN: secret-shape scan", () => {
   assert.equal(scanSecrets("a", "token ghp_" + "a".repeat(36)).length, 1);
-  assert.equal(scanSecrets("a", "-----BEGIN RSA PRIVATE KEY-----").length, 1);
+  assert.equal(scanSecrets("a", "-----BEGIN RSA " + "PRIVATE KEY-----").length, 1);
   assert.equal(scanSecrets("a", "nothing here").length, 0);
 });
 
