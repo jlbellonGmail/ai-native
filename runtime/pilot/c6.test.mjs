@@ -13,9 +13,16 @@ const evidence = JSON.parse(readFileSync(join(root, "evaluation", "compat", "c6-
 const strict = process.env.AI_NATIVE_REQUIRE_NETWORK === "1";
 
 function api(path) {
-  const r = spawnSync("gh", ["api", path], { encoding: "utf8", maxBuffer: 16 * 1024 * 1024 });
-  if (r.status !== 0) throw new Error(`gh api ${path}: ${(r.stderr || r.stdout).trim().split(/\r?\n/).pop()}`);
-  return JSON.parse(r.stdout);
+  let last = "";
+  // GitHub answers 5xx now and then: retry with backoff; only a persistent failure is a result
+  for (let attempt = 1; attempt <= 5; attempt += 1) {
+    const r = spawnSync("gh", ["api", path], { encoding: "utf8", maxBuffer: 16 * 1024 * 1024 });
+    if (r.status === 0) return JSON.parse(r.stdout);
+    last = (r.stderr || r.stdout).trim().split(/\r?\n/).pop();
+    if (!/5\d\d|timeout|temporar|No server is currently available/i.test(last)) break;
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, attempt * 8000);
+  }
+  throw new Error(`gh api ${path}: ${last}`);
 }
 
 let run = null;

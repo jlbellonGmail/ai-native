@@ -27,10 +27,10 @@ try {
   // `gh` writes the artifact itself (like a consumer's tooling would); we only read it back to serve it to downloadRelease
   // GitHub answers 5xx now and then: retry with backoff, never treat infrastructure noise as a result
   let dl;
-  for (let attempt = 1; attempt <= 4; attempt += 1) {
+  for (let attempt = 1; attempt <= 6; attempt += 1) {
     dl = spawnSync("gh", ["release", "download", VERSION, "--repo", REPO, "--pattern", ASSET, "--dir", dir, "--clobber"], { encoding: "utf8" });
     if (dl.status === 0 || !/5\d\d|timeout|temporar/i.test(`${dl.stderr}${dl.stdout}`)) break;
-    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, attempt * 5000);
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, attempt * 8000);
   }
   if (dl.status !== 0) throw new Error(`gh release download failed: ${(dl.stderr || dl.stdout).trim().split(/\r?\n/).pop()}`);
   bytes = readFileSync(file);
