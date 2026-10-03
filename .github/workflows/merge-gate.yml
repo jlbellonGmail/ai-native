@@ -1,0 +1,60 @@
+name: merge-gate
+
+# M4.3 (PAR-MERGE-GATE-TRUST, PAR-HUMAN-MERGE). Runs from the BASE branch
+# (pull_request_target / pull_request_review use the base workflow file), never
+# executes PR code, and publishes its verdict as a check run authored by the
+# `ai-native-trust` App on the exact head SHA. It NEVER merges: merge is the
+# single human decision. Mode (SingleMaintainer / MultiMaintainer) and the
+# required checks with their expected source come from base config.
+
+on:
+  pull_request_target:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+  pull_request_review:
+    types: [submitted, dismissed]
+
+permissions:
+  contents: read
+  pull-requests: read
+  checks: read
+
+concurrency:
+  group: merge-gate-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  merge-gate:
+    name: merge-gate-job
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    if: github.event.pull_request.base.ref == 'main'
+    steps:
+      - name: Checkout BASE (trusted code and config)
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Mint ai-native-trust installation token
+        id: app
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          app-id: ${{ secrets.TRUST_APP_ID }}
+          private-key: ${{ secrets.TRUST_APP_PRIVATE_KEY }}
+          permission-checks: write
+          permission-pull-requests: read
+          permission-contents: read
+          permission-actions: read
+
+      - name: Evaluate merge readiness and emit check as ai-native-trust
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          POST_TOKEN: ${{ steps.app.outputs.token }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          WAIT_SECONDS: "1800"
+        run: node runtime/gates/merge-gate.mjs

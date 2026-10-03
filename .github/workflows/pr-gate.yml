@@ -1,0 +1,49 @@
+name: pr-gate
+
+# M4.3 (PAR-PR-GATE, PAR-SUPPLY-CHAIN, PAR-PROPORTIONAL-GATES). Reusable
+# (workflow_call) and also the PR check of this repo. Read-only aggregate of the
+# deterministic gates: supply-chain policy, docs gate, reviewer-independence on
+# touched runs/**/events.jsonl (P45), proportional-gate consistency, agent
+# identity, secret-shape scan, and the repo's own integrity/doc-drift checks.
+# It is NOT the trust-gate: that one is emitted by the ai-native-trust App.
+
+on:
+  workflow_call:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pr-gate:
+    name: pr-gate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Aggregate gates (supply-chain, docs, P45, identity, secrets)
+        shell: bash
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: node runtime/gates/pr-gate.mjs --base "origin/${BASE_REF:-main}"
+
+      - name: STATUS/git integrity (PAR-INTEGRITY-IN-CI)
+        shell: bash
+        run: node runtime/status/validate-integrity.mjs
+
+      - name: Doc drift
+        shell: bash
+        run: node runtime/docs/validate-doc-drift.mjs
+
+      - name: Parity (TEST_PARITY, UNMAPPED=0)
+        shell: bash
+        run: node parity/validate-parity.mjs
