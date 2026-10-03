@@ -3913,3 +3913,13 @@ Restricciones vigentes: no tocar repos GI sin autorizacion por oleada (M6); ning
 * M5.3 cerrada: fixtures de los 6 tags de `template` (SHA fijados) + starter v2.0.4. Se corrige un dato erroneo previo (los tags SI existen en GitHub).
 * P43: detector de inyeccion de scripts (B31) en el supply-chain de `pr-gate`, probado contra las lineas reales del legado.
 * **Bloqueo real de M5.1:** el Plan Maestro (seccion 21, P39b) exige la correccion v2.0.6 del Template **antes de `rc.1`**. Eso es M0.0b: parchear el repo `template` (sin `head.ref` interpolado, sin checkout de PR con escritura, sin preautorizacion por archivo) y crear rulesets en repos publicos (A2, accion humana segun el roadmap). La instruccion vigente limita el trabajo a `ai-native` y, para el canary, `template-starter`; modificar `template` queda fuera, y no se infiere PASS. Decision humana requerida: (a) autorizar M0.0b sobre `template` (+ A2), o (b) registrar una dispensa explicita de P39b para `rc.1`.
+
+---
+
+## 2026-10-03 — M0.0b / P39b cerrados (Template v2.0.6) y A2
+
+* Autorizacion del maintainer: opcion (a), M0.0b sobre `template` + A2 sobre `template` y `template-starter`; sin dispensa de P39b. Repos GI intactos.
+* Template: PR #128 (parche), #130 (reconciliacion de `main`), #129 (release a `main`); tag anotado `v2.0.6` sobre `6a6c2dd`; CI de `main` verde (el primero desde el 29/09).
+* A2: rulesets activos en template (24420511) y template-starter (24421920); push directo rechazado por el servidor en ambos. template-starter recibio ademas su PR #1 (restaurar `windows-latest`); sigue en la baseline v2.0.4 para el canary.
+* Hash DB con v2.0.6 y delta de paridad `parity/v2.0.6-delta.json`. P39b = PASS con evidencia (tests de regresion + `p39b.test.mjs` + CI + ruleset).
+* Checkout local `C:\Proyectos\template` del maintainer: tiene `ci.yml` modificado sin commitear; no se toco (se trabajo en un clon limpio).

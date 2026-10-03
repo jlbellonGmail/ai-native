@@ -1,11 +1,11 @@
-// M5.3: migration fixtures for every TEMPLATE tag v2.0.0 .. v2.0.5, taken from the
+// M5.3: migration fixtures for every TEMPLATE tag v2.0.0 .. v2.0.6, taken from the
 // public repo jlbellonGmail/template and pinned by commit SHA (a moved tag cannot
 // change the fixture). For each tag: the read-only inventory classifies every
 // file as IDENTICAL (the Hash DB was built from these same tags), adopting the
 // ai-native adapters is BLOCKED by real collisions without touching anything,
 // --skip adopts only additions, and revert leaves `git status` clean. Plus one
 // variant with a modified and a local file (MODIFIED / LOCAL are detected).
-// v2.0.6 does not exist (M0.0b); template-starter v2.0.4 is migration.test.mjs.
+// template-starter v2.0.4 is migration.test.mjs.
 // Network: needs github.com; locally it SKIPs, in CI (AI_NATIVE_REQUIRE_NETWORK=1)
 // a failed clone is a FAILURE.
 import test, { after } from "node:test";
@@ -25,6 +25,7 @@ const TAGS = {
   "v2.0.3": "73f88f499d17265e75f0160d5c5e0f2780189ee9",
   "v2.0.4": "f2a7a247f5c3408a4a1ef234a80e069fe40b9b3e",
   "v2.0.5": "92a797c29750d5c9f64cccf8896f58e6827445cf",
+  "v2.0.6": "6a6c2dd15ae4bf1338bf950bd6533dfb3ab36750",
 };
 const node = (args) => spawnSync(process.execPath, args, { encoding: "utf8", maxBuffer: 128 * 1024 * 1024 });
 const git = (cwd, ...a) => execFileSync("git", a, { cwd, encoding: "utf8", maxBuffer: 128 * 1024 * 1024 }).trim();
