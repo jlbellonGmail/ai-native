@@ -244,3 +244,40 @@ test("PAR-PR-GATE: aggregate gate passes on this repo and reports product tests 
   assert.equal(report.status, "PASS");
   assert.equal(report.productTests, "NOT_APPLICABLE");
 });
+
+// ---------- P43 / B31: script injection
+import { findScriptInjection } from "./supply-chain.mjs";
+
+test("P43: the detector flags the real B31 lines of the legacy v2.0.5 workflows (and nothing else)", () => {
+  const hitl = findScriptInjection(read("legacy/template-v2/.github/workflows/post-hitl-merge-gate.yml"));
+  const merge = findScriptInjection(read("legacy/template-v2/.github/workflows/post-merge-close-feature.yml"));
+  assert.deepEqual(hitl.map((h) => h.line), [42]);
+  assert.deepEqual(merge.map((h) => h.line), [25]);
+  for (const f of ["ci", "docs", "guard-develop-branch"]) assert.deepEqual(findScriptInjection(read(`legacy/template-v2/.github/workflows/${f}.yml`)), [], f);
+});
+
+test("P43: PR fixture with a malicious branch -- interpolation is flagged, the env: form is not", () => {
+  const bad = `permissions:\n  contents: read\njobs:\n  a:\n    steps:\n      - run: |\n          ref='\${{ github.event.pull_request.head.ref }}'\n          echo "$ref"\n`;
+  const inline = `permissions:\n  contents: read\njobs:\n  a:\n    steps:\n      - run: echo \${{ github.head_ref }}\n`;
+  const script = `permissions:\n  contents: read\njobs:\n  a:\n    steps:\n      - uses: actions/github-script@${"a".repeat(40)}\n        with:\n          script: |\n            core.info("\${{ github.event.pull_request.title }}")\n`;
+  const safe = `permissions:\n  contents: read\njobs:\n  a:\n    steps:\n      - env:\n          REF: \${{ github.event.pull_request.head.ref }}\n        run: |\n          echo "$REF"\n`;
+  const codes = (t) => checkWorkflow("w.yml", t).map((f) => f.code);
+  assert.ok(codes(bad).includes("SCRIPT_INJECTION"));
+  assert.ok(codes(inline).includes("SCRIPT_INJECTION"));
+  assert.ok(codes(script).includes("SCRIPT_INJECTION"));
+  assert.equal(codes(safe).includes("SCRIPT_INJECTION"), false);
+  // a trusted expression in a run: body is fine
+  assert.equal(findScriptInjection("jobs:\n  a:\n    steps:\n      - run: echo ${{ github.sha }} ${{ runner.os }}\n").length, 0);
+});
+
+test("P43: detector covers multi-line scalars, reversed block indicators, case, and ref/ref_name", () => {
+  const wf = (body) => `jobs:\n  a:\n    steps:\n${body}`;
+  assert.equal(findScriptInjection(wf("      - run: |2-\n          echo ${{ github.head_ref }}\n")).length, 1);
+  assert.equal(findScriptInjection(wf("      - run: >-\n          echo\n          ${{ github.event.pull_request.title }}\n")).length, 1);
+  assert.equal(findScriptInjection(wf("      - run: echo start\n          ${{ github.event.issue.body }}\n")).length, 1, "continuation of a plain scalar");
+  assert.equal(findScriptInjection(wf("      - run: echo ${{ GitHub.Head_Ref }}\n")).length, 1);
+  assert.equal(findScriptInjection(wf("      - run: echo ${{ github.ref_name }}\n")).length, 1);
+  assert.equal(findScriptInjection(wf("      - run: echo ${{ github.ref }}\n")).length, 1);
+  // not part of a script body
+  assert.equal(findScriptInjection("concurrency:\n  group: ${{ github.workflow }}-${{ github.ref }}\n").length, 0);
+});

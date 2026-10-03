@@ -3905,3 +3905,11 @@ Restricciones vigentes: no tocar repos GI sin autorizacion por oleada (M6); ning
 * Autorizacion humana vigente (mensaje del maintainer): publicar `v3.0.0-rc.1` si los requisitos pre-RC estan en PASS (sin inferir), canary real D4 sobre `template-starter@v2.0.4` por PR revertible, `v3.0.0` si todo M5 queda verde, y merge automatico de PRs tecnicas con CI verde, parity verde, reviewer ACCEPT y sin findings, **salvo** que una regla del repo exija merge humano por diseno. Registrado aqui porque la constitucion (principio 5) y H4 del plan fijan el merge humano durante pilotos: el maintainer los relaja explicitamente para PRs tecnicas de M5; ningun gate ni ruleset se debilita.
 * Requisitos pre-RC leidos del Plan Maestro (seccion 21): P4-P9, P12, P14, P20, P21, P27-P31, P33, P34, P36, P39, P41-P45 (P45 incluido el review-gate en CI). C1-C6/P11 y P32 son previos al canary, no al rc.
 * Esta PR agrega el review-gate de P45, `status` del bootstrap, y la matriz determinista de M5.2 (ver roadmap).
+
+---
+
+## 2026-10-03 — M5.3 cerrada; P43; bloqueo de rc.1 por P39b
+
+* M5.3 cerrada: fixtures de los 6 tags de `template` (SHA fijados) + starter v2.0.4. Se corrige un dato erroneo previo (los tags SI existen en GitHub).
+* P43: detector de inyeccion de scripts (B31) en el supply-chain de `pr-gate`, probado contra las lineas reales del legado.
+* **Bloqueo real de M5.1:** el Plan Maestro (seccion 21, P39b) exige la correccion v2.0.6 del Template **antes de `rc.1`**. Eso es M0.0b: parchear el repo `template` (sin `head.ref` interpolado, sin checkout de PR con escritura, sin preautorizacion por archivo) y crear rulesets en repos publicos (A2, accion humana segun el roadmap). La instruccion vigente limita el trabajo a `ai-native` y, para el canary, `template-starter`; modificar `template` queda fuera, y no se infiere PASS. Decision humana requerida: (a) autorizar M0.0b sobre `template` (+ A2), o (b) registrar una dispensa explicita de P39b para `rc.1`.
