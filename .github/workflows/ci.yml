@@ -203,6 +203,10 @@ jobs:
         shell: bash
         run: node --test runtime/gates/*.test.mjs
 
+      - name: runtime/migrate tests (M5 prereqs, PAR-BUMP-FOOTPRINT/PAR-BROWNFIELD-SAFETY/PAR-MIGRATION-REVERT/PAR-PRODUCT-CONTEXT/PAR-TRUST-BOUNDARY)
+        shell: bash
+        run: node --test runtime/migrate/*.test.mjs
+
       - name: runtime/audit tests (M4.5, PAR-AUDIT-METHOD/PAR-AUDIT-VALIDITY)
         shell: bash
         run: node --test runtime/audit/*.test.mjs

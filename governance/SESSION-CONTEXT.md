@@ -3857,3 +3857,12 @@ Restricciones vigentes: no tocar repos GI sin autorizacion por oleada (M6); ning
 * Ruleset `ai-native-main` (id 24405506) activo, sin bypass actors; checks fijados por App (`ai-native-trust` id 5170488 para trust-gate/merge-gate, github-actions 15368 para el resto). `node runtime/gates/ruleset.mjs verify` -> RULESET_PASS.
 * `parity/par-tests.json`: 88/95 implementados; `UNMAPPED=0`. Quedan PLANNED: C6 (M4.3/M5.2) y los de M1.2/M2.2/M3.5/M4.
 * Merge de esta PR: unico HITL, lo ejecuta el humano. Siguiente en el DAG tras el merge: fases M5.x segun el roadmap (no abierta).
+
+---
+
+## 2026-10-03 — Verificacion post-merge de M4.3 y prerequisitos de M5
+
+* Verificado en vivo: PR #33 MERGED por `jlbellonGmail` (humano), merge `0250949`; CI en `main` verde (CI, CodeQL, Trivy, SBOM, Supply chain); `post-merge` verde sobre `dd157bf` con evidencia de `ai-native/merge-gate` emitido por `ai-native-trust`; `ai-native/trust-gate` success; ruleset `ai-native-main` RULESET_PASS; parity UNMAPPED=0.
+* Hallazgo: el `post-merge` de #31 salio `failure` (`NO_MERGE_GATE_EVIDENCE`) porque el merge-gate todavia no existia en `main` al mergearla (bootstrap inevitable de M4.3). No es un defecto del gate. Ademas, las PRs #30/#31 las mergeo el agente con la cuenta humana `jlbellonGmail` (el token de `gh`), asi que `merged_by` no distingue agente de humano en esas dos; el control real es que la identidad `ai-native-worker` no se uso para mergear.
+* Hallazgo: M1.2 figuraba `[x]` pero solo entregaba `migrate --inventory`; PAR-BUMP-FOOTPRINT, PAR-BROWNFIELD-SAFETY y PAR-MIGRATION-REVERT no tenian codigo. Ahora existen en `runtime/migrate/{bump,adopt,product-context}.mjs` (+9 tests), junto con PAR-PRODUCT-CONTEXT (skill `product-context`) y PAR-TRUST-BOUNDARY (test de `policy > contenido`). Parity: 93/95 implementados; quedan C5 y C6 (compatibilidad real de herramientas, M5.2).
+* Limite explicito: PAR-BROWNFIELD-SAFETY cubre la seguridad (no sobrescribir, revert); los fixtures de migracion v2.0.0..v2.0.6 + Starter v2.0.4 siguen siendo M5.3 (v2.0.6 no existe: M0.0b pendiente).
