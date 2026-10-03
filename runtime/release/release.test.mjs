@@ -30,6 +30,7 @@ function fixtureRepo({ crlf = false, extra = {} } = {}) {
   put("runtime/a.test.mjs", "// never shipped\n");
   put("contracts/unit-event.schema.json", JSON.stringify({ properties: { schemaVersion: { const: 1 } } }));
   put("audit/method.json", JSON.stringify({ auditMethod: "1.2" }));
+  put("core/kernel.md", "# Kernel\n");
   put("parity/v2.0.5/capabilities.json", JSON.stringify({ capabilities: [{ id: "X-1", parTests: ["PAR-A"] }, { id: "X-2", parTests: ["PAR-B"] }, { id: "X-3", parTests: [] }] }));
   put("parity/par-tests.json", JSON.stringify({ tests: [{ id: "PAR-A", status: "IMPLEMENTED", implementedBy: "runtime/a.test.mjs" }, { id: "PAR-B", status: "PLANNED" }] }));
   put("notes/not-shipped.md", "x\n");
@@ -79,7 +80,7 @@ test("bundle content: only shipped paths, tests excluded, real timestamp from th
     { id: "X-2", status: "missing" },
     { id: "X-3", status: "missing" },
   ]);
-  assert.deepEqual(platform.components, { "unit-event": { version: "1" }, "audit-method": { version: "1.2" } });
+  assert.deepEqual(platform.components, { "unit-event": { version: "1" }, "audit-method": { version: "1.2" }, "kernel-contract": { version: "sha256:e0c070246e403b4616d3e014d45ef104b5d6e3e8588269087896c1c30920cb70" } });
   rmSync(dir, { recursive: true, force: true });
 });
 

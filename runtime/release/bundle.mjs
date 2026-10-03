@@ -100,7 +100,8 @@ function show(root, commit, path) {
 export function componentVersions(root, commit) {
   const unitEvent = JSON.parse(show(root, commit, "contracts/unit-event.schema.json")).properties.schemaVersion.const;
   const audit = JSON.parse(show(root, commit, "audit/method.json")).auditMethod;
-  return { "unit-event": { version: String(unitEvent) }, "audit-method": { version: String(audit) } };
+  const kernelDigest = createHash("sha256").update(show(root, commit, "core/kernel.md").split("\r\n").join("\n"), "utf8").digest("hex");
+  return { "unit-event": { version: String(unitEvent) }, "audit-method": { version: String(audit) }, "kernel-contract": { version: `sha256:${kernelDigest}` } };
 }
 
 /**

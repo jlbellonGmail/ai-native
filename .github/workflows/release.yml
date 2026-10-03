@@ -99,7 +99,7 @@ jobs:
           node runtime/status/validate-integrity.mjs
           node runtime/docs/validate-doc-drift.mjs
           node scripts/validate-actions-pinned.mjs
-          node --test runtime/*/*.test.mjs contracts/*.test.mjs core/*.test.mjs parity/*.test.mjs
+          node --test runtime/*/*.test.mjs contracts/*.test.mjs core/*.test.mjs parity/*.test.mjs evaluation/*/*.test.mjs scripts/*.test.mjs
 
       # The audit gate is mandatory for rc and stable. For alpha (internal
       # prerelease) the P-conditions of the roadmap do not require an audit
@@ -232,9 +232,14 @@ jobs:
         run: |
           set -euo pipefail
           mkdir pub && cd pub
-          for a in "ai-native-$VERSION.tar.gz" "ai-native-$VERSION.sbom.cdx.json" "ai-native-$VERSION.sigstore.json" platform.json SHA256SUMS revocations-1.json; do
+          for a in "ai-native-$VERSION.tar.gz" "ai-native-$VERSION.sbom.cdx.json" "ai-native-$VERSION.sigstore.json" platform.json SHA256SUMS; do
             curl -fsSL --retry 3 -O "https://github.com/$GITHUB_REPOSITORY/releases/download/$VERSION/$a"
           done
+          # the revocations asset is revocations-<n>.json with the HIGHEST n the release published: take its name from SHA256SUMS
+          REV="$(awk '{print $2}' SHA256SUMS | { grep -E '^revocations-[0-9]+\.json$' || true; } | sort -V | tail -1)"
+          [ -n "$REV" ] || { echo "no revocations asset listed in SHA256SUMS"; exit 1; }
+          curl -fsSL --retry 3 -O "https://github.com/$GITHUB_REPOSITORY/releases/download/$VERSION/$REV"
+          echo "$REV" > revocations.name
           sha256sum -c SHA256SUMS
 
       - name: Verify provenance of every asset
@@ -245,7 +250,7 @@ jobs:
         run: |
           set -euo pipefail
           cd pub
-          for a in "ai-native-$VERSION.tar.gz" "ai-native-$VERSION.sbom.cdx.json" platform.json revocations-1.json; do
+          for a in "ai-native-$VERSION.tar.gz" "ai-native-$VERSION.sbom.cdx.json" platform.json "$(cat revocations.name)"; do
             gh attestation verify "$a" --repo "$GITHUB_REPOSITORY" --signer-workflow "$GITHUB_REPOSITORY/.github/workflows/release.yml"
           done
           # offline: the published sigstore bundle verifies without network lookups of attestations

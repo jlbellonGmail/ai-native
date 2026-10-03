@@ -13,31 +13,24 @@ and `governance/roadmaps/AI-NATIVE-V3-ROADMAP.md`).
 
 ```
 ai-native/
-├── template/             # Reusable project scaffold + TEMPLATE v2.0.5 evolution work
-│   ├── scaffolds/        # Copyable project skeletons
-│   ├── templates/        # Reusable template assets
-│   ├── manifests/        # Machine-readable structure manifests
-│   ├── generators/       # Project generation entry points
-│   ├── examples/         # Reference application code
-│   ├── validation/       # Tests and validators
-│   ├── config/           # Template configuration
-│   └── docs/             # Setup, architecture, overview
-├── foundation/           # Product foundation
-│   ├── runtime/          # Core runtime primitives
-│   ├── roles/            # Base operating roles
-│   ├── security/         # Security controls
-│   ├── observability/    # SLIs, SLOs, error budgets
-│   └── validation/       # Security and observability checks
-├── knowledge/            # Knowledge and evaluation
-│   ├── evaluation/       # Prompt and agent evaluation
-│   ├── benchmarks/       # Benchmark suites
-│   ├── datasets/         # Dataset registry
-│   ├── scoring/          # Rubrics and scoring rules
-│   └── quality-gates/    # Quality gates
-├── governance/           # Roadmaps, ADRs, execution state, archives
-├── scripts/              # Factory scripts (see status note below)
-└── specs/                # Spec-driven development artifacts
+├── runtime/              # The platform: bootstrap, release, circuit, gates, adapters, mcp-gateway, migrate, audit, evals, status, ...
+├── contracts/            # Schemas and contracts (lock, platform, unit-event, state-machine, sdd-levels, ...)
+├── core/                 # Kernel, constitution, roles, agents/models/security policy
+├── mcp/                  # MCP catalog and profiles (default: none)
+├── profiles/             # Consumer profiles (factory, python-lib, ...)
+├── audit/                # Audit method and profiles (PLATFORM, APPLICATION, LIBRARY, FACTORY, TEMPLATE)
+├── parity/               # Parity contract with TEMPLATE v2.0.5 (capabilities, tests map, Hash DB, migrate --inventory)
+├── evaluation/           # Compat matrix (C1-C6), eval scenarios, audit fixtures, DoD metrics
+├── governance/           # Roadmaps, ADRs, gates config, rulesets, session context
+├── .github/workflows/    # CI, security, release, and the trust/merge/pr/L3 gates
+├── .agents/skills/       # Canonical skills
+├── legacy/template-v2/   # TEMPLATE v2.0.5 baseline (imported, filtered)
+├── template/ foundation/ knowledge/   # Consolidated areas (git subtree), see ADR-001
+└── scripts/              # Repository scripts (validate-actions-pinned, ...)
 ```
+
+A consumer keeps only `ai-native.lock.json` and the generated tool entry points; everything else is
+resolved by reference from a verified release (`node runtime/bootstrap/cli.mjs init|sync|status|doctor|run`).
 
 ## Quick Start
 

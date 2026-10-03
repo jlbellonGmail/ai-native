@@ -1,0 +1,11 @@
+# Keeps the full-SHA pins of third-party actions current (supply-chain.yml requires every action pinned by SHA,
+# which otherwise never moves). Updates arrive as PRs and go through the same gates as any other change.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore(deps)"

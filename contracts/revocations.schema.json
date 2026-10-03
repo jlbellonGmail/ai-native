@@ -2,12 +2,12 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://ai-native.local/contracts/revocations.schema.json",
   "title": "revocations-<n>.json",
-  "description": "Published as an attested asset of an immutable release (never a mutable branch file), per SS 12.2 / ADR-004. bootstrap.ps1 takes the highest-n list that verifies. A platform or pack version listed here blocks sync and write operations immediately; read operations only warn.",
+  "description": "Published as an attested asset of an immutable release (never a mutable branch file), per SS 12.2 / ADR-004. the bootstrap CLI takes the highest-n list that verifies. A platform or pack version listed here blocks sync and write operations immediately; read operations only warn.",
   "type": "object",
   "required": ["schemaVersion", "n", "publishedAt", "entries"],
   "properties": {
     "schemaVersion": { "const": 1 },
-    "n": { "type": "integer", "minimum": 1, "description": "Monotonically increasing; bootstrap.ps1 always prefers the highest verifiable n." },
+    "n": { "type": "integer", "minimum": 1, "description": "Monotonically increasing; the bootstrap CLI always prefers the highest verifiable n." },
     "publishedAt": { "type": "string", "format": "date-time" },
     "entries": {
       "type": "array",

@@ -39,7 +39,7 @@ never merged).
 Items are grouped under `## vX.Y.Z — <label>` headings, matching TEMPLATE
 v2.0.5's convention. The current development version is read from the
 highest such heading when no other version source is available
-(`runtime/lib` version-detection order, ported from `status-lib.ps1`).
+(`runtime/lib` version-detection order, ported from `legacy/template-v2/scripts/status-lib.ps1`).
 
 ## Identity patterns
 
@@ -47,5 +47,5 @@ highest such heading when no other version source is available
 - Maintenance: `^T[0-9]{2}-[a-z0-9]+(-[a-z0-9]+)*$`
 - Milestone: `^(?!\d{2}-)[a-z0-9]+(-[a-z0-9]+)*$` (no leading `NN-`)
 
-Same patterns as TEMPLATE v2.0.5's `workunit-lib.ps1` (CIR-01), carried
+Same patterns as TEMPLATE v2.0.5's `legacy/template-v2/scripts/workunit-lib.ps1` (CIR-01), carried
 forward unchanged.

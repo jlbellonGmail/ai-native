@@ -1,5 +1,10 @@
 # CONTINUIDAD DE IMPLEMENTACION
 
+> **Estado vigente (2026-10-03): leer primero las entradas del FINAL de este archivo y `governance/roadmaps/AI-NATIVE-V3-ROADMAP.md`.**
+> Las secciones siguientes (arquitectura "contenedor", `ENTERPRISE-10-10`, repos independientes) son historia anterior a la
+> consolidacion (PR #2) y a ADR-001: describen un estado que ya no es el actual. Fuente de verdad del estado: ROADMAP + Git/GitHub.
+> Politica del merge humano y su dispensa vigente: `governance/security/HITL-MERGE-POLICY.md`.
+
 Estado fecha: 2026-06-15
 
 ## Arquitectura
@@ -3949,3 +3954,11 @@ Restricciones vigentes: no tocar repos GI sin autorizacion por oleada (M6); ning
 * Run 37145520404 (template-starter -> ai-native `l3-consumer.yml` @ `99f23f4`): success. Evidencia en `evaluation/compat/c6-evidence.json`, re-verificada por `runtime/pilot/c6.test.mjs` contra la API.
 * `parity/par-tests.json`: 95/95 implementados, UNMAPPED=0. Quedan para rc.1: confirmar las condiciones P restantes y la publicacion.
 * PRs descartables de evidencia en template-starter (#2 y #3) cerradas sin merge; el repo sigue en la baseline v2.0.4 (+ PR #1 de CI).
+
+---
+
+## 2026-10-03 — Auditoria PLATFORM para rc.1: primera pasada 77/100 (bajo el umbral 90) y correcciones
+
+* `release.yml` exige para rc/stable un informe PLATFORM vigente >= 90 (tolerancia 2) ligado al commit exacto. Primera auditoria independiente (`claude -p`, solo lectura + validadores) sobre `47bd24f`: **77/100, APTO CON CORRECCIONES**, 13 hallazgos. No se maquilla.
+* Corregido por esta PR: kernel mandaba a `bootstrap.ps1` (inexistente) y a un `kernelContract` que `platform.json` no emitia (ahora `components.kernel-contract` = sha256 del kernel); README con estructura obsoleta; el validador de doc drift no detectaba scripts inexistentes (regla `DRIFT-SCRIPT` + test negativo); el validador de paridad no comprobaba que `implementedBy` existiera; `release.yml` fijaba `revocations-1.json` (ahora toma la de mayor `n` de SHA256SUMS) y no ejecutaba `evaluation/*` ni `scripts/*` tests; `lock.schema` rechazaba `channel: alpha`; sin Dependabot para los SHA de acciones; cabecera de este archivo obsoleta; politica HITL documentada (`governance/security/HITL-MERGE-POLICY.md`).
+* NO corregible por el agente: **LICENSE** (decision legal del maintainer: que licencia publicar), historial con commits `wip:` ya mergeados (inmutable), nombres de repos privados en `parity/inventory-reports` (datos historicos de inventario), y cerrar el HITL tecnicamente (requiere un segundo maintainer o dejar de usar el token personal para mergear).
