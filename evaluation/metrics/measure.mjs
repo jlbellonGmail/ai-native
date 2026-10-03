@@ -18,8 +18,10 @@ const STARTER_V204 = "9e7dfb5b82ca69a0dd878c719f5861816652780b";
 const node = process.execPath;
 const git = (cwd, ...a) => execFileSync("git", a, { cwd, encoding: "utf8", maxBuffer: 256 * 1024 * 1024 }).trim();
 const median = (xs) => [...xs].sort((a, b) => a - b)[Math.floor(xs.length / 2)];
-const tmp = (p) => mkdtempSync(join(tmpdir(), `ai-native-metrics-${p}-`));
+const tmp = (p) => { const d = mkdtempSync(join(tmpdir(), `ai-native-metrics-${p}-`)); scratch.push(d); return d; };
+process.on("exit", () => { for (const d of scratch) rmSync(d, { recursive: true, force: true }); });
 const metrics = {};
+const scratch = [];
 const record = (id, m) => (metrics[id] = m);
 
 // ---------- baseline: the real v2 consumer
@@ -38,7 +40,13 @@ if (build.status !== 0) throw new Error(build.stderr);
 const summary = JSON.parse(build.stdout);
 const bundle = join(out, summary.bundle);
 const cli = join(root, "runtime/bootstrap/cli.mjs");
-const run = (args, opts = {}) => spawnSync(node, [cli, ...args], { encoding: "utf8", ...opts });
+const run = (args, opts = {}) => {
+  const r = spawnSync(node, [cli, ...args], { encoding: "utf8", ...opts });
+  if (r.status !== 0) throw new Error(`measured command failed (exit ${r.status}): bootstrap ${args[0]}
+${r.stdout}
+${r.stderr}`);
+  return r;
+};
 const cache = tmp("cache");
 const proj = tmp("consumer");
 git(proj, "init", "-q", "-b", "main");
@@ -73,7 +81,7 @@ for (let i = 0; i < 3; i += 1) {
 run(["sync", "--from-file", bundle, "--offline", ...common]); // warm
 const withCache = Array.from({ length: 9 }, () => time(() => run(["sync", "--offline", ...common])));
 const statusMs = Array.from({ length: 9 }, () => time(() => run(["status", "--offline", ...common])));
-const nodeBoot = Array.from({ length: 9 }, () => time(() => spawnSync(node, ["-e", "0"])));
+const nodeBoot = Array.from({ length: 9 }, () => time(() => { if (spawnSync(node, ["-e", "0"]).status !== 0) throw new Error("bare node failed"); }));
 record("bootstrapTimeWithCache", { value: Math.round(median(withCache)), unit: "ms (median of 9)", target: "<= 300", met: median(withCache) <= 300, samples: withCache.map(Math.round), method: "wall clock of `node runtime/bootstrap/cli.mjs sync --offline` (process start included) with a warm content-addressed cache", disclosure: { statusMedianMs: Math.round(median(statusMs)), bareNodeStartupMedianMs: Math.round(median(nodeBoot)), note: "includes a full verification of the cached release before use (PAR-CACHE-VERIFY-BEFORE-EXEC)" } });
 record("bootstrapTimeWithoutCache", { value: Math.round(median(noCache)), unit: "ms (median of 3, --from-file, no network)", target: "<= 30000", met: median(noCache) <= 30000, samples: noCache.map(Math.round), method: "wall clock of `sync --from-file <bundle> --offline` against an EMPTY cache: extract, hash every file, publish atomically", disclosure: { note: "excludes the network download of the release; that part is measured by pilot.yml online" } });
 
@@ -89,10 +97,14 @@ process.on("exit", () => writeFileSync(process.env.NET_COUNT_FILE, String(n)));
 let netCalls = 0;
 for (const args of [["status", "--offline"], ["sync", "--offline"], ["doctor"]]) {
   const f = join(base, `net-${args[0]}.txt`);
-  spawnSync(node, ["--import", pathToFileURL(preload).href, cli, ...args, ...common], { encoding: "utf8", env: { ...process.env, NET_COUNT_FILE: f } });
+  const r = spawnSync(node, ["--import", pathToFileURL(preload).href, cli, ...args, ...common], { encoding: "utf8", env: { ...process.env, NET_COUNT_FILE: f } });
+  if (r.status !== 0) throw new Error(`network-count run failed (exit ${r.status}): ${args[0]}
+${r.stdout}
+${r.stderr}`);
   netCalls += Number(readFileSync(f, "utf8"));
 }
-record("networkCallsPerSessionWithCache", { value: netCalls, unit: "calls", target: "0", met: netCalls === 0, method: "preloaded counter on fetch, http(s).request and net.connect while running status, sync --offline and doctor from a warm cache" });
+record("networkCallsPerSessionWithCache", { value: netCalls, unit: "calls", target: "0", met: netCalls === 0, method: "preloaded counter on fetch, http(s).request and net.connect while running status, sync --offline and doctor from a warm cache; every run must exit 0",
+  disclosure: { limit: "a LOWER BOUND for the process tree: only in-process fetch/http(s)/net.connect are counted; child processes the CLI spawns (git, gh) are not instrumented. The offline paths spawn none that touch the network, but this counter alone does not prove it." } });
 
 // 4. files changed by a PATCH bump
 const bumpRepo = tmp("bump");
@@ -126,9 +138,28 @@ const steps = Object.fromEntries(Object.entries(levels).map(([k, v]) => [k, v.st
 record("validationTimeLightVsFull", { value: Number((steps.LIGHT / steps.FULL).toFixed(3)), unit: "LIGHT steps / FULL steps (proxy)", target: "<= 0.25", met: steps.LIGHT / steps.FULL <= 0.25, status: "PROXY_ONLY", detail: steps, reviews: Object.fromEntries(Object.entries(levels).map(([k, v]) => [k, v.requiredReviews.length])), method: "The metric is wall-clock validation time, dominated by model reviews that cannot be measured without spending model calls on every level; this records the structural ratio of steps and is NOT a time measurement." });
 
 // 8. what must stay at 1
-const circuitTest = readFileSync(join(root, "runtime/pilot/circuit.e2e.test.mjs"), "utf8");
-record("hitlPerUnit", { value: 1, target: "1", met: true, method: "policy matrix: MERGE is allow only for role human (core/security-policy.json); proven by runtime/gates/gates.test.mjs (PAR-SINGLE-HITL)" });
-record("circuitsPerMilestone", { value: 1, target: "1", met: /Milestone/.test(circuitTest), method: "PAR-MILESTONE-SINGLE-CIRCUIT (runtime/circuit/start-unit.test.mjs) and the Milestone e2e in runtime/pilot/circuit.e2e.test.mjs" });
+// HITL per unit: count the roles that may MERGE in the policy matrix, and the transitions into MERGED in the state machine
+const policy = JSON.parse(readFileSync(join(root, "core/security-policy.json"), "utf8"));
+const mergers = Object.entries(policy.matrix).filter(([, caps]) => caps.MERGE === "allow").map(([role]) => role);
+const sm = JSON.parse(readFileSync(join(root, "contracts/state-machine.json"), "utf8"));
+const intoMerged = sm.transitions.filter((x) => x.to === "MERGED");
+record("hitlPerUnit", { value: mergers.length === 1 && intoMerged.length === 1 ? 1 : mergers.length + intoMerged.length, unit: "human merge decisions per unit", target: "1", met: mergers.length === 1 && mergers[0] === "human" && intoMerged.length === 1, detail: { rolesWithMergeAllow: mergers, transitionsIntoMerged: intoMerged.map((x) => `${x.from}->${x.to}`) }, method: "READ from core/security-policy.json (roles whose MERGE is allow) and contracts/state-machine.json (transitions into MERGED); the behaviour itself is proven by runtime/gates/gates.test.mjs (PAR-SINGLE-HITL)" });
+// circuits per milestone: run the REAL start-unit for a Milestone with 3 items and count the circuits (run dirs / branches) it creates
+const msRepo = tmp("milestone");
+const msRoot = join(msRepo, "repo");
+mkdirSync(msRoot);
+git(msRoot, "init", "-q", "-b", "main");
+git(msRoot, "config", "user.email", "m@example.invalid");
+git(msRoot, "config", "user.name", "M");
+writeFileSync(join(msRoot, "ROADMAP.md"), ["- [ ] 01-a - a", "- [ ] 02-b - b", "- [ ] 03-c - c", ""].join("\n"));
+git(msRoot, "add", "-A");
+git(msRoot, "commit", "-q", "-m", "init");
+const { startWorkUnit } = await import("../../runtime/circuit/start-unit.mjs");
+const unit = startWorkUnit(msRoot, { mode: "Milestone", slug: "m1", items: ["01-a", "02-b", "03-c"], baseBranch: "main", worktreesRoot: join(msRepo, "wt") });
+const branches = git(msRoot, "branch", "--list", "milestone/*").split(/\r?\n/).filter(Boolean).length;
+const runDirs = readdirSync(join(unit.worktreeDir, "runs")).length;
+record("circuitsPerMilestone", { value: branches, unit: "circuits (branches/run dirs) for a 3-item milestone", target: "1", met: branches === 1 && runDirs === 1 && unit.items.length === 3, detail: { branches, runDirs, items: unit.items.length }, method: "startWorkUnit(Milestone, 3 items) executed for real in a scratch repo; counts the milestone branches and run directories it creates" });
+rmSync(msRepo, { recursive: true, force: true });
 
 const results = {
   schemaVersion: 1, generatedAt: new Date().toISOString(), platformCommit: commit,

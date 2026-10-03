@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-03T18:57:59.880Z",
-  "platformCommit": "d4522af4743f3a9b3b7b2f2b4ebe4cbac5986a90",
+  "generatedAt": "2026-10-03T19:13:27.748Z",
+  "platformCommit": "cbc7b73f264b13dba8e668449111f2a584f8019b",
   "machine": {
     "platform": "win32",
     "node": "v26.7.0",
@@ -42,37 +42,37 @@
       }
     },
     "bootstrapTimeWithCache": {
-      "value": 158,
+      "value": 231,
       "unit": "ms (median of 9)",
       "target": "<= 300",
       "met": true,
       "samples": [
-        160,
-        452,
-        173,
-        144,
-        159,
-        145,
-        152,
-        143,
-        158
+        299,
+        180,
+        274,
+        167,
+        155,
+        146,
+        257,
+        456,
+        231
       ],
       "method": "wall clock of `node runtime/bootstrap/cli.mjs sync --offline` (process start included) with a warm content-addressed cache",
       "disclosure": {
-        "statusMedianMs": 165,
-        "bareNodeStartupMedianMs": 101,
+        "statusMedianMs": 156,
+        "bareNodeStartupMedianMs": 89,
         "note": "includes a full verification of the cached release before use (PAR-CACHE-VERIFY-BEFORE-EXEC)"
       }
     },
     "bootstrapTimeWithoutCache": {
-      "value": 284,
+      "value": 293,
       "unit": "ms (median of 3, --from-file, no network)",
       "target": "<= 30000",
       "met": true,
       "samples": [
-        284,
-        285,
-        253
+        334,
+        180,
+        293
       ],
       "method": "wall clock of `sync --from-file <bundle> --offline` against an EMPTY cache: extract, hash every file, publish atomically",
       "disclosure": {
@@ -84,7 +84,10 @@
       "unit": "calls",
       "target": "0",
       "met": true,
-      "method": "preloaded counter on fetch, http(s).request and net.connect while running status, sync --offline and doctor from a warm cache"
+      "method": "preloaded counter on fetch, http(s).request and net.connect while running status, sync --offline and doctor from a warm cache; every run must exit 0",
+      "disclosure": {
+        "limit": "a LOWER BOUND for the process tree: only in-process fetch/http(s)/net.connect are counted; child processes the CLI spawns (git, gh) are not instrumented. The offline paths spawn none that touch the network, but this counter alone does not prove it."
+      }
     },
     "filesChangedByBump": {
       "value": 2,
@@ -140,15 +143,30 @@
     },
     "hitlPerUnit": {
       "value": 1,
+      "unit": "human merge decisions per unit",
       "target": "1",
       "met": true,
-      "method": "policy matrix: MERGE is allow only for role human (core/security-policy.json); proven by runtime/gates/gates.test.mjs (PAR-SINGLE-HITL)"
+      "detail": {
+        "rolesWithMergeAllow": [
+          "human"
+        ],
+        "transitionsIntoMerged": [
+          "AWAITING_HITL->MERGED"
+        ]
+      },
+      "method": "READ from core/security-policy.json (roles whose MERGE is allow) and contracts/state-machine.json (transitions into MERGED); the behaviour itself is proven by runtime/gates/gates.test.mjs (PAR-SINGLE-HITL)"
     },
     "circuitsPerMilestone": {
       "value": 1,
+      "unit": "circuits (branches/run dirs) for a 3-item milestone",
       "target": "1",
       "met": true,
-      "method": "PAR-MILESTONE-SINGLE-CIRCUIT (runtime/circuit/start-unit.test.mjs) and the Milestone e2e in runtime/pilot/circuit.e2e.test.mjs"
+      "detail": {
+        "branches": 1,
+        "runDirs": 1,
+        "items": 3
+      },
+      "method": "startWorkUnit(Milestone, 3 items) executed for real in a scratch repo; counts the milestone branches and run directories it creates"
     }
   },
   "summary": {

@@ -125,10 +125,55 @@ test("runs/, .audit/, ROADMAP.md, STATUS.md and docs/producto are never retired 
   }
 });
 
-test("a file edited between plan and apply is never deleted", () => {
-  const dir = repo({ "scripts/status-lib.ps1": "v2 content\n" });
-  const plan = planMigration({ target: dir, release: RELEASE, tools: ["claude"] });
-  if (!plan.retire.some((r) => r.path === "scripts/status-lib.ps1")) return; // not identical to a real tag: nothing to retire in this synthetic repo
-  writeFileSync(join(dir, "scripts/status-lib.ps1"), "edited\n");
-  assert.throws(() => applyMigration({ target: dir, release: RELEASE, tools: ["claude"] }), /not clean|changed between plan and apply/);
+test("a file edited and committed after the plan is MODIFIED at apply time: it is never retired and survives apply and revert", net, () => {
+  const plan = planMigration({ target: starter, release: RELEASE });
+  const victim = plan.retire.at(-1).path;
+  const edited = `${readFileSync(join(starter, victim), "utf8")}\nedited after the plan\n`;
+  writeFileSync(join(starter, victim), edited);
+  git(starter, "add", "-A");
+  git(starter, "-c", "user.name=t", "-c", "user.email=t@example.invalid", "commit", "-q", "-m", "edit after plan");
+  const replan = planMigration({ target: starter, release: RELEASE });
+  assert.ok(!replan.retire.some((r) => r.path === victim), "a modified file is never retired");
+  assert.equal(applyMigration({ target: starter, release: RELEASE }).status, "APPLIED");
+  assert.equal(readFileSync(join(starter, victim), "utf8"), edited, "the user's edit survived apply");
+  assert.equal(revertMigration({ target: starter }).status, "REVERTED");
+  assert.equal(readFileSync(join(starter, victim), "utf8"), edited, "and revert");
+  git(starter, "reset", "-q", "--hard", STARTER_V204);
+  assert.equal(status(starter), "");
+});
+
+test("a failure DURING apply (after deletions started) rolls back through the journal that was written first", net, () => {
+  const boom = new Error("injected failure after the retire phase");
+  assert.throws(() => applyMigration({ target: starter, release: RELEASE, hooks: { afterRetire: () => { throw boom; } } }), /injected failure/);
+  assert.ok(!existsSync(join(starter, JOURNAL)), "a clean rollback removes its journal");
+  assert.equal(status(starter), "", "the tree is exactly as before the apply: no deletions, no v3 files");
+});
+
+test("apply is all-or-nothing on a bad release: a lock that does not validate leaves the tree untouched", () => {
+  const dir = repo({ "scripts/a.ps1": "x\n", "notes.md": "n\n" });
+  const before = git(dir, "status", "--porcelain", "--untracked-files=all");
+  try {
+    applyMigration({ target: dir, release: { ...RELEASE, commit: "not-a-sha" }, tools: ["claude"] });
+  } catch {
+    // an invalid lock may surface at plan or at the post-write validation; either way the tree must be unchanged
+  }
+  assert.equal(git(dir, "status", "--porcelain", "--untracked-files=all"), before);
+  assert.equal(existsSync(join(dir, JOURNAL)), false);
+});
+
+test("revert never overwrites a file the user created at a retired path after apply", net, () => {
+  const applied = applyMigration({ target: starter, release: RELEASE });
+  assert.equal(applied.status, "APPLIED");
+  const retired = applied.removed.find((p) => !applied.written.includes(p));
+  assert.ok(retired, "a retired path that no v3 file replaced");
+  mkdirSync(dirname(join(starter, retired)), { recursive: true });
+  writeFileSync(join(starter, retired), "the user created this after the migration\n");
+  const r = revertMigration({ target: starter });
+  assert.equal(r.status, "PARTIAL");
+  assert.ok(r.kept.includes(retired));
+  assert.equal(readFileSync(join(starter, retired), "utf8"), "the user created this after the migration\n", "not overwritten by the v2 content");
+  rmSync(join(starter, retired));
+  assert.equal(revertMigration({ target: starter }).status, "REVERTED");
+  git(starter, "reset", "-q", "--hard", STARTER_V204);
+  assert.equal(status(starter), "");
 });

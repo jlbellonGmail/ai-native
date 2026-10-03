@@ -20,12 +20,14 @@ import { canonical, readLock, LOCK_FILE } from "../bootstrap/install.mjs";
 import { globToRegExp } from "../gates/control-plane.mjs";
 import { buildReport, renderOutput, exitCodeForReport } from "../lib/json.mjs";
 import { statusFromCounts } from "../lib/result.mjs";
+import { validate } from "../lib/schema-lite.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const PLATFORM_ROOT = join(here, "..", "..");
 export const JOURNAL = ".ai-native/migration-journal.json";
 export const CALLER = ".github/workflows/ai-native.yml";
 export class MigrateError extends Error {}
+const lockSchema = JSON.parse(readFileSync(join(PLATFORM_ROOT, "contracts", "lock.schema.json"), "utf8"));
 
 /** Never touched, whatever their classification (plan SS18: "Conserva runs/, .audit/, ROADMAP.md y STATUS.md"). */
 export const PROTECTED = ["runs/**", ".audit/**", "ROADMAP.md", "STATUS.md", "docs/producto/**", ".git/**", ".ai-native/**"];
@@ -113,27 +115,45 @@ export function applyMigration(args) {
   if (existsSync(join(root, JOURNAL))) throw new MigrateError("a migration journal already exists; revert it first");
   if (plan.blocked) return { status: "BLOCKED", plan, written: [], removed: [] };
   const baseCommit = git(root, "rev-parse", "HEAD");
-  const removed = [];
+  // 0) the lock we are about to write must validate: a bad release (e.g. a malformed commit) aborts with the tree untouched
+  const lockErrors = validate(JSON.parse(plan.add[LOCK_FILE]), lockSchema);
+  if (lockErrors.length) throw new MigrateError(`the generated ${LOCK_FILE} does not validate: ${lockErrors.join("; ")}`);
+  // 1) VERIFY every file we are about to delete, before touching anything: a mismatch aborts with the tree unchanged
   for (const r of plan.retire) {
     const full = join(root, r.path);
-    if (normalizedSha(readFileSync(full)) !== r.sha256) throw new MigrateError(`'${r.path}' changed between plan and apply; refusing to delete it`);
-    rmSync(full);
-    removed.push(r);
+    if (!existsSync(full) || normalizedSha(readFileSync(full)) !== r.sha256) throw new MigrateError(`'${r.path}' changed between plan and apply; nothing was modified`);
+  }
+  for (const p of [...plan.create, ...plan.replace]) {
+    if (existsSync(join(root, p)) && !plan.replace.includes(p)) throw new MigrateError(`'${p}' appeared between plan and apply; nothing was modified`);
   }
   // files a v3 file REPLACES existed in v2: remember their v2 hash so revert can put them back from the base commit
   const replacedV2 = plan.replace.map((p) => ({ path: p, sha256: plan.retire.find((r) => r.path === p).sha256 }));
-  const created = [];
-  for (const p of [...plan.create, ...plan.replace]) {
-    const full = join(root, p);
-    mkdirSync(dirname(full), { recursive: true });
-    writeFileSync(full, plan.add[p], { flag: "wx" });
-    created.push({ path: p, sha256: sha(Buffer.from(plan.add[p])) });
-  }
-  const journal = { schemaVersion: 1, baseCommit, platform: args.release, retired: removed, replaced: replacedV2, created, kept: plan.kept, keptIdentical: plan.keptIdentical.length, keptLocal: plan.keptLocal.length };
+  const created = [...plan.create, ...plan.replace].map((p) => ({ path: p, sha256: sha(Buffer.from(plan.add[p])) }));
+  // 2) the journal is written BEFORE the first mutation, so an interruption at any point is recoverable with `revert`
+  const journal = { schemaVersion: 1, baseCommit, platform: args.release, retired: plan.retire, replaced: replacedV2, created, kept: plan.kept, keptIdentical: plan.keptIdentical.length, keptLocal: plan.keptLocal.length };
   mkdirSync(join(root, ".ai-native"), { recursive: true });
-  writeFileSync(join(root, JOURNAL), `${JSON.stringify(journal, null, 2)}\n`, { flag: "wx" });
-  const { errors } = readLock(root);
-  if (errors.length) throw new MigrateError(`generated lock is invalid: ${errors.join("; ")}`);
+  writeFileSync(join(root, JOURNAL), `${JSON.stringify(journal, null, 2)}
+`, { flag: "wx" });
+  // 3) mutate
+  const removed = [];
+  try {
+    for (const r of plan.retire) {
+      rmSync(join(root, r.path));
+      removed.push(r);
+    }
+    args.hooks?.afterRetire?.(); // test seam: lets a test make the write phase fail after deletions started
+    for (const c of created) {
+      const full = join(root, c.path);
+      mkdirSync(dirname(full), { recursive: true });
+      writeFileSync(full, plan.add[c.path], { flag: "wx" });
+    }
+    const { errors } = readLock(root);
+    if (errors.length) throw new MigrateError(`generated lock is invalid: ${errors.join("; ")}`);
+  } catch (error) {
+    // best effort: put everything back through the journal we already wrote
+    try { revertMigration({ target: root }); } catch { /* the journal stays so the user can run `revert` */ }
+    throw error;
+  }
   return { status: "APPLIED", plan, written: created.map((c) => c.path), removed: removed.map((r) => r.path), baseCommit };
 }
 
@@ -163,6 +183,9 @@ export function revertMigration({ target }) {
     if (doneRestored.has(r.path)) continue;
     // a retired file whose v3 replacement the user edited stays as the user's file: do not overwrite it with the v2 one
     if (kept.includes(r.path)) continue;
+    // never overwrite a file that is there now: apply deleted it (or replaced it with a v3 file, removed above), so
+    // anything present is something the user created afterwards
+    if (existsSync(join(root, r.path))) { kept.push(r.path); continue; }
     git(root, "checkout", j.baseCommit, "--", r.path);
     if (normalizedSha(readFileSync(join(root, r.path))) !== r.sha256) throw new MigrateError(`restored '${r.path}' does not match the journal hash`);
     restored.push(r.path);

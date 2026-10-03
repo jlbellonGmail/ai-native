@@ -35,7 +35,8 @@ test("deterministic metrics recompute from the repo and match the recorded value
   const skills = readdirSync(join(root, ".agents/skills"), { withFileTypes: true }).filter((e) => e.isDirectory());
   const fm = skills.map((d) => /^---\n([\s\S]*?)\n---/.exec(readFileSync(join(root, ".agents/skills", d.name, "SKILL.md"), "utf8").replace(/\r\n/g, "\n"))?.[1] ?? "").join("\n");
   // skills may have been added since the run: the recorded value must never be ABOVE what the repo gives today by more than the new skills add
-  assert.ok(Math.ceil((kernel.length + fm.length) / 4) <= 2500, "re-entry context stays within target today");
+  assert.equal(m.contextAtReentryTokens.value, Math.ceil((kernel.length + fm.length) / 4), "the recorded context figure is what the repo gives");
+  assert.equal(m.contextAtReentryTokens.skills, skills.length, "no skill was added or removed since the measurement: re-run measure.mjs if this fails");
   assert.equal(m.filesChangedByBump.value, 2);
   assert.deepEqual(m.filesChangedByBump.files.sort(), [".github/workflows/ai-native.yml", "ai-native.lock.json"]);
   assert.equal(m.networkCallsPerSessionWithCache.value, 0);
@@ -60,4 +61,24 @@ test("timings are sane (loose bounds only; they are machine dependent)", () => {
   assert.ok(m.bootstrapTimeWithCache.value > 0 && m.bootstrapTimeWithCache.value < 30000);
   assert.ok(m.bootstrapTimeWithoutCache.value > 0 && m.bootstrapTimeWithoutCache.value < 30000);
   assert.equal(m.bootstrapTimeWithCache.samples.length, 9);
+});
+
+test("hitlPerUnit and circuitsPerMilestone are DERIVED from the real policy/state machine and a real startWorkUnit, not asserted", () => {
+  const policy = JSON.parse(readFileSync(join(root, "core/security-policy.json"), "utf8"));
+  const mergers = Object.entries(policy.matrix).filter(([, caps]) => caps.MERGE === "allow").map(([role]) => role);
+  assert.deepEqual(m.hitlPerUnit.detail.rolesWithMergeAllow, mergers);
+  assert.deepEqual(mergers, ["human"]);
+  const sm = JSON.parse(readFileSync(join(root, "contracts/state-machine.json"), "utf8"));
+  assert.equal(m.hitlPerUnit.detail.transitionsIntoMerged.length, sm.transitions.filter((x) => x.to === "MERGED").length);
+  assert.equal(m.hitlPerUnit.met, true);
+  assert.deepEqual(m.circuitsPerMilestone.detail, { branches: 1, runDirs: 1, items: 3 });
+  assert.match(m.circuitsPerMilestone.method, /executed for real/);
+});
+
+test("the measurement refuses failing commands: the script throws on a non-zero exit and records the network count as a lower bound", () => {
+  const src = readFileSync(join(root, "evaluation/metrics/measure.mjs"), "utf8");
+  assert.match(src, /measured command failed \(exit/);
+  assert.match(src, /network-count run failed \(exit/);
+  assert.match(m.networkCallsPerSessionWithCache.disclosure.limit, /LOWER BOUND/);
+  assert.match(m.networkCallsPerSessionWithCache.method, /every run must exit 0/);
 });
