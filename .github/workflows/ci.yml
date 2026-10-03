@@ -207,7 +207,7 @@ jobs:
         shell: bash
         run: node --test runtime/migrate/*.test.mjs
 
-      - name: runtime/pilot fixtures: from scratch (M5.2) + real v2 starter v2.0.4 migration (M5.3 partial)
+      - name: runtime/pilot fixtures - from scratch (M5.2) and real v2 starter v2.0.4 migration (M5.3 partial)
         shell: bash
         env:
           AI_NATIVE_REQUIRE_NETWORK: "1"
