@@ -1,85 +1,129 @@
-// Audit H1 (CRITICAL): which workflows may touch a non-GITHUB_TOKEN secret.
+// Audit H1 (CRITICAL): which workflows may touch a secret other than GITHUB_TOKEN.
 //
 // GitHub runs a workflow from the file at the ref that triggered it:
-//   pull_request / pull_request_review* / push / workflow_dispatch / schedule ...  -> the file at THAT ref, i.e. the branch
-//                                                                                    of whoever pushed it
-//   pull_request_target / workflow_run / issue_comment ...                         -> the file on the DEFAULT branch
-// Anyone able to push a branch to this repo (the worker App has `workflows: write`) can therefore add a workflow with a
-// `push` (or `pull_request`) trigger that prints every repository secret, with no PR and no review. Detection cannot
-// stop that; the real boundary is an Environment whose deployment branches are limited to the default branch
-// (governance/security/SECRETS-BOUNDARY.md). What this module does is make the repository's OWN workflows conform, so
-// the policy is enforceable and any deviation is loud:
-//   a workflow that references a secret other than GITHUB_TOKEN may only be triggered by BASE-FILE events
-//   (pull_request_target, workflow_run, workflow_call, release) -- never by an event that runs the branch's file.
+//   push / pull_request / pull_request_review* / workflow_dispatch / schedule ... -> the file on THAT ref (the pusher's branch)
+//   pull_request_target / workflow_run / ...                                      -> the file on the DEFAULT branch
+// Anyone able to push a branch (the worker App has `workflows: write`) can add a workflow with `on: push` that prints every
+// repository secret, with no PR and no review. Detection cannot stop that (the preventive boundary is an Environment limited to
+// the default branch: governance/security/SECRETS-BOUNDARY.md). This module makes the repository's OWN workflows conform, FAIL-CLOSED:
 //
-// Triggers are parsed from the `on:` block in every YAML form: scalar, list, mapping, flow mapping, quoted keys.
+//   * ANY mention of `secrets` (case-insensitive, any form: secrets.X, secrets['X'], toJSON(secrets), `secrets: inherit`,
+//     `secrets: "inherit"`, a bare `${{ secrets }}`) other than GITHUB_TOKEN counts as a secret reference;
+//   * a workflow with a secret reference is allowed only if EVERY trigger is a base-file event;
+//   * if the triggers cannot be determined, that is a finding too (never silence).
+//
+// Text-level YAML parsing is deliberately conservative: it may over-report (the word "secrets" inside a script of a push
+// workflow is flagged and must be reworded) but it must not under-report.
 
 export const BASE_FILE_EVENTS = new Set(["pull_request_target", "workflow_run", "workflow_call", "release", "issue_comment", "issues"]);
 
 const unquote = (s) => s.trim().replace(/^["']|["']$/g, "");
+const stripComment = (l) => l.replace(/(^|[ \t])#.*$/, "");
+const nest = (s) => [...s].reduce((d, c) => d + (c === "[" || c === "{" ? 1 : c === "]" || c === "}" ? -1 : 0), 0);
 
-/** { head, body }: the text after `on:` on its own line, and the lines of the block under it (comments removed). */
+/** { head, body }: what follows `on:` on its line, and the lines of the block under it (comments removed). */
 function onSection(text) {
   const lines = text.split("\n").map((l) => l.replace(/\r$/, ""));
   const start = lines.findIndex((l) => /^["']?on["']?[ \t]*:/.test(l));
   if (start < 0) return null;
-  const head = lines[start].replace(/^["']?on["']?[ \t]*:[ \t]*/, "").replace(/(^|[ \t])#.*$/, "").trim();
+  const head = stripComment(lines[start].replace(/^["']?on["']?[ \t]*:[ \t]*/, "")).trim();
   const body = [];
   for (let k = start + 1; k < lines.length; k += 1) {
     if (!/^[ \t]/.test(lines[k]) && /^[A-Za-z_"']/.test(lines[k])) break; // next top-level key
-    body.push(lines[k].replace(/(^|[ \t])#.*$/, ""));
+    body.push(stripComment(lines[k]));
   }
   return { head, body: body.filter((l) => l.trim().length) };
 }
 
-/** The event names declared by the workflow (all YAML shapes of `on:`). */
+/** Depth-1 keys of a flow mapping ("{ push: {...}, workflow_dispatch: {} }") or items of a flow list ("[push, pull_request]"). */
+function flowTopLevel(flow) {
+  const isMap = flow.trimStart().startsWith("{");
+  const out = new Set();
+  let depth = 0;
+  let token = "";
+  let expectKey = true;
+  for (const ch of flow) {
+    if (ch === "{" || ch === "[") { depth += 1; if (depth === 1) continue; }
+    if (ch === "}" || ch === "]") {
+      depth -= 1;
+      if (depth === 0) { if (!isMap && token.trim()) out.add(unquote(token)); token = ""; continue; }
+    }
+    if (depth === 1) {
+      if (ch === ",") { if (!isMap && token.trim()) out.add(unquote(token)); expectKey = true; token = ""; continue; }
+      if (isMap && ch === ":" && expectKey) { if (token.trim()) out.add(unquote(token)); expectKey = false; token = ""; continue; }
+      if (!isMap || expectKey) token += ch;
+    }
+  }
+  return [...out];
+}
+
+/** The event names declared by the workflow (every YAML shape of `on:`); [] when they cannot be determined. */
 export function triggerNames(text) {
   const sec = onSection(text);
   if (!sec) return [];
-  const head = sec.head;
   const names = new Set();
-  const addList = (s) => s.split(",").map((x) => unquote(x.replace(/:$/, ""))).filter(Boolean).forEach((n) => names.add(n));
-  if (head.startsWith("[")) addList(head.replace(/^\[|\]$/g, ""));
-  else if (head.startsWith("{")) {
-    let depth = 0;
-    let token = "";
-    for (const ch of head) {
-      if (ch === "{" || ch === "[") depth += 1;
-      else if (ch === "}" || ch === "]") depth -= 1;
-      if (depth === 1 && ch === ":") { names.add(unquote(token.replace(/^\{/, ""))); token = ""; }
-      else if (depth === 1 && ch === ",") token = "";
-      else if (depth <= 1) token += ch;
+  let { head, body } = sec;
+  if (head.startsWith("[") || head.startsWith("{")) {
+    // a flow collection, possibly spread over several lines: join until the brackets balance
+    let joined = head;
+    let depth = nest(head);
+    let used = 0;
+    while (depth > 0 && used < body.length) {
+      joined += ` ${body[used].trim()}`;
+      depth += nest(body[used]);
+      used += 1;
     }
-  } else if (head) addList(head); // scalar: `on: push`
+    flowTopLevel(joined).forEach((n) => names.add(n));
+    body = body.slice(used);
+  } else if (head) {
+    head.split(",").map((x) => unquote(x.replace(/:$/, ""))).filter(Boolean).forEach((n) => names.add(n)); // scalar: `on: push`
+  }
   // block form: the events are the entries at the FIRST (shallowest) indentation under `on:`; deeper lines are options
-  const body = sec.body;
-  const indents = body.map((l) => l.match(/^[ 	]*/)[0].length);
+  const indents = body.map((l) => l.match(/^[ \t]*/)[0].length);
   const top = Math.min(...indents, Infinity);
   body.forEach((l, k) => {
     if (indents[k] !== top) return;
-    const m = /^[ 	]*(?:-[ 	]*)?["']?([A-Za-z_][\w-]*)["']?[ 	]*(?::|$)/.exec(l);
+    const m = /^[ \t]*(?:-[ \t]*)?["']?([A-Za-z_][\w-]*)["']?[ \t]*(?::|$)/.exec(l);
     if (m) names.add(m[1]);
   });
   return [...names];
 }
 
-/** Secret references other than GITHUB_TOKEN, in every form (comments ignored). */
+/** Non-comment text without display `name:` lines and without the allowed GITHUB_TOKEN references. */
+function secretScanText(text) {
+  return text
+    .split("\n")
+    .filter((l) => !l.trimStart().startsWith("#"))
+    .map(stripComment)
+    .filter((l) => !/^\s*(?:-\s+)?name\s*:/.test(l)) // a step/job/workflow display name is not a reference
+    .join("\n")
+    .replace(/secrets\s*\.\s*GITHUB_TOKEN\b/gi, "")
+    .replace(/secrets\s*\[\s*["']GITHUB_TOKEN["']\s*\]/gi, "");
+}
+
+/** Secret references (any form, case-insensitive). */
 export function secretReferences(text) {
-  const code = text.split("\n").filter((l) => !l.trimStart().startsWith("#")).join("\n");
+  const code = secretScanText(text);
   const refs = new Set();
-  for (const m of code.matchAll(/secrets\.([A-Za-z_]\w*)/g)) if (m[1] !== "GITHUB_TOKEN") refs.add(`secrets.${m[1]}`);
-  for (const m of code.matchAll(/secrets\[\s*([^\]]+?)\s*\]/g)) if (unquote(m[1]) !== "GITHUB_TOKEN") refs.add(`secrets[${m[1]}]`);
-  if (/toJSON\(\s*secrets\s*\)/i.test(code)) refs.add("toJSON(secrets)");
-  if (/^\s*secrets:\s*inherit\s*$/m.test(code)) refs.add("secrets: inherit");
+  for (const m of code.matchAll(/\bsecrets\s*\.\s*([A-Za-z_]\w*)/gi)) refs.add(`secrets.${m[1]}`);
+  for (const m of code.matchAll(/\bsecrets\s*\[\s*([^\]]+?)\s*\]/gi)) refs.add(`secrets[${m[1]}]`);
+  if (/\btoJSON\s*\(\s*secrets\s*\)/i.test(code)) refs.add("toJSON(secrets)");
+  if (/^\s*secrets\s*:\s*["']?inherit["']?\s*$/im.test(code)) refs.add("secrets: inherit");
+  if (/^\s*secrets\s*:\s*$/im.test(code)) refs.add("secrets: mapping");
+  // whatever still names the bare context (`${{ secrets }}`, format(..., secrets), join(secrets, ...)) is a reference too
+  const rest = code.replace(/\bsecrets\s*[.[]/gi, "").replace(/\bsecrets\s*:/gi, "");
+  if (/\bsecrets\b/i.test(rest)) refs.add("secrets (bare context)");
   return [...refs];
 }
 
-/** Findings: secrets reachable from an event that runs the branch's own workflow file. */
+/** Findings: secrets reachable from an event that runs the pushed branch's own workflow file, or from triggers we cannot read. */
 export function checkSecretExposure(path, text) {
   const refs = secretReferences(text);
   if (!refs.length) return [];
   const events = triggerNames(text);
+  const detail = (why) => refs.map((r) => ({ code: "SECRETS_IN_PR_EVENT", path, detail: `${r} ${why}` }));
+  if (!events.length) return detail("is used but the workflow's triggers could not be determined (fail closed)");
   const unsafe = events.filter((e) => !BASE_FILE_EVENTS.has(e));
   if (!unsafe.length) return [];
-  return refs.map((r) => ({ code: "SECRETS_IN_PR_EVENT", path, detail: `${r} is reachable from '${unsafe.join(", ")}', which run(s) the pushed branch's own workflow file; only ${[...BASE_FILE_EVENTS].join("/")} may use secrets` }));
+  return detail(`is reachable from '${unsafe.join(", ")}', which run(s) the pushed branch's own workflow file; only ${[...BASE_FILE_EVENTS].join("/")} may use secrets`);
 }

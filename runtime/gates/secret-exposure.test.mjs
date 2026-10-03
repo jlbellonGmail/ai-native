@@ -2,7 +2,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
-import { execFileSync } from "node:child_process";
 import { triggerNames, secretReferences, checkSecretExposure } from "./secret-exposure.mjs";
 import { checkWorkflow } from "./supply-chain.mjs";
 
@@ -35,7 +34,7 @@ test("the false negatives of the first version are closed: scalar and list `on:`
 });
 
 test("every way of naming a secret counts: secrets.X, secrets['X'], toJSON(secrets), secrets: inherit", () => {
-  assert.deepEqual(secretReferences("run: echo ${{ secrets.A }} ${{ secrets['B'] }} ${{ toJSON(secrets) }}\nsecrets: inherit\n").sort(), ["secrets.A", "secrets: inherit", "secrets[B]".replace("B", "'B'"), "toJSON(secrets)"].sort());
+  assert.deepEqual(secretReferences("run: echo ${{ secrets.A }} ${{ secrets['B'] }} ${{ toJSON(secrets) }}\nsecrets: inherit\n").sort(), ["secrets.A", "secrets: inherit", "secrets[B]".replace("B", "'B'"), "toJSON(secrets)", "secrets (bare context)"].sort()); // toJSON(secrets) also names the bare context: reported twice on purpose
   assert.equal(flagged("name: x\non: push\njobs:\n  a:\n    uses: o/r/.github/workflows/w.yml@" + "a".repeat(40) + "\n    secrets: inherit\n"), true);
   assert.equal(flagged("name: x\non: push\njobs:\n  a:\n    runs-on: x\n    steps:\n      - run: echo ${{ toJSON(secrets) }}\n"), true);
   assert.equal(flagged("name: x\non: push\njobs:\n  a:\n    runs-on: x\n    steps:\n      - run: echo ${{ secrets['K'] }}\n"), true);
@@ -54,8 +53,8 @@ test("checkWorkflow reports it as SECRETS_IN_PR_EVENT (what pr-gate and security
   assert.ok(f.some((x) => x.code === "SECRETS_IN_PR_EVENT" && /TRUST_APP_PRIVATE_KEY/.test(x.detail)));
 });
 
-test("the merge-gate.yml that shipped in M4.3 (pull_request_review + the App key) is detected", () => {
-  const shipped = execFileSync("git", ["show", "47bd24f:.github/workflows/merge-gate.yml"], { cwd: root, encoding: "utf8" });
+test("the merge-gate.yml that shipped in M4.3 (pull_request_review + the App key) is detected (vendored fixture: CI checks out with fetch-depth 1)", () => {
+  const shipped = readFileSync(new URL("./fixtures/merge-gate.m4-3-shipped.yml", import.meta.url), "utf8");
   assert.deepEqual(triggerNames(shipped).sort(), ["pull_request_review", "pull_request_target"]);
   assert.ok(checkWorkflow("merge-gate.yml", shipped).some((f) => f.code === "SECRETS_IN_PR_EVENT" && /TRUST_APP_PRIVATE_KEY/.test(f.detail)));
 });
@@ -69,4 +68,28 @@ test("this repository's own workflows conform: secrets only behind pull_request_
     if (secretReferences(text).length) withSecrets.push(n);
   }
   assert.deepEqual(withSecrets.sort(), ["merge-gate.yml", "trust-gate.yml"], "exactly the two gate workflows hold the App credentials");
+});
+
+const L = (...lines) => `${lines.join("\n")}\n`;
+const JOB = ["jobs:", "  a:", "    runs-on: x", "    steps:", "      - run: echo ${{ SECRETS.TRUST_APP_PRIVATE_KEY }}"];
+const sha40 = "a".repeat(40);
+
+test("multi-line flow `on:`, an empty/unreadable `on:`, mixed case and `secrets: inherit` variants all fail closed", () => {
+  assert.equal(flagged(L("name: x", "on: [", "  push,", "  pull_request", "]", ...JOB)), true, "multi-line flow list");
+  assert.equal(flagged(L("name: x", "on: {", "  push: {},", "  pull_request: {}", "}", ...JOB)), true, "multi-line flow mapping");
+  assert.deepEqual(triggerNames(L("on: {", "  push: {},", "  pull_request: {}", "}", "jobs: {}")).sort(), ["pull_request", "push"]);
+  assert.deepEqual(triggerNames(L("on: [", "  workflow_call,", "  pull_request_target", "]", "jobs: {}")).sort(), ["pull_request_target", "workflow_call"]);
+  assert.equal(flagged(L("name: x", ...JOB)), true, "no `on:` at all: triggers unknown -> fail closed");
+  assert.equal(flagged(L("name: x", "on:", ...JOB)), true, "empty `on:`");
+  assert.equal(flagged(L("name: x", "on: push", ...JOB)), true, "SECRETS in capitals (expression contexts are case-insensitive)");
+  for (const inherit of ["    secrets: inherit # all of them", '    secrets: "inherit"', "    secrets: 'inherit'"]) {
+    assert.equal(flagged(L("name: x", "on: push", "jobs:", "  a:", `    uses: o/r/.github/workflows/w.yml@${sha40}`, inherit)), true, inherit);
+  }
+  const step = (expr) => L("name: x", "on: push", "jobs:", "  a:", "    runs-on: x", "    steps:", `      - run: echo ${expr}`);
+  assert.equal(flagged(step("${{ format('{0}', secrets) }}")), true, "bare context in format()");
+  assert.equal(flagged(step("${{ join(secrets, ',') }}")), true, "bare context in join()");
+  assert.equal(flagged(L("name: x", "on: push", "jobs:", "  a:", `    uses: o/r/.github/workflows/w.yml@${sha40}`, "    secrets:", "      K: ${{ secrets.K }}")), true, "secrets: mapping");
+  // and it still allows what must be allowed
+  assert.equal(flagged(L("name: Detect secrets in the tree", "on: push", "jobs:", "  a:", "    name: scan for secrets", "    runs-on: x", "    steps:", "      - run: echo hi")), false, "a display name that says 'secrets' is not a reference");
+  assert.equal(flagged(L("name: x", "on: {", "  pull_request_target: {},", "  workflow_call: {}", "}", ...JOB)), false, "multi-line flow of base-file events");
 });
