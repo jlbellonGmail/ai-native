@@ -12,7 +12,8 @@
 //        [--tool claude|codex|opencode]... [--base-branch main] [--keep <path>]... [--json]
 import { createHash } from "node:crypto";
 import { execFileSync, spawnSync } from "node:child_process";
-import { closeSync, existsSync, mkdirSync, openSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { constants, copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { consumerFiles } from "../adapters/consumer.mjs";
@@ -201,24 +202,30 @@ export function revertMigration({ target }) {
     if (kept.includes(r.path)) continue;
     // never overwrite a file that is there now: apply deleted it (or replaced it with a v3 file, removed above), so
     // anything present is something the user created afterwards
-    // Restore through git so the working tree gets exactly what a checkout would (autocrlf included). The guard against
-    // overwriting is an EXCLUSIVE create of the target first: if the user put a file there, the create fails and we keep theirs.
-    const target = join(root, r.path);
-    mkdirSync(dirname(target), { recursive: true });
+    // Extract the base-commit version with git into a scratch work tree (own index: the repo's index and tree are not
+    // touched, autocrlf is honoured), then publish it with an EXCLUSIVE copy: if the user put a file there, it is kept.
+    const scratch = mkdtempSync(join(tmpdir(), "ai-native-restore-"));
     try {
-      closeSync(openSync(target, "wx"));
-    } catch (error) {
-      if (error.code === "EEXIST") { kept.push(r.path); continue; }
-      throw error;
+      const env = { ...process.env, GIT_INDEX_FILE: join(scratch, "index") };
+      execFileSync("git", ["read-tree", j.baseCommit], { cwd: root, env });
+      mkdirSync(join(scratch, "wt"), { recursive: true });
+      execFileSync("git", ["--git-dir", join(root, ".git"), "--work-tree", join(scratch, "wt"), "checkout-index", "-f", "--", r.path], { cwd: scratch, env });
+      const extracted = join(scratch, "wt", r.path);
+      if (normalizedSha(readFileSync(extracted)) !== r.sha256) throw new MigrateError(`'${r.path}' at the base commit does not match the journal hash`);
+      const target = join(root, r.path);
+      mkdirSync(dirname(target), { recursive: true });
+      try {
+        copyFileSync(extracted, target, constants.COPYFILE_EXCL);
+      } catch (error) {
+        if (error.code === "EEXIST") { kept.push(r.path); continue; }
+        throw error;
+      }
+    } finally {
+      rmSync(scratch, { recursive: true, force: true });
     }
-    rmSync(target);
-    git(root, "checkout", j.baseCommit, "--", r.path);
-    if (normalizedSha(readFileSync(target)) !== r.sha256) throw new MigrateError(`restored '${r.path}' does not match the journal hash`);
     restored.push(r.path);
     doneRestored.add(r.path);
   }
-  // `git checkout <commit> -- path` stages what it restores: leave the index as it was
-  if (restored.length) git(root, "reset", "-q", "--", ...restored);
   for (const p of removed) pruneEmpty(root, p);
   if (kept.length) {
     writeFileSync(jp, `${JSON.stringify({ ...j, revertedCreated: [...doneCreated], revertedRestored: [...doneRestored] }, null, 2)}
