@@ -68,7 +68,11 @@ export function checkIntegrity(root, { statusPath = "STATUS.md", ignorePaths = [
   const recordedBranch = field(block, "Rama|Branch");
   const recordedHead = field(block, "HEAD");
 
-  if (recordedBranch !== null && recordedBranch !== snapshot.branch) {
+  if (!snapshot.branch) {
+    // Detached HEAD (every CI pull_request checkout, a tag, a bisect): there is no current branch to compare the
+    // recorded one with, so that comparison is skipped rather than reported as a mismatch against 'null'.
+    warnings.push(`${statusPath}: detached HEAD, recorded branch '${recordedBranch}' not compared`);
+  } else if (recordedBranch !== null && recordedBranch !== snapshot.branch) {
     errors.push(`${statusPath}: recorded branch '${recordedBranch}' does not match actual branch '${snapshot.branch}'`);
   }
 
