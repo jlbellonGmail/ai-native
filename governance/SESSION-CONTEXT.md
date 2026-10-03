@@ -3866,3 +3866,10 @@ Restricciones vigentes: no tocar repos GI sin autorizacion por oleada (M6); ning
 * Hallazgo: el `post-merge` de #31 salio `failure` (`NO_MERGE_GATE_EVIDENCE`) porque el merge-gate todavia no existia en `main` al mergearla (bootstrap inevitable de M4.3). No es un defecto del gate. Ademas, las PRs #30/#31 las mergeo el agente con la cuenta humana `jlbellonGmail` (el token de `gh`), asi que `merged_by` no distingue agente de humano en esas dos; el control real es que la identidad `ai-native-worker` no se uso para mergear.
 * Hallazgo: M1.2 figuraba `[x]` pero solo entregaba `migrate --inventory`; PAR-BUMP-FOOTPRINT, PAR-BROWNFIELD-SAFETY y PAR-MIGRATION-REVERT no tenian codigo. Ahora existen en `runtime/migrate/{bump,adopt,product-context}.mjs` (+9 tests), junto con PAR-PRODUCT-CONTEXT (skill `product-context`) y PAR-TRUST-BOUNDARY (test de `policy > contenido`). Parity: 93/95 implementados; quedan C5 y C6 (compatibilidad real de herramientas, M5.2).
 * Limite explicito: PAR-BROWNFIELD-SAFETY cubre la seguridad (no sobrescribir, revert); los fixtures de migracion v2.0.0..v2.0.6 + Starter v2.0.4 siguen siendo M5.3 (v2.0.6 no existe: M0.0b pendiente).
+
+---
+
+## 2026-10-03 — M5.2 en curso (fixture desde cero)
+
+* Hallazgo: la release no exponia ningun comando de adaptadores, asi que un consumidor con solo `ai-native.lock.json` no podia obtener los archivos por herramienta. Se agrega `adapters` a `runtime/main.mjs` (`runtime/adapters/consumer.mjs`), construido sobre `runtime/migrate/adopt.mjs` (no sobrescribe, journal, `--revert`).
+* `runtime/pilot/fixture.test.mjs` (7 tests) y `pilot.yml` (online real, alpha.1). M5.2 queda abierta: C5/C6 PLANNED sin definicion en el repo; no se lanzan las CLIs reales.

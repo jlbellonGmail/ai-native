@@ -55,7 +55,7 @@ No se abre una fase M(n+1) sin que las condiciones P de salida de M(n) estén en
 ## M5 — Piloto sintético y RC
 
 - [ ] M5.1 — `v3.0.0-rc.1`.
-- [ ] M5.2 — Fixture desde cero, matriz muestreada (Windows/Ubuntu × online/offline × 3 herramientas).
+- [ ] M5.2 — Fixture desde cero, matriz muestreada (Windows/Ubuntu × online/offline × 3 herramientas). **Avance (no cerrada):** `runtime/adapters/consumer.mjs` (comando `adapters` de la release; reusa la adopcion brownfield-safe con journal/revert) y `runtime/pilot/fixture.test.mjs` (consumidor desde cero: lock -> sync --from-file -> adapters; matriz por herramienta claude/codex/opencode; colision brownfield; revert; re-sync offline desde cache; doctor) en la matriz Ubuntu+Windows de ci.yml, mas `.github/workflows/pilot.yml` (camino online real contra la release publicada v3.0.0-alpha.1 con `--require-attestation`). **Limites explicitos:** valida los archivos por herramienta estructuralmente, no lanza las CLIs (requieren credenciales); C5 y C6 siguen PLANNED y su definicion no esta en el repo (vive en el plan de sesion); no hay `offline` real sin red a nivel SO, solo `--from-file`/`--offline`.
 - [ ] M5.3 — Fixtures de migración v2.0.0…v2.0.6 + Starter v2.0.4.
 - [ ] M5.4 — Canary real en `template-starter`. Requiere **D4**.
 - [ ] M5.5 — `v3.0.0` estable.

@@ -1,0 +1,71 @@
+name: pilot
+
+# M5.2 (matriz muestreada, camino ONLINE). A consumer is created from scratch
+# with only a lock pinned to the REAL published release v3.0.0-alpha.1; `sync`
+# downloads it from GitHub Releases, checks sha256 against the lock BEFORE
+# caching, and verifies the sigstore attestation (--require-attestation). The
+# offline path (build HEAD -> sync --from-file -> adapters for the 3 tools) runs
+# in ci.yml on Ubuntu and Windows (runtime/pilot/fixture.test.mjs).
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "runtime/bootstrap/**"
+      - "runtime/pilot/**"
+      - "runtime/release/**"
+      - ".github/workflows/pilot.yml"
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  online:
+    name: pilot online (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Online sync of the published release, then doctor/version
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          proj="$(mktemp -d)"
+          cache="$(mktemp -d)"
+          cat > "$proj/ai-native.lock.json" <<'EOF'
+          {
+            "schemaVersion": 1,
+            "platform": {
+              "repo": "github:jlbellonGmail/ai-native",
+              "version": "v3.0.0-alpha.1",
+              "commit": "9e155b4b77ef4331dae2926e9053abb792733e8d",
+              "digest": "sha256:207bb0d71d76de479b722b106bd1c127ec31c9a8f36285f79578aa047db067a0",
+              "channel": "rc"
+            },
+            "profiles": ["factory"]
+          }
+          EOF
+          cli=runtime/bootstrap/cli.mjs
+          node "$cli" sync --require-attestation --project "$proj" --cache "$cache"
+          node "$cli" doctor --project "$proj" --cache "$cache"
+          out="$(node "$cli" run --project "$proj" --cache "$cache" -- version)"
+          echo "$out"
+          case "$out" in "v3.0.0-alpha.1 9e155b4b77ef4331dae2926e9053abb792733e8d"*) ;; *) echo "unexpected version: $out"; exit 1;; esac
+          # second sync must be served from the cache
+          node "$cli" sync --offline --project "$proj" --cache "$cache"

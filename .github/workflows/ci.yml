@@ -207,6 +207,10 @@ jobs:
         shell: bash
         run: node --test runtime/migrate/*.test.mjs
 
+      - name: runtime/pilot fixture from scratch, 3 tools, offline, brownfield+revert (M5.2)
+        shell: bash
+        run: node --test runtime/pilot/*.test.mjs
+
       - name: runtime/audit tests (M4.5, PAR-AUDIT-METHOD/PAR-AUDIT-VALIDITY)
         shell: bash
         run: node --test runtime/audit/*.test.mjs
