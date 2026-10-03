@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "description": "M4.3 (P44 TRUSTED_CALLER_INTEGRITY, PAR-CONFIG-FROM-BASE). Configuracion de los gates de PR. SIEMPRE se lee desde el commit BASE de la PR, nunca desde el head: una PR que modifique este archivo no cambia como se la evalua.",
+  "trustGate": {
+    "checkName": "ai-native/trust-gate",
+    "appSlug": "ai-native-trust",
+    "callerWorkflow": ".github/workflows/trust-gate.yml"
+  },
+  "reservedCheckNames": ["ai-native/trust-gate", "ai-native/merge-gate"],
+  "controlPlane": [
+    ".github/**",
+    "governance/gates/**",
+    "governance/rulesets/**",
+    "runtime/gates/**",
+    "core/security-policy.json",
+    "contracts/**",
+    "AGENTS.md",
+    "CLAUDE.md"
+  ],
+  "worker": {
+    "appSlug": "ai-native-worker",
+    "botLogins": ["ai-native-worker[bot]"]
+  },
+  "governance": {
+    "mode": "SingleMaintainer",
+    "humanMergers": ["jlbellonGmail"]
+  }
+}

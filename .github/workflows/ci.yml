@@ -199,6 +199,10 @@ jobs:
         shell: bash
         run: node --test runtime/mcp-gateway/*.test.mjs
 
+      - name: runtime/gates tests (M4.3, PAR-TRUSTED-CALLER/PAR-CONTROL-PLANE-AS-DATA/PAR-CONFIG-FROM-BASE)
+        shell: bash
+        run: node --test runtime/gates/*.test.mjs
+
       - name: runtime/audit tests (M4.5, PAR-AUDIT-METHOD/PAR-AUDIT-VALIDITY)
         shell: bash
         run: node --test runtime/audit/*.test.mjs
