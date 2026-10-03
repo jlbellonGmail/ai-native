@@ -6,6 +6,7 @@ import { execFileSync } from "node:child_process";
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
+import { globToRegExp } from "../gates/control-plane.mjs";
 import { planMigration, applyMigration, revertMigration, MigrateError, JOURNAL, PROTECTED, PLATFORM_OWNED } from "./migrate.mjs";
 
 const RELEASE = { repo: "github:jlbellonGmail/ai-native", version: "v3.0.0-rc.1", commit: "99f23f440544bb22bac7179d34b7d5c4e6a1143e", digest: `sha256:${"2".repeat(64)}` };
@@ -34,8 +35,8 @@ test("real starter v2.0.4: plan is read-only, classifies everything, retires onl
   assert.equal(plan.counts.IDENTICAL_TO_TEMPLATE + plan.counts.MODIFIED_FROM_TEMPLATE, 175);
   assert.ok(plan.retire.length > 50);
   for (const r of plan.retire) {
-    assert.ok(PLATFORM_OWNED.some((g) => new RegExp(`^${g.replace(/\./g, "\\.").replace(/\*\*/g, ".*")}$`).test(r.path)), `${r.path} is not platform-owned`);
-    assert.ok(!PROTECTED.some((g) => new RegExp(`^${g.replace(/\./g, "\\.").replace(/\*\*/g, ".*")}$`).test(r.path)), `${r.path} is protected`);
+    assert.ok(PLATFORM_OWNED.some((g) => globToRegExp(g).test(r.path)), `${r.path} is not platform-owned`);
+    assert.ok(!PROTECTED.some((g) => globToRegExp(g).test(r.path)), `${r.path} is protected`);
   }
   // protected and product-owned content is never in the retire list
   for (const never of ["ROADMAP.md", "STATUS.md", "README.md", "AGENTS.md", "docs/tecnica/arquitectura.md", ".audit/reports/README.md"]) assert.ok(!plan.retire.some((r) => r.path === never), never);

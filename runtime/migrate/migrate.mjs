@@ -12,8 +12,8 @@
 //        [--tool claude|codex|opencode]... [--base-branch main] [--keep <path>]... [--json]
 import { createHash } from "node:crypto";
 import { execFileSync, spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
-import { dirname, isAbsolute, join, resolve } from "node:path";
+import { closeSync, existsSync, mkdirSync, openSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { consumerFiles } from "../adapters/consumer.mjs";
 import { canonical, readLock, LOCK_FILE } from "../bootstrap/install.mjs";
@@ -158,16 +158,24 @@ export function applyMigration(args) {
   return { status: "APPLIED", plan, written: created.map((c) => c.path), removed: removed.map((r) => r.path), baseCommit };
 }
 
+/**
+ * A journal path is untrusted input and must be a plain relative path inside the repository, judged the same on
+ * every OS: a Windows path ("C:/x", "\\host\share", "C:x") is absolute even when this process runs on Linux, where
+ * path.isAbsolute() would say otherwise.
+ */
+export function assertSafeRelative(root, rel) {
+  const s = String(rel ?? "");
+  const bad = !s || s.includes("\0") || isAbsolute(s) || /^[A-Za-z]:/.test(s) || /^[\/]/.test(s) || s.split(/[\/]/).includes("..");
+  if (bad || relative(root, resolve(root, s)).startsWith("..")) throw new MigrateError(`journal path escapes the repository: '${s}'`);
+}
+
 export function revertMigration({ target }) {
   const root = resolve(target);
   const jp = join(root, JOURNAL);
   if (!existsSync(jp)) throw new MigrateError("no migration journal; nothing to revert");
   const j = JSON.parse(readFileSync(jp, "utf8"));
   // the journal lives in the repo, so it is untrusted input: every path must stay inside the root and be relative
-  for (const entry of [...(j.created ?? []), ...(j.retired ?? [])]) {
-    const rel = String(entry.path);
-    if (isAbsolute(rel) || rel.split(/[\/]/).includes("..") || resolve(root, rel).toLowerCase().indexOf(root.toLowerCase()) !== 0) throw new MigrateError(`journal path escapes the repository: '${rel}'`);
-  }
+  for (const entry of [...(j.created ?? []), ...(j.retired ?? [])]) assertSafeRelative(root, entry?.path);
   // A partial revert must be resumable: what an earlier run already undid is recorded in the journal and is never
   // re-judged (a restored v2 file legitimately no longer matches the v3 hash it was replaced by).
   const doneCreated = new Set(j.revertedCreated ?? []);
@@ -191,9 +199,19 @@ export function revertMigration({ target }) {
     if (kept.includes(r.path)) continue;
     // never overwrite a file that is there now: apply deleted it (or replaced it with a v3 file, removed above), so
     // anything present is something the user created afterwards
-    if (existsSync(join(root, r.path))) { kept.push(r.path); continue; }
+    // Restore through git so the working tree gets exactly what a checkout would (autocrlf included). The guard against
+    // overwriting is an EXCLUSIVE create of the target first: if the user put a file there, the create fails and we keep theirs.
+    const target = join(root, r.path);
+    mkdirSync(dirname(target), { recursive: true });
+    try {
+      closeSync(openSync(target, "wx"));
+    } catch (error) {
+      if (error.code === "EEXIST") { kept.push(r.path); continue; }
+      throw error;
+    }
+    rmSync(target);
     git(root, "checkout", j.baseCommit, "--", r.path);
-    if (normalizedSha(readFileSync(join(root, r.path))) !== r.sha256) throw new MigrateError(`restored '${r.path}' does not match the journal hash`);
+    if (normalizedSha(readFileSync(target)) !== r.sha256) throw new MigrateError(`restored '${r.path}' does not match the journal hash`);
     restored.push(r.path);
     doneRestored.add(r.path);
   }
