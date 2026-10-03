@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "description": "C5 evidence catalog: two fixture servers. `notes` is read-only; `writer` is a write server whose calls need step-up.",
+  "servers": {
+    "notes": { "type": "local", "capability": "notes lookup", "mode": "read-only", "risk": "low", "permissions": ["lookup", "list"], "optional": false, "load": "on-demand" },
+    "writer": { "type": "local", "capability": "notes write", "mode": "write", "risk": "medium", "permissions": ["insert"], "optional": false, "load": "on-demand" }
+  }
+}
