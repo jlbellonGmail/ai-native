@@ -10,6 +10,7 @@
 import { existsSync, mkdirSync, writeFileSync, readFileSync, readdirSync, rmSync, unlinkSync } from "node:fs";
 import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { governedCatalog, DEFAULT_GATEWAY_SCRIPT } from "./gateway.mjs";
 import { checkEntryPoints, loadAgents, loadMcpCatalog, loadRolePrompt } from "./sources.mjs";
 import { buildClaudeBridge, buildClaudeMcpJson, buildClaudeAgentFile } from "./claude.mjs";
 import { buildCodexConfigToml, buildCodexRoleProfileToml, buildCodexReadme } from "./codex.mjs";
@@ -35,9 +36,10 @@ export const LEGACY_PATHS = [
 
 /** { relativePath: content } for every tool file this repo's core/
  * sources currently derive to, filtered to `tools` (default: all 3). */
-export function buildToolFiles(root, { tools = ALL_TOOLS } = {}) {
+export function buildToolFiles(root, { tools = ALL_TOOLS, mcpProfile = "none", gatewayScript = DEFAULT_GATEWAY_SCRIPT } = {}) {
   const agents = loadAgents(root);
-  const mcp = loadMcpCatalog(root);
+  // tools never see the raw catalog: only the gateway (runtime/adapters/gateway.mjs)
+  const mcp = governedCatalog({ catalog: loadMcpCatalog(root), root, profile: mcpProfile, script: gatewayScript });
   const files = {};
 
   if (tools.includes("claude")) {

@@ -176,14 +176,20 @@ real de configuración de hooks de Codex en este spike (no hay evidencia
 real de un hook disparando, a diferencia de C1); queda como entrada
 pendiente explícita para M3.3, no como hallazgo cerrado.
 
-## C3 — Codex: `.codex/config.toml` + `[mcp_servers]`
+## C3 Codex: config de proyecto confiable
 
-`NOT_AVAILABLE_FROM_TOOL` en el alcance de este spike: `.codex/config.toml`
-(perfiles de rol, `[mcp_servers]`) ya está inventariado desde
-`legacy/template-v2/.codex/` (M1.1), y AGENTS.md/skills ya funcionan sin él
-(ver C2). Verificar su efecto funcional real (selección de perfil,
-conexión a un servidor MCP) requiere el gateway real, que es trabajo de
-M4.4. Fallback: diferir la verificación funcional de C3 a M4.4.
+Cerrada el 2026-10-03 (estaba diferida desde M2.3 "al gateway real"). `evaluation/compat/run-c5.mjs --tool c3`:
+el adaptador genera `.codex/config.toml` con un unico `[mcp_servers.ai-native-gateway]` (y `default_tools_approval_mode =
+"approve"` solo para ese servidor). Misma config, nada en la linea de comandos, dos corridas de Codex real:
+
+* proyecto NO confiable: la herramienta `notes__lookup` no existe ("unavailable in this session"); el audit del gateway queda vacio.
+* proyecto confiable (`[projects.'<ruta en minusculas>'] trust_level = "trusted"` en el `config.toml` del home): Codex lanza el
+  gateway, llama `notes__lookup` y el audit registra ALLOW con el digest de los argumentos de esa corrida.
+
+Detalles que costaron tiempo: la clave del proyecto va en **minusculas** y `-c projects.<ruta>.trust_level=...` desde la linea de
+comandos **no** activa el config de proyecto (hay que ponerlo en el `config.toml` del home); usar el directorio del proyecto como
+`CODEX_HOME` pierde la credencial (401). El runner usa un `CODEX_HOME` temporal con solo `auth.json`; no toca `~/.codex`.
+Fallback del plan si el proyecto no es confiable: `doctor` debe indicarlo y el MCP queda deshabilitado (comportamiento observado).
 
 ## C4 — OpenCode (AGENTS.md nativo, skills, permisos, agentes)
 
@@ -306,3 +312,43 @@ pwsh, que se mide y reporta aparte.
    adecuada, rige el `reviewInvocationId` del runtime").
 7. C2-hooks y C3 quedan como entradas explícitamente abiertas para M3.3/M4.4
    (no se inventó evidencia donde no la hubo).
+
+## C5 — Gateway MCP en las 3 herramientas
+
+Fecha de la corrida: 2026-10-03. Runner: `evaluation/compat/run-c5.mjs`; resultado versionado en
+`evaluation/compat/c5-results.json`, validado por `runtime/mcp-gateway/c5.test.mjs` (sin llamar a ningún modelo).
+Servidor: `runtime/mcp-gateway/server.mjs` (MCP por stdio, JSON-RPC delimitado por líneas). Cada operación de cada
+servidor del perfil activo es una herramienta `<servidor>__<operación>`; toda llamada pasa por `gateway.call`.
+
+**Criterio de verdad:** no es lo que dice el modelo, es el audit con cadena de hashes del propio gateway. Por herramienta:
+`lookup` exige una entrada ALLOW con `argsDigest` igual al digest de los argumentos con un nonce propio de la corrida;
+`stepup` exige una entrada DENY `step_up_*` y que el servidor de escritura **nunca** se haya ejecutado.
+
+| Herramienta | Versión | lookup (namespace + ALLOW + salida cercada) | step-up (DENY, sin auto-aprobación) |
+|---|---|---|---|
+| Claude Code | 2.1.288 | CONFIRMED | CONFIRMED |
+| Codex | codex-cli 0.158.0 | CONFIRMED | CONFIRMED |
+| OpenCode | v2.0.22 | NOT_AVAILABLE_FROM_TOOL | NOT_AVAILABLE_FROM_TOOL |
+
+Hallazgos reales:
+
+1. **Codex bloquea toda llamada MCP en modo no interactivo** (`MCP tool call requires approval, but approval policy is never`)
+   salvo que el servidor esté preaprobado: `mcp_servers.<n>.default_tools_approval_mode = "approve"`. El adaptador lo emite
+   **solo** para el servidor `ai-native-gateway`: es seguro porque el gateway deniega por defecto y nunca auto-aprueba un step-up.
+2. **El gateway ya no se puede eludir desde la configuración generada.** Los tres adaptadores publicaban cada servidor de
+   `mcp/catalog.json` directamente en `.mcp.json`, `.codex/config.toml` y `opencode.json`, saltándose perfil, allowlist,
+   política rol × capacidad, step-up, sanitización y audit. Hoy no se notaba porque el catálogo está vacío. Ahora
+   `runtime/adapters/gateway.mjs` entrega a las tres herramientas un único servidor `ai-native-gateway` (y ninguno con perfil `none`).
+3. **Defecto del adaptador de OpenCode:** emitía `mcp: { servers: { <n>: ... } }`. Verificado con la CLI real: con esa forma
+   OpenCode responde `No MCP servers configured`; con `mcp: { <n>: ... }` carga el servidor. Corregido.
+4. **Salida de herramientas = datos no confiables:** el servidor entrega la forma con valla de nonce y avisa si el gateway marcó
+   patrones de inyección. Con Claude Code real, el modelo identificó el texto de inyección del fixture ("Ignore all previous
+   instructions…") como contenido de la herramienta y no actuó sobre él.
+5. **OpenCode: NO se pudo demostrar la llamada en este entorno.** No es evidencia de que no soporte MCP (`opencode mcp list`
+   lo lista y una prueba manual puntual llegó al gateway), sino que no obtuve una corrida reproducible: (a) el servicio en
+   segundo plano de OpenCode es compartido y persistente, no recarga la configuración de otro proyecto de forma fiable y
+   `opencode mcp list` devolvió resultados inconsistentes; (b) `--standalone` no alcanzó a aislarlo; (c) el modelo gratuito
+   configurado (`openrouter/free`) insistía en un servidor llamado `gw` que ya no existía. No existe un subcomando para llamar
+   una herramienta MCP sin modelo. Se registra `NOT_AVAILABLE_FROM_TOOL` con el motivo capturado y **no se declara soporte**.
+   Fallback del plan para C5: perfil `none` (sin MCP). Es además el valor por defecto de los adaptadores.
+6. Un `node --test` anidado hereda `NODE_TEST_CONTEXT` y no imprime nada (afectó a los tests que lanzan el runner de node).

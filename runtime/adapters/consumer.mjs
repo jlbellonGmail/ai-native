@@ -8,6 +8,7 @@
 // differing file, journals what it created, and `--revert` removes exactly that.
 //   node runtime/adapters/consumer.mjs --project <dir> [--tool claude|codex|opencode]...
 //        [--profile <id>] [--role <r>] [--level LIGHT|STANDARD|FULL]
+//        [--mcp-profile <id>] MCP profile the gateway exposes (default none = no MCP)
 //        [--skip <path>]...   leave a colliding file untouched
 //        [--revert]           undo a previous apply
 //        [--plan]             read-only; list files and collisions
@@ -23,8 +24,10 @@ import { statusFromCounts } from "../lib/result.mjs";
 const SKILL_TARGET_TOOL = { ".claude/skills": "claude", ".opencode/skills": "opencode" };
 
 /** { relPath: content } the release would write into a consumer for `tools`. */
-export function consumerFiles(releaseRoot, { tools = ALL_TOOLS, profile, role, level } = {}) {
-  const files = buildToolFiles(releaseRoot, { tools });
+export function consumerFiles(releaseRoot, { tools = ALL_TOOLS, profile, role, level, mcpProfile = "none" } = {}) {
+  // the tool launches the gateway of THIS release (absolute path into the cache, forward slashes so it is valid in JSON/TOML on every OS)
+  const gatewayScript = join(releaseRoot, "runtime", "mcp-gateway", "server.mjs").split("\\").join("/");
+  const files = buildToolFiles(releaseRoot, { tools, mcpProfile, gatewayScript });
   const skillIds = selectSkills(loadSkillsRegistry(releaseRoot), { profile, role, level });
   for (const rel of canonicalFilesFor(releaseRoot, skillIds)) {
     const content = readFileSync(join(releaseRoot, ".agents", "skills", rel));
@@ -55,7 +58,7 @@ function main() {
   let data = {};
   if (bad.length) errors.push(`unknown tool(s): ${bad.join(", ")}`);
   else {
-    const selection = { tools, profile: value("--profile"), role: value("--role"), level: value("--level") };
+    const selection = { tools, profile: value("--profile"), role: value("--role"), level: value("--level"), mcpProfile: value("--mcp-profile") ?? "none" };
     try {
       if (argv.includes("--revert")) data = revertAdoption(projectRoot);
       else if (argv.includes("--plan")) data = planConsumer({ releaseRoot, projectRoot, ...selection });

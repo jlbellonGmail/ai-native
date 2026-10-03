@@ -136,3 +136,27 @@ test("checkIntegrity.deferred always lists the ROADMAP<->runs cross-check as out
     rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test("detached HEAD (every CI pull_request checkout): the recorded branch is not compared, but a real code advance still warns as stale", () => {
+  const dir = makeRepo();
+  try {
+    writeFileSync(join(dir, "a.txt"), "1\n", "utf8");
+    commitAll(dir, "init");
+    const head = git(dir, "rev-parse", "HEAD");
+    writeFileSync(join(dir, "STATUS.md"), autoBlock({ branch: "main", head }), "utf8");
+    commitAll(dir, "status");
+    git(dir, "checkout", "-q", "--detach");
+    const ok = checkIntegrity(dir);
+    assert.equal(ok.status, "PASS_WITH_WARNINGS", "no 'recorded branch ... actual branch null' error");
+    assert.match(ok.warnings.join(" "), /detached HEAD/);
+    assert.deepEqual(ok.errors, []);
+    // a real, non-STATUS advance is still caught while detached
+    writeFileSync(join(dir, "a.txt"), "2\n", "utf8");
+    commitAll(dir, "code change");
+    const stale = checkIntegrity(dir);
+    assert.match(stale.warnings.join(" "), /stale relative to observedCommit/, JSON.stringify(stale));
+    assert.deepEqual(stale.errors, [], "staleness of the recorded HEAD is a warning, never an error (PAR-STATUS-SELF-STALE)");
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
