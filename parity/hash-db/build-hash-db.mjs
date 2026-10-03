@@ -16,7 +16,7 @@ import { dirname, join, resolve } from "node:path";
 
 const here = dirname(fileURLToPath(import.meta.url));
 
-const TAGS = ["v2.0.0", "v2.0.1", "v2.0.2", "v2.0.3", "v2.0.4", "v2.0.5"];
+const TAGS = ["v2.0.0", "v2.0.1", "v2.0.2", "v2.0.3", "v2.0.4", "v2.0.5", "v2.0.6"];
 
 function arg(name, fallback) {
   const idx = process.argv.indexOf(`--${name}`);
