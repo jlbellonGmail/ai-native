@@ -8,7 +8,7 @@ import { execFileSync, spawnSync } from "node:child_process";
 import { mkdtempSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, relative, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { consumerFiles } from "../../runtime/adapters/consumer.mjs";
 import { applyBump } from "../../runtime/migrate/bump.mjs";
 
@@ -74,8 +74,8 @@ run(["sync", "--from-file", bundle, "--offline", ...common]); // warm
 const withCache = Array.from({ length: 9 }, () => time(() => run(["sync", "--offline", ...common])));
 const statusMs = Array.from({ length: 9 }, () => time(() => run(["status", "--offline", ...common])));
 const nodeBoot = Array.from({ length: 9 }, () => time(() => spawnSync(node, ["-e", "0"])));
-record("bootstrapTimeWithCache", { value: Math.round(median(withCache)), unit: "ms (median of 9)", target: "<= 300", met: median(withCache) <= 300, samples: withCache.map(Math.round), disclosure: { statusMedianMs: Math.round(median(statusMs)), bareNodeStartupMedianMs: Math.round(median(nodeBoot)), note: "includes a full verification of the cached release before use (PAR-CACHE-VERIFY-BEFORE-EXEC)" } });
-record("bootstrapTimeWithoutCache", { value: Math.round(median(noCache)), unit: "ms (median of 3, --from-file, no network)", target: "<= 30000", met: median(noCache) <= 30000, samples: noCache.map(Math.round), disclosure: { note: "excludes the network download of the release; that part is measured by pilot.yml online" } });
+record("bootstrapTimeWithCache", { value: Math.round(median(withCache)), unit: "ms (median of 9)", target: "<= 300", met: median(withCache) <= 300, samples: withCache.map(Math.round), method: "wall clock of `node runtime/bootstrap/cli.mjs sync --offline` (process start included) with a warm content-addressed cache", disclosure: { statusMedianMs: Math.round(median(statusMs)), bareNodeStartupMedianMs: Math.round(median(nodeBoot)), note: "includes a full verification of the cached release before use (PAR-CACHE-VERIFY-BEFORE-EXEC)" } });
+record("bootstrapTimeWithoutCache", { value: Math.round(median(noCache)), unit: "ms (median of 3, --from-file, no network)", target: "<= 30000", met: median(noCache) <= 30000, samples: noCache.map(Math.round), method: "wall clock of `sync --from-file <bundle> --offline` against an EMPTY cache: extract, hash every file, publish atomically", disclosure: { note: "excludes the network download of the release; that part is measured by pilot.yml online" } });
 
 // 3. network calls per session with cache: count every fetch / http(s) / net connection made by status+sync --offline+run
 const preload = join(base, "count-net.mjs");
@@ -89,7 +89,7 @@ process.on("exit", () => writeFileSync(process.env.NET_COUNT_FILE, String(n)));
 let netCalls = 0;
 for (const args of [["status", "--offline"], ["sync", "--offline"], ["doctor"]]) {
   const f = join(base, `net-${args[0]}.txt`);
-  spawnSync(node, ["--import", preload, cli, ...args, ...common], { encoding: "utf8", env: { ...process.env, NET_COUNT_FILE: f } });
+  spawnSync(node, ["--import", pathToFileURL(preload).href, cli, ...args, ...common], { encoding: "utf8", env: { ...process.env, NET_COUNT_FILE: f } });
   netCalls += Number(readFileSync(f, "utf8"));
 }
 record("networkCallsPerSessionWithCache", { value: netCalls, unit: "calls", target: "0", met: netCalls === 0, method: "preloaded counter on fetch, http(s).request and net.connect while running status, sync --offline and doctor from a warm cache" });

@@ -1,0 +1,164 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-10-03T18:57:59.880Z",
+  "platformCommit": "d4522af4743f3a9b3b7b2f2b4ebe4cbac5986a90",
+  "machine": {
+    "platform": "win32",
+    "node": "v26.7.0",
+    "cpus": 12
+  },
+  "baseline": {
+    "repo": "jlbellonGmail/template-starter",
+    "tag": "v2.0.4",
+    "commit": "9e7dfb5b82ca69a0dd878c719f5861816652780b",
+    "trackedFiles": 175,
+    "trackedBytes": 911238
+  },
+  "metrics": {
+    "managedFilesPerConsumer": {
+      "value": 5,
+      "unit": "files",
+      "target": "<= 12",
+      "baseline": 175,
+      "met": true,
+      "method": "ai-native.lock.json + the entry points the adapters generate (CLAUDE.md, .mcp.json, opencode.json, .codex/config.toml). Plan SS15.1 (a) is a CLOSED list of 12; 7 of its entries are not implemented yet (bootstrap.ps1 was replaced by the node CLI, AGENTS.md kernel block, .claude/settings.json, the two caller workflows, the .gitignore block).",
+      "disclosure": {
+        "derivedAdapterFiles": 15,
+        "totalGeneratedWithDerived": 20,
+        "note": "agents, role profiles and lazy skill mirrors are regenerable from the lock by `adapters`; counted this way the figure is 20, ABOVE the target. Whether they are committed or gitignored is a consumer policy that is not enforced yet."
+      }
+    },
+    "bytesCopiedPerConsumer": {
+      "value": 2167,
+      "unit": "bytes",
+      "baseline": 911238,
+      "reduction": 0.9976,
+      "target": ">= 0.90 reduction",
+      "met": true,
+      "method": "bytes of the committed managed set above vs the sum of tracked bytes of template-starter v2.0.4",
+      "disclosure": {
+        "withDerivedBytes": 49310,
+        "withDerivedReduction": 0.9459
+      }
+    },
+    "bootstrapTimeWithCache": {
+      "value": 158,
+      "unit": "ms (median of 9)",
+      "target": "<= 300",
+      "met": true,
+      "samples": [
+        160,
+        452,
+        173,
+        144,
+        159,
+        145,
+        152,
+        143,
+        158
+      ],
+      "method": "wall clock of `node runtime/bootstrap/cli.mjs sync --offline` (process start included) with a warm content-addressed cache",
+      "disclosure": {
+        "statusMedianMs": 165,
+        "bareNodeStartupMedianMs": 101,
+        "note": "includes a full verification of the cached release before use (PAR-CACHE-VERIFY-BEFORE-EXEC)"
+      }
+    },
+    "bootstrapTimeWithoutCache": {
+      "value": 284,
+      "unit": "ms (median of 3, --from-file, no network)",
+      "target": "<= 30000",
+      "met": true,
+      "samples": [
+        284,
+        285,
+        253
+      ],
+      "method": "wall clock of `sync --from-file <bundle> --offline` against an EMPTY cache: extract, hash every file, publish atomically",
+      "disclosure": {
+        "note": "excludes the network download of the release; that part is measured by pilot.yml online"
+      }
+    },
+    "networkCallsPerSessionWithCache": {
+      "value": 0,
+      "unit": "calls",
+      "target": "0",
+      "met": true,
+      "method": "preloaded counter on fetch, http(s).request and net.connect while running status, sync --offline and doctor from a warm cache"
+    },
+    "filesChangedByBump": {
+      "value": 2,
+      "unit": "files",
+      "target": "2",
+      "baseline": "copy of up to 17",
+      "met": true,
+      "files": [
+        ".github/workflows/ai-native.yml",
+        "ai-native.lock.json"
+      ],
+      "method": "applyBump on a git repo, git diff --name-only"
+    },
+    "contextAtReentryTokens": {
+      "value": 700,
+      "unit": "tokens (estimate: chars / 4)",
+      "target": "<= 2500",
+      "baseline": "about 6500-7500",
+      "met": true,
+      "kernelLines": 52,
+      "skills": 4,
+      "method": "core/kernel.md + the frontmatter of every canonical skill; the estimate is chars/4, NOT a tokenizer count"
+    },
+    "capabilitiesCentralized": {
+      "value": 0.9189,
+      "unit": "fraction",
+      "target": ">= 0.90",
+      "baseline": "about 0",
+      "met": true,
+      "detail": {
+        "total": 74,
+        "localByDesign": 6
+      },
+      "method": "share of the 74 parity capabilities not classified LOCAL_BY_DESIGN"
+    },
+    "validationTimeLightVsFull": {
+      "value": 0.364,
+      "unit": "LIGHT steps / FULL steps (proxy)",
+      "target": "<= 0.25",
+      "met": false,
+      "status": "PROXY_ONLY",
+      "detail": {
+        "LIGHT": 4,
+        "STANDARD": 6,
+        "FULL": 11
+      },
+      "reviews": {
+        "LIGHT": 1,
+        "STANDARD": 2,
+        "FULL": 2
+      },
+      "method": "The metric is wall-clock validation time, dominated by model reviews that cannot be measured without spending model calls on every level; this records the structural ratio of steps and is NOT a time measurement."
+    },
+    "hitlPerUnit": {
+      "value": 1,
+      "target": "1",
+      "met": true,
+      "method": "policy matrix: MERGE is allow only for role human (core/security-policy.json); proven by runtime/gates/gates.test.mjs (PAR-SINGLE-HITL)"
+    },
+    "circuitsPerMilestone": {
+      "value": 1,
+      "target": "1",
+      "met": true,
+      "method": "PAR-MILESTONE-SINGLE-CIRCUIT (runtime/circuit/start-unit.test.mjs) and the Milestone e2e in runtime/pilot/circuit.e2e.test.mjs"
+    }
+  },
+  "summary": {
+    "total": 11,
+    "met": 10,
+    "notMet": [
+      "validationTimeLightVsFull"
+    ],
+    "proxyOnly": [
+      "validationTimeLightVsFull"
+    ]
+  }
+}
