@@ -49,6 +49,9 @@ for (const foreign of ["jlbellonGmail/template", "jlbellonGmail/template-starter
   test(`a foreign repo (${foreign}) is rejected: the attestation belongs to ${REPO}`, opts, () => {
     const r = verify(file, foreign);
     assert.equal(r.status, "FAILED", JSON.stringify(r));
+    // it is the attestation that is rejected, not an auth/network problem (the control above proves gh works)
+    assert.match(r.detail ?? "", /404|no attestation|attestation|verif/i);
+    assert.doesNotMatch(r.detail ?? "", /authenticat|login|token|rate limit|could not resolve/i);
   });
 }
 

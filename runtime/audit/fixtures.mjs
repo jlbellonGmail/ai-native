@@ -39,7 +39,8 @@ export function materializeFixture(kind, { into = null } = {}) {
     GIT_AUTHOR_DATE: FIXED_DATE,
     GIT_COMMITTER_DATE: FIXED_DATE,
   };
-  const git = (...args) => execFileSync("git", ["-c", "core.autocrlf=false", "-c", "commit.gpgsign=false", "-c", "core.hooksPath=/dev/null", ...args], { cwd: dir, env, encoding: "utf8" }).trim();
+  const noHooks = mkdtempSync(join(tmpdir(), "ai-native-nohooks-")); // an empty dir: portable "no hooks" (no /dev/null on Windows)
+  const git = (...args) => execFileSync("git", ["-c", "core.autocrlf=false", "-c", "commit.gpgsign=false", "-c", `core.hooksPath=${noHooks}`, ...args], { cwd: dir, env, encoding: "utf8" }).trim();
   git("init", "-q", "-b", "main");
   git("add", "-A");
   git("commit", "-q", "-m", `fixture: ${kind}`);

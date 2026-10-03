@@ -20,7 +20,7 @@ const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const reportText = (kind) => readFileSync(join(FIXTURES_ROOT, "reports", `${kind}.md`), "utf8");
 // a nested `node --test` inherits NODE_TEST_CONTEXT from the outer runner and prints nothing: drop it
 const cleanEnv = () => Object.fromEntries(Object.entries(process.env).filter(([k]) => !k.startsWith("NODE_TEST")));
-const tests = (dir) => execFileSync(process.execPath, ["--test"], { cwd: dir, encoding: "utf8", env: cleanEnv() });
+const tests = (dir) => execFileSync(process.execPath, ["--test", "--test-reporter=spec"], { cwd: dir, encoding: "utf8", env: cleanEnv() });
 
 for (const [kind, profile] of Object.entries(FIXTURE_KINDS)) {
   test(`${profile}: the fixture commit is reproducible and its own tests pass`, () => {

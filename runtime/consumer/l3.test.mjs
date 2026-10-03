@@ -72,6 +72,7 @@ test("L3 p45: a forged review in a touched events.jsonl fails the gate", () => {
   const r = runL3({ project: proj, cache, base });
   assert.equal(r.status, "FAIL");
   assert.ok(ids(r, "FAIL").includes("p45"));
+  assert.match(r.checks.find((c) => c.id === "p45").detail, /REVIEW_ID_INVALID/);
 });
 
 test("L3 control-plane-sized change is assessed deeper than docs", () => {
@@ -84,6 +85,7 @@ test("L3 control-plane-sized change is assessed deeper than docs", () => {
   git(proj, "commit", "-qm", "control plane");
   const r = runL3({ project: proj, cache, base });
   assert.notEqual(r.depth, "LIGHT");
+  assert.match(r.checks.find((c) => c.id === "circuit").detail, /ASSESS\(3 changed path/);
 });
 
 test("L3 adoption: intact adopted files pass, an edited one warns (never fails)", () => {
@@ -114,4 +116,40 @@ test("the CLI exits non-zero on FAIL and prints a status line", () => {
   const r = node([join(repoRoot, "runtime", "consumer", "l3.mjs"), "--project", empty, "--cache", cache]);
   assert.notEqual(r.status, 0);
   assert.match(r.stdout, /FAIL/);
+});
+
+test("a PR gate fails closed when no base can be resolved (requireBase): circuit and p45 FAIL, never NOT_APPLICABLE", () => {
+  const proj = consumer();
+  const open = runL3({ project: proj, cache });
+  assert.deepEqual(ids(open, "FAIL"), [], "without requireBase a missing base is NOT_APPLICABLE (local use)");
+  const closed = runL3({ project: proj, cache, requireBase: true });
+  assert.equal(closed.status, "FAIL");
+  assert.deepEqual(ids(closed, "FAIL").sort(), ["circuit", "p45"]);
+  const bad = runL3({ project: proj, cache, base: "refs/heads/does-not-exist", requireBase: true });
+  assert.ok(ids(bad, "FAIL").includes("circuit"), "an unresolvable base is a FAIL too");
+});
+
+test("the real product-test path runs through the shell (no fake runner)", () => {
+  const proj = consumer();
+  const platformRoot = tmp();
+  mkdirSync(join(platformRoot, "profiles"), { recursive: true });
+  writeFileSync(join(platformRoot, "profiles", "factory.json"), JSON.stringify({ productTestCommand: `"${process.execPath}" -e "process.exit(0)"` }));
+  assert.equal(runL3({ project: proj, cache, platformRoot }).checks.find((c) => c.id === "product").status, "PASS");
+  writeFileSync(join(platformRoot, "profiles", "factory.json"), JSON.stringify({ productTestCommand: `"${process.execPath}" -e "process.exit(3)"` }));
+  const failed = runL3({ project: proj, cache, platformRoot });
+  assert.equal(failed.checks.find((c) => c.id === "product").status, "FAIL");
+  assert.match(failed.checks.find((c) => c.id === "product").detail, /exit 3/);
+});
+
+test("l3-consumer.yml trust root: platform repo fixed, base lock first, history check, base required (P44)", () => {
+  const yml = readFileSync(join(repoRoot, ".github", "workflows", "l3-consumer.yml"), "utf8");
+  assert.match(yml, /platform-repo:[\s\S]*default: "jlbellonGmail\/ai-native"/);
+  assert.match(yml, /this gate only runs code from/, "a lock pointing to another repo fails");
+  assert.match(yml, /git -C consumer show "origin\/\$BASE:ai-native\.lock\.json"/, "the trust root is the BASE lock when it exists");
+  assert.match(yml, /merge-base --is-ancestor "\$COMMIT" "origin\/\$default"/, "the platform commit must be on the default branch");
+  assert.match(yml, /--require-base/);
+  assert.doesNotMatch(yml, /\|\| true/, "no step may swallow a failure");
+  assert.match(yml, /persist-credentials: false/);
+  assert.doesNotMatch(yml, /pull_request_target/);
+  assert.match(yml, /permissions:\n  contents: read/);
 });

@@ -11,7 +11,9 @@
 //   adoption     if an adoption journal exists, every journaled file still matches its hash
 //   product      the profile's productTestCommand if set, else NOT_APPLICABLE (never a silent pass)
 // Read-only except for running the product test command the consumer itself declares.
-//   node runtime/consumer/l3.mjs --project <dir> --cache <dir> [--base <ref>] [--json] [--out <file>]
+//   node runtime/consumer/l3.mjs --project <dir> --cache <dir> [--base <ref>] [--require-base] [--json] [--out <file>]
+// --require-base is what the PR workflow passes: with no resolvable base the circuit and p45 checks FAIL
+// instead of degrading to NOT_APPLICABLE (a gate must not fail open when its context is missing).
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
@@ -33,7 +35,7 @@ function check(id, status, detail = "", extra = {}) {
   return { id, status, detail, ...extra };
 }
 
-export function runL3({ project, cache, base = null, platformRoot = PLATFORM_ROOT, run = spawnSync }) {
+export function runL3({ project, cache, base = null, requireBase = false, platformRoot = PLATFORM_ROOT, run = spawnSync }) {
   const checks = [];
   const { lock, errors: lockErrors } = readLock(project);
   if (lockErrors.length) {
@@ -54,6 +56,7 @@ export function runL3({ project, cache, base = null, platformRoot = PLATFORM_ROO
 
   let changed = [];
   let depth = null;
+  if (!base && requireBase) checks.push(check("circuit", "FAIL", "a base ref is required (PR gate) and none was resolved: the change cannot be assessed"));
   if (base) {
     try {
       changed = changedFiles(project, base, "HEAD");
@@ -75,7 +78,7 @@ export function runL3({ project, cache, base = null, platformRoot = PLATFORM_ROO
     const findings = checkReviewIndependence(changed, (p) => readFromCommit(project, base, p), (p) => readFromCommit(project, "HEAD", p));
     checks.push(findings.length ? check("p45", "FAIL", findings.map((f) => `[${f.code}] ${f.path}`).join("; ")) : check("p45", changed.some((p) => /^runs\/.+\/events\.jsonl$/.test(p)) ? "PASS" : "NOT_APPLICABLE", "events.jsonl review-gate"));
   } else {
-    checks.push(check("p45", "NOT_APPLICABLE", "no --base given"));
+    checks.push(requireBase ? check("p45", "FAIL", "a base ref is required (PR gate): events.jsonl cannot be checked against base") : check("p45", "NOT_APPLICABLE", "no --base given"));
   }
 
   const journalPath = join(project, JOURNAL_PATH);
@@ -92,7 +95,8 @@ export function runL3({ project, cache, base = null, platformRoot = PLATFORM_ROO
 }
 
 function productTests({ project, lock, platformRoot, run }) {
-  const profileId = lock.profiles[0];
+  const profileId = lock.profiles?.[0];
+  if (!profileId) return check("product", "FAIL", "lock declares no profile");
   const profilePath = join(platformRoot, "profiles", `${profileId}.json`);
   if (!existsSync(profilePath)) return check("product", "FAIL", `profile '${profileId}' not found in the pinned platform`);
   const command = JSON.parse(readFileSync(profilePath, "utf8")).productTestCommand;
@@ -111,8 +115,13 @@ function main() {
   const argv = process.argv.slice(2);
   const value = (n) => (argv.includes(n) ? argv[argv.indexOf(n) + 1] : null);
   const project = resolve(value("--project") ?? process.cwd());
-  const cache = resolve(value("--cache") ?? join(process.env.AI_NATIVE_CACHE ?? "", "."));
-  const report = runL3({ project, cache, base: value("--base") });
+  const cacheArg = value("--cache") ?? process.env.AI_NATIVE_CACHE;
+  if (!cacheArg) {
+    console.error("l3: --cache <dir> (or AI_NATIVE_CACHE) is required");
+    process.exit(2);
+  }
+  const cache = resolve(cacheArg);
+  const report = runL3({ project, cache, base: value("--base"), requireBase: argv.includes("--require-base") });
   const out = value("--out");
   if (out) writeFileSync(out, `${JSON.stringify(report, null, 2)}\n`);
   if (argv.includes("--json")) console.log(JSON.stringify(report, null, 2));
