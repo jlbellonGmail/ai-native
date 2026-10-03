@@ -3941,3 +3941,11 @@ Restricciones vigentes: no tocar repos GI sin autorizacion por oleada (M6); ning
 * Los adaptadores ya no publican servidores del catalogo directo: solo `ai-native-gateway` (y nada con perfil `none`). Corregida la forma `mcp.<n>` de OpenCode.
 * La primera corrida cross-repo (C6) desde template-starter llego al L3 y fallo en `integrity` por HEAD desacoplado: corregido en `runtime/status/integrity.mjs` con test de regresion. Falta repetirla en verde.
 * No toque procesos ni configuracion global del usuario (servicio de OpenCode, `~/.codex`): el runner usa `CODEX_HOME` temporal.
+
+---
+
+## 2026-10-03 — C6 / P41 demostrados; parity 95/95
+
+* Run 37145520404 (template-starter -> ai-native `l3-consumer.yml` @ `99f23f4`): success. Evidencia en `evaluation/compat/c6-evidence.json`, re-verificada por `runtime/pilot/c6.test.mjs` contra la API.
+* `parity/par-tests.json`: 95/95 implementados, UNMAPPED=0. Quedan para rc.1: confirmar las condiciones P restantes y la publicacion.
+* PRs descartables de evidencia en template-starter (#2 y #3) cerradas sin merge; el repo sigue en la baseline v2.0.4 (+ PR #1 de CI).

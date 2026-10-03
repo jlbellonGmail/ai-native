@@ -98,6 +98,6 @@
     { "id": "C3", "phase": "M2.3/M5.2", "status": "IMPLEMENTED", "implementedBy": "evaluation/compat/compat-matrix.json" },
     { "id": "C4", "phase": "M2.3/M5.2", "status": "IMPLEMENTED", "implementedBy": "evaluation/compat/compat-matrix.json" },
     { "id": "C5", "phase": "M4.4/M5.2", "status": "IMPLEMENTED", "implementedBy": "runtime/mcp-gateway/c5.test.mjs" },
-    { "id": "C6", "phase": "M4.3/M5.2", "status": "PLANNED" }
+    { "id": "C6", "phase": "M4.3/M5.2", "status": "IMPLEMENTED", "implementedBy": "runtime/pilot/c6.test.mjs" }
   ]
 }
