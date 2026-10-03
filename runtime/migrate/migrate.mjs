@@ -122,7 +122,7 @@ export function applyMigration(args) {
   // 1) VERIFY every file we are about to delete, before touching anything: a mismatch aborts with the tree unchanged
   for (const r of plan.retire) {
     const full = join(root, r.path);
-    if (!existsSync(full) || normalizedSha(readFileSync(full)) !== r.sha256) throw new MigrateError(`'${r.path}' changed between plan and apply; nothing was modified`);
+    if (readOrNull(full) === null || normalizedSha(readOrNull(full)) !== r.sha256) throw new MigrateError(`'${r.path}' changed between plan and apply; nothing was modified`);
   }
   for (const p of [...plan.create, ...plan.replace]) {
     if (existsSync(join(root, p)) && !plan.replace.includes(p)) throw new MigrateError(`'${p}' appeared between plan and apply; nothing was modified`);
@@ -172,8 +172,9 @@ export function assertSafeRelative(root, rel) {
 export function revertMigration({ target }) {
   const root = resolve(target);
   const jp = join(root, JOURNAL);
-  if (!existsSync(jp)) throw new MigrateError("no migration journal; nothing to revert");
-  const j = JSON.parse(readFileSync(jp, "utf8"));
+  const journalText = readOrNull(jp);
+  if (journalText === null) throw new MigrateError("no migration journal; nothing to revert");
+  const j = JSON.parse(journalText.toString("utf8"));
   // the journal lives in the repo, so it is untrusted input: every path must stay inside the root and be relative
   for (const entry of [...(j.created ?? []), ...(j.retired ?? [])]) assertSafeRelative(root, entry?.path);
   // A partial revert must be resumable: what an earlier run already undid is recorded in the journal and is never
@@ -185,8 +186,9 @@ export function revertMigration({ target }) {
   for (const c of j.created) {
     if (doneCreated.has(c.path)) continue;
     const full = join(root, c.path);
-    if (!existsSync(full)) { doneCreated.add(c.path); continue; }
-    if (sha(readFileSync(full)) !== c.sha256) { kept.push(c.path); continue; }
+    const current = readOrNull(full);
+    if (current === null) { doneCreated.add(c.path); continue; }
+    if (sha(current) !== c.sha256) { kept.push(c.path); continue; }
     rmSync(full);
     removed.push(c.path);
     doneCreated.add(c.path);
@@ -226,6 +228,16 @@ export function revertMigration({ target }) {
     pruneEmpty(root, JOURNAL);
   }
   return { status: kept.length ? "PARTIAL" : "REVERTED", removed, restored, kept };
+}
+
+/** Reads a file or returns null when it does not exist: no existsSync-then-read race. */
+function readOrNull(path) {
+  try {
+    return readFileSync(path);
+  } catch (error) {
+    if (error.code === "ENOENT") return null;
+    throw error;
+  }
 }
 
 function pruneEmpty(root, rel) {
