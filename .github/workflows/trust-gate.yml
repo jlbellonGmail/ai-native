@@ -40,7 +40,13 @@ jobs:
         run: |
           set -e
           AUTH="$(printf 'x-access-token:%s' "${GH_TOKEN}" | base64 -w0)"
-          git -c "http.extraheader=AUTHORIZATION: basic ${AUTH}" fetch --no-tags origin "refs/pull/${PR}/head"
+          # refs/pull/N/head can lag the pull_request_target event by a few seconds
+          for attempt in 1 2 3 4 5 6; do
+            if git -c "http.extraheader=AUTHORIZATION: basic ${AUTH}" fetch --no-tags origin "refs/pull/${PR}/head"; then exit 0; fi
+            sleep $((attempt * 5))
+          done
+          echo "could not fetch refs/pull/${PR}/head" >&2
+          exit 1
 
       - name: Mint ai-native-trust installation token
         id: app

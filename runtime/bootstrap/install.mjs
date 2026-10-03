@@ -19,6 +19,7 @@ import {
   CacheCorruptError, CacheMissError,
 } from "./cache.mjs";
 
+import { isLockContention } from "../lib/lock.mjs";
 export const LOCK_FILE = "ai-native.lock.json";
 const here = dirname(fileURLToPath(import.meta.url));
 const schema = (name) => JSON.parse(readFileSync(join(here, "..", "..", "contracts", name), "utf8"));
@@ -74,7 +75,7 @@ function withLock(cacheRoot, projectRoot, fn, { retries = 200, delayMs = 10 } = 
       fd = openSync(lockFile, "wx");
       break;
     } catch (error) {
-      if (error.code !== "EEXIST") throw error;
+      if (!isLockContention(error)) throw error;
       Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, delayMs);
     }
   }

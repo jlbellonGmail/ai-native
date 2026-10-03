@@ -3880,3 +3880,11 @@ Restricciones vigentes: no tocar repos GI sin autorizacion por oleada (M6); ning
 
 * PR #35 mergeada (`52976ae`): fixture desde cero, comando `adapters`, `pilot.yml`. Online real con `--require-attestation` verde en Ubuntu y Windows.
 * M5.3 (parcial): migracion real de `template-starter` v2.0.4 (`runtime/pilot/migration.test.mjs`, 5 tests). Pendiente: v2.0.0..v2.0.5 de `template` (solo local) y v2.0.6 (M0.0b/A2 humano).
+
+---
+
+## 2026-10-03 — Defecto real de M4.1 hallado por CI en Windows
+
+* El test `PAR-CACHE-CONCURRENT` fallo en `windows-latest` en una PR solo documental (#37): `EPERM` al abrir `*.json.lock` con `wx` mientras otro proceso lo borraba. No es flakiness: el lock trataba solo `EEXIST` como contencion; en Windows el archivo en borrado reporta `EPERM`/`EBUSY`. Mismo patron en `runtime/circuit/claims.mjs`.
+* Corregido en `runtime/lib/lock.mjs` (`isLockContention`, solo `win32` acepta EPERM/EBUSY) usado por ambos locks, con test propio. Habia pasado en 3 PRs anteriores por azar de timing.
+* Hallazgo en #38: el `trust-gate` fallo una vez porque `refs/pull/N/head` aun no existia al dispararse el evento (carrera con la creacion de la PR). Se agrega reintento con backoff al fetch del workflow; antes, el fallo dejaba la PR BLOCKED hasta reejecutar a mano.
