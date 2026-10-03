@@ -152,11 +152,7 @@ test("a failure DURING apply (after deletions started) rolls back through the jo
 test("apply is all-or-nothing on a bad release: a lock that does not validate leaves the tree untouched", () => {
   const dir = repo({ "scripts/a.ps1": "x\n", "notes.md": "n\n" });
   const before = git(dir, "status", "--porcelain", "--untracked-files=all");
-  try {
-    applyMigration({ target: dir, release: { ...RELEASE, commit: "not-a-sha" }, tools: ["claude"] });
-  } catch {
-    // an invalid lock may surface at plan or at the post-write validation; either way the tree must be unchanged
-  }
+  assert.throws(() => applyMigration({ target: dir, release: { ...RELEASE, commit: "not-a-sha" }, tools: ["claude"] }), /does not validate/, "rejected by the lock validation, before any mutation");
   assert.equal(git(dir, "status", "--porcelain", "--untracked-files=all"), before);
   assert.equal(existsSync(join(dir, JOURNAL)), false);
 });
@@ -176,4 +172,33 @@ test("revert never overwrites a file the user created at a retired path after ap
   assert.equal(revertMigration({ target: starter }).status, "REVERTED");
   git(starter, "reset", "-q", "--hard", STARTER_V204);
   assert.equal(status(starter), "");
+});
+
+
+test("a tampered journal cannot make revert touch anything outside the repository", () => {
+  const dir = repo({ "a.txt": "1\n" });
+  mkdirSync(join(dir, ".ai-native"), { recursive: true });
+  const outside = join(dirname(dir), "outside-victim.txt");
+  writeFileSync(outside, "do not delete\n");
+  writeFileSync(join(dir, JOURNAL), JSON.stringify({ schemaVersion: 1, baseCommit: "HEAD", retired: [], created: [{ path: "../outside-victim.txt", sha256: "sha256:x" }] }));
+  assert.throws(() => revertMigration({ target: dir }), /escapes the repository/);
+  assert.equal(readFileSync(outside, "utf8"), "do not delete\n");
+  writeFileSync(join(dir, JOURNAL), JSON.stringify({ schemaVersion: 1, baseCommit: "HEAD", retired: [{ path: "C:/Windows/win.ini", sha256: "x" }], created: [] }));
+  assert.throws(() => revertMigration({ target: dir }), /escapes the repository/);
+});
+
+test("the apply-time hash guard: a retire target whose bytes differ from the plan aborts BEFORE any deletion and leaves no journal", () => {
+  const dir = repo({ "scripts/status-lib.ps1": "x\n", "keep.md": "k\n" });
+  const before = git(dir, "status", "--porcelain", "--untracked-files=all");
+  const stale = (plan) => ({ ...plan, retire: [{ path: "scripts/status-lib.ps1", sha256: `sha256:${"0".repeat(64)}` }], blocked: false, unresolved: [] });
+  assert.throws(() => applyMigration({ target: dir, release: RELEASE, tools: ["claude"], hooks: { planOverride: stale } }), /changed between plan and apply; nothing was modified/);
+  assert.equal(git(dir, "status", "--porcelain", "--untracked-files=all"), before, "nothing deleted, nothing created");
+  assert.equal(existsSync(join(dir, JOURNAL)), false);
+  assert.equal(readFileSync(join(dir, "scripts/status-lib.ps1"), "utf8"), "x\n");
+});
+
+test("a bad release is rejected by the LOCK validation specifically (not by an unrelated step)", () => {
+  const dir = repo({ "notes.md": "n\n" });
+  assert.throws(() => applyMigration({ target: dir, release: { ...RELEASE, commit: "not-a-sha" }, tools: ["claude"] }), /does not validate/);
+  assert.equal(git(dir, "status", "--porcelain", "--untracked-files=all"), "");
 });

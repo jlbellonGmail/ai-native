@@ -13,7 +13,7 @@
 import { createHash } from "node:crypto";
 import { execFileSync, spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { dirname, isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { consumerFiles } from "../adapters/consumer.mjs";
 import { canonical, readLock, LOCK_FILE } from "../bootstrap/install.mjs";
@@ -110,7 +110,8 @@ export function planMigration({ target, release, profile = "factory", tools = ["
 }
 
 export function applyMigration(args) {
-  const plan = planMigration(args);
+  const planned = planMigration(args);
+  const plan = args.hooks?.planOverride ? args.hooks.planOverride(planned) : planned; // test seam: simulate a plan that went stale
   const root = plan.root;
   if (existsSync(join(root, JOURNAL))) throw new MigrateError("a migration journal already exists; revert it first");
   if (plan.blocked) return { status: "BLOCKED", plan, written: [], removed: [] };
@@ -162,6 +163,11 @@ export function revertMigration({ target }) {
   const jp = join(root, JOURNAL);
   if (!existsSync(jp)) throw new MigrateError("no migration journal; nothing to revert");
   const j = JSON.parse(readFileSync(jp, "utf8"));
+  // the journal lives in the repo, so it is untrusted input: every path must stay inside the root and be relative
+  for (const entry of [...(j.created ?? []), ...(j.retired ?? [])]) {
+    const rel = String(entry.path);
+    if (isAbsolute(rel) || rel.split(/[\/]/).includes("..") || resolve(root, rel).toLowerCase().indexOf(root.toLowerCase()) !== 0) throw new MigrateError(`journal path escapes the repository: '${rel}'`);
+  }
   // A partial revert must be resumable: what an earlier run already undid is recorded in the journal and is never
   // re-judged (a restored v2 file legitimately no longer matches the v3 hash it was replaced by).
   const doneCreated = new Set(j.revertedCreated ?? []);

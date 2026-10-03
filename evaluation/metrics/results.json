@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-03T19:13:27.748Z",
-  "platformCommit": "cbc7b73f264b13dba8e668449111f2a584f8019b",
+  "generatedAt": "2026-10-03T19:16:49.044Z",
+  "platformCommit": "462decfb210771f987010ecc56bb1e828adec006",
   "machine": {
     "platform": "win32",
     "node": "v26.7.0",
@@ -42,37 +42,37 @@
       }
     },
     "bootstrapTimeWithCache": {
-      "value": 231,
+      "value": 135,
       "unit": "ms (median of 9)",
       "target": "<= 300",
       "met": true,
       "samples": [
-        299,
-        180,
-        274,
-        167,
-        155,
-        146,
-        257,
-        456,
-        231
+        152,
+        195,
+        135,
+        128,
+        159,
+        142,
+        129,
+        128,
+        126
       ],
       "method": "wall clock of `node runtime/bootstrap/cli.mjs sync --offline` (process start included) with a warm content-addressed cache",
       "disclosure": {
-        "statusMedianMs": 156,
-        "bareNodeStartupMedianMs": 89,
+        "statusMedianMs": 153,
+        "bareNodeStartupMedianMs": 79,
         "note": "includes a full verification of the cached release before use (PAR-CACHE-VERIFY-BEFORE-EXEC)"
       }
     },
     "bootstrapTimeWithoutCache": {
-      "value": 293,
+      "value": 247,
       "unit": "ms (median of 3, --from-file, no network)",
       "target": "<= 30000",
       "met": true,
       "samples": [
-        334,
-        180,
-        293
+        255,
+        247,
+        194
       ],
       "method": "wall clock of `sync --from-file <bundle> --offline` against an EMPTY cache: extract, hash every file, publish atomically",
       "disclosure": {

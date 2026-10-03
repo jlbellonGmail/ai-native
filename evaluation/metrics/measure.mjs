@@ -55,11 +55,13 @@ run(["init", "--bundle", bundle, "--repo", "github:o/ai-native", "--profile", "f
 
 // 1. files and bytes the platform manages in a consumer
 const files = consumerFiles(root, { tools: ["claude", "codex", "opencode"] });
+const LOCK_FILE_NAME = "ai-native.lock.json";
 const entryPoints = ["CLAUDE.md", ".mcp.json", "opencode.json", ".codex/config.toml"];
 const derived = Object.keys(files).filter((f) => !entryPoints.includes(f));
 const bytesOf = (names) => names.reduce((n, f) => n + Buffer.byteLength(files[f]), 0) + statSync(join(proj, "ai-native.lock.json")).size;
+const committedManaged = [LOCK_FILE_NAME, ...entryPoints].filter((f) => f === LOCK_FILE_NAME || f in files);
 record("managedFilesPerConsumer", {
-  value: entryPoints.length + 1, unit: "files", target: "<= 12", baseline: tracked.length, met: entryPoints.length + 1 <= 12,
+  value: committedManaged.length, unit: "files", target: "<= 12", baseline: tracked.length, met: committedManaged.length <= 12,
   method: "ai-native.lock.json + the entry points the adapters generate (CLAUDE.md, .mcp.json, opencode.json, .codex/config.toml). Plan SS15.1 (a) is a CLOSED list of 12; 7 of its entries are not implemented yet (bootstrap.ps1 was replaced by the node CLI, AGENTS.md kernel block, .claude/settings.json, the two caller workflows, the .gitignore block).",
   disclosure: { derivedAdapterFiles: derived.length, totalGeneratedWithDerived: entryPoints.length + derived.length + 1, note: "agents, role profiles and lazy skill mirrors are regenerable from the lock by `adapters`; counted this way the figure is 20, ABOVE the target. Whether they are committed or gitignored is a consumer policy that is not enforced yet." },
 });
