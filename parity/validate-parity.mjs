@@ -77,7 +77,10 @@ warn(implemented.length >= 1, "par-tests.json: no test is marked IMPLEMENTED yet
 for (const t of implemented) {
   check(typeof t.implementedBy === "string" && t.implementedBy.length > 0, `par-tests.json: ${t.id} is IMPLEMENTED but has no implementedBy`);
   if (typeof t.implementedBy === "string" && t.implementedBy.length > 0) {
-    for (const file of t.implementedBy.split(/[,;]\s*/)) check(existsSync(join(here, "..", file)), `par-tests.json: ${t.id} implementedBy "${file}" does not exist on disk`);
+    for (const file of t.implementedBy.split(/[,;]\s*/)) {
+      check(/\.test\.m?js$/.test(file), `par-tests.json: ${t.id} implementedBy "${file}" is not an executable test file (*.test.mjs): a document or a data file proves nothing`);
+      check(existsSync(join(here, "..", file)), `par-tests.json: ${t.id} implementedBy "${file}" does not exist on disk`);
+    }
   }
 }
 

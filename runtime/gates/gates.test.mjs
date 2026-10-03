@@ -281,3 +281,37 @@ test("P43: detector covers multi-line scalars, reversed block indicators, case, 
   // not part of a script body
   assert.equal(findScriptInjection("concurrency:\n  group: ${{ github.workflow }}-${{ github.ref }}\n").length, 0);
 });
+
+// ---------- audit finding H1 (CRITICAL): a pull_request_review workflow runs the PR's own file with secrets
+import { execFileSync } from "node:child_process";
+
+test("SECRETS_IN_PR_EVENT: the merge-gate.yml that shipped in M4.3 (pull_request_review + TRUST_APP_PRIVATE_KEY) is detected", () => {
+  const shipped = execFileSync("git", ["show", "47bd24f:.github/workflows/merge-gate.yml"], { cwd: new URL("../../", import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1"), encoding: "utf8" });
+  assert.match(shipped, /pull_request_review/);
+  assert.ok(checkWorkflow("merge-gate.yml", shipped).some((f) => f.code === "SECRETS_IN_PR_EVENT" && /TRUST_APP_PRIVATE_KEY/.test(f.detail)));
+});
+
+test("SECRETS_IN_PR_EVENT: pull_request / pull_request_review / list form with a secret fail; pull_request_target, push and GITHUB_TOKEN do not", () => {
+  const wf = (on, body = "          K: ${{ secrets.TRUST_APP_PRIVATE_KEY }}") => `name: x\non:\n${on}\npermissions:\n  contents: read\njobs:\n  a:\n    runs-on: ubuntu-latest\n    steps:\n      - env:\n${body}\n        run: echo hi\n`;
+  const bad = (on, body) => checkWorkflow("w.yml", wf(on, body)).some((f) => f.code === "SECRETS_IN_PR_EVENT");
+  assert.equal(bad("  pull_request:\n    branches: [main]"), true);
+  assert.equal(bad("  pull_request_review:\n    types: [submitted]"), true);
+  assert.equal(bad("  push:\n    branches: [main]\n  pull_request_review:\n    types: [submitted]"), true);
+  assert.equal(bad("  pull_request_target:\n    branches: [main]"), false);
+  assert.equal(bad("  push:\n    branches: [main]"), false);
+  assert.equal(bad("  pull_request:\n    branches: [main]", "          T: ${{ secrets.GITHUB_TOKEN }}"), false);
+});
+
+test("the real merge-gate.yml no longer has a pull_request_review trigger, and no real workflow leaks a secret to a PR event", () => {
+  const text = read(".github/workflows/merge-gate.yml");
+  assert.doesNotMatch(text.split("\n").filter((l) => !l.trimStart().startsWith("#")).join("\n"), /pull_request_review/);
+  assert.match(text, /pull_request_target:/);
+  for (const n of readdirSync(new URL("../../.github/workflows/", import.meta.url)).filter((f) => /\.ya?ml$/.test(f))) {
+    assert.deepEqual(checkWorkflow(n, read(`.github/workflows/${n}`)).filter((f) => f.code === "SECRETS_IN_PR_EVENT"), [], n);
+  }
+});
+
+test("post-merge reads the gate config from the BASE the PR was merged onto, not from the merged PR (PAR-CONFIG-FROM-BASE)", () => {
+  assert.match(read(".github/workflows/post-merge.yml"), /ref: \$\{\{ github\.event\.pull_request\.base\.sha \}\}/);
+  assert.doesNotMatch(read(".github/workflows/post-merge.yml"), /base\.ref \}\}/);
+});

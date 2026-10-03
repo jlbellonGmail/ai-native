@@ -1,7 +1,8 @@
 name: merge-gate
 
 # M4.3 (PAR-MERGE-GATE-TRUST, PAR-HUMAN-MERGE). Runs from the BASE branch
-# (pull_request_target / pull_request_review use the base workflow file), never
+# (pull_request_target uses the base workflow file; pull_request_review does NOT, it runs the PR's own file
+# with secrets, so it is deliberately not a trigger: a new approval re-evaluates on the next push), never
 # executes PR code, and publishes its verdict as a check run authored by the
 # `ai-native-trust` App on the exact head SHA. It NEVER merges: merge is the
 # single human decision. Mode (SingleMaintainer / MultiMaintainer) and the
@@ -11,8 +12,6 @@ on:
   pull_request_target:
     branches: [main]
     types: [opened, synchronize, reopened, ready_for_review]
-  pull_request_review:
-    types: [submitted, dismissed]
 
 permissions:
   contents: read
