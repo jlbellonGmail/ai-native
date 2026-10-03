@@ -68,7 +68,7 @@ function main() {
     }
   }
   const warnings = data.status === "PARTIAL" ? [`kept user-modified files: ${data.kept.join(", ")}`] : [];
-  const report = buildReport({ status: statusFromCounts({ errors: errors.length, warnings: warnings.length }), errors, warnings, data });
+  const report = buildReport({ status: statusFromCounts({ errors: errors.length, warnings: warnings.length }), errors, warnings, data: { adoption: data } });
   console.log(renderOutput(report, { json: argv.includes("--json") }));
   process.exit(exitCodeForReport(report));
 }
