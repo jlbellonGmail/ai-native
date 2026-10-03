@@ -135,6 +135,10 @@ jobs:
         shell: bash
         run: node --test runtime/lib/git.test.mjs
 
+      - name: runtime/lib lock tests
+        shell: bash
+        run: node --test runtime/lib/lock.test.mjs
+
       - name: runtime/lib json tests
         shell: bash
         run: node --test runtime/lib/json.test.mjs
