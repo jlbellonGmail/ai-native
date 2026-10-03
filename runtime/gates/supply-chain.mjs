@@ -6,6 +6,7 @@
 //  - no attacker-controlled `${{ github.event.* }}` interpolated into a script (P43)
 // Plus a secret-shape scan over arbitrary text (added lines of a diff).
 import { findUnpinned } from "../../scripts/validate-actions-pinned.mjs";
+import { checkSecretExposure } from "./secret-exposure.mjs";
 
 const HEAD_REF = /github\.event\.pull_request\.head\.(sha|ref)|github\.head_ref/;
 
@@ -41,6 +42,8 @@ export function findScriptInjection(text) {
   return hits;
 }
 
+
+
 export function checkWorkflow(path, text) {
   const findings = [];
   if (!/^permissions:/m.test(text)) findings.push({ code: "NO_PERMISSIONS", path, detail: "workflow lacks top-level permissions:" });
@@ -50,6 +53,7 @@ export function checkWorkflow(path, text) {
     const usesHeadInCheckout = /uses:\s*actions\/checkout[\s\S]{0,400}?ref:\s*\$\{\{[^}]*(head\.(sha|ref)|head_ref)/.test(text);
     if (usesHeadInCheckout) findings.push({ code: "PRT_CHECKOUT_HEAD", path, detail: "pull_request_target checks out the PR head" });
   }
+  findings.push(...checkSecretExposure(path, text));
   for (const h of findScriptInjection(text)) findings.push({ code: "SCRIPT_INJECTION", path, detail: `line ${h.line}: untrusted expression interpolated into a script: ${h.text.slice(0, 120)}` });
   if (/(curl|wget)[^\n|]*\|\s*(ba)?sh\b/.test(text)) findings.push({ code: "PIPE_TO_SHELL", path, detail: "download piped into a shell" });
   return findings;
