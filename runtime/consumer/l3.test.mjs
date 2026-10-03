@@ -142,7 +142,9 @@ test("the real product-test path runs through the shell (no fake runner)", () =>
 });
 
 test("l3-consumer.yml trust root: platform repo fixed, base lock first, history check, base required (P44)", () => {
-  const yml = readFileSync(join(repoRoot, ".github", "workflows", "l3-consumer.yml"), "utf8");
+  const yml = readFileSync(join(repoRoot, ".github", "workflows", "l3-consumer.yml"), "utf8").replace(/
+/g, "
+");
   assert.match(yml, /platform-repo:[\s\S]*default: "jlbellonGmail\/ai-native"/);
   assert.match(yml, /this gate only runs code from/, "a lock pointing to another repo fails");
   assert.match(yml, /git -C consumer show "origin\/\$BASE:ai-native\.lock\.json"/, "the trust root is the BASE lock when it exists");
@@ -152,4 +154,20 @@ test("l3-consumer.yml trust root: platform repo fixed, base lock first, history 
   assert.match(yml, /persist-credentials: false/);
   assert.doesNotMatch(yml, /pull_request_target/);
   assert.match(yml, /permissions:\n  contents: read/);
+});
+
+test("the product-test profile comes from the BASE lock: a PR cannot switch to a profile without a command", () => {
+  const proj = consumer(); // base lock: profile "factory"
+  const base = git(proj, "rev-parse", "HEAD");
+  const platformRoot = tmp();
+  mkdirSync(join(platformRoot, "profiles"), { recursive: true });
+  writeFileSync(join(platformRoot, "profiles", "factory.json"), JSON.stringify({ productTestCommand: `"${process.execPath}" -e "process.exit(5)"` }));
+  writeFileSync(join(platformRoot, "profiles", "static-site.json"), JSON.stringify({ productTestCommand: null }));
+  const lock = JSON.parse(readFileSync(join(proj, "ai-native.lock.json"), "utf8"));
+  lock.profiles = ["static-site"];
+  writeFileSync(join(proj, "ai-native.lock.json"), JSON.stringify(lock, null, 2));
+  git(proj, "commit", "-qam", "switch profile");
+  const r = runL3({ project: proj, cache, base, platformRoot });
+  assert.equal(r.checks.find((c) => c.id === "product").status, "FAIL", "judged by the base profile (factory), whose command fails");
+  assert.match(r.checks.find((c) => c.id === "product").detail, /exit 5/);
 });

@@ -84,7 +84,12 @@ jobs:
         run: |
           set -euo pipefail
           test -f consumer/ai-native.lock.json || { echo "::error::ai-native.lock.json not found: this repository is not adopted"; exit 1; }
-          git -C consumer show "origin/$BASE:ai-native.lock.json" > "$RUNNER_TEMP/base.lock.json" 2>/dev/null || rm -f "$RUNNER_TEMP/base.lock.json"
+          # absence is checked explicitly: any other git failure must stop the job, not silently pick the PR-controlled lock
+          if git -C consumer cat-file -e "origin/$BASE:ai-native.lock.json" 2>/dev/null; then
+            git -C consumer show "origin/$BASE:ai-native.lock.json" > "$RUNNER_TEMP/base.lock.json"
+          else
+            rm -f "$RUNNER_TEMP/base.lock.json"
+          fi
           node -e '
             const fs = require("fs");
             const read = (f) => (fs.existsSync(f) ? JSON.parse(fs.readFileSync(f, "utf8")).platform ?? {} : null);

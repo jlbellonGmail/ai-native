@@ -90,7 +90,18 @@ export function runL3({ project, cache, base = null, requireBase = false, platfo
     checks.push(check("adoption", "NOT_APPLICABLE", "no adoption journal"));
   }
 
-  checks.push(productTests({ project, lock, platformRoot, run }));
+  // the profile (hence the product test command) is the BASE lock's when the base has one: a PR must not
+  // switch itself to a profile with no test command to turn `product` into NOT_APPLICABLE
+  const baseLockText = base ? readFromCommit(project, base, "ai-native.lock.json") : null;
+  let profileLock = lock;
+  if (baseLockText !== null) {
+    try {
+      profileLock = JSON.parse(baseLockText);
+    } catch {
+      checks.push(check("product", "FAIL", "the lock on the base branch is not valid JSON"));
+    }
+  }
+  if (!checks.some((c) => c.id === "product")) checks.push(productTests({ project, lock: profileLock, platformRoot, run }));
   return finish(checks, { depth, changed: changed.length });
 }
 
