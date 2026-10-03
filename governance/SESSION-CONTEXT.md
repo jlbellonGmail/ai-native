@@ -3848,3 +3848,12 @@ Restricciones vigentes: no tocar repos GI sin autorizacion por oleada (M6); ning
 * A1 = GitHub App `ai-native-worker` (secrets `WORKER_APP_ID`/`WORKER_APP_PRIVATE_KEY`); A3 = GitHub App `ai-native-trust` (secrets `TRUST_APP_ID`/`TRUST_APP_PRIVATE_KEY`). Ambas instaladas solo en `jlbellonGmail/ai-native`. Estos son los nombres reales; no existen variantes `agent`/`gate`.
 * M4.3 se parte en PRs porque un check requerido emitido por una App solo puede producirlo un workflow que ya exista en `main` (`pull_request_target` corre la version base). PR #30 (trust-gate, P44) mergeada por el agente; PR-B (merge-gate, post-merge, pr-gate, security-scan, P45, ruleset); PR final de cierre sin merge del agente (unico HITL).
 * `runtime/gates/*` + `governance/gates/gates.json` (config leida SIEMPRE desde base) + `governance/rulesets/main.json`.
+
+---
+
+## 2026-10-03 — M4.3 implementada (pendiente de merge humano)
+
+* PRs: #30 (trust-gate, merge `e2188a9`), #31 (merge-gate/post-merge/pr-gate/security-scan/P45/ruleset, merge `3dc6aca`), esta PR de cierre. #32 fue una PR descartable de spoofing (cerrada sin merge, bloqueada por los gates).
+* Ruleset `ai-native-main` (id 24405506) activo, sin bypass actors; checks fijados por App (`ai-native-trust` id 5170488 para trust-gate/merge-gate, github-actions 15368 para el resto). `node runtime/gates/ruleset.mjs verify` -> RULESET_PASS.
+* `parity/par-tests.json`: 88/95 implementados; `UNMAPPED=0`. Quedan PLANNED: C6 (M4.3/M5.2) y los de M1.2/M2.2/M3.5/M4.
+* Merge de esta PR: unico HITL, lo ejecuta el humano. Siguiente en el DAG tras el merge: fases M5.x segun el roadmap (no abierta).
