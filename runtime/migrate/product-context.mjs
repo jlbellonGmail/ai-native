@@ -15,9 +15,13 @@ export function skeleton() {
 
 export function bootstrapProductContext(projectRoot) {
   const full = join(projectRoot, PRODUCT_CONTEXT_PATH);
-  if (existsSync(full)) return { status: "EXISTS", path: PRODUCT_CONTEXT_PATH };
   mkdirSync(dirname(full), { recursive: true });
-  writeFileSync(full, skeleton(), "utf8");
+  try {
+    writeFileSync(full, skeleton(), { encoding: "utf8", flag: "wx" }); // exclusive: atomic create-if-absent, no check-then-write race
+  } catch (error) {
+    if (error.code === "EEXIST") return { status: "EXISTS", path: PRODUCT_CONTEXT_PATH };
+    throw error;
+  }
   return { status: "CREATED", path: PRODUCT_CONTEXT_PATH };
 }
 

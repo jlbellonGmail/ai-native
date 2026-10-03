@@ -46,7 +46,12 @@ export function applyAdoption(targetRoot, incoming, { resolve: resolutions = {} 
   for (const rel of plan.create) {
     const full = safeJoin(targetRoot, rel);
     mkdirSync(dirname(full), { recursive: true });
-    writeFileSync(full, incoming[rel]);
+    try {
+      writeFileSync(full, incoming[rel], { flag: "wx" }); // never overwrite, even if the file appeared after the plan
+    } catch (error) {
+      if (error.code === "EEXIST") throw new AdoptError(`'${rel}' appeared during adoption; nothing was overwritten`);
+      throw error;
+    }
     created[rel] = sha(Buffer.from(incoming[rel]));
   }
   const skipped = plan.collisions.map((c) => c.path);
