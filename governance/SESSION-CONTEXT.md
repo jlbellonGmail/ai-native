@@ -3923,3 +3923,12 @@ Restricciones vigentes: no tocar repos GI sin autorizacion por oleada (M6); ning
 * A2: rulesets activos en template (24420511) y template-starter (24421920); push directo rechazado por el servidor en ambos. template-starter recibio ademas su PR #1 (restaurar `windows-latest`); sigue en la baseline v2.0.4 para el canary.
 * Hash DB con v2.0.6 y delta de paridad `parity/v2.0.6-delta.json`. P39b = PASS con evidencia (tests de regresion + `p39b.test.mjs` + CI + ruleset).
 * Checkout local `C:\Proyectos\template` del maintainer: tiene `ci.yml` modificado sin commitear; no se toco (se trabajo en un clon limpio).
+
+---
+
+## 2026-10-03 — P33, P29 y gate L3 de consumidor
+
+* P33: dos auditorias independientes reales (APPLICATION y LIBRARY) con evidencia ligada al commit exacto del fixture; ver el roadmap (M5.1).
+* P29: `gh attestation verify` real; una atestacion ajena se rechaza y no se devuelve ningun byte.
+* L3: `runtime/consumer/l3.mjs` + `l3-consumer.yml` reusable. Pendiente: C6 (prueba cross-repo real desde `template-starter`, sin mergear) y C5.
+* Nota operativa: un `node --test` anidado hereda `NODE_TEST_CONTEXT` y no imprime nada; los tests que lo invocan limpian ese entorno.
