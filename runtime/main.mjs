@@ -11,6 +11,7 @@ import { fileURLToPath } from "node:url";
 const here = dirname(fileURLToPath(import.meta.url));
 const COMMANDS = {
   doctor: "bootstrap/cli.mjs",
+  status: "bootstrap/cli.mjs",
   sync: "bootstrap/cli.mjs",
   rollback: "bootstrap/cli.mjs",
   adapters: "adapters/consumer.mjs",

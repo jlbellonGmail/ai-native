@@ -313,6 +313,31 @@ export function doctor({ projectRoot, cacheRoot, nodeVersion = process.versions.
   return report(errors, warnings, { checks });
 }
 
+/**
+ * Kernel bootstrap states (core/kernel.md "Bootstrap (orden)"). Read-only: it
+ * never syncs. `offline` says the network is not available, which is what
+ * separates a cache miss that `sync` can fix (NEEDS_SYNC) from one it cannot
+ * (DEGRADED_READONLY: analyse and plan only, never implement).
+ * RESTART_REQUIRED is a result of `sync` (the release changed what the tool
+ * loads at start), not something derivable from disk afterwards.
+ */
+export const BOOTSTRAP_STATES = Object.freeze(["READY", "NEEDS_SYNC", "DEGRADED_READONLY", "REVOKED", "NOT_ADOPTED"]);
+
+export function status({ projectRoot, cacheRoot, revocations = null, offline = false }) {
+  const { lock, errors } = readLock(projectRoot);
+  if (errors.length) return report([], [], { state: "NOT_ADOPTED", detail: errors.join("; ") });
+  const revoked = isRevoked(revocations, lock.platform);
+  if (revoked) return report([], [], { state: "REVOKED", detail: `${revoked.version} revoked: ${revoked.reason}` });
+  try {
+    verifyRelease(cacheRoot, lock.platform.digest);
+  } catch (error) {
+    if (!(error instanceof CacheMissError) && !(error instanceof CacheCorruptError)) throw error;
+    return report([], [], { state: offline ? "DEGRADED_READONLY" : "NEEDS_SYNC", detail: error.message });
+  }
+  const active = readState(cacheRoot, projectRoot).active;
+  return report([], [], active === lock.platform.digest ? { state: "READY", detail: lock.platform.version } : { state: "NEEDS_SYNC", detail: "release cached but not active for this project" });
+}
+
 /** Verify-before-exec (PAR-CACHE-VERIFY-BEFORE-EXEC): never runs an unverified release. */
 export function run({ projectRoot, cacheRoot, args = [], spawn = spawnSync }) {
   const { lock, errors } = readLock(projectRoot);
