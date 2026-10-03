@@ -269,3 +269,15 @@ test("P43: PR fixture with a malicious branch -- interpolation is flagged, the e
   // a trusted expression in a run: body is fine
   assert.equal(findScriptInjection("jobs:\n  a:\n    steps:\n      - run: echo ${{ github.sha }} ${{ runner.os }}\n").length, 0);
 });
+
+test("P43: detector covers multi-line scalars, reversed block indicators, case, and ref/ref_name", () => {
+  const wf = (body) => `jobs:\n  a:\n    steps:\n${body}`;
+  assert.equal(findScriptInjection(wf("      - run: |2-\n          echo ${{ github.head_ref }}\n")).length, 1);
+  assert.equal(findScriptInjection(wf("      - run: >-\n          echo\n          ${{ github.event.pull_request.title }}\n")).length, 1);
+  assert.equal(findScriptInjection(wf("      - run: echo start\n          ${{ github.event.issue.body }}\n")).length, 1, "continuation of a plain scalar");
+  assert.equal(findScriptInjection(wf("      - run: echo ${{ GitHub.Head_Ref }}\n")).length, 1);
+  assert.equal(findScriptInjection(wf("      - run: echo ${{ github.ref_name }}\n")).length, 1);
+  assert.equal(findScriptInjection(wf("      - run: echo ${{ github.ref }}\n")).length, 1);
+  // not part of a script body
+  assert.equal(findScriptInjection("concurrency:\n  group: ${{ github.workflow }}-${{ github.ref }}\n").length, 0);
+});

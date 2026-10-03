@@ -8,10 +8,10 @@
 // v2.0.6 does not exist (M0.0b); template-starter v2.0.4 is migration.test.mjs.
 // Network: needs github.com; locally it SKIPs, in CI (AI_NATIVE_REQUIRE_NETWORK=1)
 // a failed clone is a FAILURE.
-import test from "node:test";
+import test, { after } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
-import { mkdtempSync, writeFileSync, mkdirSync } from "node:fs";
+import { mkdtempSync, writeFileSync, mkdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -38,6 +38,11 @@ try {
   if (process.env.AI_NATIVE_REQUIRE_NETWORK === "1") throw error;
   cloned = false;
 }
+after(() => {
+  if (cloned) git(clone, "worktree", "prune");
+  rmSync(base, { recursive: true, force: true, maxRetries: 3 });
+});
+
 const opts = { skip: cloned ? false : "github.com not reachable (set AI_NATIVE_REQUIRE_NETWORK=1 to make this a failure)", timeout: 280000 };
 
 function fixture(tag, name = tag) {
@@ -62,11 +67,10 @@ for (const tag of Object.keys(TAGS)) {
 
     const plan = JSON.parse(adapters(dir, "--plan").stdout).adoption;
     const colliding = plan.collisions.filter((c) => !c.identical).map((c) => c.path);
+    assert.ok(colliding.length > 0, `${tag}: expected real collisions with the v2 files`);
     const blocked = adapters(dir);
-    if (colliding.length) {
-      assert.notEqual(blocked.status, 0, `${tag}: expected BLOCKED by ${colliding.join(",")}`);
-      assert.equal(git(dir, "status", "--porcelain").trim(), "", "blocked adoption must write nothing");
-    }
+    assert.notEqual(blocked.status, 0, `${tag}: expected BLOCKED by ${colliding.join(",")}`);
+    assert.equal(git(dir, "status", "--porcelain").trim(), "", "blocked adoption must write nothing");
     const skips = colliding.flatMap((p) => ["--skip", p]);
     const applied = adapters(dir, ...skips);
     assert.equal(applied.status, 0, applied.stdout + applied.stderr);

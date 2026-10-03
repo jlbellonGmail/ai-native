@@ -14,7 +14,7 @@ const HEAD_REF = /github\.event\.pull_request\.head\.(sha|ref)|github\.head_ref/
 // `github-script` body is code. Passing it through `env:` and reading the shell
 // variable is the safe form and is not flagged.
 const UNTRUSTED =
-  /\$\{\{[^}]*\b(github\.head_ref|github\.event\.(pull_request\.(title|body|head\.(ref|label|repo\.[a-z_]+))|issue\.(title|body)|comment\.body|review\.body|review_comment\.body|discussion\.(title|body)|pages\.[^}\s]*|commits\b[^}]*|head_commit\.(message|author\.(name|email))|workflow_run\.(head_branch|display_title|head_commit\.[a-z.]*)))[^}]*\}\}/;
+  /\$\{\{[^}]*\b(github\.(head_ref|ref_name|ref)\b|github\.event\.(pull_request\.(title|body|head\.(ref|label|repo\.[a-z_]+))|issue\.(title|body)|comment\.body|review\.body|review_comment\.body|discussion\.(title|body)|pages\.[^}\s]*|commits\b[^}]*|head_commit\.(message|author\.(name|email))|workflow_run\.(head_branch|display_title|head_commit\.[a-z.]*)))[^}]*\}\}/i;
 
 /** Lines (1-based) with an untrusted expression inside a run: / script: body. */
 export function findScriptInjection(text) {
@@ -33,8 +33,10 @@ export function findScriptInjection(text) {
     if (!key) return;
     const keyIndent = key[1].length + (/^\s*-\s/.test(line) ? 2 : 0);
     const rest = key[3].trim();
-    if (/^[|>][-+]?\d*$/.test(rest) || rest === "") blockIndent = keyIndent;
-    else if (UNTRUSTED.test(rest)) hits.push({ line: i + 1, text: rest });
+    // Every following line indented deeper than the key belongs to its value: that covers block
+    // scalars (`|`, `>`, any indicator order) and multi-line plain/quoted scalars alike.
+    blockIndent = keyIndent;
+    if (UNTRUSTED.test(rest)) hits.push({ line: i + 1, text: rest });
   });
   return hits;
 }
