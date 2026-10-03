@@ -91,14 +91,14 @@ export function triggerNames(text) {
 }
 
 /**
- * The text scanned for secret references: whole-line comments are dropped, but NOT inline `#` (it may sit inside a quoted
- * string or shell text and hide a reference), and a `name:` line is dropped only when it carries no `${{ }}` expression
+ * The text scanned for secret references. NO comment is dropped: a `#` line inside a block scalar (`run: |`, `env: X: |`,
+ * github-script) is DATA that GitHub still expands, and an inline `#` may sit inside quotes; telling a real comment from data needs a
+ * YAML parser, so a mention in a comment is reported too (reword it). A `name:` line is dropped only when it carries no `${{ }}` expression
  * (a display name may say "secrets"; `name: ${{ secrets.X }}` under `env:`/`with:` is a real reference).
  */
 function secretScanText(text) {
   return text
     .split(/\r?\n/)
-    .filter((l) => !l.trimStart().startsWith("#"))
     .filter((l) => !(/^\s*(?:-\s+)?name\s*:/.test(l) && !l.includes("${{")))
     .join("\n")
     .replace(/secrets\s*\.\s*GITHUB_TOKEN\b/gi, "")

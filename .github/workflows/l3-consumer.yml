@@ -17,7 +17,7 @@ name: l3-consumer
 #     verified by `sync`); only a first adoption (no lock on base) falls back to the head lock;
 #   * either way the commit must be in the history of the platform repo's default branch, so an
 #     unreviewed or foreign commit never runs.
-# Then, all read-only with `contents: read` and no secrets:
+# Then, all read-only with `contents: read` and no credentials:
 #   1. `bootstrap sync --require-attestation`: downloads the release pinned by the HEAD lock, checks its
 #      sha256 against that lock BEFORE caching and verifies the sigstore attestation (fail closed);
 #   2. `runtime/consumer/l3.mjs --require-base`: lock, bootstrap READY, integrity, ASSESS dry-run,

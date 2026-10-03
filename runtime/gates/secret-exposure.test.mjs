@@ -40,11 +40,10 @@ test("every way of naming a secret counts: secrets.X, secrets['X'], toJSON(secre
   assert.equal(flagged("name: x\non: push\njobs:\n  a:\n    runs-on: x\n    steps:\n      - run: echo ${{ secrets['K'] }}\n"), true);
 });
 
-test("allowed: BASE-file events, GITHUB_TOKEN anywhere, and a mention in a comment", () => {
+test("allowed: BASE-file events and GITHUB_TOKEN anywhere", () => {
   assert.equal(flagged(wf("  pull_request_target:\n    branches: [main]")), false);
   assert.equal(flagged(wf("  workflow_call:")), false);
   assert.equal(flagged(wf("  pull_request:", "          T: ${{ secrets.GITHUB_TOKEN }}")), false);
-  assert.equal(flagged("# uses secrets.TRUST_APP_PRIVATE_KEY only from pull_request_target\nname: x\non: push\njobs: {}\n"), false);
   assert.equal(flagged(wf("  push:", "          T: ${{ github.token }}")), false);
 });
 
@@ -110,4 +109,12 @@ test("bypasses found by the independent review: a `name:` key under env:/with:, 
 test("supply-chain.mjs reports each exposure exactly once (the old duplicate detector is gone)", () => {
   const f = checkWorkflow("w.yml", L("name: x", "on: push", "permissions:", "  contents: read", ...JOB));
   assert.equal(f.filter((x) => x.code === "SECRETS_IN_PR_EVENT").length, secretReferences(L(...JOB)).length);
+});
+
+test("no comment is trusted: a `#` line inside a block scalar is DATA that GitHub still expands, and a comment mention is reported", () => {
+  const blockScalar = L("name: x", "on: pull_request", "jobs:", "  a:", "    runs-on: x", "    steps:", "      - env:", "          X: |", "            #${{ secrets.TRUST_APP_PRIVATE_KEY }}", '        run: echo "$X" | base64');
+  assert.equal(flagged(blockScalar), true, "# line inside a block scalar");
+  assert.equal(flagged(L("name: x", "on: push", "jobs:", "  a:", "    runs-on: x", "    steps:", "      - uses: actions/github-script@" + sha40, "        with:", "          script: |", "            # ${{ secrets.K }}", "            core.info('x')")), true, "github-script block");
+  assert.equal(flagged(L("# the old version used secrets.K from a push workflow", "name: x", "on: push", "jobs: {}")), true, "a comment mention is reported: over-reporting is the safe side");
+  assert.equal(flagged(L("# the old version used secrets.K from a push workflow", "name: x", "on: pull_request_target", "jobs: {}")), false, "...but is fine behind a base-file event");
 });
