@@ -8,6 +8,7 @@
 // worktree of the same repo, runtime/lib/git.mjs#gitCommonDir) plus an
 // exclusive-create lock file around every read-modify-write, so a claim
 // is atomic across worktrees/processes instead of best-effort.
+import { isLockContention } from "../lib/lock.mjs";
 import { readFileSync, writeFileSync, existsSync, openSync, closeSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
 import { gitCommonDir } from "../lib/git.mjs";
@@ -39,7 +40,7 @@ export function withClaimsLock(root, fn, { retries = 20, retryDelayMs = 10 } = {
       fd = openSync(lock, "wx");
       break;
     } catch (error) {
-      if (error.code !== "EEXIST") throw error;
+      if (!isLockContention(error)) throw error;
       if (attempt === retries) {
         throw new ClaimLockContentionError(`could not acquire claims lock at ${lock} after ${retries} attempts`);
       }

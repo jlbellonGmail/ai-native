@@ -3892,3 +3892,8 @@ Restricciones vigentes: no tocar repos GI sin autorizacion por oleada (M6); ning
   * M5.4 canary real: requiere D4 (autorizacion humana).
   * M5.5 `v3.0.0` y M6: dependen de lo anterior.
 * Acciones humanas: confirmar condiciones P para rc.1 (o autorizar rc.1 explicitamente), A2 (rulesets en repos publicos) para M0.0b/v2.0.6, aportar la definicion de C5/C6, y D4.
+## 2026-10-03 — Defecto real de M4.1 hallado por CI en Windows
+
+* El test `PAR-CACHE-CONCURRENT` fallo en `windows-latest` en una PR solo documental (#37): `EPERM` al abrir `*.json.lock` con `wx` mientras otro proceso lo borraba. No es flakiness: el lock trataba solo `EEXIST` como contencion; en Windows el archivo en borrado reporta `EPERM`/`EBUSY`. Mismo patron en `runtime/circuit/claims.mjs`.
+* Corregido en `runtime/lib/lock.mjs` (`isLockContention`, solo `win32` acepta EPERM/EBUSY) usado por ambos locks, con test propio. Habia pasado en 3 PRs anteriores por azar de timing.
+* Hallazgo en #38: el `trust-gate` fallo una vez porque `refs/pull/N/head` aun no existia al dispararse el evento (carrera con la creacion de la PR). Se agrega reintento con backoff al fetch del workflow; antes, el fallo dejaba la PR BLOCKED hasta reejecutar a mano.
