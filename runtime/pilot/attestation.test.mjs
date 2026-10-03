@@ -8,7 +8,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { downloadRelease, ghAttestationVerifier } from "../bootstrap/remote.mjs";
@@ -19,14 +19,15 @@ const DIGEST = "sha256:207bb0d71d76de479b722b106bd1c127ec31c9a8f36285f79578aa047
 const ASSET = `ai-native-${VERSION}.tar.gz`;
 const strict = process.env.AI_NATIVE_REQUIRE_NETWORK === "1";
 
+const dir = mkdtempSync(join(tmpdir(), "ai-native-att-"));
+const file = join(dir, ASSET);
 let bytes = null;
 let reason = null;
 try {
-  const gh = spawnSync("gh", ["--version"], { encoding: "utf8" });
-  if (gh.status !== 0) throw new Error("gh is not installed");
-  const res = await fetch(`https://github.com/${REPO}/releases/download/${VERSION}/${ASSET}`, { redirect: "follow" });
-  if (!res.ok) throw new Error(`download HTTP ${res.status}`);
-  bytes = Buffer.from(await res.arrayBuffer());
+  // `gh` writes the artifact itself (like a consumer's tooling would); we only read it back to serve it to downloadRelease
+  const dl = spawnSync("gh", ["release", "download", VERSION, "--repo", REPO, "--pattern", ASSET, "--dir", dir, "--clobber"], { encoding: "utf8" });
+  if (dl.status !== 0) throw new Error(`gh release download failed: ${(dl.stderr || dl.stdout).trim().split(/\r?\n/).pop()}`);
+  bytes = readFileSync(file);
   if (`sha256:${createHash("sha256").update(bytes).digest("hex")}` !== DIGEST) throw new Error("downloaded bundle does not match the published digest");
 } catch (error) {
   reason = error.message;
@@ -34,9 +35,6 @@ try {
 }
 const opts = { skip: bytes ? false : `prerequisites unavailable (${reason}); set AI_NATIVE_REQUIRE_NETWORK=1 to make this a failure` };
 
-const dir = mkdtempSync(join(tmpdir(), "ai-native-att-"));
-const file = join(dir, ASSET);
-if (bytes) writeFileSync(file, bytes);
 const verify = ghAttestationVerifier();
 const fakeFetch = async () => ({ ok: true, arrayBuffer: async () => bytes });
 const lockFor = (repo) => ({ platform: { repo: `github:${repo}`, version: VERSION, commit: "9e155b4b77ef4331dae2926e9053abb792733e8d", digest: DIGEST } });

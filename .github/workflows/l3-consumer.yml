@@ -111,25 +111,26 @@ jobs:
             console.log(`trust root: platform ${process.env.PLATFORM_REPO} @ ${commit} (from ${ref ? "platform-ref input" : source + " lock"})`);
           '
 
-      - name: Checkout platform at the trusted commit
+      # The ref given to actions/checkout is NEVER derived from the PR: the platform's default branch is
+      # checked out (trusted), and only then is the pinned commit verified and selected.
+      - name: Checkout platform (default branch)
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           repository: ${{ inputs.platform-repo }}
-          ref: ${{ steps.lock.outputs.commit }}
           path: platform
           fetch-depth: 0
           persist-credentials: false
 
-      - name: The platform commit must be in the history of its default branch
+      - name: Select the trusted platform commit (must be in the history of the default branch)
         shell: bash
         env:
           COMMIT: ${{ steps.lock.outputs.commit }}
         run: |
           set -euo pipefail
-          default="$(git -C platform remote show origin | sed -n 's/^ *HEAD branch: //p')"
-          [ -n "$default" ] || { echo "::error::cannot determine the platform default branch"; exit 1; }
-          git -C platform fetch --no-tags origin "$default"
+          [[ "$COMMIT" =~ ^[0-9a-f]{40}$ ]] || { echo "::error::invalid platform commit"; exit 1; }
+          default="$(git -C platform symbolic-ref --short HEAD)"
           git -C platform merge-base --is-ancestor "$COMMIT" "origin/$default" || { echo "::error::platform commit $COMMIT is not in the history of origin/$default: refusing to run it"; exit 1; }
+          git -C platform checkout --detach "$COMMIT"
 
       - name: Bootstrap sync (download, sha256 vs lock, sigstore attestation)
         shell: bash

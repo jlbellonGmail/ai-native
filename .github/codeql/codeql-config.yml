@@ -1,0 +1,7 @@
+# CodeQL scope. The audit fixtures under evaluation/fixtures/audit/ are deliberately imperfect sample
+# projects (their independent audits list real defects, e.g. incomplete escaping in slugify-lite);
+# they are DATA for P33, never shipped or executed by the platform, and changing them would invalidate
+# the exact-commit audit reports. Everything else is scanned.
+paths-ignore:
+  - evaluation/fixtures/audit/application
+  - evaluation/fixtures/audit/library
