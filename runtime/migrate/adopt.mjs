@@ -57,7 +57,7 @@ export function applyAdoption(targetRoot, incoming, { resolve: resolutions = {} 
   const skipped = plan.collisions.map((c) => c.path);
   const journal = { schemaVersion: 1, created, skipped };
   mkdirSync(dirname(join(targetRoot, JOURNAL_PATH)), { recursive: true });
-  writeFileSync(join(targetRoot, JOURNAL_PATH), `${JSON.stringify(journal, null, 2)}\n`);
+  writeFileSync(join(targetRoot, JOURNAL_PATH), `${JSON.stringify(journal, null, 2)}\n`, { flag: "wx" });
   return { status: "APPLIED", written: Object.keys(created), skipped, collisions: [] };
 }
 
