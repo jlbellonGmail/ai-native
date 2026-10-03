@@ -1,0 +1,182 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-10-03T19:16:49.044Z",
+  "platformCommit": "462decfb210771f987010ecc56bb1e828adec006",
+  "machine": {
+    "platform": "win32",
+    "node": "v26.7.0",
+    "cpus": 12
+  },
+  "baseline": {
+    "repo": "jlbellonGmail/template-starter",
+    "tag": "v2.0.4",
+    "commit": "9e7dfb5b82ca69a0dd878c719f5861816652780b",
+    "trackedFiles": 175,
+    "trackedBytes": 911238
+  },
+  "metrics": {
+    "managedFilesPerConsumer": {
+      "value": 5,
+      "unit": "files",
+      "target": "<= 12",
+      "baseline": 175,
+      "met": true,
+      "method": "ai-native.lock.json + the entry points the adapters generate (CLAUDE.md, .mcp.json, opencode.json, .codex/config.toml). Plan SS15.1 (a) is a CLOSED list of 12; 7 of its entries are not implemented yet (bootstrap.ps1 was replaced by the node CLI, AGENTS.md kernel block, .claude/settings.json, the two caller workflows, the .gitignore block).",
+      "disclosure": {
+        "derivedAdapterFiles": 15,
+        "totalGeneratedWithDerived": 20,
+        "note": "agents, role profiles and lazy skill mirrors are regenerable from the lock by `adapters`; counted this way the figure is 20, ABOVE the target. Whether they are committed or gitignored is a consumer policy that is not enforced yet."
+      }
+    },
+    "bytesCopiedPerConsumer": {
+      "value": 2167,
+      "unit": "bytes",
+      "baseline": 911238,
+      "reduction": 0.9976,
+      "target": ">= 0.90 reduction",
+      "met": true,
+      "method": "bytes of the committed managed set above vs the sum of tracked bytes of template-starter v2.0.4",
+      "disclosure": {
+        "withDerivedBytes": 49310,
+        "withDerivedReduction": 0.9459
+      }
+    },
+    "bootstrapTimeWithCache": {
+      "value": 135,
+      "unit": "ms (median of 9)",
+      "target": "<= 300",
+      "met": true,
+      "samples": [
+        152,
+        195,
+        135,
+        128,
+        159,
+        142,
+        129,
+        128,
+        126
+      ],
+      "method": "wall clock of `node runtime/bootstrap/cli.mjs sync --offline` (process start included) with a warm content-addressed cache",
+      "disclosure": {
+        "statusMedianMs": 153,
+        "bareNodeStartupMedianMs": 79,
+        "note": "includes a full verification of the cached release before use (PAR-CACHE-VERIFY-BEFORE-EXEC)"
+      }
+    },
+    "bootstrapTimeWithoutCache": {
+      "value": 247,
+      "unit": "ms (median of 3, --from-file, no network)",
+      "target": "<= 30000",
+      "met": true,
+      "samples": [
+        255,
+        247,
+        194
+      ],
+      "method": "wall clock of `sync --from-file <bundle> --offline` against an EMPTY cache: extract, hash every file, publish atomically",
+      "disclosure": {
+        "note": "excludes the network download of the release; that part is measured by pilot.yml online"
+      }
+    },
+    "networkCallsPerSessionWithCache": {
+      "value": 0,
+      "unit": "calls",
+      "target": "0",
+      "met": true,
+      "method": "preloaded counter on fetch, http(s).request and net.connect while running status, sync --offline and doctor from a warm cache; every run must exit 0",
+      "disclosure": {
+        "limit": "a LOWER BOUND for the process tree: only in-process fetch/http(s)/net.connect are counted; child processes the CLI spawns (git, gh) are not instrumented. The offline paths spawn none that touch the network, but this counter alone does not prove it."
+      }
+    },
+    "filesChangedByBump": {
+      "value": 2,
+      "unit": "files",
+      "target": "2",
+      "baseline": "copy of up to 17",
+      "met": true,
+      "files": [
+        ".github/workflows/ai-native.yml",
+        "ai-native.lock.json"
+      ],
+      "method": "applyBump on a git repo, git diff --name-only"
+    },
+    "contextAtReentryTokens": {
+      "value": 700,
+      "unit": "tokens (estimate: chars / 4)",
+      "target": "<= 2500",
+      "baseline": "about 6500-7500",
+      "met": true,
+      "kernelLines": 52,
+      "skills": 4,
+      "method": "core/kernel.md + the frontmatter of every canonical skill; the estimate is chars/4, NOT a tokenizer count"
+    },
+    "capabilitiesCentralized": {
+      "value": 0.9189,
+      "unit": "fraction",
+      "target": ">= 0.90",
+      "baseline": "about 0",
+      "met": true,
+      "detail": {
+        "total": 74,
+        "localByDesign": 6
+      },
+      "method": "share of the 74 parity capabilities not classified LOCAL_BY_DESIGN"
+    },
+    "validationTimeLightVsFull": {
+      "value": 0.364,
+      "unit": "LIGHT steps / FULL steps (proxy)",
+      "target": "<= 0.25",
+      "met": false,
+      "status": "PROXY_ONLY",
+      "detail": {
+        "LIGHT": 4,
+        "STANDARD": 6,
+        "FULL": 11
+      },
+      "reviews": {
+        "LIGHT": 1,
+        "STANDARD": 2,
+        "FULL": 2
+      },
+      "method": "The metric is wall-clock validation time, dominated by model reviews that cannot be measured without spending model calls on every level; this records the structural ratio of steps and is NOT a time measurement."
+    },
+    "hitlPerUnit": {
+      "value": 1,
+      "unit": "human merge decisions per unit",
+      "target": "1",
+      "met": true,
+      "detail": {
+        "rolesWithMergeAllow": [
+          "human"
+        ],
+        "transitionsIntoMerged": [
+          "AWAITING_HITL->MERGED"
+        ]
+      },
+      "method": "READ from core/security-policy.json (roles whose MERGE is allow) and contracts/state-machine.json (transitions into MERGED); the behaviour itself is proven by runtime/gates/gates.test.mjs (PAR-SINGLE-HITL)"
+    },
+    "circuitsPerMilestone": {
+      "value": 1,
+      "unit": "circuits (branches/run dirs) for a 3-item milestone",
+      "target": "1",
+      "met": true,
+      "detail": {
+        "branches": 1,
+        "runDirs": 1,
+        "items": 3
+      },
+      "method": "startWorkUnit(Milestone, 3 items) executed for real in a scratch repo; counts the milestone branches and run directories it creates"
+    }
+  },
+  "summary": {
+    "total": 11,
+    "met": 10,
+    "notMet": [
+      "validationTimeLightVsFull"
+    ],
+    "proxyOnly": [
+      "validationTimeLightVsFull"
+    ]
+  }
+}
