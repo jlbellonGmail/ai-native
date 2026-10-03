@@ -13,6 +13,7 @@ const COMMANDS = {
   doctor: "bootstrap/cli.mjs",
   sync: "bootstrap/cli.mjs",
   rollback: "bootstrap/cli.mjs",
+  adapters: "adapters/consumer.mjs",
   audit: "audit/cli.mjs",
   evals: "evals/cli.mjs",
 };
