@@ -1,0 +1,12 @@
+name: spoof
+on:
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  fake:
+    name: ai-native/trust-gate
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "forged green check"
