@@ -3883,6 +3883,15 @@ Restricciones vigentes: no tocar repos GI sin autorizacion por oleada (M6); ning
 
 ---
 
+## 2026-10-03 — Estado de M5: detenido ante decisiones humanas reales
+
+* Mergeadas: #34 (prerequisitos: bump/brownfield/revert/product-context/trust-boundary), #35 (M5.2 parcial), #36 (M5.3 parcial). Parity 93/95, UNMAPPED=0; los 2 restantes son C5 y C6.
+* Abiertas, con motivo verificable:
+  * M5.1 `v3.0.0-rc.1`: publicar un tag es publico e inmutable, y la lista de condiciones P previas a rc.1 (P4-P9, P12, P14, P20, P21, P27-P31, P33, P34, P36, P39a/b, P41-P45) vive en el plan de sesion, no en el repo, asi que no puede verificarse aqui. Requiere confirmacion humana de que esas condiciones estan en PASS.
+  * M5.2 y M5.3 siguen abiertas (ver sus lineas en el roadmap): C5/C6 sin definicion en el repo; fixtures v2.0.0-v2.0.5 de `template` solo existen en el checkout local; v2.0.6 no existe (M0.0b, requiere A2).
+  * M5.4 canary real: requiere D4 (autorizacion humana).
+  * M5.5 `v3.0.0` y M6: dependen de lo anterior.
+* Acciones humanas: confirmar condiciones P para rc.1 (o autorizar rc.1 explicitamente), A2 (rulesets en repos publicos) para M0.0b/v2.0.6, aportar la definicion de C5/C6, y D4.
 ## 2026-10-03 — Defecto real de M4.1 hallado por CI en Windows
 
 * El test `PAR-CACHE-CONCURRENT` fallo en `windows-latest` en una PR solo documental (#37): `EPERM` al abrir `*.json.lock` con `wx` mientras otro proceso lo borraba. No es flakiness: el lock trataba solo `EEXIST` como contencion; en Windows el archivo en borrado reporta `EPERM`/`EBUSY`. Mismo patron en `runtime/circuit/claims.mjs`.
