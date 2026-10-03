@@ -104,6 +104,8 @@ test("plan is read-only", () => {
   const r = adapters(proj, "--plan");
   assert.equal(r.status, 0, r.stdout + r.stderr);
   assert.deepEqual(listAll(proj), ["ai-native.lock.json"]);
-  assert.ok(JSON.parse(r.stdout).data.adoption.create.length > 5);
+  // `run` prints the release report and then its own; read the plan from the first
+  const create = r.stdout.match(/"create":s*[([^]]*)]/);
+  assert.ok(create && create[1].split(",").length > 5, r.stdout);
 });
 
