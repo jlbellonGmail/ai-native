@@ -1,6 +1,6 @@
 # Kernel (bloque gestionado, ≤60 líneas — PAR-CONTEXT-BUDGET)
 
-No editar a mano en un consumidor: lo reemplaza `bootstrap.ps1 sync` desde
+No editar a mano en un consumidor: lo reemplaza `ai-native sync` desde
 `kernelContract` (SemVer entero). Fuente: `core/kernel.md` en `ai-native`.
 
 ## Identidad
@@ -11,8 +11,8 @@ principios; este bloque fija solo lo mínimo para arrancar y no romper nada.
 ## Bootstrap (orden)
 
 1. `ai-native status --check` (o el hook de la herramienta). Si no es
-   `READY`, correr `bootstrap.ps1 check`.
-2. Si `NEEDS_SYNC` → `bootstrap.ps1 sync` (requiere red la primera vez).
+   `READY`, correr `ai-native doctor`.
+2. Si `NEEDS_SYNC` → `ai-native sync` (requiere red la primera vez).
 3. Si `DEGRADED_READONLY` (sin caché y sin red): solo lectura, análisis y
    planificación. Prohibido implementar, transicionar estado, usar MCP o
    marcar una validación como superada.

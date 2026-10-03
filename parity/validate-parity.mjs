@@ -4,7 +4,7 @@
 // and parity/par-tests.json are internally consistent and that every
 // capability's parTests references either a real PAR-* id in par-tests.json
 // or a compatibility test id (C1-C6). See governance/adr/ADR-002.
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { RESULT_STATUS, statusFromCounts, exitCodeFor, formatLine } from "../runtime/lib/result.mjs";
@@ -76,6 +76,9 @@ const implemented = parTests.tests.filter((t) => t.status === "IMPLEMENTED");
 warn(implemented.length >= 1, "par-tests.json: no test is marked IMPLEMENTED yet");
 for (const t of implemented) {
   check(typeof t.implementedBy === "string" && t.implementedBy.length > 0, `par-tests.json: ${t.id} is IMPLEMENTED but has no implementedBy`);
+  if (typeof t.implementedBy === "string" && t.implementedBy.length > 0) {
+    for (const file of t.implementedBy.split(/[,;]\s*/)) check(existsSync(join(here, "..", file)), `par-tests.json: ${t.id} implementedBy "${file}" does not exist on disk`);
+  }
 }
 
 const status = statusFromCounts({ errors: errors.length, warnings: warnings.length });

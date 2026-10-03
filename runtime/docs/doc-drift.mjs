@@ -16,6 +16,7 @@
 //     redeclares a canonical skill name (the former factory-*/project-*
 //     duplicated pair).
 // Pure node: builtins only, read-only, never executes anything it reads.
+import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 
@@ -45,6 +46,16 @@ const PATH_RE = new RegExp(
 );
 const PAR_RE = /\bPAR-[A-Z0-9][A-Z0-9-]*[A-Z0-9]\b/g;
 const CMD_RE = /\bnode\s+((?:[\w.-]+\/)*[\w.-]+\.mjs)\b/g;
+// A script a doc tells the reader to run must exist. `bootstrap.ps1` is the v2-era name that the node CLI replaced.
+const PS1_RE = /(?<![\w./-])((?:[\w.-]+\/)*[\w.-]+\.ps1)\b/g;
+
+let trackedCache = null;
+function scriptExists(repoRoot, s) {
+  if (existsSync(join(repoRoot, s))) return true;
+  // a bare name matches any tracked file with that basename (docs say `status-lib.ps1`, the file lives under scripts/)
+  trackedCache ??= execFileSync("git", ["ls-files"], { cwd: repoRoot, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 }).split(/\r?\n/);
+  return trackedCache.some((f) => f === s || f.endsWith(`/${s}`));
+}
 
 function expandDocs(repoRoot) {
   const out = [];
@@ -105,6 +116,9 @@ export function checkDocDrift(repoRoot) {
     }
     for (const m of text.matchAll(PAR_RE)) {
       if (!parIds.has(m[0])) report("DRIFT-PAR", `unregistered ${m[0]}`);
+    }
+    for (const m of text.matchAll(PS1_RE)) {
+      if (isConcrete(m[1]) && !scriptExists(repoRoot, m[1])) report("DRIFT-SCRIPT", `missing script ${m[1]}`);
     }
     for (const c of cmds) {
       if (isConcrete(c) && !existsSync(join(repoRoot, c))) report("DRIFT-CMD", `missing script ${c}`);

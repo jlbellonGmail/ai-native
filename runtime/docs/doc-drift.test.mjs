@@ -94,3 +94,28 @@ test("this repository's own docs and skills have no drift", () => {
   assert.deepEqual(checkDocDrift(repoRoot).errors, []);
   assert.deepEqual(checkCanonicalSource(repoRoot).errors, []);
 });
+
+test("DRIFT-SCRIPT: a doc that tells the reader to run a .ps1 that does not exist is drift (the v2 `bootstrap.ps1` that the node CLI replaced)", async () => {
+  const { mkdtempSync, mkdirSync, writeFileSync, rmSync } = await import("node:fs");
+  const { tmpdir } = await import("node:os");
+  const { join } = await import("node:path");
+  const { execFileSync } = await import("node:child_process");
+  const dir = mkdtempSync(join(tmpdir(), "ai-native-drift-"));
+  mkdirSync(join(dir, "core"), { recursive: true });
+  mkdirSync(join(dir, "parity"), { recursive: true });
+  writeFileSync(join(dir, "parity", "par-tests.json"), JSON.stringify({ tests: [] }));
+  writeFileSync(join(dir, "core", "kernel.md"), "Run `bootstrap.ps1 sync` and `scripts/real.ps1`.\n");
+  mkdirSync(join(dir, "scripts"), { recursive: true });
+  writeFileSync(join(dir, "scripts", "real.ps1"), "x\n");
+  execFileSync("git", ["init", "-q"], { cwd: dir });
+  execFileSync("git", ["add", "-A"], { cwd: dir });
+  const { checkDocDrift } = await import("./doc-drift.mjs");
+  const errors = checkDocDrift(dir).errors;
+  assert.ok(errors.some((e) => /DRIFT-SCRIPT/.test(e) && /bootstrap\.ps1/.test(e)), errors.join("\n"));
+  assert.ok(!errors.some((e) => /real\.ps1/.test(e)), "an existing script is not drift");
+  rmSync(dir, { recursive: true, force: true });
+});
+
+test("the repo's own authoritative docs reference no missing .ps1 script", () => {
+  assert.deepEqual(checkDocDrift(join(dirname(fileURLToPath(import.meta.url)), "..", "..")).errors.filter((e) => /DRIFT-SCRIPT/.test(e)), []);
+});
