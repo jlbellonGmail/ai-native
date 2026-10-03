@@ -11,7 +11,7 @@ Cualquiera que pueda empujar una rama a este repo (la App `ai-native-worker` tie
 
 * `runtime/gates/secret-exposure.mjs` + `supply-chain.mjs` (pr-gate y security-scan), **fail-closed**: cualquier mencion de `secrets` distinta de
   `GITHUB_TOKEN` (cualquier forma y sin distinguir mayusculas: `secrets.X`, `secrets['X']`, `toJSON(secrets)`, `secrets: inherit`, `${{ secrets }}` desnudo)
-  solo se admite en workflows cuyos eventos TODOS ejecutan el archivo de la rama por defecto (`pull_request_target`, `workflow_run`, `workflow_call`, `release`,
+  solo se admite en workflows cuyos eventos TODOS ejecutan el archivo de la rama por defecto (`pull_request_target`, `workflow_run`, `workflow_call`,
   `issue_comment`, `issues`); si los eventos no se pueden determinar tambien es hallazgo. Es un analisis de texto de YAML: **puede sobre-reportar, no debe sub-reportar**,
   pero un parser casero no es una garantia. Probado con el `merge-gate.yml` que estuvo publicado (`pull_request_review` + clave de la App).
 * `merge-gate.yml` ya no escucha `pull_request_review`. `post-merge.yml` lee la config del `base.sha`.

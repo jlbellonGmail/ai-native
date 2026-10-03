@@ -15,7 +15,8 @@
 // Text-level YAML parsing is deliberately conservative: it may over-report (the word "secrets" inside a script of a push
 // workflow is flagged and must be reworded) but it must not under-report.
 
-export const BASE_FILE_EVENTS = new Set(["pull_request_target", "workflow_run", "workflow_call", "release", "issue_comment", "issues"]);
+// `release` is NOT here: a release runs the workflow file at the TAGGED commit, which anyone who can push can choose.
+export const BASE_FILE_EVENTS = new Set(["pull_request_target", "workflow_run", "workflow_call", "issue_comment", "issues"]);
 
 const unquote = (s) => s.trim().replace(/^["']|["']$/g, "");
 const stripComment = (l) => l.replace(/(^|[ \t])#.*$/, "");
@@ -89,13 +90,16 @@ export function triggerNames(text) {
   return [...names];
 }
 
-/** Non-comment text without display `name:` lines and without the allowed GITHUB_TOKEN references. */
+/**
+ * The text scanned for secret references: whole-line comments are dropped, but NOT inline `#` (it may sit inside a quoted
+ * string or shell text and hide a reference), and a `name:` line is dropped only when it carries no `${{ }}` expression
+ * (a display name may say "secrets"; `name: ${{ secrets.X }}` under `env:`/`with:` is a real reference).
+ */
 function secretScanText(text) {
   return text
-    .split("\n")
+    .split(/\r?\n/)
     .filter((l) => !l.trimStart().startsWith("#"))
-    .map(stripComment)
-    .filter((l) => !/^\s*(?:-\s+)?name\s*:/.test(l)) // a step/job/workflow display name is not a reference
+    .filter((l) => !(/^\s*(?:-\s+)?name\s*:/.test(l) && !l.includes("${{")))
     .join("\n")
     .replace(/secrets\s*\.\s*GITHUB_TOKEN\b/gi, "")
     .replace(/secrets\s*\[\s*["']GITHUB_TOKEN["']\s*\]/gi, "");
@@ -108,10 +112,11 @@ export function secretReferences(text) {
   for (const m of code.matchAll(/\bsecrets\s*\.\s*([A-Za-z_]\w*)/gi)) refs.add(`secrets.${m[1]}`);
   for (const m of code.matchAll(/\bsecrets\s*\[\s*([^\]]+?)\s*\]/gi)) refs.add(`secrets[${m[1]}]`);
   if (/\btoJSON\s*\(\s*secrets\s*\)/i.test(code)) refs.add("toJSON(secrets)");
-  if (/^\s*secrets\s*:\s*["']?inherit["']?\s*$/im.test(code)) refs.add("secrets: inherit");
-  if (/^\s*secrets\s*:\s*$/im.test(code)) refs.add("secrets: mapping");
+  if (/^\s*secrets\s*:\s*["']?inherit["']?\s*(?:#.*)?$/im.test(code)) refs.add("secrets: inherit");
+  if (/^\s*secrets\s*:\s*(?:#.*)?$/im.test(code)) refs.add("secrets: mapping");
   // whatever still names the bare context (`${{ secrets }}`, format(..., secrets), join(secrets, ...)) is a reference too
-  const rest = code.replace(/\bsecrets\s*[.[]/gi, "").replace(/\bsecrets\s*:/gi, "");
+  if (/^\s*secrets\s*:/im.test(code) && !refs.has("secrets: inherit") && !refs.has("secrets: mapping")) refs.add("secrets: key");
+  const rest = code.replace(/\bsecrets\s*[.[]/gi, "");
   if (/\bsecrets\b/i.test(rest)) refs.add("secrets (bare context)");
   return [...refs];
 }

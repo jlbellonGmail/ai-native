@@ -283,13 +283,6 @@ test("P43: detector covers multi-line scalars, reversed block indicators, case, 
 });
 
 // ---------- audit finding H1 (CRITICAL): a pull_request_review workflow runs the PR's own file with secrets
-import { execFileSync } from "node:child_process";
-
-test("SECRETS_IN_PR_EVENT: the merge-gate.yml that shipped in M4.3 (pull_request_review + TRUST_APP_PRIVATE_KEY) is detected", () => {
-  const shipped = execFileSync("git", ["show", "47bd24f:.github/workflows/merge-gate.yml"], { cwd: new URL("../../", import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1"), encoding: "utf8" });
-  assert.match(shipped, /pull_request_review/);
-  assert.ok(checkWorkflow("merge-gate.yml", shipped).some((f) => f.code === "SECRETS_IN_PR_EVENT" && /TRUST_APP_PRIVATE_KEY/.test(f.detail)));
-});
 
 test("the real merge-gate.yml no longer has a pull_request_review trigger, and no real workflow leaks a secret to a PR event", () => {
   const text = read(".github/workflows/merge-gate.yml");

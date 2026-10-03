@@ -93,3 +93,21 @@ test("multi-line flow `on:`, an empty/unreadable `on:`, mixed case and `secrets:
   assert.equal(flagged(L("name: Detect secrets in the tree", "on: push", "jobs:", "  a:", "    name: scan for secrets", "    runs-on: x", "    steps:", "      - run: echo hi")), false, "a display name that says 'secrets' is not a reference");
   assert.equal(flagged(L("name: x", "on: {", "  pull_request_target: {},", "  workflow_call: {}", "}", ...JOB)), false, "multi-line flow of base-file events");
 });
+
+test("bypasses found by the independent review: a `name:` key under env:/with:, an inline `#` inside quotes, and `release`", () => {
+  // `name:` as an env/with KEY must still be scanned (only a plain display name is skipped)
+  assert.equal(flagged(L("name: x", "on: push", "jobs:", "  a:", "    runs-on: x", "    steps:", "      - env:", "          name: ${{ secrets.TRUST_APP_PRIVATE_KEY }}", "        run: echo $name | base64")), true, "env name:");
+  assert.equal(flagged(L("name: x", "on: push", "jobs:", "  a:", "    runs-on: x", "    steps:", `      - uses: o/r@${sha40}`, "        with:", "          name: ${{ secrets.K }}")), true, "with name:");
+  // an inline `#` (inside a quoted string / shell text) must not hide what follows
+  assert.equal(flagged(L("name: x", "on: push", "jobs:", "  a:", "    runs-on: x", "    steps:", "      - run: echo \" #\"; echo ${{ secrets.K }} | base64")), true, "# inside quotes");
+  assert.equal(flagged(L("name: x", "on: push", "jobs:", "  a:", "    runs-on: x", "    steps:", "      - run: echo 'a # b' ${{ secrets.K }}")), true, "# inside single quotes");
+  // `release` runs the file at the TAGGED commit, so it is not a base-file event
+  assert.equal(flagged(L("name: x", "on:", "  release:", "    types: [published]", ...JOB)), true, "release");
+  // plain display names stay allowed
+  assert.equal(flagged(L("name: no secrets here", "on: push", "jobs:", "  a:", "    name: still no secrets", "    runs-on: x", "    steps:", "      - name: handle secrets safely", "        run: echo hi")), false);
+});
+
+test("supply-chain.mjs reports each exposure exactly once (the old duplicate detector is gone)", () => {
+  const f = checkWorkflow("w.yml", L("name: x", "on: push", "permissions:", "  contents: read", ...JOB));
+  assert.equal(f.filter((x) => x.code === "SECRETS_IN_PR_EVENT").length, secretReferences(L(...JOB)).length);
+});

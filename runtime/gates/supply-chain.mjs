@@ -42,16 +42,7 @@ export function findScriptInjection(text) {
   return hits;
 }
 
-/** The text of the top-level `on:` block (up to the next top-level key). */
-function triggerBlock(text) {
-  const m = /^on:[ \t]*(.*)$/m.exec(text);
-  if (!m) return "";
-  const rest = text.slice(m.index + m[0].length);
-  const next = /\n[A-Za-z_][\w-]*[ \t]*:/.exec(rest);
-  return `${m[1]}\n${next ? rest.slice(0, next.index) : rest}`;
-}
 
-const PR_EVENT = /(?:^|\n)[ \t]*(?:pull_request|pull_request_review|pull_request_review_comment)[ \t]*:|\[[^\]]*\b(?:pull_request|pull_request_review)\b[^\]]*\]/;
 
 export function checkWorkflow(path, text) {
   const findings = [];
@@ -61,14 +52,6 @@ export function checkWorkflow(path, text) {
   if (/^\s*pull_request_target:/m.test(text) && HEAD_REF.test(text)) {
     const usesHeadInCheckout = /uses:\s*actions\/checkout[\s\S]{0,400}?ref:\s*\$\{\{[^}]*(head\.(sha|ref)|head_ref)/.test(text);
     if (usesHeadInCheckout) findings.push({ code: "PRT_CHECKOUT_HEAD", path, detail: "pull_request_target checks out the PR head" });
-  }
-  // `pull_request` / `pull_request_review*` run the PR's OWN workflow file (same-repo branches), so anyone who can push a
-  // branch can edit it and print every secret it receives. Only GITHUB_TOKEN may reach such a workflow; anything else
-  // belongs in a pull_request_target / push / workflow_dispatch workflow, which runs the BASE file.
-  if (PR_EVENT.test(triggerBlock(text))) {
-    for (const m of text.matchAll(/secrets\.([A-Za-z_]\w*)/g)) {
-      if (m[1] !== "GITHUB_TOKEN") findings.push({ code: "SECRETS_IN_PR_EVENT", path, detail: `secrets.${m[1]} is reachable from a pull_request/pull_request_review workflow (it runs the PR's own file)` });
-    }
   }
   findings.push(...checkSecretExposure(path, text));
   for (const h of findScriptInjection(text)) findings.push({ code: "SCRIPT_INJECTION", path, detail: `line ${h.line}: untrusted expression interpolated into a script: ${h.text.slice(0, 120)}` });
