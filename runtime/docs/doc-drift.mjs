@@ -54,8 +54,7 @@ function scriptExists(repoRoot, s) {
   if (existsSync(join(repoRoot, s))) return true;
   // a bare name matches any tracked file with that basename (docs say `status-lib.ps1`, the file lives under scripts/)
   if (!trackedCache.has(repoRoot)) {
-    const files = execFileSync("git", ["ls-files", "--cached", "--others", "--exclude-standard"], { cwd: repoRoot, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 }).split(/?
-/);
+    const files = execFileSync("git", ["ls-files", "--cached", "--others", "--exclude-standard"], { cwd: repoRoot, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 }).split("\n").map((f) => f.trim());
     trackedCache.set(repoRoot, files.filter((f) => !f.startsWith("legacy/"))); // the legacy v2 baseline still ships a bootstrap.ps1: it must not hide drift
   }
   return trackedCache.get(repoRoot).some((f) => f === s || f.endsWith(`/${s}`));
