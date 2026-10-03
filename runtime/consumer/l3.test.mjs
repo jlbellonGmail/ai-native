@@ -142,9 +142,8 @@ test("the real product-test path runs through the shell (no fake runner)", () =>
 });
 
 test("l3-consumer.yml trust root: platform repo fixed, base lock first, history check, base required (P44)", () => {
-  const yml = readFileSync(join(repoRoot, ".github", "workflows", "l3-consumer.yml"), "utf8").replace(/
-/g, "
-");
+  const yml = readFileSync(join(repoRoot, ".github", "workflows", "l3-consumer.yml"), "utf8").replaceAll("\r\n", "\n");
+  assert.match(yml, /git -C consumer cat-file -e "origin\/\$BASE:ai-native\.lock\.json"/, "absence of the base lock is checked explicitly");
   assert.match(yml, /platform-repo:[\s\S]*default: "jlbellonGmail\/ai-native"/);
   assert.match(yml, /this gate only runs code from/, "a lock pointing to another repo fails");
   assert.match(yml, /git -C consumer show "origin\/\$BASE:ai-native\.lock\.json"/, "the trust root is the BASE lock when it exists");
