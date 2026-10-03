@@ -1,0 +1,119 @@
+name: l3-consumer
+
+# L3 consumer gate (M5; P41 / C6). REUSABLE across repositories (workflow_call): a consumer
+# calls it from its own PR workflow, pinned by full SHA:
+#
+#   jobs:
+#     l3:
+#       permissions: { contents: read }
+#       uses: jlbellonGmail/ai-native/.github/workflows/l3-consumer.yml@<40-hex sha>
+#
+# What it does, in order (all read-only, no secrets, contents: read):
+#   1. checks out the CONSUMER (the caller repo) at the PR head, without persisting credentials;
+#   2. reads ai-native.lock.json and checks out the PLATFORM at exactly lock.platform.commit
+#      (the chain trusted caller -> reusable workflow -> pinned platform commit, P44);
+#   3. `bootstrap sync --require-attestation`: downloads the pinned release from GitHub Releases,
+#      checks its sha256 against the lock BEFORE caching, and verifies the sigstore attestation
+#      (fail closed: a failed or foreign attestation blocks);
+#   4. runs `runtime/consumer/l3.mjs` against the consumer and uploads its JSON as an artifact.
+# `platform-ref` (optional) overrides the platform checkout, ONLY for evidence runs of a
+# platform that is not yet released; it is reported as a warning because the gate code then
+# differs from the pinned release.
+
+on:
+  workflow_call:
+    inputs:
+      platform-ref:
+        description: "Evidence runs only: platform commit to run the gate from instead of lock.platform.commit"
+        required: false
+        type: string
+        default: ""
+      base-ref:
+        description: "Branch the PR targets (default: the caller's base branch, else main)"
+        required: false
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  l3:
+    name: l3-consumer
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout consumer
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          path: consumer
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Read the lock (the pin that decides which platform code runs)
+        id: lock
+        shell: bash
+        working-directory: consumer
+        run: |
+          set -euo pipefail
+          test -f ai-native.lock.json || { echo "::error::ai-native.lock.json not found: this repository is not adopted"; exit 1; }
+          node -e '
+            const l = JSON.parse(require("fs").readFileSync("ai-native.lock.json", "utf8"));
+            const p = l.platform || {};
+            if (!/^github:[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(p.repo || "")) throw new Error("lock.platform.repo is invalid");
+            if (!/^[0-9a-f]{40}$/.test(p.commit || "")) throw new Error("lock.platform.commit is not a full SHA");
+            const out = process.env.GITHUB_OUTPUT;
+            require("fs").appendFileSync(out, `repo=${p.repo.slice(7)}\ncommit=${p.commit}\nversion=${p.version}\n`);
+          '
+
+      - name: Resolve platform ref
+        id: ref
+        shell: bash
+        env:
+          INPUT_REF: ${{ inputs.platform-ref }}
+          LOCK_COMMIT: ${{ steps.lock.outputs.commit }}
+        run: |
+          set -euo pipefail
+          if [ -n "$INPUT_REF" ]; then
+            [[ "$INPUT_REF" =~ ^[0-9a-f]{40}$ ]] || { echo "::error::platform-ref must be a full 40-hex SHA"; exit 1; }
+            echo "ref=$INPUT_REF" >> "$GITHUB_OUTPUT"
+            [ "$INPUT_REF" = "$LOCK_COMMIT" ] || echo "::warning::EVIDENCE RUN: gate code comes from platform-ref ${INPUT_REF}, not from lock.platform.commit ${LOCK_COMMIT}"
+          else
+            echo "ref=$LOCK_COMMIT" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout platform at the pinned commit
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          repository: ${{ steps.lock.outputs.repo }}
+          ref: ${{ steps.ref.outputs.ref }}
+          path: platform
+          persist-credentials: false
+
+      - name: Bootstrap sync (download, sha256 vs lock, sigstore attestation)
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          node platform/runtime/bootstrap/cli.mjs sync --require-attestation --project consumer --cache "$RUNNER_TEMP/ai-native-cache"
+          node platform/runtime/bootstrap/cli.mjs doctor --project consumer --cache "$RUNNER_TEMP/ai-native-cache"
+
+      - name: L3 consumer gate
+        shell: bash
+        env:
+          BASE_REF: ${{ inputs.base-ref }}
+          EVENT_BASE: ${{ github.base_ref }}
+        run: |
+          set -euo pipefail
+          base="${BASE_REF:-${EVENT_BASE:-main}}"
+          git -C consumer fetch --no-tags origin "$base" 2>/dev/null || true
+          if git -C consumer rev-parse --verify "origin/$base" >/dev/null 2>&1; then base_arg="--base origin/$base"; else base_arg=""; fi
+          node platform/runtime/consumer/l3.mjs --project consumer --cache "$RUNNER_TEMP/ai-native-cache" $base_arg --out "$RUNNER_TEMP/l3.json"
+
+      - name: Upload the L3 result
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: l3-result
+          path: ${{ runner.temp }}/l3.json
+          if-no-files-found: warn

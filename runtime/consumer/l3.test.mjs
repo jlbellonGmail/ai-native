@@ -54,7 +54,7 @@ test("L3 passes on a synced consumer with a docs-only change; depth is LIGHT", (
   assert.ok(ids(r, "NOT_APPLICABLE").includes("product"), "no productTestCommand is NOT_APPLICABLE, never a silent pass");
 });
 
-test("L3 fails closed: not adopted, not synced, and a tampered cache", () => {
+test("L3 fails closed: not adopted, and a cache that lacks the pinned release", () => {
   const empty = tmp();
   git(empty, "init", "-q", "-b", "main");
   assert.deepEqual(ids(runL3({ project: empty, cache }), "FAIL"), ["lock"]);
