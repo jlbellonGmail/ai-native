@@ -32,7 +32,8 @@ test("an active profile with registered servers yields exactly ONE governed serv
   const dir = root({ work: ["notes", "remote"] });
   const g = governedCatalog({ catalog, root: dir, profile: "work", script: "C:/rel/runtime/mcp-gateway/server.mjs" });
   assert.deepEqual(Object.keys(g.servers), [GATEWAY_SERVER_NAME]);
-  assert.deepEqual(g.servers[GATEWAY_SERVER_NAME].args, ["C:/rel/runtime/mcp-gateway/server.mjs", "--profile", "work", "--role", "builder"]);
+  assert.deepEqual(g.servers[GATEWAY_SERVER_NAME].args, ["C:/rel/runtime/mcp-gateway/server.mjs", "--profile", "work", "--role", "builder", "--audit", ".ai-native/mcp-audit.jsonl"]);
+  assert.ok(g.servers[GATEWAY_SERVER_NAME].args.includes("--audit"), "the gateway of a generated config always audits");
   rmSync(dir, { recursive: true, force: true });
 });
 

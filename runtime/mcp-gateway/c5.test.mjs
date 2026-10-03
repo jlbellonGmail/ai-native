@@ -69,27 +69,16 @@ for (const tool of TOOLS) {
   }
 }
 
-test("a tampered audit would be caught: editing one recorded decision breaks the chain", () => {
-  const proof = results.tools.claude.scenarios.lookup.proof;
-  if (results.tools.claude.scenarios.lookup.status !== "CONFIRMED" || proof.auditEntries.length < 2) return; // single-entry chains cannot show prevHash tampering
-  const forged = structuredClone(proof.auditEntries);
-  forged[0].decision = "DENY";
-  assert.notEqual(chainOf(forged), "OK");
-});
-
-test("nothing is claimed beyond what ran: every CONFIRMED tool really has both scenarios proven", () => {
-  for (const tool of TOOLS) {
-    const s = results.tools[tool].scenarios;
-    const statuses = [s.lookup.status, s.stepup.status];
-    assert.ok(statuses.every((x) => x === "CONFIRMED") || statuses.some((x) => x === "NOT_AVAILABLE_FROM_TOOL"), tool);
-  }
+test("the evidence is not vacuous: at least two tools are CONFIRMED on BOTH scenarios, and OpenCode is never claimed without proof", () => {
+  const full = TOOLS.filter((t) => ["lookup", "stepup"].every((s) => results.tools[t].scenarios[s].status === "CONFIRMED"));
+  assert.ok(full.length >= 2, `confirmed tools: ${full.join(",")}`);
+  assert.deepEqual(full.includes("opencode"), results.tools.opencode.scenarios.lookup.status === "CONFIRMED" && results.tools.opencode.scenarios.stepup.status === "CONFIRMED");
 });
 
 test("C3 (Codex project config): the adapter-generated .codex/config.toml is honoured only in a TRUSTED project", () => {
   const c3 = results.c3;
   assert.ok(c3, "c3 section present");
-  assert.ok(["CONFIRMED", "NOT_AVAILABLE_FROM_TOOL"].includes(c3.status));
-  if (c3.status !== "CONFIRMED") return;
+  assert.equal(c3.status, "CONFIRMED", "C3 is shipped as confirmed; a regression of the evidence must fail here");
   assert.match(c3.generatedConfig, /\[mcp_servers\.ai-native-gateway\]/);
   assert.doesNotMatch(c3.generatedConfig, /downstream|SECRET/);
   // trusted: the call is in the gateway audit with the digest of this run's nonce

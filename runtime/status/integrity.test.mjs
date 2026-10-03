@@ -137,7 +137,7 @@ test("checkIntegrity.deferred always lists the ROADMAP<->runs cross-check as out
   }
 });
 
-test("detached HEAD (every CI pull_request checkout): the recorded branch is not compared, but a stale HEAD still FAILs", () => {
+test("detached HEAD (every CI pull_request checkout): the recorded branch is not compared, but a real code advance still warns as stale", () => {
   const dir = makeRepo();
   try {
     writeFileSync(join(dir, "a.txt"), "1\n", "utf8");
@@ -154,7 +154,8 @@ test("detached HEAD (every CI pull_request checkout): the recorded branch is not
     writeFileSync(join(dir, "a.txt"), "2\n", "utf8");
     commitAll(dir, "code change");
     const stale = checkIntegrity(dir);
-    assert.ok(stale.warnings.join(" ").includes("stale") || stale.errors.join(" ").includes("stale"), JSON.stringify(stale));
+    assert.match(stale.warnings.join(" "), /stale relative to observedCommit/, JSON.stringify(stale));
+    assert.deepEqual(stale.errors, [], "staleness of the recorded HEAD is a warning, never an error (PAR-STATUS-SELF-STALE)");
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
