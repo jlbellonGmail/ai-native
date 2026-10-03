@@ -3,21 +3,55 @@
   "skills": [
     {
       "id": "delivery-governance",
-      "profiles": ["*"],
-      "roles": ["builder", "reviewer"],
-      "levels": ["*"]
+      "profiles": [
+        "*"
+      ],
+      "roles": [
+        "builder",
+        "reviewer"
+      ],
+      "levels": [
+        "*"
+      ]
     },
     {
       "id": "recovery",
-      "profiles": ["*"],
-      "roles": ["*"],
-      "levels": ["*"]
+      "profiles": [
+        "*"
+      ],
+      "roles": [
+        "*"
+      ],
+      "levels": [
+        "*"
+      ]
     },
     {
       "id": "task-execution",
-      "profiles": ["*"],
-      "roles": ["planner", "builder"],
-      "levels": ["*"]
+      "profiles": [
+        "*"
+      ],
+      "roles": [
+        "planner",
+        "builder"
+      ],
+      "levels": [
+        "*"
+      ]
+    },
+    {
+      "id": "product-context",
+      "profiles": [
+        "*"
+      ],
+      "roles": [
+        "planner",
+        "builder"
+      ],
+      "levels": [
+        "STANDARD",
+        "FULL"
+      ]
     }
   ]
 }
