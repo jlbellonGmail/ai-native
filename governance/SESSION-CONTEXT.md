@@ -3932,3 +3932,12 @@ Restricciones vigentes: no tocar repos GI sin autorizacion por oleada (M6); ning
 * P29: `gh attestation verify` real; una atestacion ajena se rechaza y no se devuelve ningun byte.
 * L3: `runtime/consumer/l3.mjs` + `l3-consumer.yml` reusable. Pendiente: C6 (prueba cross-repo real desde `template-starter`, sin mergear) y C5.
 * Nota operativa: un `node --test` anidado hereda `NODE_TEST_CONTEXT` y no imprime nada; los tests que lo invocan limpian ese entorno.
+
+---
+
+## 2026-10-03 — C5 (gateway MCP) y C3; fix de integridad en HEAD desacoplado
+
+* C5: Claude Code y Codex CONFIRMED con audit del gateway como prueba; OpenCode NOT_AVAILABLE_FROM_TOOL (motivo en `findings.md#c5`). C3 CONFIRMED (config de proyecto confiable en Codex).
+* Los adaptadores ya no publican servidores del catalogo directo: solo `ai-native-gateway` (y nada con perfil `none`). Corregida la forma `mcp.<n>` de OpenCode.
+* La primera corrida cross-repo (C6) desde template-starter llego al L3 y fallo en `integrity` por HEAD desacoplado: corregido en `runtime/status/integrity.mjs` con test de regresion. Falta repetirla en verde.
+* No toque procesos ni configuracion global del usuario (servicio de OpenCode, `~/.codex`): el runner usa `CODEX_HOME` temporal.

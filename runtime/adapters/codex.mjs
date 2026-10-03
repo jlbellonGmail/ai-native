@@ -43,6 +43,7 @@ export function buildCodexConfigToml(agents, mcpCatalog) {
     } else if (server.type === "local") {
       lines.push(`command = ${toml(server.command)}`);
       if (server.args) lines.push(`args = ${tomlArray(server.args)}`);
+      if (server.approvalMode) lines.push(`default_tools_approval_mode = ${toml(server.approvalMode)}`);
       if (server.env) {
         lines.push(`[mcp_servers.${name}.env]`);
         for (const [key, value] of Object.entries(server.env).sort(([a], [b]) => a.localeCompare(b))) {

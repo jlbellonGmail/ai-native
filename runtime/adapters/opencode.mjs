@@ -67,7 +67,8 @@ export function buildOpenCodeConfig(agents, mcpCatalog) {
     instructions: agents.opencodeInstructions ?? [],
     model: firstRole.opencode.model,
     agent,
-    mcp: { servers: buildOpenCodeMcpServers(mcpCatalog) },
+    // OpenCode reads `mcp.<name>`; `mcp.servers.<name>` is NOT loaded (verified with the real CLI: "No MCP servers configured")
+    mcp: buildOpenCodeMcpServers(mcpCatalog),
   };
   return `${JSON.stringify(config, null, 2)}\n`;
 }
