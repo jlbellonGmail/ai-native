@@ -57,7 +57,7 @@ test("states: NOT_ADOPTED -> NEEDS_SYNC -> READY, and a missing cache offline is
   const sync = c(proj, cache, "sync", "--from-file", A.bundle, "--offline");
   assert.equal(sync.status, 0, sync.stdout + sync.stderr);
   assert.equal(state(proj, cache), "READY");
-  assert.equal(c(proj, cache, "status", "--check").status, 0);
+  assert.equal(c(proj, cache, "status", "--check", "--offline").status, 0, "offline READY is legitimate (revocation NOT checked, with a warning)");
 });
 
 test("offline WITH cache: sync --offline needs no bundle and no network; run executes the cached release", () => {
