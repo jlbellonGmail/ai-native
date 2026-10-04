@@ -20,6 +20,7 @@ import { join, resolve } from "node:path";
 import { init, sync, run, rollback, doctor, status as bootstrapStatus, readLock } from "./install.mjs";
 import { defaultCacheRoot, verifyRelease } from "./cache.mjs";
 import { downloadRelease, fetchRevocations } from "./remote.mjs";
+import { parseRevocations } from "../release/revocations.mjs";
 import { renderOutput, exitCodeForReport, buildReport } from "../lib/json.mjs";
 
 const argv = process.argv.slice(2);
@@ -73,7 +74,13 @@ async function statusCommand() {
   const revFile = value("--revocations");
   if (revFile && !existsSync(revFile)) return { status: "ERROR", errors: [`--revocations not found: ${revFile}`], warnings: [] }; // never report READY on a typo
   const offline = flag("--offline");
-  let revocations = revFile ? JSON.parse(readFileSync(revFile, "utf8")) : null;
+  let revocations = null;
+  if (revFile) {
+    // a file that is not a valid list is not "checked": it is an error, never READY
+    const parsed = parseRevocations(readFileSync(revFile, "utf8"), null);
+    if (parsed.errors.length) return { status: "ERROR", errors: parsed.errors, warnings: [] };
+    revocations = parsed.list;
+  }
   const warnings = [];
   let unreadable = false;
   const { lock } = readLock(projectRoot);

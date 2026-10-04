@@ -36,8 +36,13 @@ export function evaluateRequiredChecks(requiredChecks, checkRuns, { humanReviewe
   return findings;
 }
 
-export function evaluateMergeGate({ config, pr, reviews, checkRuns, humanReviewed = false }) {
+export function evaluateMergeGate({ config, pr, reviews, checkRuns, humanReviewed = false, expectedHeadSha = null }) {
   const findings = [];
+  // A human approval belongs to the head the approver saw (the event head). If the PR moved since, it is void.
+  if (humanReviewed && expectedHeadSha !== pr.headSha) {
+    findings.push({ code: "HEAD_CHANGED", detail: `human review was for ${String(expectedHeadSha).slice(0, 7)}, PR head is ${pr.headSha.slice(0, 7)}` });
+    humanReviewed = false;
+  }
   if (pr.state !== "open") findings.push({ code: "PR_NOT_OPEN", detail: `state=${pr.state}` });
   if (pr.draft) findings.push({ code: "PR_DRAFT", detail: "draft PR" });
   findings.push(...evaluateRequiredChecks(config.requiredChecks, checkRuns, { humanReviewed, reviewableNeutral: [config.trustGate.checkName] }));
@@ -100,7 +105,13 @@ function main() {
   // The merge-gate check itself is excluded from its own inputs by construction
   // (it is not in requiredChecks), so there is no circular dependency.
   const humanReviewed = process.env.HUMAN_REVIEWED === "true";
-  const verdict = evaluateMergeGate({ config, ...data, humanReviewed });
+  const expectedHeadSha = process.env.EXPECTED_HEAD_SHA || null;
+  // A stale run (re-run of an old approval, or a push after it) must not publish anything on the newer head.
+  if (expectedHeadSha && expectedHeadSha !== data.pr.headSha) {
+    console.log(`merge-gate: run is for ${expectedHeadSha.slice(0, 7)} but the PR head is ${data.pr.headSha.slice(0, 7)}; stale run, nothing published`);
+    return;
+  }
+  const verdict = evaluateMergeGate({ config, ...data, humanReviewed, expectedHeadSha });
   console.log(verdict.title);
   for (const f of verdict.findings) console.log(`- [${f.code}] ${f.detail}`);
   if (process.env.GITHUB_OUTPUT) appendFileSync(process.env.GITHUB_OUTPUT, `needs_human=${verdict.needsHuman}

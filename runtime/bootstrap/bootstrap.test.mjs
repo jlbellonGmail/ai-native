@@ -379,7 +379,7 @@ function readyEnv() {
   return e;
 }
 
-const REVOKED = { entries: [{ kind: "platform", id: "ai-native", version: "v3.0.0-alpha.1", reason: "cve", severity: "critical" }] };
+const REVOKED = { schemaVersion: 1, n: 1, publishedAt: "2026-10-02T00:00:00Z", entries: [{ kind: "platform", id: "ai-native", version: "v3.0.0-alpha.1", reason: "cve", severity: "critical" }] };
 
 test("status: a revoked version is REVOKED, never READY, even when the release is cached and active", () => {
   const e = readyEnv();
@@ -393,7 +393,7 @@ test("status: a revoked version is REVOKED, never READY, even when the release i
 test("status: with a list that does not revoke it the revocation is CHECKED; without a list it is NOT_CHECKED, never implied clean", () => {
   const e = readyEnv();
   try {
-    const checked = bootstrapStatus({ projectRoot: e.project, cacheRoot: e.cache, revocations: { entries: [] } });
+    const checked = bootstrapStatus({ projectRoot: e.project, cacheRoot: e.cache, revocations: { schemaVersion: 1, n: 1, publishedAt: "2026-10-02T00:00:00Z", entries: [] } });
     assert.equal(checked.state, "READY");
     assert.equal(checked.revocation, "CHECKED");
     const unknown = bootstrapStatus({ projectRoot: e.project, cacheRoot: e.cache, offline: true });
@@ -410,6 +410,10 @@ test("status --check: a revoked list fails; legitimate offline stays READY with 
     const bad = await runCli(["status", "--check", "--project", e.project, "--cache", e.cache, "--revocations", rev]);
     assert.notEqual(bad.code, 0);
     assert.match(JSON.stringify(bad.json), /REVOKED/);
+    const junk = join(e.assets, "junk.json");
+    writeFileSync(junk, "{}");
+    const notAList = await runCli(["status", "--check", "--project", e.project, "--cache", e.cache, "--revocations", junk]);
+    assert.notEqual(notAList.code, 0, "a file that is not a valid revocations list is never READY");
     const offline = await runCli(["status", "--check", "--offline", "--project", e.project, "--cache", e.cache]);
     assert.equal(offline.code, 0, JSON.stringify(offline.json));
     assert.equal(offline.json.state, "READY");

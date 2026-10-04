@@ -82,9 +82,10 @@ export async function downloadRelease({ lock, fetchImpl = fetch, verifier = ghAt
 /**
  * Highest valid revocations-<n>.json among the repo's releases. An offline or
  * unreachable source is a warning (reads must keep working); a list that
- * fails attestation (when verifiable) is never used.
+ * fails attestation (when verifiable) is never used. Unreadable or malformed lists make the result `unavailable`.
  * `unavailable` is true only when the source could not be read (network/HTTP); a repo with no published list has list null and
- * unavailable false: there is no information to be had, which is different from information we failed to get.
+ * unavailable false: there is no information to be had, which is different from information we failed to get. A listed list that
+ * cannot be downloaded or parsed is the latter: the result is unavailable, never a fallback to an older list.
  * @returns {Promise<{list: object|null, unavailable?: boolean, errors: string[], warnings: string[]}>}
  */
 export async function fetchRevocations({ repo, fetchImpl = fetch, verifier = ghAttestationVerifier(), requireAttestation = false }) {
@@ -114,14 +115,11 @@ export async function fetchRevocations({ repo, fetchImpl = fetch, verifier = ghA
     try {
       bytes = await getBytes(fetchImpl, url, 1024 * 1024);
     } catch (error) {
-      warnings.push(`ignored ${name}: ${error.message}`);
-      continue;
+      // information exists but we could not get it: never fall back to an older list (that would "un-revoke")
+      return { list: null, unavailable: true, errors, warnings: [...warnings, `${name} unreadable (${error.message}); revocation status NOT checked`] };
     }
     const { list, errors: shape } = parseRevocations(bytes.toString("utf8"), name);
-    if (shape.length) {
-      warnings.push(`ignored ${name}: ${shape[0]}`);
-      continue;
-    }
+    if (shape.length) return { list: null, unavailable: true, errors, warnings: [...warnings, `${name} invalid (${shape[0]}); revocation status NOT checked`] };
     // Fail closed: a higher-n list that cannot be vouched for is never skipped
     // in favour of an older one (that would let an attacker "un-revoke").
     checkAttestation(verifier, bytes, name, slug, requireAttestation, errors, warnings);

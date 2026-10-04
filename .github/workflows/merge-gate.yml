@@ -61,6 +61,7 @@ jobs:
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
+          EXPECTED_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           POST_TOKEN: ${{ steps.app.outputs.token }}
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
@@ -109,6 +110,7 @@ jobs:
         shell: bash
         env:
           HUMAN_REVIEWED: "true"
+          EXPECTED_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           GH_TOKEN: ${{ github.token }}
           POST_TOKEN: ${{ steps.app.outputs.token }}
           BASE_SHA: ${{ github.event.pull_request.base.sha }}

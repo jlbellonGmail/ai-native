@@ -211,10 +211,14 @@ test("fetchRevocations: unreachable source is a warning, malformed list is ignor
   assert.match(down.warnings[0], /NOT checked/);
   const listBody = [{ assets: [{ name: "revocations-5.json", browser_download_url: "u5" }, { name: "revocations-1.json", browser_download_url: "u1" }] }];
   const r = await fetchRevocations({ repo: "github:o/ai-native", fetchImpl: releasesFetch({ u5: Buffer.from("{oops"), u1: Buffer.from(rev(1)) }, listBody), verifier: verified });
-  assert.equal(r.list.n, 1);
-  assert.ok(r.warnings.some((w) => w.includes("ignored revocations-5.json")));
+  assert.equal(r.list, null, "a malformed higher list is not skipped in favour of an older one");
+  assert.equal(r.unavailable, true);
+  assert.ok(r.warnings.some((w) => w.includes("revocations-5.json invalid")));
+  const gone = await fetchRevocations({ repo: "github:o/ai-native", fetchImpl: async (url) => { if (url.includes("/releases?")) return okRes(Buffer.from(JSON.stringify(listBody))); throw new Error("boom"); }, verifier: verified });
+  assert.deepEqual([gone.list, gone.unavailable], [null, true]);
   const none = await fetchRevocations({ repo: "github:o/ai-native", fetchImpl: releasesFetch({}, []), verifier: verified });
   assert.match(none.warnings[0], /no revocations list/);
+  assert.equal(none.unavailable, undefined, "no list published is absence of information, not a failure to read it");
 });
 
 // ---- end to end: real build of THIS repo's HEAD, installed by real bootstrap ----

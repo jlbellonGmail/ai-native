@@ -322,14 +322,14 @@ test("D7: neutral on any other required check is a hard failure, never reviewabl
 });
 
 test("D7: only an explicit human review (set by the workflow after the Environment approval) lets the trust-gate neutral through", () => {
-  const v = evaluateMergeGate({ config, pr, reviews: [], checkRuns: neutralTrust, humanReviewed: true });
+  const v = evaluateMergeGate({ config, pr, reviews: [], checkRuns: neutralTrust, humanReviewed: true, expectedHeadSha: pr.headSha });
   assert.equal(v.conclusion, "success");
   assert.equal(v.needsHuman, false);
 });
 
 test("D7: a neutral by the wrong source cannot be reviewed into a pass (no bypass by check name)", () => {
   const forged = neutralTrust.map((c) => (c.name === "ai-native/trust-gate" ? { ...c, appSlug: "github-actions" } : c));
-  const v = evaluateMergeGate({ config, pr, reviews: [], checkRuns: forged, humanReviewed: true });
+  const v = evaluateMergeGate({ config, pr, reviews: [], checkRuns: forged, humanReviewed: true, expectedHeadSha: pr.headSha });
   assert.equal(v.conclusion, "failure");
   assert.ok(v.findings.some((f) => f.code === "CHECK_WRONG_SOURCE"));
   assert.ok(v.findings.some((f) => f.code === "CHECK_MISSING"));
@@ -338,12 +338,37 @@ test("D7: a neutral by the wrong source cannot be reviewed into a pass (no bypas
 
 test("D7: a human review does not hide other failures next to the neutral", () => {
   const checks = neutralTrust.map((c, i) => (i === 0 ? { ...c, conclusion: "failure" } : c));
-  const v = evaluateMergeGate({ config, pr: { ...pr, draft: true }, reviews: [], checkRuns: checks, humanReviewed: true });
+  const v = evaluateMergeGate({ config, pr: { ...pr, draft: true }, reviews: [], checkRuns: checks, humanReviewed: true, expectedHeadSha: pr.headSha });
   assert.equal(v.conclusion, "failure");
   assert.equal(v.needsHuman, false);
 });
 
 test("D7: a pending neutral is still pending; and neutral + success from the trusted source together is not a pass", () => {
   const dup = [...goodChecks, { name: "ai-native/trust-gate", status: "completed", conclusion: "neutral", appSlug: "ai-native-trust" }];
-  assert.equal(evaluateMergeGate({ config, pr, reviews: [], checkRuns: dup }).conclusion, "failure");
+  const v = evaluateMergeGate({ config, pr, reviews: [], checkRuns: dup });
+  assert.equal(v.conclusion, "failure");
+  assert.ok(v.findings.some((f) => f.code === "HUMAN_REVIEW_REQUIRED"));
+  const pending = goodChecks.map((c) => (c.name === "ai-native/trust-gate" ? { ...c, status: "in_progress", conclusion: null } : c));
+  const p = evaluateMergeGate({ config, pr, reviews: [], checkRuns: pending, humanReviewed: true, expectedHeadSha: pr.headSha });
+  assert.ok(p.findings.some((f) => f.code === "CHECK_PENDING"));
+  assert.equal(p.needsHuman, false);
+});
+
+test("D7: a human review is void if the PR head moved after the approval (re-run of an old approval, late push)", () => {
+  const v = evaluateMergeGate({ config, pr, reviews: [], checkRuns: neutralTrust, humanReviewed: true, expectedHeadSha: "d".repeat(40) });
+  assert.equal(v.conclusion, "failure");
+  assert.ok(v.findings.some((f) => f.code === "HEAD_CHANGED"));
+  assert.ok(v.findings.some((f) => f.code === "HUMAN_REVIEW_REQUIRED"));
+  const missing = evaluateMergeGate({ config, pr, reviews: [], checkRuns: neutralTrust, humanReviewed: true });
+  assert.equal(missing.conclusion, "failure", "a human review without the head it was given for is not valid");
+  const ok = evaluateMergeGate({ config, pr, reviews: [], checkRuns: neutralTrust, humanReviewed: true, expectedHeadSha: pr.headSha });
+  assert.equal(ok.conclusion, "success");
+});
+
+test("D7: the merge-gate workflow only finalizes after the human-review Environment and binds the run to the event head", () => {
+  const y = read(".github/workflows/merge-gate.yml");
+  assert.match(y, /human-review:[\s\S]*?environment: ai-native-human-review/);
+  assert.match(y, /finalize:[\s\S]*?needs: \[merge-gate, human-review\][\s\S]*?needs\.human-review\.result == 'success'/);
+  assert.match(y, /HUMAN_REVIEWED: "true"\s+EXPECTED_HEAD_SHA: \$\{\{ github\.event\.pull_request\.head\.sha \}\}/);
+  assert.equal((y.match(/environment: ai-native-trust/g) ?? []).length, 2);
 });
