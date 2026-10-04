@@ -123,3 +123,16 @@ test("a multi-line expression whose middle line starts with `name:` cannot hide 
   const w = L("name: x", "on: push", "jobs:", "  a:", "    runs-on: x", "    steps:", "      - run: |", "          echo ${{ format('{0}', 'a", "          name: ', secrets.TRUST_APP_PRIVATE_KEY) }}");
   assert.equal(flagged(w), true);
 });
+
+test("YAML double-quoted escapes that GitHub decodes before evaluating an expression cannot hide a reference (round-6 bypass)", () => {
+  const BS = String.fromCharCode(92);
+  const head = ["name: x", "on: push", "jobs:", "  a:", "    runs-on: x", "    steps:"];
+  assert.equal(flagged(L(...head, `      - run: "echo \${{ ${BS}x73ecrets.TRUST_APP_PRIVATE_KEY }} | base64"`)), true, "hex escape");
+  assert.equal(flagged(L(...head, `      - run: "echo \${{ ${BS}u0073ecrets.K }}"`)), true, "unicode escape");
+  assert.equal(flagged(L(...head, `      - run: "\${{ sec${BS}`, "          rets.K }}\"")), true, "line continuation inside a double-quoted scalar");
+  assert.equal(flagged(L(...head, `      - run: "se${BS}`, `          cr${BS}`, '          ets"')), true, "multi-line continuation");
+  // a shell line continuation inside a `run: |` block (balanced quotes) is NOT an escape
+  assert.equal(flagged(L(...head, "      - run: |", `          gh release create "$V" ${BS}`, `            --title "t" ${BS}`, "            dist/a.tgz")), false, "shell continuation");
+  // and none of this matters behind a base-file event
+  assert.equal(flagged(L("name: x", "on: pull_request_target", "jobs:", "  a:", "    runs-on: x", "    steps:", `      - run: "echo \${{ ${BS}x73ecrets.K }}"`)), false);
+});

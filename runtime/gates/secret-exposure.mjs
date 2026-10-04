@@ -120,11 +120,35 @@ export function secretReferences(text) {
   return [...refs];
 }
 
+/**
+ * YAML double-quoted scalars decode `\xNN`, `\uNNNN`, `\UNNNNNNNN` and a trailing `\` (line continuation) BEFORE GitHub evaluates an
+ * expression, so `${{ \x73ecrets.K }}` is `secrets.K` to GitHub and invisible to a raw-text scan. In a workflow that is not
+ * restricted to base-file events such an escape is itself a finding (fail closed): there is no legitimate reason for it.
+ */
+export function hasObfuscatingEscape(text) {
+  if (/\\(?:x[0-9A-Fa-f]{2}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/.test(text)) return true;
+  // a trailing backslash is a line continuation only INSIDE a double-quoted YAML scalar (a shell `\` in a `run: |` block
+  // sits on lines whose quotes balance): track whether a double quote is open across lines
+  let open = false;
+  for (const line of text.split("\n")) {
+    const l = line.replace(/\r$/, "");
+    const quotes = (l.replace(/\\"/g, "").match(/"/g) ?? []).length;
+    const endsWithBackslash = /\\[ \t]*$/.test(l);
+    if (endsWithBackslash && (open || quotes % 2 === 1)) return true;
+    if (quotes % 2 === 1) open = !open;
+  }
+  return false;
+}
+
 /** Findings: secrets reachable from an event that runs the pushed branch's own workflow file, or from triggers we cannot read. */
 export function checkSecretExposure(path, text) {
+  const events = triggerNames(text);
+  const unsafeEvents = events.length === 0 || events.some((e) => !BASE_FILE_EVENTS.has(e));
+  if (unsafeEvents && hasObfuscatingEscape(text)) {
+    return [{ code: "SECRETS_IN_PR_EVENT", path, detail: "contains a YAML hex/unicode escape or a line-continuation backslash, which GitHub decodes before evaluating expressions and a text scan cannot see through; not allowed in a workflow that runs the pushed branch own file (fail closed)" }];
+  }
   const refs = secretReferences(text);
   if (!refs.length) return [];
-  const events = triggerNames(text);
   const detail = (why) => refs.map((r) => ({ code: "SECRETS_IN_PR_EVENT", path, detail: `${r} ${why}` }));
   if (!events.length) return detail("is used but the workflow's triggers could not be determined (fail closed)");
   const unsafe = events.filter((e) => !BASE_FILE_EVENTS.has(e));
