@@ -47,10 +47,10 @@ function flowTopLevel(flow) {
     if (ch === "{" || ch === "[") { depth += 1; if (depth === 1) continue; }
     if (ch === "}" || ch === "]") {
       depth -= 1;
-      if (depth === 0) { if (!isMap && token.trim()) out.add(unquote(token)); token = ""; continue; }
+      if (depth === 0) { if (token.trim() && (!isMap || expectKey)) out.add(unquote(token)); token = ""; continue; }
     }
     if (depth === 1) {
-      if (ch === ",") { if (!isMap && token.trim()) out.add(unquote(token)); expectKey = true; token = ""; continue; }
+      if (ch === ",") { if (token.trim() && (!isMap || expectKey)) out.add(unquote(token)); expectKey = true; token = ""; continue; } // a bare key (`{ push }` = push: null) is an event too
       if (isMap && ch === ":" && expectKey) { if (token.trim()) out.add(unquote(token)); expectKey = false; token = ""; continue; }
       if (!isMap || expectKey) token += ch;
     }

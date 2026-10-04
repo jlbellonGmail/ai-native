@@ -186,3 +186,13 @@ test("round-11 bypass: a quoted bracket in a flow-style `on:` cannot hide events
   assert.deepEqual(triggerNames(L("on: [pull_request_target, workflow_call]", "jobs: {}")).sort(), ["pull_request_target", "workflow_call"]);
   assert.equal(flagged(L("name: x", "on: { pull_request_target: { branches: [main] }, workflow_call: {} }", ...job)), false);
 });
+
+test("round-12 bug: a bare key in a flow mapping (`{ push }` = push: null) is an event", () => {
+  const job = ["jobs:", "  a:", "    runs-on: x", "    steps:", "      - run: echo ${{ secrets.TRUST_APP_PRIVATE_KEY }}"];
+  for (const on of ["on: { pull_request_target: {}, push }", "on: { push, pull_request_target: {} }", "on: { pull_request_target: {}, push, }", "on: { push }"]) {
+    assert.equal(flagged(L("name: x", on, ...job)), true, on);
+    assert.ok(triggerNames(L(on, "jobs: {}")).includes("push"), on);
+  }
+  assert.deepEqual(triggerNames(L("on: { a: {}, b: { c: 1 }, d }", "jobs: {}")), ["a", "b", "d"]);
+  assert.equal(flagged(L("name: x", "on: { pull_request_target: {}, workflow_call }", ...job)), false);
+});
