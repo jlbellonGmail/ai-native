@@ -3997,3 +3997,12 @@ Restricciones vigentes: no tocar repos GI sin autorizacion por oleada (M6); ning
 * **status/revocations:** `ai-native status` consulta revocaciones online; informa `revocation: CHECKED|NOT_CHECKED|REVOKED`; `--check` falla cerrado si la fuente no se puede leer (`REVOCATION_UNKNOWN`); `--offline` sigue READY con aviso explicito.
 * **Hallazgos de auditoria:** AGENTS.md con las areas de plataforma; rutas locales normalizadas en parity/ADR/SESSION-CONTEXT.
 * **Commits `wip:` (documentados, historia publicada NO reescrita):** `d4522af`, `77be44d`, `58358e8`, `bf435fe`, `189f2af`, `6e30b3a`, `6d02325` (wip2), `7d25e6d`, `81f06a1` (wip4), `5e79672` (wip3). Llegaron a `main` por PRs con CI y revisor; sus mensajes no describen el cambio. A partir de ahora los commits usan mensajes convencionales descriptivos.
+
+---
+
+## 2026-10-04 D5 cerrado: secretos de `ai-native-trust` solo en el Environment
+
+* Keypair local valido (`GET /app` 200, slug `ai-native-trust`, id 5170488). El 401 venia de la carga de los secretos del Environment, no del gate ni del workflow; recargados byte-safe.
+* Dos validaciones reales PASS con el Environment; `TRUST_APP_ID` y `TRUST_APP_PRIVATE_KEY` borrados de los secretos del repositorio; tercera validacion sin fallback PASS. `WORKER_*` intactos.
+* PR #48 (Dependabot, `actions/checkout` 4.2.2 -> 7.0.1): sigue fail-closed por tocar el plano de control (`trust-gate` neutral, `merge-gate` failure, `docs-gate` DOCS_NOT_UPDATED). Esperado; sin mergear.
+* Pendiente humano: revocar las claves privadas antiguas de `ai-native-trust`; merge humano de esta PR (D6). M5.1 (rc.1) sigue bloqueada por la auditoria PLATFORM (79/100 < 90); la LICENSE ya esta resuelta (#51).
