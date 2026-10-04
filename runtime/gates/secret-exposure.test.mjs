@@ -150,3 +150,15 @@ test("round-8 bypass: an escaped event KEY (\"pus\\x68\":) cannot make a push wo
   // and a workflow with no escape and only base-file events is still fine
   assert.equal(flagged(L("name: x", "on: pull_request_target", ...JOB)), false);
 });
+
+test("round-9 bypass: a quoted `#` inside a flow-style `on:` cannot cut the event list; unbalanced or commented flow is unreadable (fail closed)", () => {
+  const job = ["jobs:", "  a:", "    runs-on: x", "    steps:", "      - run: echo ${{ secrets.TRUST_APP_PRIVATE_KEY }}"];
+  assert.equal(flagged(L("name: x", 'on: { pull_request_target: { branches: ["a #"] }, push: {} }', ...job)), true, "mapping with a quoted #");
+  assert.equal(flagged(L("name: x", 'on: [pull_request_target, "x #", push]', ...job)), true, "list with a quoted #");
+  assert.equal(flagged(L("name: x", "on: { pull_request_target: {}, push: {}", ...job)), true, "never-closing flow");
+  assert.deepEqual(triggerNames(L('on: { pull_request_target: { branches: ["a #"] }, push: {} }', "jobs: {}")), [], "unreadable, not silently truncated");
+  // plain flow collections and trailing comments on block/scalar forms still parse
+  assert.deepEqual(triggerNames(L("on: { pull_request_target: {}, workflow_call: {} }", "jobs: {}")).sort(), ["pull_request_target", "workflow_call"]);
+  assert.deepEqual(triggerNames(L("on: push # trailing comment", "jobs: {}")), ["push"]);
+  assert.deepEqual(triggerNames(L("on:", "  push: # c", "    branches: [main]", "jobs: {}")), ["push"]);
+});

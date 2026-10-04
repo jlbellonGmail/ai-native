@@ -27,11 +27,11 @@ function onSection(text) {
   const lines = text.split("\n").map((l) => l.replace(/\r$/, ""));
   const start = lines.findIndex((l) => /^["']?on["']?[ \t]*:/.test(l));
   if (start < 0) return null;
-  const head = stripComment(lines[start].replace(/^["']?on["']?[ \t]*:[ \t]*/, "")).trim();
+  const head = lines[start].replace(/^["']?on["']?[ \t]*:[ \t]*/, "").trim();
   const body = [];
   for (let k = start + 1; k < lines.length; k += 1) {
     if (!/^[ \t]/.test(lines[k]) && /^[A-Za-z_"']/.test(lines[k])) break; // next top-level key
-    body.push(stripComment(lines[k]));
+    body.push(lines[k]);
   }
   return { head, body: body.filter((l) => l.trim().length) };
 }
@@ -65,6 +65,9 @@ export function triggerNames(text) {
   const names = new Set();
   let { head, body } = sec;
   if (head.startsWith("[") || head.startsWith("{")) {
+    // comments are NOT interpreted inside a flow collection: a quoted "#" would let a stripped comment cut the event list.
+    // A ` #` anywhere in it, or brackets that never balance, make the triggers unreadable (fail closed in checkSecretExposure).
+
     // a flow collection, possibly spread over several lines: join until the brackets balance
     let joined = head;
     let depth = nest(head);
@@ -74,12 +77,14 @@ export function triggerNames(text) {
       depth += nest(body[used]);
       used += 1;
     }
+    if (depth !== 0 || /(^|[ \t])#/.test(joined)) return [];
     flowTopLevel(joined).forEach((n) => names.add(n));
     body = body.slice(used);
   } else if (head) {
-    head.split(",").map((x) => unquote(x.replace(/:$/, ""))).filter(Boolean).forEach((n) => names.add(n)); // scalar: `on: push`
+    stripComment(head).split(",").map((x) => unquote(x.replace(/:$/, ""))).filter(Boolean).forEach((n) => names.add(n)); // scalar: `on: push`
   }
   // block form: the events are the entries at the FIRST (shallowest) indentation under `on:`; deeper lines are options
+  body = body.map(stripComment).filter((l) => l.trim().length);
   const indents = body.map((l) => l.match(/^[ \t]*/)[0].length);
   const top = Math.min(...indents, Infinity);
   body.forEach((l, k) => {
