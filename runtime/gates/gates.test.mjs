@@ -369,6 +369,6 @@ test("D7: the merge-gate workflow only finalizes after the human-review Environm
   const y = read(".github/workflows/merge-gate.yml");
   assert.match(y, /human-review:[\s\S]*?environment: ai-native-human-review/);
   assert.match(y, /finalize:[\s\S]*?needs: \[merge-gate, human-review\][\s\S]*?needs\.human-review\.result == 'success'/);
-  assert.match(y, /HUMAN_REVIEWED: "true"\s+EXPECTED_HEAD_SHA: \$\{\{ github\.event\.pull_request\.head\.sha \}\}/);
+  assert.match(y.slice(y.indexOf("finalize:")), /HUMAN_REVIEWED: "true"[\s\S]*?EXPECTED_HEAD_SHA:\$\{\{ github\.event\.pull_request\.head\.sha \}\}/);
   assert.equal((y.match(/environment: ai-native-trust/g) ?? []).length, 2);
 });

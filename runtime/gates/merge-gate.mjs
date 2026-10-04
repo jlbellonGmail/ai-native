@@ -125,7 +125,13 @@ function main() {
     ...(pending ? { status: "in_progress" } : { status: "completed", conclusion: verdict.conclusion }),
     output: { title: verdict.title.slice(0, 250), summary: `${verdict.title}\n\n${verdict.findings.map((f) => `- [${f.code}] ${f.detail}`).join("\n")}\n\nThis gate never merges. Merge stays the single human decision.` },
   };
-  const res = gh(["api", `repos/${repo}/check-runs`, "--method", "POST", "--input", "-"], JSON.stringify(body), process.env.POST_TOKEN);
+  // The final verdict updates the pending run created while waiting for the human (one run per SHA, never a stale in_progress).
+  const existing = process.env.CHECK_RUN_ID;
+  const res = existing && /^[0-9]+$/.test(existing)
+    ? gh(["api", `repos/${repo}/check-runs/${existing}`, "--method", "PATCH", "--input", "-"], JSON.stringify({ status: body.status, conclusion: body.conclusion, output: body.output }), process.env.POST_TOKEN)
+    : gh(["api", `repos/${repo}/check-runs`, "--method", "POST", "--input", "-"], JSON.stringify(body), process.env.POST_TOKEN);
+  if (process.env.GITHUB_OUTPUT) appendFileSync(process.env.GITHUB_OUTPUT, `check_run_id=${res.id}
+`);
   console.log(`check run ${res.id} emitted by app '${res.app?.slug}'`);
 }
 

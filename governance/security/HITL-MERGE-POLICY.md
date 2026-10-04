@@ -20,7 +20,7 @@ Cuando un merge constituya el HITL requerido, el agente **se detiene**. El merge
 | `post-merge` verifica `merged_by` humano, merge commit en `main` y evidencia del `merge-gate` | **detectivo** (alerta tras el hecho) | siempre |
 | Que quien ejecuta el merge sea una persona y no el agente | **norma operativa + detección**, no imposición técnica | ver límite |
 
-**Límite honesto.** Con un solo maintainer y un token personal, GitHub no distingue «el owner» de «el agente usando su token». Por eso la regla es operativa (D6) y la parte técnica es detectiva. Lo que sí impone el servidor: ninguna PR llega a `main` sin los checks de las Apps, y los cambios al plano de control no pasan el `merge-gate` sin una aprobación humana registrada por el Environment `ai-native-human-review`.
+**Límite honesto.** Con un solo maintainer y un token personal, GitHub no distingue «el owner» de «el agente usando su token». Por eso la regla es operativa (D6) y la parte técnica es detectiva. Lo que sí impone el servidor: ninguna PR llega a `main` sin los checks de las Apps, y los cambios al plano de control no pasan el `merge-gate` sin una aprobación registrada en el Environment `ai-native-human-review`. Esa aprobación procede de la cuenta del owner; el servidor no puede probar que la pulsó una persona y no un agente con su token, por lo que cae bajo la misma norma D6 (el agente no aprueba el Environment ni mergea con credenciales del owner).
 
 ## Cambios de plano de control (D7)
 

@@ -11,8 +11,8 @@ name: merge-gate
 # D7: `neutral` is never a pass. A control-plane change makes the trust-gate neutral; the
 # merge-gate then stays pending and the job `human-review` waits for the owner to approve the
 # Environment `ai-native-human-review` (required reviewer). Only after that approval does
-# `finalize` re-evaluate with HUMAN_REVIEWED=true and publish the verdict. Credentials live in
-# the Environment `ai-native-trust` (restricted to main), never at repository level.
+# `finalize` re-evaluate with HUMAN_REVIEWED=true and publish the verdict. Credentials are meant to live in
+# the Environment `ai-native-trust` (restricted to main); see governance/security/SECRETS-BOUNDARY.md for the current state.
 
 on:
   pull_request_target:
@@ -37,6 +37,7 @@ jobs:
     if: github.event.pull_request.base.ref == 'main'
     outputs:
       needs_human: ${{ steps.verdict.outputs.needs_human }}
+      check_run_id: ${{ steps.verdict.outputs.check_run_id }}
     steps:
       - name: Checkout BASE (trusted code and config)
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -110,6 +111,7 @@ jobs:
         shell: bash
         env:
           HUMAN_REVIEWED: "true"
+          CHECK_RUN_ID: ${{ needs.merge-gate.outputs.check_run_id }}
           EXPECTED_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           GH_TOKEN: ${{ github.token }}
           POST_TOKEN: ${{ steps.app.outputs.token }}
