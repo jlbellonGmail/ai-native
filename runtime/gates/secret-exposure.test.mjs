@@ -137,6 +137,16 @@ test("YAML double-quoted escapes that GitHub decodes before evaluating an expres
   // round-7 bypass: a quote in a comment used to desynchronise the open/closed guess
   assert.equal(flagged(L('# "', ...head, '      - run: "echo ${{', `          se${BS}`, '          crets.TRUST_APP_PRIVATE_KEY }}" | base64')), true, "desynchronised quote parity");
   assert.equal(flagged(L(...head, "      - run: echo hi", "      - run: echo ok")), false, "no backslash, no secret: nothing to report");
-  // and none of this matters behind a base-file event
-  assert.equal(flagged(L("name: x", "on: pull_request_target", "jobs:", "  a:", "    runs-on: x", "    steps:", `      - run: "echo \${{ ${BS}x73ecrets.K }}"`)), false);
+  // (round 8) the escape rule is UNCONDITIONAL: even behind a base-file event an escape is reported, because it could be hiding an event key
+  assert.equal(flagged(L("name: x", "on: pull_request_target", "jobs:", "  a:", "    runs-on: x", "    steps:", `      - run: "echo \${{ ${BS}x73ecrets.K }}"`)), true);
+});
+
+test("round-8 bypass: an escaped event KEY (\"pus\\x68\":) cannot make a push workflow look base-file-only; any escape is a finding", () => {
+  const BS = String.fromCharCode(92);
+  const w = L("name: x", "on:", "  pull_request_target:", `  "pus${BS}x68":`, "jobs:", "  a:", "    runs-on: x", "    steps:", "      - run: echo ${{ secrets.TRUST_APP_PRIVATE_KEY }}");
+  assert.equal(flagged(w), true);
+  // even with a clean-looking base-file-only trigger set, an escape anywhere is reported
+  assert.equal(flagged(L("name: x", "on: pull_request_target", "jobs:", "  a:", "    runs-on: x", "    steps:", `      - run: "echo ${BS}x41"`)), true);
+  // and a workflow with no escape and only base-file events is still fine
+  assert.equal(flagged(L("name: x", "on: pull_request_target", ...JOB)), false);
 });

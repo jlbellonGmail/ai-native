@@ -136,8 +136,9 @@ export function hasObfuscatingEscape(text) {
 /** Findings: secrets reachable from an event that runs the pushed branch's own workflow file, or from triggers we cannot read. */
 export function checkSecretExposure(path, text) {
   const events = triggerNames(text);
-  const unsafeEvents = events.length === 0 || events.some((e) => !BASE_FILE_EVENTS.has(e));
-  if (unsafeEvents && hasObfuscatingEscape(text)) {
+  // UNCONDITIONAL: an escape can hide an event key ("pus\x68":) as well as a secret reference, so whether the workflow "looks
+  // base-file-only" cannot be trusted when an escape is present. No workflow here may contain one.
+  if (hasObfuscatingEscape(text)) {
     return [{ code: "SECRETS_IN_PR_EVENT", path, detail: "contains a YAML hex/unicode escape or a line-continuation backslash, which GitHub decodes before evaluating expressions and a text scan cannot see through; not allowed in a workflow that runs the pushed branch own file (fail closed)" }];
   }
   const refs = secretReferences(text);
