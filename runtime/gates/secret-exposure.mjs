@@ -87,11 +87,16 @@ export function triggerNames(text) {
   body = body.map(stripComment).filter((l) => l.trim().length);
   const indents = body.map((l) => l.match(/^[ \t]*/)[0].length);
   const top = Math.min(...indents, Infinity);
+  let unreadable = false;
   body.forEach((l, k) => {
     if (indents[k] !== top) return;
     const m = /^[ \t]*(?:-[ \t]*)?["']?([A-Za-z_][\w-]*)["']?[ \t]*(?::|$)/.exec(l);
+    // a line at event level that the strict reader does not understand (anchor `&a push:`, tag `!!str push:`, explicit key `? push`,
+    // alias, ...) could be an event: the trigger set is then UNREADABLE, never silently shortened
     if (m) names.add(m[1]);
+    else unreadable = true;
   });
+  if (unreadable) return [];
   return [...names];
 }
 

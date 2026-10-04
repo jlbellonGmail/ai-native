@@ -162,3 +162,14 @@ test("round-9 bypass: a quoted `#` inside a flow-style `on:` cannot cut the even
   assert.deepEqual(triggerNames(L("on: push # trailing comment", "jobs: {}")), ["push"]);
   assert.deepEqual(triggerNames(L("on:", "  push: # c", "    branches: [main]", "jobs: {}")), ["push"]);
 });
+
+test("round-10 bypass: an event key with an anchor, tag or explicit-key marker is not silently dropped: the trigger set becomes unreadable (fail closed)", () => {
+  const job = ["jobs:", "  a:", "    runs-on: x", "    steps:", "      - run: echo ${{ secrets.TRUST_APP_PRIVATE_KEY }}"];
+  for (const key of ["  &a push:", "  !!str push:", "  ? push", "  *alias:"]) {
+    assert.equal(flagged(L("name: x", "on:", "  pull_request_target:", key, ...job)), true, key);
+    assert.deepEqual(triggerNames(L("on:", "  pull_request_target:", key, "jobs: {}")), [], key);
+  }
+  // ordinary block keys, quoted keys and list items still read normally
+  assert.deepEqual(triggerNames(L("on:", "  pull_request_target:", '  "workflow_call":', "jobs: {}")).sort(), ["pull_request_target", "workflow_call"]);
+  assert.equal(flagged(L("name: x", "on:", "  pull_request_target:", "    branches: [main]", ...job)), false);
+});
