@@ -77,7 +77,10 @@ export function triggerNames(text) {
       depth += nest(body[used]);
       used += 1;
     }
-    if (depth !== 0 || /(^|[ \t])#/.test(joined)) return [];
+    // WHITELIST: a flow collection is read only if it is made of plain event names and structure. Quotes, escapes, anchors, tags,
+    // comments, aliases... could each hide or reshape an event (a quoted "}" closes the bracket count early, a quoted "#" cuts the
+    // list), so any other character makes the triggers unreadable (fail closed).
+    if (depth !== 0 || !/^[A-Za-z0-9_\-:,{}[\]\s]*$/.test(joined)) return [];
     flowTopLevel(joined).forEach((n) => names.add(n));
     body = body.slice(used);
   } else if (head) {

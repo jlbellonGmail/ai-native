@@ -173,3 +173,16 @@ test("round-10 bypass: an event key with an anchor, tag or explicit-key marker i
   assert.deepEqual(triggerNames(L("on:", "  pull_request_target:", '  "workflow_call":', "jobs: {}")).sort(), ["pull_request_target", "workflow_call"]);
   assert.equal(flagged(L("name: x", "on:", "  pull_request_target:", "    branches: [main]", ...job)), false);
 });
+
+test("round-11 bypass: a quoted bracket in a flow-style `on:` cannot hide events; the flow reader is a whitelist", () => {
+  const job = ["jobs:", "  a:", "    runs-on: x", "    steps:", "      - run: echo ${{ secrets.TRUST_APP_PRIVATE_KEY }}"];
+  const evil = 'on: { workflow_call: { inputs: { a: { type: string, description: "}" } } }, push: {}, workflow_dispatch: { inputs: { b: { type: string, description: "{" } } } }';
+  assert.equal(flagged(L("name: x", evil, ...job)), true);
+  assert.deepEqual(triggerNames(L(evil, "jobs: {}")), []);
+  for (const bad of ["on: [push, 'pull_request']", "on: [push, &a pull_request]", "on: [push, !!str pull_request]", "on: { push: {}, ? x }", "on: [pull_request_target, push] # c"]) {
+    assert.equal(flagged(L("name: x", bad, ...job)), true, bad);
+  }
+  // plain flow collections of event names still read
+  assert.deepEqual(triggerNames(L("on: [pull_request_target, workflow_call]", "jobs: {}")).sort(), ["pull_request_target", "workflow_call"]);
+  assert.equal(flagged(L("name: x", "on: { pull_request_target: { branches: [main] }, workflow_call: {} }", ...job)), false);
+});
