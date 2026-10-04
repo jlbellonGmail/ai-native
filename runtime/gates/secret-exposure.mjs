@@ -91,15 +91,14 @@ export function triggerNames(text) {
 }
 
 /**
- * The text scanned for secret references. NO comment is dropped: a `#` line inside a block scalar (`run: |`, `env: X: |`,
- * github-script) is DATA that GitHub still expands, and an inline `#` may sit inside quotes; telling a real comment from data needs a
- * YAML parser, so a mention in a comment is reported too (reword it). A `name:` line is dropped only when it carries no `${{ }}` expression
- * (a display name may say "secrets"; `name: ${{ secrets.X }}` under `env:`/`with:` is a real reference).
+ * The text scanned for secret references: the WHOLE file, minus only the allowed GITHUB_TOKEN references. Nothing else is dropped:
+ * not comments (a `#` line inside a block scalar is data GitHub still expands), not `name:` lines (an expression can span lines, so a
+ * line that starts with `name:` may be the middle of one). Telling code from prose needs a YAML parser; so a display name or a
+ * comment that merely says "secrets" is reported too and must be reworded. Over-reporting is the safe side.
  */
 function secretScanText(text) {
   return text
     .split(/\r?\n/)
-    .filter((l) => !(/^\s*(?:-\s+)?name\s*:/.test(l) && !l.includes("${{")))
     .join("\n")
     .replace(/secrets\s*\.\s*GITHUB_TOKEN\b/gi, "")
     .replace(/secrets\s*\[\s*["']GITHUB_TOKEN["']\s*\]/gi, "");

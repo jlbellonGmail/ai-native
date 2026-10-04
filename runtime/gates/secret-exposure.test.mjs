@@ -89,7 +89,7 @@ test("multi-line flow `on:`, an empty/unreadable `on:`, mixed case and `secrets:
   assert.equal(flagged(step("${{ join(secrets, ',') }}")), true, "bare context in join()");
   assert.equal(flagged(L("name: x", "on: push", "jobs:", "  a:", `    uses: o/r/.github/workflows/w.yml@${sha40}`, "    secrets:", "      K: ${{ secrets.K }}")), true, "secrets: mapping");
   // and it still allows what must be allowed
-  assert.equal(flagged(L("name: Detect secrets in the tree", "on: push", "jobs:", "  a:", "    name: scan for secrets", "    runs-on: x", "    steps:", "      - run: echo hi")), false, "a display name that says 'secrets' is not a reference");
+  assert.equal(flagged(L("name: Detect secrets in the tree", "on: push", "jobs:", "  a:", "    runs-on: x", "    steps:", "      - run: echo hi")), true, "a display name that says secrets is REPORTED (cannot be told from code without a YAML parser): reword it");
   assert.equal(flagged(L("name: x", "on: {", "  pull_request_target: {},", "  workflow_call: {}", "}", ...JOB)), false, "multi-line flow of base-file events");
 });
 
@@ -103,7 +103,7 @@ test("bypasses found by the independent review: a `name:` key under env:/with:, 
   // `release` runs the file at the TAGGED commit, so it is not a base-file event
   assert.equal(flagged(L("name: x", "on:", "  release:", "    types: [published]", ...JOB)), true, "release");
   // plain display names stay allowed
-  assert.equal(flagged(L("name: no secrets here", "on: push", "jobs:", "  a:", "    name: still no secrets", "    runs-on: x", "    steps:", "      - name: handle secrets safely", "        run: echo hi")), false);
+  assert.equal(flagged(L("name: no credentials here", "on: push", "jobs:", "  a:", "    name: still none", "    runs-on: x", "    steps:", "      - name: handle them safely", "        run: echo hi")), false);
 });
 
 test("supply-chain.mjs reports each exposure exactly once (the old duplicate detector is gone)", () => {
@@ -117,4 +117,9 @@ test("no comment is trusted: a `#` line inside a block scalar is DATA that GitHu
   assert.equal(flagged(L("name: x", "on: push", "jobs:", "  a:", "    runs-on: x", "    steps:", "      - uses: actions/github-script@" + sha40, "        with:", "          script: |", "            # ${{ secrets.K }}", "            core.info('x')")), true, "github-script block");
   assert.equal(flagged(L("# the old version used secrets.K from a push workflow", "name: x", "on: push", "jobs: {}")), true, "a comment mention is reported: over-reporting is the safe side");
   assert.equal(flagged(L("# the old version used secrets.K from a push workflow", "name: x", "on: pull_request_target", "jobs: {}")), false, "...but is fine behind a base-file event");
+});
+
+test("a multi-line expression whose middle line starts with `name:` cannot hide a reference (round-5 bypass)", () => {
+  const w = L("name: x", "on: push", "jobs:", "  a:", "    runs-on: x", "    steps:", "      - run: |", "          echo ${{ format('{0}', 'a", "          name: ', secrets.TRUST_APP_PRIVATE_KEY) }}");
+  assert.equal(flagged(w), true);
 });
