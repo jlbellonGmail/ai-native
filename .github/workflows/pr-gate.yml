@@ -30,7 +30,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Aggregate gates (supply-chain, docs, P45, identity, secrets)
+      - name: Aggregate gates (supply-chain, docs, P45, identity, credential leaks)
         shell: bash
         env:
           BASE_REF: ${{ github.base_ref }}

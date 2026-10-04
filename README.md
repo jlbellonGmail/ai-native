@@ -32,82 +32,56 @@ ai-native/
 A consumer keeps only `ai-native.lock.json` and the generated tool entry points; everything else is
 resolved by reference from a verified release (`node runtime/bootstrap/cli.mjs init|sync|status|doctor|run`).
 
-## Quick Start
+## Requirements
 
-`scripts/_deprecated/ai-cli.mjs` and `scripts/_deprecated/quality-gates.mjs` are **deprecated** pending repair
-(tracked in `governance/roadmaps/AI-NATIVE-V3-ROADMAP.md`, M0.2): `ai-cli.mjs` calls
-`require()` inside an ESM package and `quality-gates.mjs` never exits non-zero on
-failure. Do not rely on them until that phase closes. Validate each area directly:
+Node.js >= 20 (CI runs 24; developed on 26). No package install step: every validator and test imports only `node:` built-ins.
+`git` and, for release/attestation checks, an authenticated GitHub CLI (`gh`).
+
+## Quick Start (the platform)
 
 ```bash
-# Validate template/
+# Validate the platform (the same checks CI runs)
+node parity/validate-parity.mjs            # TEST_PARITY, UNMAPPED=0
+node contracts/validate-contracts.mjs
+node core/validate-core.mjs
+node runtime/docs/validate-doc-drift.mjs   # docs vs code
+node scripts/validate-actions-pinned.mjs   # every action pinned by full SHA
+node runtime/gates/pr-gate.mjs --base origin/main
+
+# Test (one area, or everything)
+node --test runtime/gates/*.test.mjs
+node --test runtime/*/*.test.mjs contracts/*.test.mjs core/*.test.mjs parity/*.test.mjs evaluation/*/*.test.mjs scripts/*.test.mjs
+
+# Build a release locally (deterministic bundle + platform.json + SHA256SUMS)
+node runtime/release/build.mjs --version v3.0.0-rc.1 --out ./out --commit "$(git rev-parse HEAD)"
+```
+
+## Using the platform from a consumer repository
+
+A consumer keeps `ai-native.lock.json` and the generated tool entry points. Everything else comes from a verified release.
+
+```bash
+node runtime/bootstrap/cli.mjs init   --bundle <bundle.tar.gz> --repo github:<owner>/ai-native --profile factory
+node runtime/bootstrap/cli.mjs sync                       # download, sha256 vs the lock, sigstore attestation; or --from-file / --offline
+node runtime/bootstrap/cli.mjs status                     # READY | NEEDS_SYNC | DEGRADED_READONLY | REVOKED | NOT_ADOPTED
+node runtime/bootstrap/cli.mjs run -- adapters            # derive CLAUDE.md, .mcp.json, .codex/, opencode.json, skills from the release
+node runtime/bootstrap/cli.mjs run -- l3                  # consumer gate (also: .github/workflows/l3-consumer.yml, reusable)
+node runtime/bootstrap/cli.mjs rollback                   # back to the previous cached release
+node runtime/migrate/migrate.mjs plan|apply|revert --target <v2 repo> ...   # v2 -> v3, reversible
+```
+
+Troubleshooting: `status` says why it is not READY; `doctor` checks node, git, the lock, the active release and the cache.
+Governance, roadmap and decisions: `governance/roadmaps/AI-NATIVE-V3-ROADMAP.md`, `governance/adr/`.
+Merge policy and its current exception: `governance/security/HITL-MERGE-POLICY.md`.
+
+## Consolidated areas (git subtree, see ADR-001)
+
+`template/`, `foundation/` and `knowledge/` are consolidated here with their history. Their own validators:
+
+```bash
 node template/scripts/validate-structure.mjs
-
-# Validate foundation/
 node foundation/scripts/validate-enterprise-10-10.mjs
-
-# Validate knowledge/
 node knowledge/scripts/validate-enterprise-evaluation.mjs
 ```
 
-## Area Relationships
-
-```
-┌─────────────────┐
-│  template        │  → Reusable project scaffold
-│  (scaffolding)   │
-└────────┬────────┘
-         │
-    ┌────┴────┐
-    │         │
-    ▼         ▼
-┌─────────┐  ┌──────────┐
-│foundation│  │knowledge │
-│(platform)│  │(quality) │
-└─────────┘  └──────────┘
-```
-
-- **template/**: The scaffold that projects clone from. Contains generation contracts,
-  template manifests, reference application code, validation rules, and examples.
-- **foundation/**: The product foundation owning runtime primitives, base roles,
-  security controls, observability contracts, CI security workflows, and validation tools.
-- **knowledge/**: The knowledge, registry, and evaluation product repository owning
-  benchmark definitions, datasets, scoring, quality gates, prompt/agent registries,
-  and documentation standards.
-
-## Validation
-
-Each area has its own validation scripts:
-
-### template/
-```bash
-node template/scripts/validate-structure.mjs
-node template/scripts/validate-enterprise-template.mjs
-```
-
-### foundation/
-```bash
-node foundation/scripts/validate-enterprise-10-10.mjs
-```
-
-### knowledge/
-```bash
-node knowledge/scripts/validate-enterprise-evaluation.mjs
-```
-
-## Documentation
-
-- [AI Ecosystem Overview](template/docs/overview/AI_ECOSYSTEM.md)
-- [System Overview](template/docs/overview/SYSTEM_OVERVIEW.md)
-- [AI Quick Reference](template/docs/overview/AI_QUICK_REFERENCE.md)
-- [First Project Guide](template/docs/onboarding/FIRST-PROJECT.md)
-- [Project Bootstrap](template/docs/setup/PROJECT_BOOTSTRAP.md)
-
-## Governance
-
-Governance defines what agents work on. See `governance/` for:
-- Roadmaps (`governance/roadmaps/`, including `AI-NATIVE-V3-ROADMAP.md`)
-- Architecture decisions (`governance/adr/`)
-- Session context (`governance/SESSION-CONTEXT.md`)
-- Execution state (`governance/execution/`)
-- Evidence, approval records, closure records, decision history
+The old `scripts/_deprecated/ai-cli.mjs` and `quality-gates.mjs` were retired in M0.2 (see the roadmap) and must not be used.
