@@ -72,7 +72,7 @@ node runtime/migrate/migrate.mjs plan|apply|revert --target <v2 repo> ...   # v2
 
 Troubleshooting: `status` says why it is not READY; `doctor` checks node, git, the lock, the active release and the cache.
 Governance, roadmap and decisions: `governance/roadmaps/AI-NATIVE-V3-ROADMAP.md`, `governance/adr/`.
-Merge policy and its current exception: `governance/security/HITL-MERGE-POLICY.md`.
+Merge policy (the agent never merges with the owner credentials; neutral gates block): `governance/security/HITL-MERGE-POLICY.md`.
 
 ## Consolidated areas (git subtree, see ADR-001)
 
@@ -85,3 +85,7 @@ node knowledge/scripts/validate-enterprise-evaluation.mjs
 ```
 
 The old `scripts/_deprecated/ai-cli.mjs` and `quality-gates.mjs` were retired in M0.2 (see the roadmap) and must not be used.
+
+## License
+
+Proprietary, All Rights Reserved (see `LICENSE`). The code is visible while the repository is public; that grants no right to use, copy, modify or redistribute it.

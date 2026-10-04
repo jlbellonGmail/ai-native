@@ -3927,7 +3927,7 @@ Restricciones vigentes: no tocar repos GI sin autorizacion por oleada (M6); ning
 * Template: PR #128 (parche), #130 (reconciliacion de `main`), #129 (release a `main`); tag anotado `v2.0.6` sobre `6a6c2dd`; CI de `main` verde (el primero desde el 29/09).
 * A2: rulesets activos en template (24420511) y template-starter (24421920); push directo rechazado por el servidor en ambos. template-starter recibio ademas su PR #1 (restaurar `windows-latest`); sigue en la baseline v2.0.4 para el canary.
 * Hash DB con v2.0.6 y delta de paridad `parity/v2.0.6-delta.json`. P39b = PASS con evidencia (tests de regresion + `p39b.test.mjs` + CI + ruleset).
-* Checkout local `C:\Proyectos\template` del maintainer: tiene `ci.yml` modificado sin commitear; no se toco (se trabajo en un clon limpio).
+* Checkout local `<workspace>/template` del maintainer: tiene `ci.yml` modificado sin commitear; no se toco (se trabajo en un clon limpio).
 
 ---
 
@@ -3984,4 +3984,16 @@ Restricciones vigentes: no tocar repos GI sin autorizacion por oleada (M6); ning
   3. **H3 MAJOR (decision de diseno):** `trust-gate = neutral` ("revision humana obligatoria") no bloquea nada: `merge-gate` acepta `neutral`. Cambiarlo hace que toda PR de plano de control exija una aprobacion humana, lo que con un solo maintainer bloquea los merges del propio agente; decision tuya.
   4. **LICENSE (decision legal tuya):** el repo es publico y publica releases sin licencia.
   5. Corregibles sin ti, pendientes (MINOR): validadores de checks requeridos fuera del plano de control, lista de tests de CI a mano, rutas locales historicas en `parity/inventory-reports`, `AGENTS.md` sin las areas de la plataforma, atestacion del consumidor mas debil que la del pipeline.
-* **Consecuencia:** M5.1 (`v3.0.0-rc.1`), M5.4 (canary en template-starter, requiere rc.1 probada en el fixture, P32) y M5.5 (`v3.0.0`) NO se ejecutan. M6 no se abre. El checkout local del maintainer en `C:\Proyectos\template` sigue con `ci.yml` modificado sin commitear; no se toco.
+* **Consecuencia:** M5.1 (`v3.0.0-rc.1`), M5.4 (canary en template-starter, requiere rc.1 probada en el fixture, P32) y M5.5 (`v3.0.0`) NO se ejecutan. M6 no se abre. El checkout local del maintainer en `<workspace>/template` sigue con `ci.yml` modificado sin commitear; no se toco.
+
+---
+
+## 2026-10-04 Decisiones D5-D8 aplicadas (PR de fronteras humanas)
+
+* **D5:** workflows de gate con `environment: ai-native-trust`; los secretos del Environment estaban vacios al verificar, los de repositorio se mantienen hasta verificar una ejecucion real (ver `governance/security/SECRETS-BOUNDARY.md`). `WORKER_*` no se tocan.
+* **D6:** queda prohibido que el agente mergee con el token personal del owner. La dispensa M5 anterior esta eliminada de `governance/security/HITL-MERGE-POLICY.md`. Las PRs #30, #31 y anteriores se mergearon bajo esa dispensa; queda como hecho historico.
+* **D7:** `merge-gate` ya no acepta `neutral` (`CHECK_NEUTRAL`); el neutral de `trust-gate` por cambio de plano de control exige aprobacion humana en el Environment `ai-native-human-review`; tests adversariales en `runtime/gates/gates.test.mjs`.
+* **D8:** `LICENSE` propietaria "All Rights Reserved" con titular neutro (el repositorio no declara una entidad legal); `package.json` `UNLICENSED`.
+* **status/revocations:** `ai-native status` consulta revocaciones online; informa `revocation: CHECKED|NOT_CHECKED|REVOKED`; `--check` falla cerrado si la fuente no se puede leer (`REVOCATION_UNKNOWN`); `--offline` sigue READY con aviso explicito.
+* **Hallazgos de auditoria:** AGENTS.md con las areas de plataforma; rutas locales normalizadas en parity/ADR/SESSION-CONTEXT.
+* **Commits `wip:` (documentados, historia publicada NO reescrita):** `d4522af`, `77be44d`, `58358e8`, `bf435fe`, `189f2af`, `6e30b3a`, `6d02325` (wip2), `7d25e6d`, `81f06a1` (wip4), `5e79672` (wip3). Llegaron a `main` por PRs con CI y revisor; sus mensajes no describen el cambio. A partir de ahora los commits usan mensajes convencionales descriptivos.

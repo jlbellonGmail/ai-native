@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "generatedBy": "parity/migrate-inventory.mjs",
   "generatedAt": "2026-09-30T19:42:28.180Z",
-  "target": "C:\\Proyectos\\gi-ocr",
+  "target": "<workspace>/gi-ocr",
   "hashDbTags": [
     "v2.0.0",
     "v2.0.1",

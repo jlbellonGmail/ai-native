@@ -17,7 +17,7 @@ Búsqueda de solo lectura realizada (2026-09-29/30), sin resultado:
 
 - `git cat-file -t cba745a` y `git cat-file -t 8582290` en `ai-native`: "Not a valid object name" (repetido antes y durante esta reconciliación).
 - `git reflog --all` y `git fsck --unreachable --no-reflogs` en `ai-native`: sin coincidencias.
-- 17 repositorios Git locales bajo `C:\Proyectos`, `C:\UnidadD`, `C:\JLB`, `C:\tools-ai`, `C:\workshop` y `F:\`: ninguno contiene esos objetos.
+- 17 repositorios Git locales bajo varias ubicaciones locales del maintainer: ninguno contiene esos objetos.
 - Búsqueda de directorios `ai-knowledge*` en `C:` y `F:`: no existe ningún clon adicional. `D:\proyectos`, mencionado como raíz histórica en documentación previa, **no existe en esta máquina**.
 - `git ls-remote https://github.com/jlbellonGmail/ai-knowledge.git`: solo `main=98331cc` (el mismo commit ya importado), `repair/enterprise-10-10-product-structure` y los tags `v1.0.0`/`v1.1.0`. Ninguno contiene `cba745a` ni `8582290`.
 - GitHub API `GET /repos/jlbellonGmail/ai-knowledge/commits/{sha}` para ambos SHA: `422 No commit found for SHA`.

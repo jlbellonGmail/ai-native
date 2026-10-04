@@ -6,7 +6,7 @@ ACEPTADO — 2026-09-30
 
 ## Contexto
 
-TEMPLATE v2.0.5 (`C:\Proyectos\template`, tag `v2.0.5` = commit `92a797c`) es la baseline funcional real del circuito agéntico: 576 archivos, 29 scripts PowerShell, 35 archivos de test (264 funciones, ≈285 casos), 5 workflows, un framework de auditoría (`.audit/`) y un modelo de distribución por copia parcial (17 rutas vía manifest + `upgrade-template-consumer.ps1`).
+TEMPLATE v2.0.5 (`<workspace>/template`, tag `v2.0.5` = commit `92a797c`) es la baseline funcional real del circuito agéntico: 576 archivos, 29 scripts PowerShell, 35 archivos de test (264 funciones, ≈285 casos), 5 workflows, un framework de auditoría (`.audit/`) y un modelo de distribución por copia parcial (17 rutas vía manifest + `upgrade-template-consumer.ps1`).
 
 ADR-001 decide migrar el modelo de distribución hacia referencia versionada. Esa migración **no puede degradar** la capacidad funcional de TEMPLATE v2.0.5 de forma silenciosa (principio no negociable de la sesión que originó este ADR).
 

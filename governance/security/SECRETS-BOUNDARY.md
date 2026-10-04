@@ -35,3 +35,12 @@ El Environment `ai-native-trust` **ya existe** y está restringido a la rama `ma
    Environment dejaría los gates sin credenciales y bloquearía los merges).
 
 Hasta que eso ocurra, el riesgo residual es: **un actor con push de ramas puede leer los secretos del repositorio mediante un workflow de rama**.
+
+## Estado D5 (2026-10-04, verificado contra GitHub)
+
+* El maintainer rotó la clave privada de `ai-native-trust` (decisión D5). Las credenciales deben residir **exclusivamente** en el Environment `ai-native-trust`, restringido a `main`.
+* El Environment `ai-native-trust` existe y está restringido a `main`. En la verificación del 2026-10-04 **su lista de secretos estaba vacía** y los cuatro secretos de repositorio (`TRUST_APP_ID`, `TRUST_APP_PRIVATE_KEY`, `WORKER_APP_ID`, `WORKER_APP_PRIVATE_KEY`) seguían a nivel de repositorio. El agente no puede leer ni mover valores de secretos.
+* Los jobs de `trust-gate.yml` y `merge-gate.yml` declaran ya `environment: ai-native-trust`. Mientras el Environment no tenga los secretos, GitHub resuelve `secrets.TRUST_*` desde el repositorio (el gate sigue funcionando); cuando el maintainer los cargue en el Environment, prevalecen sobre los del repositorio.
+* **Los `TRUST_*` de repositorio se eliminan SOLO después de verificar con una ejecución real que el Environment emite el check esperado.** `WORKER_*` no se eliminan hasta definir y verificar la frontera operativa de `ai-native-worker`.
+* Hasta que esa limpieza se complete, el riesgo residual sigue siendo que un workflow de rama puede leer los secretos de repositorio; no se declara cerrado.
+* Se añade el Environment `ai-native-human-review` (revisor requerido: el owner, restringido a `main`) para la aprobación humana de cambios de plano de control (D7, ver `HITL-MERGE-POLICY.md`). No contiene secretos.

@@ -326,16 +326,19 @@ export const BOOTSTRAP_STATES = Object.freeze(["READY", "NEEDS_SYNC", "DEGRADED_
 export function status({ projectRoot, cacheRoot, revocations = null, offline = false }) {
   const { lock, errors } = readLock(projectRoot);
   if (errors.length) return report([], [], { state: "NOT_ADOPTED", detail: errors.join("; ") });
+  // `revocation` says what we actually know: CHECKED (a list was consulted and this version is not in it) or NOT_CHECKED
+  // (no list: offline, unreachable or none published). Absence of information is never reported as "not revoked".
+  const revocation = revocations ? "CHECKED" : "NOT_CHECKED";
   const revoked = isRevoked(revocations, lock.platform);
-  if (revoked) return report([], [], { state: "REVOKED", detail: `${revoked.version} revoked: ${revoked.reason}` });
+  if (revoked) return report([], [], { state: "REVOKED", revocation: "REVOKED", detail: `${revoked.version} revoked: ${revoked.reason}` });
   try {
     verifyRelease(cacheRoot, lock.platform.digest);
   } catch (error) {
     if (!(error instanceof CacheMissError) && !(error instanceof CacheCorruptError)) throw error;
-    return report([], [], { state: offline ? "DEGRADED_READONLY" : "NEEDS_SYNC", detail: error.message });
+    return report([], [], { state: offline ? "DEGRADED_READONLY" : "NEEDS_SYNC", revocation, detail: error.message });
   }
   const active = readState(cacheRoot, projectRoot).active;
-  return report([], [], active === lock.platform.digest ? { state: "READY", detail: lock.platform.version } : { state: "NEEDS_SYNC", detail: "release cached but not active for this project" });
+  return report([], [], active === lock.platform.digest ? { state: "READY", revocation, detail: lock.platform.version } : { state: "NEEDS_SYNC", revocation, detail: "release cached but not active for this project" });
 }
 
 /** Verify-before-exec (PAR-CACHE-VERIFY-BEFORE-EXEC): never runs an unverified release. */

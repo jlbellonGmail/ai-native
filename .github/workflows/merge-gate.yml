@@ -7,6 +7,12 @@ name: merge-gate
 # `ai-native-trust` App on the exact head SHA. It NEVER merges: merge is the
 # single human decision. Mode (SingleMaintainer / MultiMaintainer) and the
 # required checks with their expected source come from base config.
+#
+# D7: `neutral` is never a pass. A control-plane change makes the trust-gate neutral; the
+# merge-gate then stays pending and the job `human-review` waits for the owner to approve the
+# Environment `ai-native-human-review` (required reviewer). Only after that approval does
+# `finalize` re-evaluate with HUMAN_REVIEWED=true and publish the verdict. Credentials are meant to live in
+# the Environment `ai-native-trust` (restricted to main); see governance/security/SECRETS-BOUNDARY.md for the current state.
 
 on:
   pull_request_target:
@@ -27,7 +33,11 @@ jobs:
     name: merge-gate-job
     runs-on: ubuntu-latest
     timeout-minutes: 40
+    environment: ai-native-trust
     if: github.event.pull_request.base.ref == 'main'
+    outputs:
+      needs_human: ${{ steps.verdict.outputs.needs_human }}
+      check_run_id: ${{ steps.verdict.outputs.check_run_id }}
     steps:
       - name: Checkout BASE (trusted code and config)
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -48,8 +58,61 @@ jobs:
           permission-actions: read
 
       - name: Evaluate merge readiness and emit check as ai-native-trust
+        id: verdict
         shell: bash
         env:
+          GH_TOKEN: ${{ github.token }}
+          EXPECTED_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          POST_TOKEN: ${{ steps.app.outputs.token }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          WAIT_SECONDS: "1800"
+        run: node runtime/gates/merge-gate.mjs
+
+  human-review:
+    name: human-review
+    runs-on: ubuntu-latest
+    timeout-minutes: 1440
+    needs: merge-gate
+    if: needs.merge-gate.outputs.needs_human == 'true'
+    environment: ai-native-human-review
+    steps:
+      - name: Human approval recorded for this head SHA
+        run: echo "Approved by the Environment required reviewer for ${{ github.event.pull_request.head.sha }}"
+
+  finalize:
+    name: merge-gate-finalize
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    environment: ai-native-trust
+    needs: [merge-gate, human-review]
+    if: github.event.pull_request.base.ref == 'main' && needs.human-review.result == 'success'
+    steps:
+      - name: Checkout BASE (trusted code and config)
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Mint ai-native-trust installation token
+        id: app
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          app-id: ${{ secrets.TRUST_APP_ID }}
+          private-key: ${{ secrets.TRUST_APP_PRIVATE_KEY }}
+          permission-checks: write
+          permission-pull-requests: read
+          permission-contents: read
+          permission-actions: read
+
+      - name: Re-evaluate after the human review and emit the final check as ai-native-trust
+        shell: bash
+        env:
+          HUMAN_REVIEWED: "true"
+          CHECK_RUN_ID: ${{ needs.merge-gate.outputs.check_run_id }}
+          EXPECTED_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           GH_TOKEN: ${{ github.token }}
           POST_TOKEN: ${{ steps.app.outputs.token }}
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
