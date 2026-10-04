@@ -1,1 +1,1 @@
-{"name":"ai-native-governance","private":true,"type":"module","scripts":{"w1t1:verify":"node scripts/_deprecated/verify-w1t1.mjs"},"engines":{"node":">=20"}}
+{"name":"ai-native-governance","private":true,"license":"UNLICENSED","type":"module","scripts":{"w1t1:verify":"node scripts/_deprecated/verify-w1t1.mjs"},"engines":{"node":">=20"}}

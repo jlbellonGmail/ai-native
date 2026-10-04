@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "generatedBy": "parity/migrate-inventory.mjs",
   "generatedAt": "2026-09-30T19:43:55.448Z",
-  "target": "C:\\Proyectos\\gi-vertical-dental",
+  "target": "<workspace>/gi-vertical-dental",
   "hashDbTags": [
     "v2.0.0",
     "v2.0.1",
@@ -29,28 +29,28 @@
   },
   "unreadableDirs": [
     {
-      "dir": "C:\\Proyectos\\gi-vertical-dental\\.pytest-tmp",
-      "error": "EPERM: operation not permitted, scandir 'C:\\Proyectos\\gi-vertical-dental\\.pytest-tmp'"
+      "dir": "<workspace>/gi-vertical-dental\\.pytest-tmp",
+      "error": "EPERM: operation not permitted, scandir '<workspace>/gi-vertical-dental\\.pytest-tmp'"
     },
     {
-      "dir": "C:\\Proyectos\\gi-vertical-dental\\.pytest-tmp-audit",
-      "error": "EPERM: operation not permitted, scandir 'C:\\Proyectos\\gi-vertical-dental\\.pytest-tmp-audit'"
+      "dir": "<workspace>/gi-vertical-dental\\.pytest-tmp-audit",
+      "error": "EPERM: operation not permitted, scandir '<workspace>/gi-vertical-dental\\.pytest-tmp-audit'"
     },
     {
-      "dir": "C:\\Proyectos\\gi-vertical-dental\\.pytest-tmp-clean",
-      "error": "EPERM: operation not permitted, scandir 'C:\\Proyectos\\gi-vertical-dental\\.pytest-tmp-clean'"
+      "dir": "<workspace>/gi-vertical-dental\\.pytest-tmp-clean",
+      "error": "EPERM: operation not permitted, scandir '<workspace>/gi-vertical-dental\\.pytest-tmp-clean'"
     },
     {
-      "dir": "C:\\Proyectos\\gi-vertical-dental\\.pytest-tmp-final",
-      "error": "EPERM: operation not permitted, scandir 'C:\\Proyectos\\gi-vertical-dental\\.pytest-tmp-final'"
+      "dir": "<workspace>/gi-vertical-dental\\.pytest-tmp-final",
+      "error": "EPERM: operation not permitted, scandir '<workspace>/gi-vertical-dental\\.pytest-tmp-final'"
     },
     {
-      "dir": "C:\\Proyectos\\gi-vertical-dental\\.pytest-tmp-status",
-      "error": "EPERM: operation not permitted, scandir 'C:\\Proyectos\\gi-vertical-dental\\.pytest-tmp-status'"
+      "dir": "<workspace>/gi-vertical-dental\\.pytest-tmp-status",
+      "error": "EPERM: operation not permitted, scandir '<workspace>/gi-vertical-dental\\.pytest-tmp-status'"
     },
     {
-      "dir": "C:\\Proyectos\\gi-vertical-dental\\.pytest-tmp-status2",
-      "error": "EPERM: operation not permitted, scandir 'C:\\Proyectos\\gi-vertical-dental\\.pytest-tmp-status2'"
+      "dir": "<workspace>/gi-vertical-dental\\.pytest-tmp-status2",
+      "error": "EPERM: operation not permitted, scandir '<workspace>/gi-vertical-dental\\.pytest-tmp-status2'"
     }
   ],
   "files": [

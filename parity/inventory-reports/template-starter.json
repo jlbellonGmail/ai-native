@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "generatedBy": "parity/migrate-inventory.mjs",
   "generatedAt": "2026-09-30T19:43:55.841Z",
-  "target": "C:\\Proyectos\\template-starter",
+  "target": "<workspace>/template-starter",
   "hashDbTags": [
     "v2.0.0",
     "v2.0.1",

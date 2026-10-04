@@ -3,7 +3,7 @@
 Generado 2026-09-30 con `parity/migrate-inventory.mjs` (solo lectura; ningún
 archivo de ningún repo listado abajo fue modificado). Hash DB fuente:
 `parity/hash-db/hash-db.json` (tags `v2.0.0`…`v2.0.5` de
-`C:\Proyectos\template`, hasheado con normalización CRLF→LF).
+`<workspace>/template`, hasheado con normalización CRLF→LF).
 
 **Ningún repo GI fue modificado.** Esta es una fotografía de su estado,
 no una migración. La migración real (`--apply`) es una fase posterior

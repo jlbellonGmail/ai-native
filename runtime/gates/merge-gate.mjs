@@ -7,14 +7,18 @@
 // A required check only counts if it was emitted by the expected app: a
 // same-named check from another source (github-actions) is ignored (P44).
 import { spawnSync } from "node:child_process";
+import { appendFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 import { evaluateApprovals } from "./governance-modes.mjs";
 import { loadGateConfig } from "./control-plane.mjs";
 
-const OK = new Set(["success", "neutral", "skipped"]);
+// `neutral` is NOT a pass (fail closed): GitHub branch protection treats it as success, so this gate is what blocks it.
+// The only neutral that can ever be accepted is the trust-gate one on a control-plane change, and only after the workflow
+// reports a human approval (Environment `ai-native-human-review`) for this exact run: HUMAN_REVIEWED=true.
+const OK = new Set(["success", "skipped"]);
 
 /** checkRuns: [{ name, status, conclusion, appSlug }] for the head SHA. */
-export function evaluateRequiredChecks(requiredChecks, checkRuns) {
+export function evaluateRequiredChecks(requiredChecks, checkRuns, { humanReviewed = false, reviewableNeutral = [] } = {}) {
   const findings = [];
   for (const req of requiredChecks) {
     const same = checkRuns.filter((c) => c.name === req.name);
@@ -23,16 +27,20 @@ export function evaluateRequiredChecks(requiredChecks, checkRuns) {
     for (const f of forged) findings.push({ code: "CHECK_WRONG_SOURCE", detail: `'${req.name}' emitted by '${f.appSlug}', ignored (expected '${req.appSlug}')` });
     if (!trusted.length) findings.push({ code: "CHECK_MISSING", detail: `'${req.name}' not emitted by '${req.appSlug}'` });
     else if (trusted.some((c) => c.status !== "completed")) findings.push({ code: "CHECK_PENDING", detail: `'${req.name}' not completed` });
-    else if (!trusted.every((c) => OK.has(c.conclusion))) findings.push({ code: "CHECK_FAILED", detail: `'${req.name}' concluded '${trusted.map((c) => c.conclusion).join(",")}'` });
+    else if (!trusted.every((c) => OK.has(c.conclusion) || (humanReviewed && c.conclusion === "neutral" && reviewableNeutral.includes(req.name)))) {
+      const neutralOnly = trusted.every((c) => OK.has(c.conclusion) || c.conclusion === "neutral") && reviewableNeutral.includes(req.name);
+      if (neutralOnly) findings.push({ code: "HUMAN_REVIEW_REQUIRED", detail: `'${req.name}' is neutral (control plane changed): needs explicit human review` });
+      else findings.push({ code: trusted.some((c) => c.conclusion === "neutral") ? "CHECK_NEUTRAL" : "CHECK_FAILED", detail: `'${req.name}' concluded '${trusted.map((c) => c.conclusion).join(",")}'` });
+    }
   }
   return findings;
 }
 
-export function evaluateMergeGate({ config, pr, reviews, checkRuns }) {
+export function evaluateMergeGate({ config, pr, reviews, checkRuns, humanReviewed = false }) {
   const findings = [];
   if (pr.state !== "open") findings.push({ code: "PR_NOT_OPEN", detail: `state=${pr.state}` });
   if (pr.draft) findings.push({ code: "PR_DRAFT", detail: "draft PR" });
-  findings.push(...evaluateRequiredChecks(config.requiredChecks, checkRuns));
+  findings.push(...evaluateRequiredChecks(config.requiredChecks, checkRuns, { humanReviewed, reviewableNeutral: [config.trustGate.checkName] }));
   const appr = evaluateApprovals({
     mode: config.governance.mode,
     reviews,
@@ -43,8 +51,11 @@ export function evaluateMergeGate({ config, pr, reviews, checkRuns }) {
   });
   if (!appr.ok) findings.push({ code: "APPROVALS", detail: `mode=${config.governance.mode} requires ${appr.required}, valid ${appr.approvals.length}${appr.changesRequested ? ", changes requested" : ""}` });
   const ok = findings.length === 0;
+  // Only the human-review finding on its own can be unblocked by a human; anything else is a hard failure.
+  const needsHuman = findings.length > 0 && findings.every((f) => f.code === "HUMAN_REVIEW_REQUIRED");
   return {
     conclusion: ok ? "success" : "failure",
+    needsHuman,
     title: ok ? `MERGE_GATE_PASS: head ${pr.headSha.slice(0, 7)} ready for human merge` : `MERGE_GATE_FAIL: ${[...new Set(findings.map((f) => f.code))].join(", ")}`,
     findings,
     approvals: appr,
@@ -88,15 +99,19 @@ function main() {
   }
   // The merge-gate check itself is excluded from its own inputs by construction
   // (it is not in requiredChecks), so there is no circular dependency.
-  const verdict = evaluateMergeGate({ config, ...data });
+  const humanReviewed = process.env.HUMAN_REVIEWED === "true";
+  const verdict = evaluateMergeGate({ config, ...data, humanReviewed });
   console.log(verdict.title);
   for (const f of verdict.findings) console.log(`- [${f.code}] ${f.detail}`);
+  if (process.env.GITHUB_OUTPUT) appendFileSync(process.env.GITHUB_OUTPUT, `needs_human=${verdict.needsHuman}
+`);
   if (process.argv.includes("--dry-run")) return;
+  // Awaiting the human: the check stays pending (never success) until the human-review job approves this run.
+  const pending = verdict.needsHuman;
   const body = {
     name: config.mergeGate.checkName,
     head_sha: verdict.verifiedSha,
-    status: "completed",
-    conclusion: verdict.conclusion,
+    ...(pending ? { status: "in_progress" } : { status: "completed", conclusion: verdict.conclusion }),
     output: { title: verdict.title.slice(0, 250), summary: `${verdict.title}\n\n${verdict.findings.map((f) => `- [${f.code}] ${f.detail}`).join("\n")}\n\nThis gate never merges. Merge stays the single human decision.` },
   };
   const res = gh(["api", `repos/${repo}/check-runs`, "--method", "POST", "--input", "-"], JSON.stringify(body), process.env.POST_TOKEN);

@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "generatedBy": "parity/migrate-inventory.mjs",
   "generatedAt": "2026-09-30T19:42:23.496Z",
-  "target": "C:\\Proyectos\\gi-common-crm",
+  "target": "<workspace>/gi-common-crm",
   "hashDbTags": [
     "v2.0.0",
     "v2.0.1",

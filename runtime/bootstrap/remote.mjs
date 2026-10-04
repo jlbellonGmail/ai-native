@@ -83,7 +83,9 @@ export async function downloadRelease({ lock, fetchImpl = fetch, verifier = ghAt
  * Highest valid revocations-<n>.json among the repo's releases. An offline or
  * unreachable source is a warning (reads must keep working); a list that
  * fails attestation (when verifiable) is never used.
- * @returns {Promise<{list: object|null, errors: string[], warnings: string[]}>}
+ * `unavailable` is true only when the source could not be read (network/HTTP); a repo with no published list has list null and
+ * unavailable false: there is no information to be had, which is different from information we failed to get.
+ * @returns {Promise<{list: object|null, unavailable?: boolean, errors: string[], warnings: string[]}>}
  */
 export async function fetchRevocations({ repo, fetchImpl = fetch, verifier = ghAttestationVerifier(), requireAttestation = false }) {
   const errors = [];
@@ -97,7 +99,7 @@ export async function fetchRevocations({ repo, fetchImpl = fetch, verifier = ghA
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     releases = await res.json();
   } catch (error) {
-    return { list: null, errors, warnings: [`revocations unavailable (${error.message}); revocation status NOT checked`] };
+    return { list: null, unavailable: true, errors, warnings: [`revocations unavailable (${error.message}); revocation status NOT checked`] };
   }
   const assets = new Map();
   for (const release of releases) {

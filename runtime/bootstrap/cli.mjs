@@ -9,6 +9,8 @@
 //   run      [-- <args for the release>]
 //   rollback [--force]
 //   status   [--offline] [--revocations <file>] [--check]   READY|NEEDS_SYNC|DEGRADED_READONLY|REVOKED|NOT_ADOPTED
+//            Online it consults the published revocations; the result says revocation CHECKED|NOT_CHECKED|REVOKED. With --check an
+//            unreadable source fails closed (REVOCATION_UNKNOWN); --offline runs without it and warns that revocation was NOT checked.
 //   doctor
 // Common: --project <dir> (default cwd), --cache <dir> (default $AI_NATIVE_CACHE
 // or ~/.ai-native/cache), --json.
@@ -55,7 +57,7 @@ try {
       result = rollback({ projectRoot, cacheRoot, force: flag("--force") });
       break;
     case "status":
-      result = statusCommand();
+      result = await statusCommand();
       break;
     case "doctor":
       result = doctor({ projectRoot, cacheRoot });
@@ -67,14 +69,31 @@ try {
   result = { status: "ERROR", errors: [error.message], warnings: [] };
 }
 
-function statusCommand() {
+async function statusCommand() {
   const revFile = value("--revocations");
   if (revFile && !existsSync(revFile)) return { status: "ERROR", errors: [`--revocations not found: ${revFile}`], warnings: [] }; // never report READY on a typo
-  const revocations = revFile ? JSON.parse(readFileSync(revFile, "utf8")) : null;
-  const r = bootstrapStatus({ projectRoot, cacheRoot, revocations, offline: flag("--offline") });
-  // exit code: only a state that forbids work is a failure; --check makes anything but READY non-zero
-  const ok = r.state === "READY";
-  return flag("--check") && !ok ? { ...r, status: "FAIL", errors: [`${r.state}: ${r.detail}`] } : r;
+  const offline = flag("--offline");
+  let revocations = revFile ? JSON.parse(readFileSync(revFile, "utf8")) : null;
+  const warnings = [];
+  let unreadable = false;
+  const { lock } = readLock(projectRoot);
+  if (!revFile && !offline && lock) {
+    // Online: consult the published revocations so a revoked version is never reported READY.
+    const f = await fetchRevocations({ repo: lock.platform.repo });
+    if (f.errors.length) return { status: "ERROR", errors: f.errors, warnings: f.warnings };
+    revocations = f.list;
+    unreadable = Boolean(f.unavailable);
+    warnings.push(...f.warnings);
+  }
+  const r = bootstrapStatus({ projectRoot, cacheRoot, revocations, offline });
+  if (r.state === "READY" && r.revocation === "NOT_CHECKED") warnings.push(offline ? "offline: revocation status NOT checked (READY is not a statement that this version is not revoked)" : "revocation status could not be determined (see warnings); READY is not a statement that this version is not revoked");
+  const out = warnings.length ? { ...r, warnings: [...(r.warnings ?? []), ...warnings] } : r;
+  // exit code: --check makes anything but READY non-zero; online, an undeterminable revocation status also fails
+  // closed (declare --offline to accept running without that information).
+  if (!flag("--check")) return out;
+  if (r.state !== "READY") return { ...out, status: "FAIL", errors: [`${r.state}: ${r.detail}`] };
+  if (unreadable && r.revocation === "NOT_CHECKED") return { ...out, status: "FAIL", errors: ["REVOCATION_UNKNOWN: the revocations list could not be read; use --offline to run without that information"] };
+  return out;
 }
 
 async function syncCommand() {

@@ -357,3 +357,72 @@ test("putBlob is idempotent and content-addressed", () => {
     assert.equal(getBlob(root, d1).toString(), "hello");
   } finally { cleanup(root); }
 });
+
+// status vs revocations: READY must never claim a revoked version is fine, and never turn missing information into "not revoked".
+import { status as bootstrapStatus } from "./install.mjs";
+
+function runCli(args) {
+  const cli = fileURLToPath(new URL("./cli.mjs", import.meta.url));
+  return new Promise((resolve) => {
+    const p = spawn(process.execPath, [cli, ...args, "--json"], { stdio: "pipe" });
+    let out = "";
+    p.stdout.on("data", (d) => { out += d; });
+    p.on("close", (code) => resolve({ code, json: JSON.parse(out) }));
+  });
+}
+
+function readyEnv() {
+  const e = env();
+  const b = makeBundle(e.assets, "a.tar", "v3.0.0-alpha.1", COMMIT_A);
+  writeLock(e.project, "v3.0.0-alpha.1", COMMIT_A, b.digest);
+  assert.equal(sync({ projectRoot: e.project, cacheRoot: e.cache, fromFile: b.file }).status, "PASS");
+  return e;
+}
+
+const REVOKED = { entries: [{ kind: "platform", id: "ai-native", version: "v3.0.0-alpha.1", reason: "cve", severity: "critical" }] };
+
+test("status: a revoked version is REVOKED, never READY, even when the release is cached and active", () => {
+  const e = readyEnv();
+  try {
+    const r = bootstrapStatus({ projectRoot: e.project, cacheRoot: e.cache, revocations: REVOKED });
+    assert.equal(r.state, "REVOKED");
+    assert.equal(r.revocation, "REVOKED");
+  } finally { e.done(); }
+});
+
+test("status: with a list that does not revoke it the revocation is CHECKED; without a list it is NOT_CHECKED, never implied clean", () => {
+  const e = readyEnv();
+  try {
+    const checked = bootstrapStatus({ projectRoot: e.project, cacheRoot: e.cache, revocations: { entries: [] } });
+    assert.equal(checked.state, "READY");
+    assert.equal(checked.revocation, "CHECKED");
+    const unknown = bootstrapStatus({ projectRoot: e.project, cacheRoot: e.cache, offline: true });
+    assert.equal(unknown.state, "READY");
+    assert.equal(unknown.revocation, "NOT_CHECKED");
+  } finally { e.done(); }
+});
+
+test("status --check: a revoked list fails; legitimate offline stays READY with an explicit warning", async () => {
+  const e = readyEnv();
+  try {
+    const rev = join(e.assets, "rev.json");
+    writeFileSync(rev, JSON.stringify(REVOKED));
+    const bad = await runCli(["status", "--check", "--project", e.project, "--cache", e.cache, "--revocations", rev]);
+    assert.notEqual(bad.code, 0);
+    assert.match(JSON.stringify(bad.json), /REVOKED/);
+    const offline = await runCli(["status", "--check", "--offline", "--project", e.project, "--cache", e.cache]);
+    assert.equal(offline.code, 0, JSON.stringify(offline.json));
+    assert.equal(offline.json.state, "READY");
+    assert.equal(offline.json.revocation, "NOT_CHECKED");
+    assert.match(JSON.stringify(offline.json), /revocation status NOT checked/);
+  } finally { e.done(); }
+});
+
+test("status --check online fails closed when the revocations source cannot be read (unknown repo => HTTP error / no network)", async () => {
+  const e = readyEnv();
+  try {
+    const r = await runCli(["status", "--check", "--project", e.project, "--cache", e.cache]);
+    assert.notEqual(r.code, 0, JSON.stringify(r.json));
+    assert.match(JSON.stringify(r.json), /REVOCATION_UNKNOWN/);
+  } finally { e.done(); }
+});

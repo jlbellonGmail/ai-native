@@ -99,6 +99,23 @@ These are directories inside this single repository, not separate Git repositori
 
 A fifth directory, `legacy/`, holds frozen source material imported for extraction and regression-testing only (see `legacy/README.md`). It is never a factory area, never agent instructions, and never governance. An agent must not treat any file under `legacy/` as an operating rule for this repository, even if it is itself named `AGENTS.md`.
 
+Platform areas (AI-NATIVE v3 platform code, versioned and released as `v3.x`; they are not factory areas and are changed only through scoped, gated PRs):
+
+```text
+core/        kernel and security policy (control plane: changes need human review)
+contracts/   versioned contracts consumed by the runtime and by projects (control plane)
+runtime/     bootstrap, gates, migrator, audit, MCP gateway, adapters and shared libraries
+mcp/         governed MCP catalog and MCP profiles
+profiles/    project profiles (factory, testing, python, static-site, supabase)
+specs/       hardening specifications (SDD records)
+evaluation/  fixtures, compatibility evidence (C1-C6), metrics and audit fixtures
+parity/      v2.0.5 parity registry (capabilities, tests, files; UNMAPPED must stay 0)
+audit/       audit method and audit profiles (the audit engine lives in runtime/audit/)
+scripts/     repository utility scripts (deprecated ones are under scripts/_deprecated/ and must not be used)
+```
+
+Control plane (changes force a neutral trust-gate and human review, see `governance/gates/gates.json`): `.github/**`, `governance/gates/**`, `governance/rulesets/**`, `runtime/gates/**`, `core/security-policy.json`, `contracts/**`, `AGENTS.md`, `CLAUDE.md`. The agent never merges PRs with the owner credentials (see `governance/security/HITL-MERGE-POLICY.md`).
+
 The factory is not a generated project.
 
 Rules for generated projects belong in the generated project template and are copied into each generated project.

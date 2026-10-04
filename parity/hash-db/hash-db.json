@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "generatedBy": "parity/hash-db/build-hash-db.mjs",
-  "source": "C:\\Proyectos\\_work_template",
+  "source": "<workspace>/_work_template",
   "generatedAt": "2026-10-03T16:25:10.876Z",
   "tags": {
     "v2.0.0": {
