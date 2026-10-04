@@ -127,17 +127,10 @@ export function secretReferences(text) {
  */
 export function hasObfuscatingEscape(text) {
   if (/\\(?:x[0-9A-Fa-f]{2}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/.test(text)) return true;
-  // a trailing backslash is a line continuation only INSIDE a double-quoted YAML scalar (a shell `\` in a `run: |` block
-  // sits on lines whose quotes balance): track whether a double quote is open across lines
-  let open = false;
-  for (const line of text.split("\n")) {
-    const l = line.replace(/\r$/, "");
-    const quotes = (l.replace(/\\"/g, "").match(/"/g) ?? []).length;
-    const endsWithBackslash = /\\[ \t]*$/.test(l);
-    if (endsWithBackslash && (open || quotes % 2 === 1)) return true;
-    if (quotes % 2 === 1) open = !open;
-  }
-  return false;
+  // STATELESS on purpose: ANY line ending in a backslash is a finding. Guessing whether a double-quoted scalar is open by counting
+  // quotes can be desynchronised (a quote in a comment flips the guess); a rule without state cannot. A workflow that runs the
+  // branch's own file simply must not use line continuations (write one command per line, or use an array).
+  return /\\[ \t]*(?:\r?\n|$)/m.test(text);
 }
 
 /** Findings: secrets reachable from an event that runs the pushed branch's own workflow file, or from triggers we cannot read. */

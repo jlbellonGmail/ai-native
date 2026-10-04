@@ -202,11 +202,10 @@ jobs:
           cp "$BUNDLE_PATH" "dist/ai-native-$VERSION.sigstore.json"
           flags=""
           case "$VERSION" in *-alpha.*|*-rc.*) flags="--prerelease" ;; esac
-          gh release create "$VERSION" --repo "$GITHUB_REPOSITORY" $flags --draft --verify-tag \
-            --title "ai-native $VERSION" \
-            --notes "Platform release $VERSION at $GITHUB_SHA. Bundle digest: ${{ needs.build.outputs.digest }}. Verify: \`gh attestation verify ai-native-$VERSION.tar.gz --repo $GITHUB_REPOSITORY\`." \
-            dist/ai-native-"$VERSION".tar.gz dist/ai-native-"$VERSION".sbom.cdx.json dist/ai-native-"$VERSION".sigstore.json \
-            dist/platform.json dist/SHA256SUMS dist/revocations-*.json
+          notes="Platform release $VERSION at $GITHUB_SHA. Bundle digest: ${{ needs.build.outputs.digest }}. Verify: gh attestation verify ai-native-$VERSION.tar.gz --repo $GITHUB_REPOSITORY."
+          # one command per line, no trailing backslashes: a workflow that runs the pushed branch file may not contain any (secret-exposure.mjs)
+          assets=("dist/ai-native-$VERSION.tar.gz" "dist/ai-native-$VERSION.sbom.cdx.json" "dist/ai-native-$VERSION.sigstore.json" dist/platform.json dist/SHA256SUMS dist/revocations-*.json)
+          gh release create "$VERSION" --repo "$GITHUB_REPOSITORY" $flags --draft --verify-tag --title "ai-native $VERSION" --notes "$notes" "${assets[@]}"
           gh release edit "$VERSION" --repo "$GITHUB_REPOSITORY" --draft=false
 
   verify:

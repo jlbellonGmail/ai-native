@@ -132,7 +132,11 @@ test("YAML double-quoted escapes that GitHub decodes before evaluating an expres
   assert.equal(flagged(L(...head, `      - run: "\${{ sec${BS}`, "          rets.K }}\"")), true, "line continuation inside a double-quoted scalar");
   assert.equal(flagged(L(...head, `      - run: "se${BS}`, `          cr${BS}`, '          ets"')), true, "multi-line continuation");
   // a shell line continuation inside a `run: |` block (balanced quotes) is NOT an escape
-  assert.equal(flagged(L(...head, "      - run: |", `          gh release create "$V" ${BS}`, `            --title "t" ${BS}`, "            dist/a.tgz")), false, "shell continuation");
+  // the rule is STATELESS: any trailing backslash in a branch-file workflow is a finding, including a shell continuation (rewrite it)
+  assert.equal(flagged(L(...head, "      - run: |", `          gh release create "$V" ${BS}`, `            --title "t" ${BS}`, "            dist/a.tgz")), true, "shell continuation is reported too");
+  // round-7 bypass: a quote in a comment used to desynchronise the open/closed guess
+  assert.equal(flagged(L('# "', ...head, '      - run: "echo ${{', `          se${BS}`, '          crets.TRUST_APP_PRIVATE_KEY }}" | base64')), true, "desynchronised quote parity");
+  assert.equal(flagged(L(...head, "      - run: echo hi", "      - run: echo ok")), false, "no backslash, no secret: nothing to report");
   // and none of this matters behind a base-file event
   assert.equal(flagged(L("name: x", "on: pull_request_target", "jobs:", "  a:", "    runs-on: x", "    steps:", `      - run: "echo \${{ ${BS}x73ecrets.K }}"`)), false);
 });
