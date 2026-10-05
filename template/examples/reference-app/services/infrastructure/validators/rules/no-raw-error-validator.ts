@@ -6,13 +6,14 @@ export const noRawErrorValidator: Validator = async () => {
 
     const dir = path.resolve(process.cwd(), "services");
 
-    const files = fs.readdirSync(dir);
+    const files = fs.readdirSync(dir, { withFileTypes: true });
 
-    for (const file of files) {
+    for (const entry of files) {
 
+        const file = entry.name;
         const fullPath = path.join(dir, file);
 
-        if (fs.statSync(fullPath).isFile()) {
+        if (entry.isFile()) {
 
             const content = fs.readFileSync(fullPath, "utf-8");
 

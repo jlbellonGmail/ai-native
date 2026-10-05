@@ -1,0 +1,12 @@
+# Single maintainer today (see governance/security/HITL-MERGE-POLICY.md).
+# The ruleset does not yet require code-owner review (one maintainer cannot approve their own PR);
+# this file documents ownership of the control plane and is ready to be enforced when a second
+# maintainer exists.
+*                          @jlbellonGmail
+/.github/                  @jlbellonGmail
+/governance/gates/         @jlbellonGmail
+/governance/rulesets/      @jlbellonGmail
+/governance/security/      @jlbellonGmail
+/runtime/gates/            @jlbellonGmail
+/core/                     @jlbellonGmail
+/contracts/                @jlbellonGmail

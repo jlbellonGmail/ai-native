@@ -29,9 +29,7 @@ export class IncidentRepository {
         // 🔥 guardar
         const dir = path.dirname(this.filePath);
 
-        if (!fs.existsSync(dir)) {
-            fs.mkdirSync(dir, { recursive: true });
-        }
+        fs.mkdirSync(dir, { recursive: true });
 
         fs.writeFileSync(
             this.filePath,

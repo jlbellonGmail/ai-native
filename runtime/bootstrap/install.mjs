@@ -6,12 +6,13 @@
 // reaches the cache via `--from-file` (offline install) or already sits
 // there; fetching released bundles is M4.2's job, not simulated here.
 import {
-  existsSync, readFileSync, writeFileSync, renameSync, mkdirSync, openSync, closeSync, unlinkSync, readdirSync, statSync,
+  existsSync, readFileSync, writeFileSync, renameSync, mkdirSync, openSync, closeSync, unlinkSync, readdirSync,
 } from "node:fs";
 import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 import { validate } from "../lib/schema-lite.mjs";
+import { readTextIfExists } from "../lib/fs-safe.mjs";
 import { RESULT_STATUS, statusFromCounts } from "../lib/result.mjs";
 import { readTar, BundleFormatError } from "./tar.mjs";
 import {
@@ -198,8 +199,15 @@ function newerArtifacts(projectRoot, maxSchemaVersion) {
   if (!existsSync(runs)) return newer;
   for (const unit of readdirSync(runs)) {
     const file = join(runs, unit, "events.jsonl");
-    if (!existsSync(file) || !statSync(file).isFile()) continue;
-    for (const line of readFileSync(file, "utf8").split("\n").filter(Boolean)) {
+    let text;
+    try {
+      text = readTextIfExists(file);
+    } catch (error) {
+      if (error.code === "EISDIR") continue;
+      throw error;
+    }
+    if (text === null) continue;
+    for (const line of text.split("\n").filter(Boolean)) {
       try {
         if (JSON.parse(line).schemaVersion > maxSchemaVersion) {
           newer.push(`runs/${unit}/events.jsonl`);

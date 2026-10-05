@@ -73,7 +73,7 @@ function expandDocs(repoRoot) {
           return;
         }
         if (!existsSync(abs)) return;
-        const re = new RegExp("^" + parts[i].replace(/\./g, "\\.").replace(/\*/g, ".*") + "$");
+        const re = new RegExp("^" + parts[i].replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*") + "$");
         for (const name of readdirSync(abs)) {
           if (re.test(name) && statSync(join(abs, name)).isFile()) out.push(join(dir, name));
         }

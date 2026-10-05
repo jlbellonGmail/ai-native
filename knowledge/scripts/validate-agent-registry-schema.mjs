@@ -14,6 +14,14 @@ function assert(condition, message) {
   if (!condition) throw new Error(message);
 }
 
+function isJsonSchemaUri(value) {
+  try {
+    return new URL(value).hostname === "json-schema.org";
+  } catch {
+    return false;
+  }
+}
+
 function typeOf(value) {
   if (Array.isArray(value)) return "array";
   if (value === null) return "null";
@@ -66,7 +74,7 @@ function validateValue(definition, value, path) {
   }
 }
 
-assert(schema.$schema?.includes("json-schema.org"), "schema must declare JSON Schema draft");
+assert(isJsonSchemaUri(schema.$schema), "schema must declare JSON Schema draft");
 assert(schema.$id?.includes("agent-registry-entry.v1"), "schema id must identify agent registry v1");
 assert(schema.title === "Agent Registry Entry", "schema title must be Agent Registry Entry");
 assert(schema.type === "object", "schema root must be an object");
