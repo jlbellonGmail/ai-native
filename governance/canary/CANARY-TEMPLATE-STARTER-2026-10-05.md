@@ -49,7 +49,7 @@ Ruleset `template-starter-main` (id 24421920), aplicado el 2026-10-05:
 
 ## Qué falta para cerrar M5.4
 
-1. Mergear #55 y #56 (humano) y publicar `rc.2` (ver `governance/versioning/RC2-READINESS.md`).
+1. ~~Mergear #55 y #56 y publicar `rc.2`~~: hecho (rc.2 publicada sobre `51ef185`; ver `governance/versioning/RC2-READINESS.md`).
 2. Recomendado: `migrate bump` del canary a rc.2 (PR de dos archivos) y volver a pasar L3.
 3. Merge humano de la PR #4.
 4. Comprobar que `main` de `template-starter` queda sano y que el ruleset exige un check que de verdad se reporta.

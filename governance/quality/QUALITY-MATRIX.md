@@ -1,27 +1,27 @@
 # Matriz de calidad de M5 (evidencia, no declaración)
 
-Actualizada: 2026-10-05, sobre `main` = `0ffe68d` (`v3.0.0-rc.1`) más las PRs abiertas que se indican. Vocabulario: **PASS** (ejecutado, con evidencia citada) · **PARTIAL** · **PREPARED** (listo, depende de un merge/acción humana) · **NOT_VERIFIED** (no hay evidencia propia; no se puntúa como cumplido) · **PENDING_HUMAN**. Nada se marca PASS por inferencia.
+Actualizada: 2026-10-05, sobre `main` = `51ef185` (`v3.0.0-rc.2`; la columna de rc.1 se conserva donde la evidencia es de `0ffe68d`). Vocabulario: **PASS** (ejecutado, con evidencia citada) · **PARTIAL** · **PREPARED** (listo, depende de un merge/acción humana) · **NOT_VERIFIED** (no hay evidencia propia; no se puntúa como cumplido) · **PENDING_HUMAN**. Nada se marca PASS por inferencia.
 
 ## Plataforma y release
 
 | Área | Estado | Evidencia |
 |---|---|---|
-| Auditoría PLATFORM | **PASS** para `0ffe68d` | 92.5/100 (gate 90, mínimo efectivo 88) sobre `5a60072`, informe `.audit/reports/AUDIT-PLATFORM-5a60072.md`, vigente para `0ffe68d` (solo cambió `.audit/**`). **Una `rc.2` exige auditoría nueva sobre su SHA**: PREPARED, no ejecutada. |
-| `release-gate` | **PASS** para `0ffe68d` | `node runtime/audit/cli.mjs release-gate --profile PLATFORM --candidate 0ffe68d… --root .` → PASS (2026-10-05). |
+| Auditoría PLATFORM | **PASS** para `51ef185` | rc.2: 93.0/100 (gate 90, mínimo efectivo 88) sobre `3477428`, informe `.audit/reports/AUDIT-PLATFORM-3477428.md`, vigente para `51ef185` (solo cambió `.audit/**`); 0 BLOCKER/CRITICAL/MAJOR, 8 MINOR abiertos. Lectura estricta de G3 (suite local inestable con concurrencia por defecto en Windows): techo 89, sigue ≥ 88. rc.1: 92.5 sobre `5a60072` (STALE para rc.2). |
+| `release-gate` | **PASS** para `51ef185` | `node runtime/audit/cli.mjs release-gate --profile PLATFORM --candidate 51ef185… --root .` → PASS_WITH_WARNINGS (el informe de rc.1 queda STALE; el de rc.2 es válido) y el job del workflow `Release` en success (2026-10-05). Para `0ffe68d`: PASS. |
 | Parity | **PASS** | `node parity/validate-parity.mjs`: 95 registrados, 95 implementados; tests-map 35 archivos / 264 funciones (unmapped=0); files-map 576 archivos (unmapped=0). |
 | UNMAPPED | **PASS** (=0) | ídem. |
 | P1–P45 | **PARTIAL / NOT_VERIFIED por condición** | Cada P se mapea a tests PAR (95/95 implementados y pasando) y la auditoría independiente los cubre en agregado. Con evidencia propia individual: P29 (atestación ajena rechazada con `gh` real), P33 (2 auditorías de fixtures), P39b, P41/C6 (run 37145520404 y canary), P44 y P45 (tests adversariales). **El resto no se re-derivó una a una** esta noche: no se declara PASS individual. |
 | L1 | **PASS** | `node runtime/evals/cli.mjs l1` → PASS (10 escenarios deterministas, sin modelo). |
 | L2 | **NOT_VERIFIED** | El harness (`runL2`, N≥3, varianza, `metricStatus`) está probado con un agente inyectado; **no hay corrida con un agente real** (no tiene CLI). No se declara. |
 | L3 | **PASS** | `l3-consumer` reusable en run real cross-repo (`evaluation/compat/c6-evidence.json`, run 37145520404) y en el canary (run 37261668915, PR #4). |
-| CodeQL | **PARTIAL** | Análisis de `main` en success; 1 alerta abierta (#10), corregida en la PR de higiene pendiente de merge; se cierra cuando GitHub reanalice. 9 `fixed`, 3 descartadas con justificación. |
+| CodeQL | **PARTIAL** | Análisis de `main` en success sobre `3477428` y `51ef185`; 0 alertas abiertas: 10 `fixed` (la #10, el 2026-10-05T14:36:20Z, tras el re-análisis de `6b7998e`) y 3 descartadas con justificación. |
 | Trivy | **PASS** | `Trivy` y `trivy-fs` success en `main` (`0ffe68d`). |
 | SBOM | **PASS** | CI `SBOM` success; SBOM del release CycloneDX 1.7 válido, **0 componentes** (la plataforma no tiene dependencias de terceros). |
 | Provenance / attestation | **PASS** | `gh attestation verify` de los 4 assets de rc.1 (también offline con el bundle sigstore): sujeto = commit `0ffe68d`, ref `refs/tags/v3.0.0-rc.1`; contra otro repo se rechaza. |
 | Revocations | **PASS** | `revocations-1.json` del release idéntico al del repo; lista vacía (`entries: []`); `status --check` online → `revocation: CHECKED`. |
 | Supply chain | **PASS** | `Supply chain` success; `pin-check` valida todas las acciones por SHA; `sha_pinning_required = true`. |
 | Release `v3.0.0-rc.1` | **PASS** | tag anotado en `0ffe68d`, pre-release inmutable, workflow build/publish/verify success, `sha256sum -c` 4/4. |
-| `v3.0.0-rc.2` | **PREPARED** | ver `governance/versioning/RC2-READINESS.md`. No publicada: faltan merges y auditoría. |
+| `v3.0.0-rc.2` | **PASS** | tag anotado sobre `51ef185`, pre-release inmutable, workflow `Release` en success; `node scripts/verify-release.mjs v3.0.0-rc.2 --expect-commit 51ef185…` → PASS (22 checks); camino rc.1 → rc.2 → rollback a rc.1 ejecutado (ver `governance/versioning/RC2-READINESS.md`). |
 | `v3.0.0` | **NOT STARTED** | exige canary real PASS. |
 
 ## Plataformas y modos (rc.1 instalado desde el release público)
@@ -53,7 +53,7 @@ Actualizada: 2026-10-05, sobre `main` = `0ffe68d` (`v3.0.0-rc.1`) más las PRs a
 | Área | Estado | Evidencia |
 |---|---|---|
 | Rulesets de `main` | **PASS con límite declarado** | `ai-native-main` activo, sin bypass actors, 6 checks requeridos. **F2: `required_approving_review_count = 0`** (un solo maintainer); sin cambios sin decisión humana nueva. |
-| Alerta de code scanning #10 | **PARTIAL** | abierta en GitHub hasta el re-análisis; corregida en la PR de higiene. |
+| Alerta de code scanning #10 | **PASS** | `fixed` en GitHub (`fixed_at` 2026-10-05T14:36:20Z) tras el re-análisis real de `6b7998e`. |
 | Dependabot | **PASS** | 0 alertas abiertas; #23–#26 cerradas como superseded con justificación; **#48 abierta a propósito** (plano de control). |
 | Secret scanning y push protection | **PASS** | Estaban desactivados (hallazgo F-04 de la auditoría). Activados el 2026-10-05; verificado por `GET /repos/…` (`secret_scanning: enabled`, `secret_scanning_push_protection: enabled`). Es un ajuste del repositorio, no un ruleset. |
 | Revocación de las claves antiguas de `ai-native-trust` | **NOT_VERIFIED / PENDING_HUMAN** | la API no expone las claves de una App. |
