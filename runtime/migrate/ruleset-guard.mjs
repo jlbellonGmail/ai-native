@@ -5,12 +5,15 @@
 //
 // Fail-closed and honest about its limits:
 //   * it never edits a ruleset; it only reports, with a recommended action;
-//   * a retired workflow it cannot read (no jobs found) is an error, not a pass;
-//   * a required check no workflow in the tree explains is reported as unknown (it may come from an external
-//     app), never as safe;
-//   * the check-context derivation is a line-based reading of `jobs:` (names, matrix, reusable calls). It is
-//     a heuristic for GitHub Actions' naming, not a YAML parser: a matrix or an expression in `name:` is matched
-//     as a pattern and reported as such.
+//   * a retired workflow it cannot read COMPLETELY (no jobs found, or lines at job-id indentation it did not
+//     understand: quoted ids, anchors, odd indentation) is an error, not a pass;
+//   * a required check no surviving workflow explains is reported (WILL_DISAPPEAR when a retired workflow produced it,
+//     UNKNOWN_SOURCE otherwise: it may come from an external app), never as safe;
+//   * when deciding that a check SURVIVES it is conservative: a surviving job named only by an expression (it could be
+//     anything), a surviving workflow it cannot read, or one that never runs for a PR (schedule / workflow_dispatch /
+//     workflow_call only) does NOT count as a keeper;
+//   * the check-context derivation is a line-based reading of `jobs:` (names, matrix, reusable calls). It is a
+//     heuristic for GitHub Actions' naming, not a YAML parser.
 import { spawnSync } from "node:child_process";
 
 export const CODES = {
@@ -21,15 +24,23 @@ export const CODES = {
   NOT_CHECKED: "RULESET_NOT_CHECKED",
 };
 
+/** Events whose workflows report checks on the head commit of a PR (`push` counts: same SHA). */
+const REPORTING_EVENTS = ["pull_request", "pull_request_target", "push"];
+
 const unquote = (s) => s.trim().replace(/\s+#.*$/, "").replace(/^(["'])(.*)\1$/, "$2");
 const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-/** Jobs of a workflow file: [{ id, name, uses, matrix }]. Empty when no `jobs:` block can be read. */
+/**
+ * Jobs of a workflow file: [{ id, name, uses, matrix }]. Empty when no `jobs:` block can be read.
+ * The array has an `unrecognized` property: lines at job-id indentation that were NOT understood (quoted ids, anchors,
+ * odd indentation). A file with any of them is only PARTIALLY read, and callers must not trust the job list as complete.
+ */
 export function parseJobs(text) {
   const lines = text.replace(/\r/g, "").split("\n");
   const start = lines.findIndex((l) => /^jobs:\s*(#.*)?$/.test(l));
-  if (start < 0) return [];
   const jobs = [];
+  jobs.unrecognized = [];
+  if (start < 0) return jobs;
   let current = null;
   for (let i = start + 1; i < lines.length; i += 1) {
     const line = lines[i];
@@ -41,6 +52,8 @@ export function parseJobs(text) {
       jobs.push(current);
       continue;
     }
+    // anything else at (or shallower than) job-id indentation is a job we did not understand
+    if (/^ {0,2}\S/.test(line)) { jobs.unrecognized.push(line.trim()); current = null; continue; }
     if (!current) continue;
     const name = /^ {4}name:\s*(.+)$/.exec(line);
     if (name) current.name = unquote(name[1]);
@@ -51,28 +64,54 @@ export function parseJobs(text) {
   return jobs;
 }
 
-/** Check contexts a job reports, as a literal or a regular expression. */
-export function contextsOfJob(job) {
-  if (job.uses) return [{ pattern: new RegExp(`^${escapeRe(job.id)} / .+$`), source: `${job.id} / <reusable job>` }];
-  const base = job.name ?? job.id;
-  if (base.includes("${{")) {
-    const re = base.split(/\$\{\{.*?\}\}/g).map(escapeRe).join(".*");
-    return [{ pattern: new RegExp(`^${re}( \\(.*\\))?$`), source: `${base} (expression)` }];
+/** Event names a workflow triggers on, or null when `on:` cannot be read. */
+export function parseTriggers(text) {
+  const lines = text.replace(/\r/g, "").split("\n");
+  const i = lines.findIndex((l) => /^(on|"on"|'on'):/.test(l));
+  if (i < 0) return null;
+  const events = new Set();
+  const first = lines[i].replace(/^(on|"on"|'on'):/, "").replace(/\s+#.*$/, "").trim();
+  if (first) for (const w of first.match(/[a-z_]+/g) ?? []) events.add(w);
+  for (let j = i + 1; j < lines.length; j += 1) {
+    const line = lines[j];
+    if (!line.trim() || /^\s*#/.test(line)) continue;
+    if (!/^\s/.test(line)) break;
+    const key = /^ {2}([a-z_]+):/.exec(line) ?? /^ {2}- *([a-z_]+)\s*$/.exec(line);
+    if (key) events.add(key[1]);
   }
-  if (job.matrix) return [{ pattern: new RegExp(`^${escapeRe(base)}( \\(.*\\))?$`), source: `${base} (matrix)` }];
-  return [{ pattern: new RegExp(`^${escapeRe(base)}$`), source: base }];
+  return events.size ? events : null;
 }
 
-/** All the contexts a set of workflow files can report: [{ file, source, pattern }]. */
+/** Check contexts a job reports, as a regular expression. `opaque` = a name made only of expressions (could be anything). */
+export function contextsOfJob(job) {
+  if (job.uses) return [{ pattern: new RegExp(`^${escapeRe(job.id)} / .+$`), source: `${job.id} / <reusable job>`, opaque: false }];
+  const base = job.name ?? job.id;
+  if (base.includes("${{")) {
+    const opaque = base.replace(/\$\{\{.*?\}\}/g, "").replace(/[\s()]/g, "").length === 0;
+    const re = base.split(/\$\{\{.*?\}\}/g).map(escapeRe).join(".*");
+    return [{ pattern: new RegExp(`^${re}( \\(.*\\))?$`), source: `${base} (expression)`, opaque }];
+  }
+  if (job.matrix) return [{ pattern: new RegExp(`^${escapeRe(base)}( \\(.*\\))?$`), source: `${base} (matrix)`, opaque: false }];
+  return [{ pattern: new RegExp(`^${escapeRe(base)}$`), source: base, opaque: false }];
+}
+
+/**
+ * All the contexts a set of workflow files can report: { produced: [{ file, source, pattern, opaque }], unreadable, partial }.
+ * `unreadable` = no jobs found; `partial` = some lines at job-id indentation were not understood.
+ */
 export function producedContexts(workflows) {
-  const out = [];
+  const produced = [];
   const unreadable = [];
+  const partial = [];
   for (const { path, text } of workflows) {
     const jobs = parseJobs(text);
-    if (!jobs.length) { unreadable.push(path); continue; }
-    for (const job of jobs) for (const c of contextsOfJob(job)) out.push({ file: path, ...c });
+    if (!jobs.length) unreadable.push(path);
+    else if (jobs.unrecognized.length) partial.push({ path, lines: jobs.unrecognized });
+    const triggers = parseTriggers(text);
+    const reportsOnPr = triggers ? REPORTING_EVENTS.some((e) => triggers.has(e)) : false;
+    for (const job of jobs) for (const c of contextsOfJob(job)) produced.push({ file: path, reportsOnPr, ...c });
   }
-  return { produced: out, unreadable };
+  return { produced, unreadable, partial };
 }
 
 /**
@@ -89,8 +128,14 @@ export function checkRulesetImpact({ required, retiring, surviving, proposed = [
   for (const path of gone.unreadable) {
     findings.push({ severity: "error", code: CODES.WORKFLOW_UNREADABLE, workflow: path, detail: `could not read the jobs of the retired workflow ${path}; its check contexts are unknown`, action: "read the workflow by hand and compare its jobs with the ruleset's required checks before applying" });
   }
+  for (const { path, lines } of gone.partial) {
+    findings.push({ severity: "error", code: CODES.WORKFLOW_UNREADABLE, workflow: path, detail: `the retired workflow ${path} was only partially read (not understood: ${lines.slice(0, 3).join(" | ")}); some of its jobs, and so some check contexts, are unknown`, action: "read the workflow by hand and compare ALL its jobs with the ruleset's required checks before applying" });
+  }
+  for (const path of [...stays.unreadable, ...stays.partial.map((p) => p.path)]) {
+    findings.push({ severity: "warning", code: CODES.WORKFLOW_UNREADABLE, workflow: path, detail: `the surviving workflow ${path} could not be read completely; it is NOT counted as a source of any required check`, action: "if a required check really comes from it, the report may over-state what disappears" });
+  }
   for (const { context } of required) {
-    const keepers = stays.produced.filter((p) => p.pattern.test(context));
+    const keepers = stays.produced.filter((p) => p.reportsOnPr && !p.opaque && p.pattern.test(context));
     if (keepers.length) continue;
     const dying = gone.produced.filter((p) => p.pattern.test(context));
     if (dying.length) {
@@ -100,7 +145,7 @@ export function checkRulesetImpact({ required, retiring, surviving, proposed = [
         action: `before merging, change the consumer's ruleset: replace '${context}' by ${proposed.length ? proposed.map((p) => `'${p}'`).join(", ") : "the check the v3 caller produces"} (do not add a fake job named '${context}'); apply with --accept-ruleset-change only once you decided`,
       });
     } else {
-      findings.push({ severity: "warning", code: CODES.UNKNOWN_SOURCE, context, detail: `required check '${context}' is not produced by any workflow in the tree (an external app?); the migration cannot tell whether it keeps reporting`, action: "confirm its source in the ruleset before merging" });
+      findings.push({ severity: "warning", code: CODES.UNKNOWN_SOURCE, context, detail: `required check '${context}' is not produced by any workflow in the tree that reports on pull requests (an external app?); the migration cannot tell whether it keeps reporting`, action: "confirm its source in the ruleset before merging" });
     }
   }
   const requiredNames = new Set(required.map((r) => r.context));

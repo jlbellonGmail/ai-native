@@ -2,13 +2,15 @@
 // FAILS with AI_NATIVE_REQUIRE_NETWORK=1) plus synthetic edge cases that do not need the network.
 import test, { after } from "node:test";
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { globToRegExp } from "../gates/control-plane.mjs";
 import { planMigration, applyMigration, revertMigration, MigrateError, JOURNAL, PROTECTED, PLATFORM_OWNED } from "./migrate.mjs";
 
+const here = dirname(fileURLToPath(import.meta.url));
 const RELEASE = { repo: "github:jlbellonGmail/ai-native", version: "v3.0.0-rc.1", commit: "99f23f440544bb22bac7179d34b7d5c4e6a1143e", digest: `sha256:${"2".repeat(64)}` };
 const STARTER = "https://github.com/jlbellonGmail/template-starter.git";
 const STARTER_V204 = "9e7dfb5b82ca69a0dd878c719f5861816652780b";
@@ -219,6 +221,21 @@ test("real starter v2.0.4 + its real ruleset: the 3 required checks WILL_DISAPPE
   assert.equal(planMigration({ target: starter, release: RELEASE, tools: ["claude"] }).rulesetCheck.status, "NOT_CHECKED", "library callers that pass nothing are not checked");
   const accepted = applyMigration({ target: starter, release: RELEASE, tools: ["claude"], requiredChecks: required, acceptRulesetChange: true });
   assert.equal(accepted.status, "APPLIED");
+  assert.equal(revertMigration({ target: starter }).status, "REVERTED");
+  assert.equal(status(starter), "");
+});
+
+test("CLI on the real starter: apply with --accept-ruleset-change exits 0 and reports the accepted findings as warnings; without it, it is refused", net, () => {
+  const rsFile = join(base, "required.json");
+  writeFileSync(rsFile, JSON.stringify([{ type: "required_status_checks", parameters: { required_status_checks: ["circuit-tests", "product-tests", "local-reconciler-tests"].map((context) => ({ context, integration_id: 15368 })) } }]));
+  const cli = (...extra) => spawnSync(process.execPath, [join(here, "migrate.mjs"), "apply", "--target", starter, "--repo", RELEASE.repo, "--version", RELEASE.version, "--commit", RELEASE.commit, "--digest", RELEASE.digest, "--tool", "claude", "--ruleset-file", rsFile, "--json", ...extra], { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
+  const refused = cli();
+  assert.notEqual(refused.status, 0);
+  assert.match(refused.stdout, /RULESET_REQUIRED_CHECK_WILL_DISAPPEAR/);
+  assert.equal(status(starter), "", "a refused apply writes nothing");
+  const accepted = cli("--accept-ruleset-change");
+  assert.equal(accepted.status, 0, accepted.stdout.slice(0, 600));
+  assert.match(accepted.stdout, /ACCEPTED with --accept-ruleset-change/);
   assert.equal(revertMigration({ target: starter }).status, "REVERTED");
   assert.equal(status(starter), "");
 });

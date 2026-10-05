@@ -10,6 +10,8 @@
 //           apply created, if the user has not edited it since; a missing journal is an error.
 //   node runtime/migrate/migrate.mjs plan|apply|revert --target <dir> [--repo github:o/r --version vX --commit <sha> --digest sha256:.. --profile <id>]
 //        [--tool claude|codex|opencode]... [--base-branch main] [--keep <path>]... [--json]
+//   bump    node runtime/migrate/migrate.mjs bump --target <dir> --version vX --commit <sha> --digest sha256:.. [--repo github:o/r] [--caller-sha <sha>] [--dry-run]
+//           changes ONLY ai-native.lock.json and the SHA pin of the L3 caller (PAR-BUMP-FOOTPRINT); a prerelease needs platform.channel "rc" first.
 //        ruleset guard (plan|apply): the consumer's required checks come from --ruleset-file <json> (API output or a saved ruleset),
 //        --consumer-repo owner/name (read with `gh`), or the target's `origin` remote; --skip-ruleset-check records that it was NOT checked;
 //        with none of them the command fails closed (RULESET_UNREADABLE). `apply` refuses RULESET_REQUIRED_CHECK_WILL_DISAPPEAR
@@ -26,6 +28,7 @@ import { globToRegExp } from "../gates/control-plane.mjs";
 import { buildReport, renderOutput, exitCodeForReport } from "../lib/json.mjs";
 import { statusFromCounts } from "../lib/result.mjs";
 import { validate } from "../lib/schema-lite.mjs";
+import { planBump, applyBump } from "./bump.mjs";
 import { checkRulesetImpact, fetchRequiredChecks, requiredChecksFrom, CODES as RULESET_CODES } from "./ruleset-guard.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -346,14 +349,21 @@ function main() {
       data = { mode: cmd, ...(r.status ? { result: r.status } : {}), counts: p.counts, retire: p.retire.length, replace: p.replace, create: p.create, keptIdentical: p.keptIdentical.length, keptLocal: p.keptLocal.length, collisions: p.collisions, unresolved: p.unresolved.map((c) => c.path) };
       data.rulesetCheck = p.rulesetCheck;
       if (rulesetNote) warnings.push(rulesetNote);
+      const accepted = cmd === "apply" && r.status !== "BLOCKED" && argv.includes("--accept-ruleset-change");
       for (const f of p.rulesetCheck?.findings ?? []) {
         const line = `${f.code}: ${f.detail}. Action: ${f.action}`;
-        if (f.severity === "error") errors.push(line); else warnings.push(line);
+        // an apply the human explicitly accepted already happened: report the findings as warnings so the exit code says APPLIED, not failure
+        if (f.severity === "error" && !accepted) errors.push(line); else warnings.push(accepted && f.severity === "error" ? `${line} [ACCEPTED with --accept-ruleset-change]` : line);
       }
       if (p.rulesetCheck?.status === "FAIL" && cmd === "apply" && r.status === "BLOCKED" && r.reason === "ruleset") errors.push("apply refused: fix the ruleset plan above or pass --accept-ruleset-change to proceed knowingly");
       if (p.rulesetCheck?.proposed?.length) warnings.push(`add ${p.rulesetCheck.proposed.map((c) => `'${c}'`).join(", ")} as a required check once the v3 caller is on the default branch (the migration never edits a ruleset)`);
       if (r.status === "BLOCKED" && r.reason !== "ruleset" || (cmd === "plan" && p.blocked)) errors.push(`collisions need a decision (--keep <path>): ${p.unresolved.map((c) => c.path).join(", ")}`);
-    } else throw new MigrateError("usage: migrate plan|apply|revert --target <dir> ...");
+    } else if (cmd === "bump") {
+      for (const k of ["version", "commit", "digest"]) if (!release[k]) throw new MigrateError(`--${k} is required`);
+      const args = { projectRoot: resolve(target), release: { version: release.version, commit: release.commit, digest: release.digest, ...(release.repo ? { repo: release.repo } : {}) }, callerSha: value("--caller-sha") ?? release.commit };
+      const planned = planBump(args);
+      data = argv.includes("--dry-run") ? { mode: "bump", dryRun: true, from: planned.from, to: planned.to, changed: Object.keys(planned.files) } : { mode: "bump", ...applyBump(args) };
+    } else throw new MigrateError("usage: migrate plan|apply|revert|bump --target <dir> ...");
   } catch (error) {
     errors.push(error.message);
   }

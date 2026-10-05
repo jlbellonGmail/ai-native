@@ -7,7 +7,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync } from "nod
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { parseJobs, contextsOfJob, checkRulesetImpact, requiredChecksFrom, fetchRequiredChecks, CODES } from "./ruleset-guard.mjs";
+import { parseJobs, parseTriggers, contextsOfJob, checkRulesetImpact, requiredChecksFrom, fetchRequiredChecks, CODES } from "./ruleset-guard.mjs";
 import { callerWorkflow, L3_CHECK, originRepo, resolveRequiredChecks } from "./migrate.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -25,7 +25,7 @@ test("parseJobs reads job ids, names, matrix and reusable calls (CRLF included)"
   assert.equal(jobs[2].matrix, true);
   assert.equal(jobs[3].name, "Pretty name");
   assert.equal(jobs[4].uses, "o/r/.github/workflows/w.yml@abc");
-  assert.deepEqual(parseJobs("name: x\non: push\n"), []);
+  assert.equal(parseJobs("name: x\non: push\n").length, 0);
 });
 
 test("contexts: id, explicit name, matrix suffix, expression, reusable call", () => {
@@ -50,7 +50,7 @@ test("the canary case: every required check came from the retired ci.yml -> all 
 });
 
 test("a required check a surviving workflow also produces is not reported; a check the L3 caller produces is satisfied", () => {
-  const keep = { path: ".github/workflows/other.yml", text: "jobs:\n  circuit-tests:\n    runs-on: x\n" };
+  const keep = { path: ".github/workflows/other.yml", text: "on: push\njobs:\n  circuit-tests:\n    runs-on: x\n" };
   const r = checkRulesetImpact({ required: [...REQUIRED, { context: L3_CHECK }], retiring: [{ path: ".github/workflows/ci.yml", text: V2_CI }], surviving: [keep, caller], proposed: [L3_CHECK] });
   assert.deepEqual(r.findings.map((f) => f.context), ["product-tests", "local-reconciler-tests"]);
   assert.deepEqual(r.proposed, [], "already required: nothing to propose");
@@ -149,6 +149,71 @@ test("CLI: plan with no ruleset source fails closed; --skip-ruleset-check record
     } finally {
       rmSync(file, { force: true });
     }
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("a retired workflow read only PARTIALLY (quoted id, anchor) is an ERROR, never an UNKNOWN_SOURCE warning", () => {
+  const text = ["on: push", "jobs:", "  a:", "    runs-on: x", '  "b":', "    runs-on: x", "  c: &anchor", "    runs-on: x", ""].join("\n");
+  assert.deepEqual(parseJobs(text).map((j) => j.id), ["a"]);
+  assert.deepEqual(parseJobs(text).unrecognized, ['"b":', "c: &anchor"]);
+  const r = checkRulesetImpact({ required: [{ context: "b" }, { context: "c" }], retiring: [{ path: ".github/workflows/ci.yml", text }], surviving: [caller] });
+  assert.equal(r.status, "FAIL");
+  assert.ok(r.findings.some((f) => f.code === CODES.WORKFLOW_UNREADABLE && /partially read/.test(f.detail)));
+});
+
+test("a surviving job named only by an expression, or a workflow that never runs for a PR, is NOT a keeper", () => {
+  const retiring = [{ path: ".github/workflows/ci.yml", text: V2_CI }];
+  const opaque = { path: ".github/workflows/x.yml", text: "on: push\njobs:\n  any:\n    name: ${{ inputs.n }}\n    runs-on: x\n" };
+  const scheduled = { path: ".github/workflows/s.yml", text: "on:\n  schedule:\n    - cron: '0 0 * * *'\n  workflow_dispatch:\njobs:\n  circuit-tests:\n    runs-on: x\n" };
+  const pushOnly = { path: ".github/workflows/p.yml", text: "on: [push]\njobs:\n  product-tests:\n    runs-on: x\n" };
+  const r = checkRulesetImpact({ required: REQUIRED, retiring, surviving: [opaque, scheduled, pushOnly, caller] });
+  assert.deepEqual(r.findings.map((f) => f.context), ["circuit-tests", "local-reconciler-tests"], "opaque and scheduled-only do not suppress; push-only does");
+});
+
+test("a surviving workflow that cannot be read is reported as a warning and is not counted as a source", () => {
+  const r = checkRulesetImpact({ required: [{ context: "keep" }], retiring: [], surviving: [{ path: ".github/workflows/odd.yml", text: "nothing useful" }] });
+  assert.ok(r.findings.some((f) => f.code === CODES.WORKFLOW_UNREADABLE && f.severity === "warning" && f.workflow.endsWith("odd.yml")));
+  assert.equal(r.status, "PASS");
+});
+
+test("parseTriggers reads scalar, flow and block forms, and returns null when unreadable", () => {
+  assert.deepEqual([...parseTriggers("on: push\njobs: {}")], ["push"]);
+  assert.deepEqual([...parseTriggers("on: [push, pull_request]\n")].sort(), ["pull_request", "push"]);
+  assert.deepEqual([...parseTriggers("on:\r\n  push:\r\n    branches: [main]\r\n  workflow_call:\r\njobs:\r\n")].sort(), ["push", "workflow_call"]);
+  assert.deepEqual([...parseTriggers("on:\n  - push\n  - schedule\n")].sort(), ["push", "schedule"]);
+  assert.equal(parseTriggers("jobs: {}"), null);
+});
+
+test("CLI bump: changes only the lock and the caller pin, supports --dry-run, refuses a prerelease from the stable channel", () => {
+  const dir = mkdtempSync(join(tmpdir(), "ai-native-bump-"));
+  const git = (...a) => execFileSync("git", a, { cwd: dir, encoding: "utf8" });
+  const sha = (c) => c.repeat(40);
+  const lock = (channel) => `${JSON.stringify({ schemaVersion: 1, platform: { repo: "github:o/ai-native", version: "v3.0.0-rc.1", commit: sha("a"), digest: `sha256:${"1".repeat(64)}`, channel }, profiles: ["factory"], mcpProfiles: [], packs: [] }, null, 2)}\n`;
+  try {
+    git("init", "-q", "-b", "main");
+    mkdirSync(join(dir, ".github", "workflows"), { recursive: true });
+    writeFileSync(join(dir, "ai-native.lock.json"), lock("rc"));
+    writeFileSync(join(dir, ".github", "workflows", "ai-native.yml"), callerWorkflow({ repo: "github:o/ai-native", commit: sha("a"), baseBranch: "main" }));
+    const rel = ["--version", "v3.0.0-rc.2", "--commit", sha("b"), "--digest", `sha256:${"2".repeat(64)}`, "--repo", "github:o/ai-native"];
+    const cli = (...extra) => spawnSync(process.execPath, [join(here, "migrate.mjs"), "bump", "--target", dir, ...rel, ...extra], { cwd: tmpdir(), encoding: "utf8" });
+    const dry = cli("--dry-run", "--json");
+    assert.equal(dry.status, 0, dry.stdout);
+    assert.match(dry.stdout, /"dryRun": true/);
+    assert.equal(JSON.parse(readFileSync(join(dir, "ai-native.lock.json"), "utf8")).platform.version, "v3.0.0-rc.1", "dry run writes nothing");
+    const done = cli("--json");
+    assert.equal(done.status, 0, done.stdout);
+    const after = JSON.parse(readFileSync(join(dir, "ai-native.lock.json"), "utf8")).platform;
+    assert.equal(after.version, "v3.0.0-rc.2");
+    assert.equal(after.commit, sha("b"));
+    assert.equal(after.channel, "rc", "a bump never changes the channel");
+    assert.match(readFileSync(join(dir, ".github", "workflows", "ai-native.yml"), "utf8"), new RegExp(`l3-consumer.yml@${sha("b")}`));
+    assert.equal(cli().status !== 0, true, "bumping to the version already pinned is refused");
+    writeFileSync(join(dir, "ai-native.lock.json"), lock("stable"));
+    const refused = spawnSync(process.execPath, [join(here, "migrate.mjs"), "bump", "--target", dir, "--version", "v3.0.0-rc.3", "--commit", sha("c"), "--digest", `sha256:${"3".repeat(64)}`], { cwd: tmpdir(), encoding: "utf8" });
+    assert.notEqual(refused.status, 0);
+    assert.match(refused.stdout, /prerelease/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
