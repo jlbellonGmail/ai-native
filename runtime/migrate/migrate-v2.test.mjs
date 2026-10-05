@@ -102,6 +102,25 @@ test("a dirty tree and an empty/unknown repo are refused before anything is writ
   assert.throws(() => revertMigration({ target: repo({ "b.txt": "1" }) }), MigrateError);
 });
 
+test("real starter v2.0.4 + its real ruleset: the 3 required checks WILL_DISAPPEAR (C-2); apply is refused until accepted; the L3 check is proposed", net, () => {
+  // required checks of ruleset template-starter-main (24421920), as the API returns them
+  const required = ["circuit-tests", "product-tests", "local-reconciler-tests"].map((context) => ({ context, integrationId: 15368 }));
+  const plan = planMigration({ target: starter, release: RELEASE, tools: ["claude"], requiredChecks: required });
+  assert.equal(plan.rulesetCheck.status, "FAIL");
+  assert.deepEqual(plan.rulesetCheck.findings.map((f) => f.code), Array(3).fill("RULESET_REQUIRED_CHECK_WILL_DISAPPEAR"));
+  assert.deepEqual(plan.rulesetCheck.proposed, ["l3 / l3-consumer"]);
+  assert.equal(status(starter), "", "plan is read-only");
+  const refused = applyMigration({ target: starter, release: RELEASE, tools: ["claude"], requiredChecks: required });
+  assert.equal(refused.status, "BLOCKED");
+  assert.equal(refused.reason, "ruleset");
+  assert.equal(status(starter), "", "a refused apply writes nothing");
+  assert.equal(planMigration({ target: starter, release: RELEASE, tools: ["claude"] }).rulesetCheck.status, "NOT_CHECKED", "library callers that pass nothing are not checked");
+  const accepted = applyMigration({ target: starter, release: RELEASE, tools: ["claude"], requiredChecks: required, acceptRulesetChange: true });
+  assert.equal(accepted.status, "APPLIED");
+  assert.equal(revertMigration({ target: starter }).status, "REVERTED");
+  assert.equal(status(starter), "");
+});
+
 test("a LOCAL v2-style file that a v3 file would overwrite is a collision that BLOCKS; --keep records the decision and leaves it alone", () => {
   const dir = repo({ "CLAUDE.md": "my own claude rules\n", "src/app.js": "1\n" });
   const plan = planMigration({ target: dir, release: RELEASE, tools: ["claude"] });

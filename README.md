@@ -67,7 +67,7 @@ node runtime/bootstrap/cli.mjs status                     # READY | NEEDS_SYNC |
 node runtime/bootstrap/cli.mjs run -- adapters            # derive CLAUDE.md, .mcp.json, .codex/, opencode.json, skills from the release
 node runtime/bootstrap/cli.mjs run -- l3                  # consumer gate (also: .github/workflows/l3-consumer.yml, reusable)
 node runtime/bootstrap/cli.mjs rollback                   # back to the previous cached release
-node runtime/migrate/migrate.mjs plan|apply|revert --target <v2 repo> ...   # v2 -> v3, reversible
+node runtime/migrate/migrate.mjs plan|apply|revert --target <v2 repo> ...   # v2 -> v3, reversible; see governance/migration/MIGRATION-V2-TO-V3.md
 ```
 
 Troubleshooting: `status` says why it is not READY; `doctor` checks node, git, the lock, the active release and the cache.

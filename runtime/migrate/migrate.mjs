@@ -10,6 +10,10 @@
 //           apply created, if the user has not edited it since; a missing journal is an error.
 //   node runtime/migrate/migrate.mjs plan|apply|revert --target <dir> [--repo github:o/r --version vX --commit <sha> --digest sha256:.. --profile <id>]
 //        [--tool claude|codex|opencode]... [--base-branch main] [--keep <path>]... [--json]
+//        ruleset guard (plan|apply): the consumer's required checks come from --ruleset-file <json> (API output or a saved ruleset),
+//        --consumer-repo owner/name (read with `gh`), or the target's `origin` remote; --skip-ruleset-check records that it was NOT checked;
+//        with none of them the command fails closed (RULESET_UNREADABLE). `apply` refuses RULESET_REQUIRED_CHECK_WILL_DISAPPEAR
+//        unless --accept-ruleset-change. Nothing here ever edits a ruleset.
 import { createHash } from "node:crypto";
 import { execFileSync, spawnSync } from "node:child_process";
 import { constants, copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
@@ -22,12 +26,15 @@ import { globToRegExp } from "../gates/control-plane.mjs";
 import { buildReport, renderOutput, exitCodeForReport } from "../lib/json.mjs";
 import { statusFromCounts } from "../lib/result.mjs";
 import { validate } from "../lib/schema-lite.mjs";
+import { checkRulesetImpact, fetchRequiredChecks, requiredChecksFrom, CODES as RULESET_CODES } from "./ruleset-guard.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const PLATFORM_ROOT = join(here, "..", "..");
 export const JOURNAL = ".ai-native/migration-journal.json";
 export const CALLER = ".github/workflows/ai-native.yml";
 export class MigrateError extends Error {}
+/** The check the v3 caller (`CALLER`, job `l3`) reports from the reusable `l3-consumer.yml` job; consistency is tested. */
+export const L3_CHECK = "l3 / l3-consumer";
 const lockSchema = JSON.parse(readFileSync(join(PLATFORM_ROOT, "contracts", "lock.schema.json"), "utf8"));
 
 /** Never touched, whatever their classification (plan SS18: "Conserva runs/, .audit/, ROADMAP.md y STATUS.md"). */
@@ -57,7 +64,7 @@ function inventory(target) {
   return report;
 }
 
-function callerWorkflow({ repo, commit, baseBranch }) {
+export function callerWorkflow({ repo, commit, baseBranch }) {
   const slug = repo.replace(/^github:/, "");
   return `name: ai-native
 
@@ -78,7 +85,11 @@ jobs:
 }
 
 /** Pure given the inventory: what would happen. Throws on a dirty tree or in-flight v2 units. */
-export function planMigration({ target, release, profile = "factory", tools = ["claude", "codex", "opencode"], baseBranch = "main", keep = [], releaseRoot = PLATFORM_ROOT }) {
+/**
+ * `requiredChecks` ([{context}]) are the status checks the consumer's ruleset requires; when given, the plan reports every one
+ * that would stop reporting because its workflow is retired (RULESET_REQUIRED_CHECK_WILL_DISAPPEAR). undefined = not checked.
+ */
+export function planMigration({ target, release, profile = "factory", tools = ["claude", "codex", "opencode"], baseBranch = "main", keep = [], releaseRoot = PLATFORM_ROOT, requiredChecks = undefined }) {
   const root = resolve(target);
   if (git(root, "status", "--porcelain")) throw new MigrateError("working tree is not clean: commit or stash first (no migration over uncommitted changes)");
   const inv = inventory(root);
@@ -107,7 +118,26 @@ export function planMigration({ target, release, profile = "factory", tools = ["
     else collisions.push({ path: p, reason: `${existing.classification} v2 file (yours or product-owned)` });
   }
   const unresolved = collisions.filter((c) => !keep.includes(c.path));
-  return { root, counts: inv.counts, retire, keptIdentical, keptLocal, create, replace, collisions, unresolved, kept: collisions.filter((c) => keep.includes(c.path)), add, blocked: unresolved.length > 0 };
+  const rulesetCheck = rulesetImpact({ root, requiredChecks, retire, add });
+  return { root, counts: inv.counts, retire, keptIdentical, keptLocal, create, replace, collisions, unresolved, kept: collisions.filter((c) => keep.includes(c.path)), add, blocked: unresolved.length > 0, rulesetCheck };
+}
+
+const WORKFLOW = /^\.github\/workflows\/[^/]+\.ya?ml$/;
+
+function rulesetImpact({ root, requiredChecks, retire, add }) {
+  if (requiredChecks === undefined) return { status: "NOT_CHECKED", findings: [], proposed: [], required: [] };
+  const retiringPaths = new Set(retire.map((r) => r.path).filter((p) => WORKFLOW.test(p)));
+  const retiring = [...retiringPaths].map((path) => ({ path, text: readOrNull(join(root, path))?.toString("utf8") ?? "" }));
+  const surviving = [];
+  const dir = join(root, ".github", "workflows");
+  if (existsSync(dir)) {
+    for (const name of readdirSync(dir)) {
+      const path = `.github/workflows/${name}`;
+      if (WORKFLOW.test(path) && !retiringPaths.has(path) && !(path in add)) surviving.push({ path, text: readFileSync(join(dir, name), "utf8") });
+    }
+  }
+  for (const [path, text] of Object.entries(add)) if (WORKFLOW.test(path)) surviving.push({ path, text });
+  return checkRulesetImpact({ required: requiredChecks, retiring, surviving, proposed: [L3_CHECK] });
 }
 
 export function applyMigration(args) {
@@ -116,6 +146,8 @@ export function applyMigration(args) {
   const root = plan.root;
   if (existsSync(join(root, JOURNAL))) throw new MigrateError("a migration journal already exists; revert it first");
   if (plan.blocked) return { status: "BLOCKED", plan, written: [], removed: [] };
+  // a migration that would leave the consumer's PRs permanently unmergeable is refused until a human decides (--accept-ruleset-change)
+  if (plan.rulesetCheck?.status === "FAIL" && !args.acceptRulesetChange) return { status: "BLOCKED", reason: "ruleset", plan, written: [], removed: [] };
   const baseCommit = git(root, "rev-parse", "HEAD");
   // 0) the lock we are about to write must validate: a bad release (e.g. a malformed commit) aborts with the tree untouched
   const lockErrors = validate(JSON.parse(plan.add[LOCK_FILE]), lockSchema);
@@ -263,6 +295,33 @@ function pruneEmpty(root, rel) {
   }
 }
 
+/** owner/name of the target's `origin` when it is a github.com remote, else null. */
+export function originRepo(target) {
+  try {
+    const url = git(resolve(target), "remote", "get-url", "origin");
+    const m = /github\.com[:/]([\w.-]+\/[\w.-]+?)(?:\.git)?\/?$/.exec(url);
+    return m ? m[1] : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Where the consumer's required checks come from. Returns {requiredChecks} | {notChecked} | {error}. */
+export function resolveRequiredChecks({ target, baseBranch, rulesetFile, consumerRepo, skip }) {
+  if (skip) return { notChecked: true };
+  if (rulesetFile) {
+    try {
+      return { requiredChecks: requiredChecksFrom(JSON.parse(readFileSync(resolve(rulesetFile), "utf8"))) };
+    } catch (error) {
+      return { error: `${RULESET_CODES.UNREADABLE}: --ruleset-file ${rulesetFile}: ${error.message}` };
+    }
+  }
+  const repo = consumerRepo ?? originRepo(target);
+  if (!repo) return { error: `${RULESET_CODES.UNREADABLE}: no ruleset source (pass --ruleset-file, --consumer-repo owner/name, or --skip-ruleset-check to record that it was not checked)` };
+  const r = fetchRequiredChecks({ repo, branch: baseBranch });
+  return r.error ? { error: `${RULESET_CODES.UNREADABLE}: ${r.error}` } : { requiredChecks: r.required };
+}
+
 function main() {
   const argv = process.argv.slice(2);
   const cmd = argv.shift();
@@ -270,22 +329,35 @@ function main() {
   const value = (n) => values(n)[0];
   const target = value("--target") ?? process.cwd();
   const errors = [];
+  const warnings = [];
   let data = {};
   try {
     const release = { repo: value("--repo"), version: value("--version"), commit: value("--commit"), digest: value("--digest") };
     const common = { target, release, profile: value("--profile") ?? "factory", tools: values("--tool").length ? values("--tool") : undefined, baseBranch: value("--base-branch") ?? "main", keep: values("--keep") };
+    let rulesetNote = null;
     if (cmd === "revert") data = revertMigration({ target });
     else if (cmd === "plan" || cmd === "apply") {
       for (const k of ["repo", "version", "commit", "digest"]) if (!release[k]) throw new MigrateError(`--${k} is required`);
-      const r = cmd === "plan" ? planMigration(common) : applyMigration(common);
+      const src = resolveRequiredChecks({ target, baseBranch: common.baseBranch, rulesetFile: value("--ruleset-file"), consumerRepo: value("--consumer-repo"), skip: argv.includes("--skip-ruleset-check") });
+      if (src.error) throw new MigrateError(src.error);
+      if (src.notChecked) rulesetNote = `${RULESET_CODES.NOT_CHECKED}: --skip-ruleset-check; required checks that a retired workflow produced will NOT be reported`;
+      const r = cmd === "plan" ? planMigration({ ...common, requiredChecks: src.requiredChecks }) : applyMigration({ ...common, requiredChecks: src.requiredChecks, acceptRulesetChange: argv.includes("--accept-ruleset-change") });
       const p = r.plan ?? r;
       data = { mode: cmd, ...(r.status ? { result: r.status } : {}), counts: p.counts, retire: p.retire.length, replace: p.replace, create: p.create, keptIdentical: p.keptIdentical.length, keptLocal: p.keptLocal.length, collisions: p.collisions, unresolved: p.unresolved.map((c) => c.path) };
-      if (r.status === "BLOCKED" || (cmd === "plan" && p.blocked)) errors.push(`collisions need a decision (--keep <path>): ${p.unresolved.map((c) => c.path).join(", ")}`);
+      data.rulesetCheck = p.rulesetCheck;
+      if (rulesetNote) warnings.push(rulesetNote);
+      for (const f of p.rulesetCheck?.findings ?? []) {
+        const line = `${f.code}: ${f.detail}. Action: ${f.action}`;
+        if (f.severity === "error") errors.push(line); else warnings.push(line);
+      }
+      if (p.rulesetCheck?.status === "FAIL" && cmd === "apply" && r.status === "BLOCKED" && r.reason === "ruleset") errors.push("apply refused: fix the ruleset plan above or pass --accept-ruleset-change to proceed knowingly");
+      if (p.rulesetCheck?.proposed?.length) warnings.push(`add ${p.rulesetCheck.proposed.map((c) => `'${c}'`).join(", ")} as a required check once the v3 caller is on the default branch (the migration never edits a ruleset)`);
+      if (r.status === "BLOCKED" && r.reason !== "ruleset" || (cmd === "plan" && p.blocked)) errors.push(`collisions need a decision (--keep <path>): ${p.unresolved.map((c) => c.path).join(", ")}`);
     } else throw new MigrateError("usage: migrate plan|apply|revert --target <dir> ...");
   } catch (error) {
     errors.push(error.message);
   }
-  const warnings = data.status === "PARTIAL" ? [`kept user-modified files: ${data.kept.join(", ")}`] : [];
+  if (data.status === "PARTIAL") warnings.push(`kept user-modified files: ${data.kept.join(", ")}`);
   const report = buildReport({ status: statusFromCounts({ errors: errors.length, warnings: warnings.length }), errors, warnings, data: { migration: data } });
   console.log(renderOutput(report, { json: argv.includes("--json") }));
   process.exitCode = exitCodeForReport(report);
