@@ -21,6 +21,17 @@ test("readTextIfExists returns the text, or null only for a missing file", () =>
   }
 });
 
+test("a path through a regular file is absent, not an error (existsSync semantics; ENOTDIR on POSIX)", () => {
+  const { d, cleanup } = dir();
+  try {
+    writeFileSync(join(d, "README.md"), "x");
+    assert.equal(readTextIfExists(join(d, "README.md", "events.jsonl")), null);
+    assert.deepEqual(readLinesIfExists(join(d, "README.md", "events.jsonl")), []);
+  } finally {
+    cleanup();
+  }
+});
+
 test("readTextIfExists propagates every error that is not ENOENT (a directory is not 'absent')", () => {
   const { d, cleanup } = dir();
   try {

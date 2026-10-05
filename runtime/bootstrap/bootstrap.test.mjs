@@ -290,6 +290,24 @@ test("PAR-ROLLBACK-WITH-NEWER-ARTIFACTS: refuses over artifacts newer than the t
   } finally { e.done(); }
 });
 
+test("rollback ignores entries under runs/ that are not unit folders (a stray file, a directory named events.jsonl)", () => {
+  const e = env();
+  try {
+    const v1 = makeBundle(e.assets, "1.tar", "v3.0.0-alpha.1", COMMIT_A);
+    const v2 = makeBundle(e.assets, "2.tar", "v3.0.0-alpha.2", COMMIT_B);
+    writeLock(e.project, "v3.0.0-alpha.1", COMMIT_A, v1.digest);
+    sync({ projectRoot: e.project, cacheRoot: e.cache, fromFile: v1.file });
+    writeLock(e.project, "v3.0.0-alpha.2", COMMIT_B, v2.digest);
+    sync({ projectRoot: e.project, cacheRoot: e.cache, fromFile: v2.file });
+    mkdirSync(join(e.project, "runs", "u-dir", "events.jsonl"), { recursive: true });
+    writeFileSync(join(e.project, "runs", "README.md"), "not a unit");
+    writeFileSync(join(e.project, "runs", ".gitkeep"), "");
+    const r = rollback({ projectRoot: e.project, cacheRoot: e.cache });
+    assert.equal(r.status, "PASS", JSON.stringify(r.errors));
+    assert.equal(readLock(e.project).lock.platform.version, "v3.0.0-alpha.1");
+  } finally { e.done(); }
+});
+
 test("RESTART_REQUIRED: a release that changes the bootstrap code is flagged; one that does not is not", () => {
   const e = env();
   try {
