@@ -54,7 +54,13 @@ node --test runtime/*/*.test.mjs contracts/*.test.mjs core/*.test.mjs parity/*.t
 
 # Build a release locally (deterministic bundle + platform.json + SHA256SUMS)
 node runtime/release/build.mjs --version v3.0.0-rc.1 --out ./out --commit "$(git rev-parse HEAD)"
+
+# Verify a PUBLISHED release the way a consumer would (checksums, attestation, SBOM, revocations, real bootstrap)
+node scripts/verify-release.mjs <tag> --expect-commit <sha>
 ```
+
+Releases: https://github.com/jlbellonGmail/ai-native/releases (`v3.x` pre-releases `-rc.N` until `v3.0.0` is published).
+State of the quality evidence: `governance/quality/QUALITY-MATRIX.md`.
 
 ## Using the platform from a consumer repository
 

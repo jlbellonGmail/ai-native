@@ -211,7 +211,7 @@ test("sync blocks a revoked platform version before touching the cache", () => {
   } finally { e.done(); }
 });
 
-test("sync without a cached release or --from-file fails explicitly (no network source yet)", () => {
+test("sync without a cached release or --from-file fails explicitly (and says how to recover)", () => {
   const e = env();
   try {
     writeLock(e.project, "v3.0.0-alpha.1", COMMIT_A, `sha256:${"3".repeat(64)}`);
