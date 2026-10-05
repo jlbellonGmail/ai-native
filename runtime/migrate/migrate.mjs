@@ -189,7 +189,9 @@ export function revertMigration({ target }) {
     const full = join(root, c.path);
     const current = readOrNull(full);
     if (current === null) { doneCreated.add(c.path); continue; }
-    if (sha(current) !== c.sha256) { kept.push(c.path); continue; }
+    // the journal hash is of the bytes apply wrote (LF); a checkout with autocrlf rewrites line endings, which is
+    // not a user edit, so compare the line-ending-normalised hash too (a real edit still differs either way)
+    if (sha(current) !== c.sha256 && normalizedSha(current) !== c.sha256) { kept.push(c.path); continue; }
     rmSync(full);
     removed.push(c.path);
     doneCreated.add(c.path);
