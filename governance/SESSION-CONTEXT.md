@@ -4,11 +4,11 @@
 > `governance/history/SESSION-CONTEXT-HISTORY-2026-10-04.md`. Fuente de verdad del estado: este archivo, `governance/roadmaps/AI-NATIVE-V3-ROADMAP.md` y Git/GitHub.
 > Política del merge humano: `governance/security/HITL-MERGE-POLICY.md`. Frontera de secretos: `governance/security/SECRETS-BOUNDARY.md`.
 
-Actualizado: 2026-10-04.
+Actualizado: 2026-10-05 (post-publicación de `v3.0.0-rc.2`).
 
 ## Arquitectura (vigente)
 
-`ai-native` es **un único repositorio** (ADR-001, desde la PR #2): áreas de fábrica `governance/`, `foundation/`, `knowledge/`, `template/`; plataforma v3 en `core/ contracts/ runtime/ mcp/ profiles/ audit/ parity/ evaluation/`; `legacy/` es material congelado, no instrucciones. Versión de la plataforma = tag/release (`VERSION` de la raíz: `3.0.0-dev`, ver `governance/versioning/VERSIONING-POLICY.md`). Última release publicada: `v3.0.0-alpha.1`.
+`ai-native` es **un único repositorio** (ADR-001, desde la PR #2): áreas de fábrica `governance/`, `foundation/`, `knowledge/`, `template/`; plataforma v3 en `core/ contracts/ runtime/ mcp/ profiles/ audit/ parity/ evaluation/`; `legacy/` es material congelado, no instrucciones. Versión de la plataforma = tag/release (`VERSION` de la raíz: `3.0.0-dev`, ver `governance/versioning/VERSIONING-POLICY.md`). Última release publicada: `v3.0.0-rc.2`.
 
 ## Roadmap v3: dónde estamos
 
@@ -16,13 +16,14 @@ Actualizado: 2026-10-04.
 |---|---|
 | M0–M4 | Cerrados (ver roadmap). |
 | M5.1 `v3.0.0-rc.1` | **Publicada (2026-10-05)** sobre `0ffe68d`: release inmutable, SHA256SUMS, SBOM CycloneDX (0 componentes: sin dependencias de terceros), attestation sigstore de los 4 assets, revocations idénticas al repo, `init`/`sync --require-attestation`/`doctor`/`status --check` verificados desde el release público. Auditoría PLATFORM 92.5/100 sobre `5a60072` (`.audit/reports/AUDIT-PLATFORM-5a60072.md`), vigente para `0ffe68d` (solo cambió `.audit/**`). |
+| M5.1b `v3.0.0-rc.2` | **Publicada (2026-10-05)** sobre `51ef185` (merge de #58): tag anotado, release inmutable, `scripts/verify-release.mjs v3.0.0-rc.2 --expect-commit 51ef185…` PASS (22 checks), camino rc.1 → rc.2 → rollback ejecutado. Auditoría PLATFORM 93.0/100 sobre `3477428` (`.audit/reports/AUDIT-PLATFORM-3477428.md`), vigente para `51ef185` (solo cambió `.audit/**`). Detalle: `governance/versioning/RC2-READINESS.md`. |
 | M5.4 canary `template-starter@v2.0.4 → v3` | **En curso, NO cerrado.** PR #4 en `template-starter` (`b72d099`): lock por SHA y L3 real PASS, pero bloqueada por el ruleset (ver «Hallazgos del canary»). |
 | M5.5 `v3.0.0` | **No publicada**: exige canary PASS. |
 | M6 (repos GI) | **No abierto**; requiere autorización explícita. |
 
 Hecho y verificado para rc.1: parity 95/95 con `UNMAPPED=0`; P33, P29, P41/C6, C5 (Claude Code y Codex CONFIRMED; OpenCode `NOT_AVAILABLE_FROM_TOOL`), C3, L3 reusable, migrador v2→v3 y métricas DoD (10/11, 1 `PROXY_ONLY`).
 
-## Auditoría PLATFORM (el bloqueo de rc.1)
+## Auditoría PLATFORM (historial; rc.1 y rc.2 superadas)
 
 | Commit auditado | Score | Notas |
 |---|---|---|
@@ -30,14 +31,16 @@ Hecho y verificado para rc.1: parity 95/95 con `UNMAPPED=0`; P33, P29, P41/C6, C
 | `main` tras #47 | 74 | re-auditoría; hallazgo crítico real corregido (#49) |
 | `main` previo a #51 | 79 | tercera pasada |
 | `ccd981f` | **86** | sin BLOCKER ni CRITICAL; MAJOR en Q7/Q8 |
+| `5a60072` | **92.5** | rc.1 (PASS) |
+| `3477428` | **93.0** | rc.2 (PASS): 0 BLOCKER/CRITICAL/MAJOR, 8 MINOR abiertos |
 
-No se baja el umbral, no hay waivers. La PR de remediación `fix/platform-remediation-86` ataca los hallazgos F1–F8 de la auditoría de `ccd981f`; tras su merge humano hay que **ejecutar una auditoría nueva sobre el SHA resultante** y guardar su informe en `.audit/reports/` ligado a ese commit. Solo con score ≥ gate se continúa con `release-gate` → `rc.1` → canary → `v3.0.0`.
+No se baja el umbral, no hay waivers. La remediación de F1–F8 (#53) y las posteriores (#55, #56, #57) se auditaron con informes nuevos ligados a su SHA: `5a60072` (92.5, rc.1) y `3477428` (93.0, rc.2). Para `v3.0.0` estable: `release-gate` sobre su propio SHA tras el canary.
 
 ## Hallazgos del canary (2026-10-05)
 
 * **C-1, defecto de plataforma (corregido en la PR `fix/migrate-revert-crlf`):** `migrate revert` comparaba hashes crudos y trataba como «editado por el usuario» todo archivo creado cuando el checkout convierte LF→CRLF (`core.autocrlf=true`, el caso normal en Windows), dejando el PR sin revertir (PARTIAL). Con un checkout LF el rollback ya era limpio y byte-idéntico a `main`. Test de regresión: falla sin el fix, pasa con él.
 * **C-2, bloqueo externo (decisión humana, no tocado):** `migrate apply` retiró `.github/workflows/ci.yml` de `template-starter` (idéntico a Template, propiedad de la plataforma) y el ruleset `template-starter-main` exige los checks `circuit-tests`, `product-tests` y `local-reconciler-tests`, que salían de ese archivo. En la PR solo existe `l3 / l3-consumer`, así que queda `BLOCKED` y nadie puede mergearla sin cambiar el ruleset de `template-starter`. No se modifica ese ruleset ni se añaden jobs a `template-starter` (sin capacidades nuevas). Opciones para el maintainer: sustituir los contextos requeridos por `l3 / l3-consumer`, o conservar `ci.yml` con `--keep`. Gap de plataforma asociado: `plan` debería avisar cuando un workflow retirado produce un check requerido por el ruleset del consumidor.
-* Los pendientes conocidos siguen abiertos: alerta #10 de code scanning, F2 (0 aprobaciones) y la revocación de claves antiguas de `ai-native-trust` (NO VERIFICADO).
+* Pendientes conocidos abiertos: F2 (`required_approving_review_count = 0`, `strict=false`) y la revocación de claves antiguas de `ai-native-trust` (NO VERIFICADO). La alerta #10 de code scanning quedó `fixed` (2026-10-05T14:36:20Z).
 
 ## Seguridad y gobernanza (vigente)
 

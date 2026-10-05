@@ -1,6 +1,6 @@
 # Evidencia del canary: `template-starter@v2.0.4 → AI-Native v3` (M5.4)
 
-Estado: **PR lista, merge humano pendiente.** Este documento es evidencia, no una declaración de cierre: el canary solo está cerrado cuando la PR se mergea y el consumidor queda funcionando sobre el release.
+Estado: **PR lista sobre `v3.0.0-rc.2`, merge humano pendiente** (ver «Actualización a rc.2»; las secciones siguientes describen la primera pasada sobre rc.1). Este documento es evidencia, no una declaración de cierre: el canary solo está cerrado cuando la PR se mergea y el consumidor queda funcionando sobre el release.
 
 ## Qué es el canary
 
@@ -49,9 +49,24 @@ Ruleset `template-starter-main` (id 24421920), aplicado el 2026-10-05:
 
 ## Qué falta para cerrar M5.4
 
-1. Mergear #55 y #56 (humano) y publicar `rc.2` (ver `governance/versioning/RC2-READINESS.md`).
+1. ~~Mergear #55 y #56 y publicar `rc.2`~~: hecho (rc.2 publicada sobre `51ef185`; ver `governance/versioning/RC2-READINESS.md`).
 2. Recomendado: `migrate bump` del canary a rc.2 (PR de dos archivos) y volver a pasar L3.
 3. Merge humano de la PR #4.
 4. Comprobar que `main` de `template-starter` queda sano y que el ruleset exige un check que de verdad se reporta.
 
 Nada de lo anterior se da por hecho.
+
+## Actualización a rc.2 (2026-10-05)
+
+| Dato | Valor |
+|---|---|
+| PR | `jlbellonGmail/template-starter#4`, HEAD `4b319291fb55e01cfaa50be578244f03e48a9cf9` (2 commits sobre `5d26ec9`) |
+| Plataforma consumida | `v3.0.0-rc.2`, commit `51ef1859fbb39af5f0c82547597faa54aa945457`, digest `sha256:55b9589f7f78f7f0acd15ccffb2b297fe199889206a8f04123cfc45e266f6e0f`, canal `rc` |
+| Estado | `CLEAN` / `MERGEABLE`; `l3 / l3-consumer` success (run 37349342123) |
+| Ruleset `template-starter-main` | activo, **sin bypass actors**, único check requerido `l3 / l3-consumer` (sin huérfanos) |
+
+* **Generación:** `migrate plan` y `apply` con el migrador del tag `v3.0.0-rc.2` desde un clon limpio de `main` (`--tool claude --tool codex`, como la PR original; sin guarda de ruleset disparada). El árbol resultante difiere del de rc.1 solo en journal, lock y caller L3. Un `bump` en caliente se descartó a propósito: dejaba el journal con los hashes del rc.1 y el `revert` conservaba 2 archivos como «editados».
+* **L3 real (run 37349342123):** `sync --require-attestation` PASS, `doctor` PASS, lock `v3.0.0-rc.2 51ef185`, bootstrap `READY v3.0.0-rc.2`, integridad PASS, ASSESS de 110 rutas → `FULL` (score 207, riesgo `HIGH`).
+* **Rollback con el migrador de rc.2:** `revert` en checkout LF y CRLF (`autocrlf=true`) → árbol `72efd27349a516a7935e8b8e1a66ab1f80e5f52b`, **idéntico** a `main`; repetido por el revisor independiente.
+* **Revisión independiente nueva sobre `4b31929`: ACCEPT**, sin bloqueantes (pins, 105 hashes retirados contra la base, 2.º commit = 3 archivos, CI, ruleset, rollback). Notas no bloqueantes: raíz de confianza = lock de la cabeza por ser la primera adopción (el gate la acota), aviso de STATUS.md ya existente, 0 aprobaciones requeridas (F2).
+* **Pendiente:** merge humano de la PR #4.
