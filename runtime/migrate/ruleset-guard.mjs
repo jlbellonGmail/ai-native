@@ -84,16 +84,18 @@ export function parseTriggers(text) {
   const events = new Set();
   const first = lines[i].replace(/^(on|"on"|'on'):/, "").replace(/\s+#.*$/, "").trim();
   if (first) for (const w of first.match(/[a-z_]+/g) ?? []) events.add(w);
-  if (/\bpaths(-ignore)?\s*:/.test(first)) events.pathFiltered = true;
+  const body = [first];
   for (let j = i + 1; j < lines.length; j += 1) {
     const line = lines[j];
     if (!line.trim() || /^\s*#/.test(line)) continue;
     if (!/^\s/.test(line)) break;
     const key = /^ {2}([a-z_]+):/.exec(line) ?? /^ {2}- *([a-z_]+)\s*$/.exec(line);
     if (key) events.add(key[1]);
-    // a path filter makes the workflow skip PRs that do not touch those paths: it is not a reliable source of a check
-    if (/^ {4}paths(-ignore)?:/.test(line)) events.pathFiltered = true;
+    body.push(line.replace(/\s+#.*$/, ""));
   }
+  // A path filter makes the workflow skip PRs that do not touch those paths, so it is not a reliable source of a check.
+  // Looked for ANYWHERE in the `on:` block (any indentation, flow maps, quoted keys): over-reporting is fine, missing it is not.
+  if (/["']?\bpaths(-ignore)?["']?\s*:/.test(body.join("\n"))) events.pathFiltered = true;
   return events.size ? events : null;
 }
 

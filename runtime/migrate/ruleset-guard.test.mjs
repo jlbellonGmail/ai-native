@@ -259,3 +259,24 @@ test("CLI bump: --caller-sha must be 40-hex, and a missing caller is a warning (
     rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test("path filters are found in EVERY form of the on: block (flow maps, deeper indentation, quoted keys, paths-ignore), never missed", () => {
+  const wf = (on) => ({ path: ".github/workflows/f.yml", text: on + "\njobs:\n  X:\n    runs-on: x\n" });
+  const retiring = [{ path: ".github/workflows/ci.yml", text: "on: push\njobs:\n  X:\n    runs-on: x\n" }];
+  const forms = [
+    "on:\n  pull_request: { paths: [x] }",
+    "on:\n  pull_request: {paths-ignore: [x]}",
+    "on:\n  pull_request:\n    branches: [main]\n      paths:\n        - x",
+    "on:\n  pull_request:\n    'paths':\n      - x",
+    'on:\n  pull_request:\n    "paths-ignore":\n      - x',
+    "on: { pull_request: { paths: ['src/**'] } }",
+    "on:\n  pull_request:\n    paths:   # comment\n      - x",
+    "on:\r\n  pull_request:\r\n    paths:\r\n      - x",
+  ];
+  for (const on of forms) {
+    const r = checkRulesetImpact({ required: [{ context: "X" }], retiring, surviving: [wf(on)] });
+    assert.deepEqual(r.findings.map((f) => f.code), [CODES.WILL_DISAPPEAR], on);
+  }
+  const plain = checkRulesetImpact({ required: [{ context: "X" }], retiring, surviving: [wf("on:\n  pull_request:\n    branches: [main]\n  # paths: [commented]")] });
+  assert.deepEqual(plain.findings, [], "a commented-out paths and a branches filter do not disqualify a pull_request workflow");
+});
