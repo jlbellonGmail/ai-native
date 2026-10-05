@@ -28,3 +28,16 @@ Cuando un merge constituya el HITL requerido, el agente **se detiene**. El merge
 2. `merge-gate` trata `neutral` como bloqueo (`HUMAN_REVIEW_REQUIRED` solo para el check `ai-native/trust-gate`; en cualquier otro check, `CHECK_NEUTRAL` no es revisable).
 3. El job `human-review` espera la aprobación del revisor requerido del Environment `ai-native-human-review`. Sólo entonces `finalize` reevalúa con `HUMAN_REVIEWED=true` y publica el veredicto.
 4. Se sigue validando la App origen (`ai-native-trust`): un check del mismo nombre emitido por otra fuente no se acepta en ningún caso.
+
+## Limitación conocida (F2, decisión del maintainer 2026-10-04)
+
+**La imposición server-side de una segunda identidad humana NO está resuelta y no se finge que lo esté.** El ruleset de `main` tiene `required_approving_review_count = 0` y `require_code_owner_review = false`. Con un solo maintainer, exigir una aprobación bloquearía el modelo vigente: nadie puede aprobar su propia PR. Se mantiene la configuración actual por decisión explícita, y queda así:
+
+| Garantía | Estado |
+|---|---|
+| PR obligatoria, checks de las Apps, sin bypass actors, sin push directo | **Impuesta por el servidor** |
+| Cambio de plano de control sin aprobación humana en `ai-native-human-review` | **Impuesta** (`merge-gate` bloquea `neutral`) |
+| Merge de PRs que no tocan el plano de control realizado por una persona y no por el agente | **Norma operativa (D6) + detección posterior (`post-merge`)**; no impuesta |
+| Segunda identidad humana que revise lo que mergea el maintainer | **No existe** mientras haya un solo maintainer |
+
+**Cuándo se cierra.** Al incorporar un segundo maintainer: fijar `required_approving_review_count >= 1` y `require_code_owner_review = true` (`.github/CODEOWNERS` ya declara los dueños del plano de control) y, para el agente, que su identidad nunca sea la que mergea. Hasta entonces, cualquier informe de auditoría debe contar esto como límite declarado, no como control técnico.

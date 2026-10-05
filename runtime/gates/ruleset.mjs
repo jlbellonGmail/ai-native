@@ -67,7 +67,8 @@ function main() {
   const [cmd] = process.argv.slice(2);
   const argv = process.argv.slice(2);
   const opt = (n, d) => (argv.includes(n) ? argv[argv.indexOf(n) + 1] : d);
-  const repo = opt("--repo", "jlbellonGmail/ai-native");
+  const repo = opt("--repo", null) ?? process.env.GITHUB_REPOSITORY;
+  if (!repo) throw new Error("repository not given: pass --repo <owner/name> or set GITHUB_REPOSITORY");
   const config = JSON.parse(readFileSync("governance/gates/gates.json", "utf8"));
   const template = JSON.parse(readFileSync("governance/rulesets/main.json", "utf8"));
   const appId = opt("--trust-app-id", null) ?? trustAppIdFromChecks(repo, config);

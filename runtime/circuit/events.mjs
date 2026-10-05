@@ -13,10 +13,11 @@
 // tamper-evidence (P45) -- the strong guarantee is still the CI
 // review-gate (M4.3), not this chain by itself.
 import { createHash } from "node:crypto";
-import { readFileSync, existsSync, appendFileSync, mkdirSync } from "node:fs";
+import { readFileSync, appendFileSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { validate } from "../lib/schema-lite.mjs";
+import { readLinesIfExists } from "../lib/fs-safe.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const unitEventSchema = JSON.parse(readFileSync(join(here, "..", "..", "contracts", "unit-event.schema.json"), "utf8"));
@@ -41,7 +42,7 @@ export function validateEventShape(event) {
  * full event object (with schemaVersion/timestamp/prevHash filled in).
  */
 export function appendEvent(path, unitId, eventType, fields, { now = () => new Date().toISOString() } = {}) {
-  const lines = existsSync(path) ? readFileSync(path, "utf8").split("\n").filter(Boolean) : [];
+  const lines = readLinesIfExists(path);
   const prevHash = lines.length > 0 ? sha256(lines[lines.length - 1]) : "genesis";
   const event = { schemaVersion: 1, eventType, unitId, timestamp: now(), prevHash, ...fields };
   validateEventShape(event);
@@ -57,10 +58,7 @@ export function appendEvent(path, unitId, eventType, fields, { now = () => new D
  * verify the hash chain; use verifyChain() for that.
  */
 export function readEvents(path) {
-  if (!existsSync(path)) return [];
-  return readFileSync(path, "utf8")
-    .split("\n")
-    .filter(Boolean)
+  return readLinesIfExists(path)
     .map((line) => JSON.parse(line));
 }
 
@@ -71,8 +69,8 @@ export function readEvents(path) {
  * continue past a broken link.
  */
 export function verifyChain(path) {
-  if (!existsSync(path)) return;
-  const rawLines = readFileSync(path, "utf8").split("\n").filter(Boolean);
+  const rawLines = readLinesIfExists(path);
+  if (rawLines.length === 0) return;
   let expectedPrev = "genesis";
   for (let i = 0; i < rawLines.length; i += 1) {
     const event = JSON.parse(rawLines[i]);

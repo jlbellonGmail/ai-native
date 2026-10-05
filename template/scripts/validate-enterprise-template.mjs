@@ -1,8 +1,10 @@
 import { readFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const root = process.cwd();
+// Template root (parent of scripts/), independent of the caller's cwd
+const root = fileURLToPath(new URL("..", import.meta.url));
 
 const manifest = JSON.parse(
   await readFile(join(root, "templates/enterprise-10-10/template-manifest.json"), "utf8")

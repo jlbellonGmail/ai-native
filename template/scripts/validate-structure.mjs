@@ -1,9 +1,10 @@
 import { existsSync, readFileSync } from "node:fs";
 import { readdirSync } from "node:fs";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 
-// Use current working directory as base path
-const root = process.cwd();
+// Base path is the template root (parent of scripts/), independent of the caller's cwd
+const root = fileURLToPath(new URL("..", import.meta.url));
 
 // Helper: resolve path relative to root
 function resolvePath(p) {

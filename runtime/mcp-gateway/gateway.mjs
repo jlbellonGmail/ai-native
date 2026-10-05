@@ -18,12 +18,13 @@
 // registers no server. mcp/catalog.json stays empty until a server has a
 // real id, allowlist and risk class (plan SS 11); fixtures are used in tests.
 import { createHash } from "node:crypto";
-import { readFileSync, existsSync, appendFileSync, mkdirSync } from "node:fs";
+import { readFileSync, appendFileSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { resolveMcpDecision, loadMcpCatalog } from "../mcp/decision.mjs";
 import { sanitizeOutput } from "./sanitize.mjs";
 import { argsDigest, createApprovalStore, StepUpError } from "./stepup.mjs";
+import { readTextIfExists, readLinesIfExists } from "../lib/fs-safe.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const profilesDir = join(here, "..", "..", "mcp", "profiles");
@@ -32,8 +33,9 @@ const ID_RE = /^[a-z][a-z0-9-]*$/;
 export function loadMcpProfile(id, dir = profilesDir) {
   if (typeof id !== "string" || !ID_RE.test(id)) throw new Error(`invalid MCP profile id: ${JSON.stringify(id)}`);
   const path = join(dir, `${id}.json`);
-  if (!existsSync(path)) throw new Error(`MCP profile does not exist: ${id}`);
-  const profile = JSON.parse(readFileSync(path, "utf8"));
+  const text = readTextIfExists(path);
+  if (text === null) throw new Error(`MCP profile does not exist: ${id}`);
+  const profile = JSON.parse(text);
   if (profile.schemaVersion !== 1 || profile.id !== id || !Array.isArray(profile.servers)) {
     throw new Error(`invalid MCP profile: ${id}`);
   }
@@ -48,16 +50,14 @@ function appendAudit(path, record) {
   if (!path) return;
   mkdirSync(dirname(path), { recursive: true });
   let prevHash = "genesis";
-  if (existsSync(path)) {
-    const lines = readFileSync(path, "utf8").split("\n").filter(Boolean);
-    if (lines.length) prevHash = sha(lines[lines.length - 1]);
-  }
+  const lines = readLinesIfExists(path);
+  if (lines.length) prevHash = sha(lines[lines.length - 1]);
   appendFileSync(path, `${JSON.stringify({ schemaVersion: 1, timestamp: new Date().toISOString(), prevHash, ...record })}\n`);
 }
 
 export function verifyAuditChain(path) {
-  if (!existsSync(path)) return { ok: true, entries: 0 };
-  const lines = readFileSync(path, "utf8").split("\n").filter(Boolean);
+  const lines = readLinesIfExists(path);
+  if (lines.length === 0) return { ok: true, entries: 0 };
   let prev = "genesis";
   for (let i = 0; i < lines.length; i += 1) {
     if (JSON.parse(lines[i]).prevHash !== prev) return { ok: false, entries: lines.length, brokenAt: i };

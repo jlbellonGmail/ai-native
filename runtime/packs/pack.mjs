@@ -18,10 +18,11 @@
 //     silently shadow each other;
 //   - the lock pins each pack by commit + content digest, verified here.
 import { createHash } from "node:crypto";
-import { existsSync, lstatSync, readFileSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { validate } from "../lib/schema-lite.mjs";
+import { readTextIfExists } from "../lib/fs-safe.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const packSchema = JSON.parse(readFileSync(join(here, "..", "..", "contracts", "pack.schema.json"), "utf8"));
@@ -124,9 +125,16 @@ export function validatePack(packRoot, { platformCatalog = { servers: {} }, cano
       if (!ID_RE.test(id)) { errors.push(`${kind}: invalid id ${JSON.stringify(id)}`); continue; }
       const rel = fileFor(kind, id);
       const full = inside(packRoot, rel);
-      if (!full || !existsSync(full) || !lstatSync(full).isFile()) { errors.push(`${kind}: ${id} declared but ${rel} is missing`); continue; }
+      let text = null;
+      if (full) {
+        try {
+          text = readTextIfExists(full);
+        } catch (error) {
+          if (error.code !== "EISDIR") throw error; // a directory where a file is declared counts as missing
+        }
+      }
+      if (text === null) { errors.push(`${kind}: ${id} declared but ${rel} is missing`); continue; }
       provided[kind].push(id);
-      const text = readFileSync(full, "utf8");
       if (kind === "rules") {
         if (!text.trim()) errors.push(`rule ${id}: empty`);
         for (const re of AUTHORITY_OVERRIDES) {

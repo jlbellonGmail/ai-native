@@ -16,7 +16,7 @@
 //     commit (a result about another commit is not evidence for this one).
 // Read-only. It produces a view, never a new source of truth (same
 // principle as the derived STATUS view and the derived unit state).
-import { existsSync, readFileSync } from "node:fs";
+import { readLinesIfExists } from "../lib/fs-safe.mjs";
 import { createHash } from "node:crypto";
 import { readEvents, verifyChain, EventChainError } from "../circuit/events.mjs";
 import { verifyAuditChain } from "../mcp-gateway/gateway.mjs";
@@ -24,7 +24,7 @@ import { verifyAuditChain } from "../mcp-gateway/gateway.mjs";
 const sha = (text) => `sha256:${createHash("sha256").update(text, "utf8").digest("hex")}`;
 
 function readJsonl(path) {
-  return existsSync(path) ? readFileSync(path, "utf8").split("\n").filter(Boolean).map((l) => JSON.parse(l)) : [];
+  return readLinesIfExists(path).map((l) => JSON.parse(l));
 }
 
 function checkMonotonic(records, label, errors) {

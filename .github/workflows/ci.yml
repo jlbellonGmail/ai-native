@@ -164,6 +164,26 @@ jobs:
         shell: bash
         run: node runtime/status/validate-integrity.mjs
 
+      - name: runtime/lib fs-safe + runtime/observability tests (platform audit F7)
+        shell: bash
+        run: node --test runtime/lib/fs-safe.test.mjs runtime/observability/*.test.mjs
+
+      - name: evaluation/metrics tests
+        shell: bash
+        run: node --test evaluation/metrics/*.test.mjs
+
+      - name: every committed test file is run by a workflow
+        shell: bash
+        run: |
+          node --test scripts/validate-ci-tests-listed.test.mjs
+          node scripts/validate-ci-tests-listed.mjs
+
+      - name: template/ validators are cwd-independent (run from the repo root)
+        shell: bash
+        run: |
+          node template/scripts/validate-structure.mjs
+          node template/scripts/validate-enterprise-template.mjs
+
       - name: runtime/circuit tests (M3.2 circuito completo)
         shell: bash
         run: node --test runtime/circuit/*.test.mjs

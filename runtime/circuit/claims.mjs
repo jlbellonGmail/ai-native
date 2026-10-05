@@ -9,9 +9,10 @@
 // exclusive-create lock file around every read-modify-write, so a claim
 // is atomic across worktrees/processes instead of best-effort.
 import { isLockContention } from "../lib/lock.mjs";
-import { readFileSync, writeFileSync, existsSync, openSync, closeSync, unlinkSync } from "node:fs";
+import { writeFileSync, openSync, closeSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
 import { gitCommonDir } from "../lib/git.mjs";
+import { readTextIfExists } from "../lib/fs-safe.mjs";
 
 export class ClaimLockContentionError extends Error {}
 export class ClaimConflictError extends Error {}
@@ -49,7 +50,8 @@ export function withClaimsLock(root, fn, { retries = 20, retryDelayMs = 10 } = {
   }
   try {
     const path = registryPath(root);
-    const claims = existsSync(path) ? JSON.parse(readFileSync(path, "utf8")) : { schemaVersion: 1, claims: [] };
+    const text = readTextIfExists(path);
+    const claims = text === null ? { schemaVersion: 1, claims: [] } : JSON.parse(text);
     const updated = fn(claims);
     writeFileSync(path, `${JSON.stringify(updated, null, 2)}\n`, "utf8");
     return updated;
@@ -70,7 +72,8 @@ function busyWait(ms) {
 /** Read-only snapshot of current claims (no lock: for inspection only). */
 export function readClaims(root) {
   const path = registryPath(root);
-  return existsSync(path) ? JSON.parse(readFileSync(path, "utf8")).claims : [];
+  const text = readTextIfExists(path);
+  return text === null ? [] : JSON.parse(text).claims;
 }
 
 /**
