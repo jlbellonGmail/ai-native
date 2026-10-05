@@ -55,5 +55,6 @@ Actualizada: 2026-10-05, sobre `main` = `0ffe68d` (`v3.0.0-rc.1`) más las PRs a
 | Rulesets de `main` | **PASS con límite declarado** | `ai-native-main` activo, sin bypass actors, 6 checks requeridos. **F2: `required_approving_review_count = 0`** (un solo maintainer); sin cambios sin decisión humana nueva. |
 | Alerta de code scanning #10 | **PARTIAL** | abierta en GitHub hasta el re-análisis; corregida en la PR de higiene. |
 | Dependabot | **PASS** | 0 alertas abiertas; #23–#26 cerradas como superseded con justificación; **#48 abierta a propósito** (plano de control). |
+| Secret scanning y push protection | **PASS** | Estaban desactivados (hallazgo F-04 de la auditoría). Activados el 2026-10-05; verificado por `GET /repos/…` (`secret_scanning: enabled`, `secret_scanning_push_protection: enabled`). Es un ajuste del repositorio, no un ruleset. |
 | Revocación de las claves antiguas de `ai-native-trust` | **NOT_VERIFIED / PENDING_HUMAN** | la API no expone las claves de una App. |
 | OpenCode MCP | **NOT_AVAILABLE_FROM_TOOL** | sin evidencia reproducible; no se declara soporte. |
