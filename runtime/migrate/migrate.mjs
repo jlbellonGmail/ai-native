@@ -360,7 +360,10 @@ function main() {
       if (r.status === "BLOCKED" && r.reason !== "ruleset" || (cmd === "plan" && p.blocked)) errors.push(`collisions need a decision (--keep <path>): ${p.unresolved.map((c) => c.path).join(", ")}`);
     } else if (cmd === "bump") {
       for (const k of ["version", "commit", "digest"]) if (!release[k]) throw new MigrateError(`--${k} is required`);
-      const args = { projectRoot: resolve(target), release: { version: release.version, commit: release.commit, digest: release.digest, ...(release.repo ? { repo: release.repo } : {}) }, callerSha: value("--caller-sha") ?? release.commit };
+      const callerSha = value("--caller-sha") ?? release.commit;
+      if (!/^[0-9a-f]{40}$/.test(callerSha)) throw new MigrateError("--caller-sha (default: --commit) must be a full 40-hex SHA");
+      if (!existsSync(join(resolve(target), CALLER))) warnings.push(`${CALLER} not found: only the lock is bumped; the L3 caller pin is NOT updated`);
+      const args = { projectRoot: resolve(target), release: { version: release.version, commit: release.commit, digest: release.digest, ...(release.repo ? { repo: release.repo } : {}) }, callerSha };
       const planned = planBump(args);
       data = argv.includes("--dry-run") ? { mode: "bump", dryRun: true, from: planned.from, to: planned.to, changed: Object.keys(planned.files) } : { mode: "bump", ...applyBump(args) };
     } else throw new MigrateError("usage: migrate plan|apply|revert|bump --target <dir> ...");

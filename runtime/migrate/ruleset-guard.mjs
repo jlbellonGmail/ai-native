@@ -24,10 +24,18 @@ export const CODES = {
   NOT_CHECKED: "RULESET_NOT_CHECKED",
 };
 
-/** Events whose workflows report checks on the head commit of a PR (`push` counts: same SHA). */
-const REPORTING_EVENTS = ["pull_request", "pull_request_target", "push"];
+/**
+ * Events whose workflows report a check on a PR. `push` is deliberately NOT here: it runs in the repository that received
+ * the push (never for a PR from a fork) and usually behind a `branches:` filter, so it is not a reliable source.
+ */
+const REPORTING_EVENTS = ["pull_request", "pull_request_target"];
 
-const unquote = (s) => s.trim().replace(/\s+#.*$/, "").replace(/^(["'])(.*)\1$/, "$2");
+/** A scalar value: a quoted string keeps any ` #` inside the quotes; an unquoted one loses a trailing comment. */
+const unquote = (s) => {
+  const t = s.trim();
+  const q = /^(["'])(.*?)\1(?:\s+#.*)?$/.exec(t);
+  return q ? q[2] : t.replace(/\s+#.*$/, "");
+};
 const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 /**
@@ -56,7 +64,11 @@ export function parseJobs(text) {
     if (/^ {0,2}\S/.test(line)) { jobs.unrecognized.push(line.trim()); current = null; continue; }
     if (!current) continue;
     const name = /^ {4}name:\s*(.+)$/.exec(line);
-    if (name) current.name = unquote(name[1]);
+    if (name) {
+      current.name = unquote(name[1]);
+      // a block scalar (`>`, `|`) or an anchor/alias as the name: the real name is on other lines, so the job is not understood
+      if (/^[>|][+-]?\d*$/.test(current.name) || /^[&*]/.test(current.name)) jobs.unrecognized.push(`${current.id}: name: ${current.name}`);
+    }
     const uses = /^ {4}uses:\s*(.+)$/.exec(line);
     if (uses) current.uses = unquote(uses[1]);
     if (/^ {6}matrix:/.test(line)) current.matrix = true;
@@ -72,12 +84,15 @@ export function parseTriggers(text) {
   const events = new Set();
   const first = lines[i].replace(/^(on|"on"|'on'):/, "").replace(/\s+#.*$/, "").trim();
   if (first) for (const w of first.match(/[a-z_]+/g) ?? []) events.add(w);
+  if (/\bpaths(-ignore)?\s*:/.test(first)) events.pathFiltered = true;
   for (let j = i + 1; j < lines.length; j += 1) {
     const line = lines[j];
     if (!line.trim() || /^\s*#/.test(line)) continue;
     if (!/^\s/.test(line)) break;
     const key = /^ {2}([a-z_]+):/.exec(line) ?? /^ {2}- *([a-z_]+)\s*$/.exec(line);
     if (key) events.add(key[1]);
+    // a path filter makes the workflow skip PRs that do not touch those paths: it is not a reliable source of a check
+    if (/^ {4}paths(-ignore)?:/.test(line)) events.pathFiltered = true;
   }
   return events.size ? events : null;
 }
@@ -108,7 +123,7 @@ export function producedContexts(workflows) {
     if (!jobs.length) unreadable.push(path);
     else if (jobs.unrecognized.length) partial.push({ path, lines: jobs.unrecognized });
     const triggers = parseTriggers(text);
-    const reportsOnPr = triggers ? REPORTING_EVENTS.some((e) => triggers.has(e)) : false;
+    const reportsOnPr = triggers ? REPORTING_EVENTS.some((e) => triggers.has(e)) && !triggers.pathFiltered : false;
     for (const job of jobs) for (const c of contextsOfJob(job)) produced.push({ file: path, reportsOnPr, ...c });
   }
   return { produced, unreadable, partial };

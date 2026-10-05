@@ -50,7 +50,7 @@ test("the canary case: every required check came from the retired ci.yml -> all 
 });
 
 test("a required check a surviving workflow also produces is not reported; a check the L3 caller produces is satisfied", () => {
-  const keep = { path: ".github/workflows/other.yml", text: "on: push\njobs:\n  circuit-tests:\n    runs-on: x\n" };
+  const keep = { path: ".github/workflows/other.yml", text: "on: pull_request\njobs:\n  circuit-tests:\n    runs-on: x\n" };
   const r = checkRulesetImpact({ required: [...REQUIRED, { context: L3_CHECK }], retiring: [{ path: ".github/workflows/ci.yml", text: V2_CI }], surviving: [keep, caller], proposed: [L3_CHECK] });
   assert.deepEqual(r.findings.map((f) => f.context), ["product-tests", "local-reconciler-tests"]);
   assert.deepEqual(r.proposed, [], "already required: nothing to propose");
@@ -169,7 +169,9 @@ test("a surviving job named only by an expression, or a workflow that never runs
   const scheduled = { path: ".github/workflows/s.yml", text: "on:\n  schedule:\n    - cron: '0 0 * * *'\n  workflow_dispatch:\njobs:\n  circuit-tests:\n    runs-on: x\n" };
   const pushOnly = { path: ".github/workflows/p.yml", text: "on: [push]\njobs:\n  product-tests:\n    runs-on: x\n" };
   const r = checkRulesetImpact({ required: REQUIRED, retiring, surviving: [opaque, scheduled, pushOnly, caller] });
-  assert.deepEqual(r.findings.map((f) => f.context), ["circuit-tests", "local-reconciler-tests"], "opaque and scheduled-only do not suppress; push-only does");
+  assert.deepEqual(r.findings.map((f) => f.context), ["circuit-tests", "product-tests", "local-reconciler-tests"], "opaque, scheduled-only and push-only (never for fork PRs, usually branch-filtered) do not suppress");
+  const prWorkflow = { path: ".github/workflows/pr.yml", text: "on:\n  pull_request:\n    branches: [main]\njobs:\n  product-tests:\n    runs-on: x\n" };
+  assert.deepEqual(checkRulesetImpact({ required: REQUIRED, retiring, surviving: [prWorkflow, caller] }).findings.map((f) => f.context), ["circuit-tests", "local-reconciler-tests"], "a pull_request workflow (base-branch filter) is a keeper");
 });
 
 test("a surviving workflow that cannot be read is reported as a warning and is not counted as a source", () => {
@@ -214,6 +216,45 @@ test("CLI bump: changes only the lock and the caller pin, supports --dry-run, re
     const refused = spawnSync(process.execPath, [join(here, "migrate.mjs"), "bump", "--target", dir, "--version", "v3.0.0-rc.3", "--commit", sha("c"), "--digest", `sha256:${"3".repeat(64)}`], { cwd: tmpdir(), encoding: "utf8" });
     assert.notEqual(refused.status, 0);
     assert.match(refused.stdout, /prerelease/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("a quoted name keeps a ' #' inside the quotes; a block-scalar or alias name makes the retired workflow partially read (error)", () => {
+  const quoted = parseJobs("on: push\njobs:\n  a:\n    name: 'a #b'\n    runs-on: x\n");
+  assert.equal(quoted[0].name, "a #b");
+  assert.equal(parseJobs("jobs:\n  a:\n    name: plain # comment\n")[0].name, "plain");
+  const retire = (name) => checkRulesetImpact({ required: [{ context: "a #b" }], retiring: [{ path: ".github/workflows/ci.yml", text: "on: push\njobs:\n  a:\n    name: " + name + "\n    runs-on: x\n" }], surviving: [caller] });
+  assert.equal(retire("'a #b'").findings[0].code, CODES.WILL_DISAPPEAR);
+  for (const name of [">-", "|", "&anc x"]) {
+    const r = retire(name);
+    assert.equal(r.status, "FAIL", name);
+    assert.ok(r.findings.some((f) => f.code === CODES.WORKFLOW_UNREADABLE), name);
+  }
+});
+
+test("a pull_request workflow with a path filter is not a reliable keeper", () => {
+  const retiring = [{ path: ".github/workflows/ci.yml", text: V2_CI }];
+  const filtered = { path: ".github/workflows/f.yml", text: "on:\n  pull_request:\n    paths:\n      - 'src/**'\njobs:\n  circuit-tests:\n    runs-on: x\n" };
+  const flow = { path: ".github/workflows/g.yml", text: "on: { pull_request: { paths: ['src/**'] } }\njobs:\n  product-tests:\n    runs-on: x\n" };
+  const r = checkRulesetImpact({ required: REQUIRED, retiring, surviving: [filtered, flow, caller] });
+  assert.deepEqual(r.findings.map((f) => f.context), REQUIRED.map((c) => c.context));
+});
+
+test("CLI bump: --caller-sha must be 40-hex, and a missing caller is a warning (only the lock changes)", () => {
+  const dir = mkdtempSync(join(tmpdir(), "ai-native-bump2-"));
+  const sha = (c) => c.repeat(40);
+  try {
+    const lock = { schemaVersion: 1, platform: { repo: "github:o/ai-native", version: "v3.0.0-rc.1", commit: sha("a"), digest: "sha256:" + "1".repeat(64), channel: "rc" }, profiles: ["factory"], mcpProfiles: [], packs: [] };
+    writeFileSync(join(dir, "ai-native.lock.json"), JSON.stringify(lock, null, 2) + "\n");
+    const run = (...extra) => spawnSync(process.execPath, [join(here, "migrate.mjs"), "bump", "--target", dir, "--version", "v3.0.0-rc.2", "--commit", sha("b"), "--digest", "sha256:" + "2".repeat(64), "--json", ...extra], { cwd: tmpdir(), encoding: "utf8" });
+    const bad = run("--caller-sha", "zzz");
+    assert.notEqual(bad.status, 0);
+    assert.match(bad.stdout, /40-hex/);
+    const ok = run("--dry-run");
+    assert.equal(ok.status, 0, ok.stdout);
+    assert.match(ok.stdout, /L3 caller pin is NOT updated/);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
