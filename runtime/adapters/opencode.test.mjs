@@ -40,3 +40,10 @@ test("buildOpenCodeMcpServers converts a remote server with oauth", () => {
 test("buildOpenCodeMcpServers throws on an unsupported server type", () => {
   assert.throws(() => buildOpenCodeMcpServers({ servers: { x: { type: "weird" } } }), /unsupported MCP server type/);
 });
+
+test("buildOpenCodeConfig with rolesDir (consumer mode) points each prompt at <rolesDir>/<role>.md, not at core/roles", () => {
+  const config = JSON.parse(buildOpenCodeConfig(AGENTS, { servers: {} }, { rolesDir: ".opencode/roles" }));
+  assert.equal(config.agent.builder.prompt, "{file:./.opencode/roles/builder.md}");
+  assert.equal(config.agent.reviewer.prompt, "{file:./.opencode/roles/reviewer.md}");
+  assert.doesNotMatch(JSON.stringify(config), /core\/roles/);
+});

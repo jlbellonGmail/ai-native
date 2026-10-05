@@ -53,7 +53,12 @@ test("from scratch: lock only -> sync -> adapters for all 3 tools; files are wel
   assert.ok(files.some((f) => f.startsWith(".claude/skills/") && f.endsWith("SKILL.md")));
   assert.ok(files.some((f) => f.startsWith(".opencode/skills/") && f.endsWith("SKILL.md")));
   JSON.parse(readFileSync(join(proj, ".mcp.json"), "utf8"));
-  JSON.parse(readFileSync(join(proj, "opencode.json"), "utf8"));
+  const oc = JSON.parse(readFileSync(join(proj, "opencode.json"), "utf8"));
+  // every {file:...} reference of the generated OpenCode config must resolve INSIDE the consumer (it holds no core/):
+  // a dangling one makes the real CLI fail with HTTP 500 (found by the M5.2 real-CLI run)
+  const refs = [...JSON.stringify(oc).matchAll(/\{file:\.\/([^}]+)\}/g)].map((m) => m[1]);
+  assert.ok(refs.length > 0, "expected role prompt references");
+  for (const ref of refs) assert.ok(existsSync(join(proj, ref)), `opencode.json references ${ref}, which does not exist in the consumer`);
   assert.match(readFileSync(join(proj, ".codex", "config.toml"), "utf8"), /^\s*\[|^\s*\w+\s*=/m);
   assert.match(readFileSync(join(proj, "CLAUDE.md"), "utf8"), /AGENTS\.md/);
   assert.ok(existsSync(join(proj, ".ai-native", "adoption-journal.json")));

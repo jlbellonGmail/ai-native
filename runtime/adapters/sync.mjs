@@ -36,7 +36,7 @@ export const LEGACY_PATHS = [
 
 /** { relativePath: content } for every tool file this repo's core/
  * sources currently derive to, filtered to `tools` (default: all 3). */
-export function buildToolFiles(root, { tools = ALL_TOOLS, mcpProfile = "none", gatewayScript = DEFAULT_GATEWAY_SCRIPT } = {}) {
+export function buildToolFiles(root, { tools = ALL_TOOLS, mcpProfile = "none", gatewayScript = DEFAULT_GATEWAY_SCRIPT, opencodeRolesDir = null } = {}) {
   const agents = loadAgents(root);
   // tools never see the raw catalog: only the gateway (runtime/adapters/gateway.mjs)
   const mcp = governedCatalog({ catalog: loadMcpCatalog(root), root, profile: mcpProfile, script: gatewayScript });
@@ -51,7 +51,7 @@ export function buildToolFiles(root, { tools = ALL_TOOLS, mcpProfile = "none", g
     files[".codex/README.md"] = buildCodexReadme();
   }
   if (tools.includes("opencode")) {
-    files["opencode.json"] = buildOpenCodeConfig(agents, mcp);
+    files["opencode.json"] = buildOpenCodeConfig(agents, mcp, { rolesDir: opencodeRolesDir });
   }
 
   for (const [name, role] of Object.entries(agents.roles)) {
@@ -62,6 +62,7 @@ export function buildToolFiles(root, { tools = ALL_TOOLS, mcpProfile = "none", g
     if (tools.includes("codex")) {
       files[`.codex/${name}.config.toml`] = buildCodexRoleProfileToml(role);
     }
+    if (tools.includes("opencode") && opencodeRolesDir) files[`${opencodeRolesDir}/${name}.md`] = prompt;
   }
 
   return files;

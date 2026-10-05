@@ -47,7 +47,9 @@ export function buildOpenCodeMcpServers(mcpCatalog) {
   return servers;
 }
 
-export function buildOpenCodeConfig(agents, mcpCatalog) {
+// `rolesDir` (consumer mode): role prompts live in the consumer at `<rolesDir>/<role>.md` instead of the
+// factory's `core/roles/` (a consumer holds only the lock; a dangling {file:} makes OpenCode fail with HTTP 500).
+export function buildOpenCodeConfig(agents, mcpCatalog, { rolesDir = null } = {}) {
   const roleNames = Object.keys(agents.roles).sort();
   const agent = {};
   for (const name of roleNames) {
@@ -56,7 +58,7 @@ export function buildOpenCodeConfig(agents, mcpCatalog) {
       description: role.description,
       mode: role.opencode.mode,
       model: role.opencode.model,
-      prompt: `{file:./${role.prompt}}`,
+      prompt: `{file:./${rolesDir ? `${rolesDir}/${name}.md` : role.prompt}}`,
       reasoningEffort: role.opencode.reasoningEffort,
       permission: role.opencode.permission,
     };

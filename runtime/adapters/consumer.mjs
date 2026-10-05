@@ -27,7 +27,7 @@ const SKILL_TARGET_TOOL = { ".claude/skills": "claude", ".opencode/skills": "ope
 export function consumerFiles(releaseRoot, { tools = ALL_TOOLS, profile, role, level, mcpProfile = "none" } = {}) {
   // the tool launches the gateway of THIS release (absolute path into the cache, forward slashes so it is valid in JSON/TOML on every OS)
   const gatewayScript = join(releaseRoot, "runtime", "mcp-gateway", "server.mjs").split("\\").join("/");
-  const files = buildToolFiles(releaseRoot, { tools, mcpProfile, gatewayScript });
+  const files = buildToolFiles(releaseRoot, { tools, mcpProfile, gatewayScript, opencodeRolesDir: ".opencode/roles" });
   const skillIds = selectSkills(loadSkillsRegistry(releaseRoot), { profile, role, level });
   for (const rel of canonicalFilesFor(releaseRoot, skillIds)) {
     const content = readFileSync(join(releaseRoot, ".agents", "skills", rel));
