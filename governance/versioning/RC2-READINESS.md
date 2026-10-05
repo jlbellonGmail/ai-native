@@ -52,7 +52,7 @@ Volver a rc.1: `node runtime/bootstrap/cli.mjs rollback` re-fija el lock a la ve
 
 ## El canary frente a rc.2
 
-La PR #4 de `template-starter` estaba lista sobre rc.1; se lleva a rc.2 (ver `governance/canary/`). Como el rollback con CRLF solo es limpio con el código de #55, lo recomendable es **fijar el canary en rc.2** (`bump`, PR de dos archivos) antes de mergearlo, para que el consumidor adopte una plataforma cuyo `revert` funciona en cualquier checkout. Si se mergea sobre rc.1, el rollback sigue funcionando ejecutando el migrador desde un checkout de la plataforma que incluya #55, que es como se probó en el canary (el migrador no vive en el consumidor); lo que cambia es que el lock del consumidor apuntaría a una versión con el defecto.
+La PR #4 de `template-starter` estaba lista sobre rc.1; se llevó a rc.2 y se mergeó (ver `governance/canary/`). Como el rollback con CRLF solo es limpio con el código de #55, lo recomendable es **fijar el canary en rc.2** (`bump`, PR de dos archivos) antes de mergearlo, para que el consumidor adopte una plataforma cuyo `revert` funciona en cualquier checkout. Si se mergea sobre rc.1, el rollback sigue funcionando ejecutando el migrador desde un checkout de la plataforma que incluya #55, que es como se probó en el canary (el migrador no vive en el consumidor); lo que cambia es que el lock del consumidor apuntaría a una versión con el defecto.
 
 ## Límites
 

@@ -1,6 +1,6 @@
 # Matriz de calidad de M5 (evidencia, no declaración)
 
-Actualizada: 2026-10-05, sobre `main` = `51ef185` (`v3.0.0-rc.2`; la columna de rc.1 se conserva donde la evidencia es de `0ffe68d`). Vocabulario: **PASS** (ejecutado, con evidencia citada) · **PARTIAL** · **PREPARED** (listo, depende de un merge/acción humana) · **NOT_VERIFIED** (no hay evidencia propia; no se puntúa como cumplido) · **PENDING_HUMAN**. Nada se marca PASS por inferencia.
+Actualizada: 2026-10-05, sobre `main` = `5afe752` (contiene `v3.0.0-rc.2`, publicada sobre `51ef185`; las filas de rc.1 conservan la evidencia de `0ffe68d`). Vocabulario: **PASS** (ejecutado, con evidencia citada) · **PARTIAL** · **PREPARED** (listo, depende de un merge/acción humana) · **NOT_VERIFIED** (no hay evidencia propia; no se puntúa como cumplido) · **PENDING_HUMAN**. Nada se marca PASS por inferencia.
 
 ## Plataforma y release
 
@@ -15,14 +15,16 @@ Actualizada: 2026-10-05, sobre `main` = `51ef185` (`v3.0.0-rc.2`; la columna de 
 | L2 | **NOT_VERIFIED** | El harness (`runL2`, N≥3, varianza, `metricStatus`) está probado con un agente inyectado; **no hay corrida con un agente real** (no tiene CLI). No se declara. |
 | L3 | **PASS** | `l3-consumer` reusable en run real cross-repo (`evaluation/compat/c6-evidence.json`, run 37145520404) y en el canary (run 37261668915, PR #4). |
 | CodeQL | **PARTIAL** | Análisis de `main` en success sobre `3477428` y `51ef185`; 0 alertas abiertas: 10 `fixed` (la #10, el 2026-10-05T14:36:20Z, tras el re-análisis de `6b7998e`) y 3 descartadas con justificación. |
-| Trivy | **PASS** | `Trivy` y `trivy-fs` success en `main` (`0ffe68d`). |
+| Trivy | **PASS** | `Trivy` success en `main` (`5afe752`; antes `0ffe68d`). |
 | SBOM | **PASS** | CI `SBOM` success; SBOM del release CycloneDX 1.7 válido, **0 componentes** (la plataforma no tiene dependencias de terceros). |
 | Provenance / attestation | **PASS** | `gh attestation verify` de los 4 assets de rc.1 (también offline con el bundle sigstore): sujeto = commit `0ffe68d`, ref `refs/tags/v3.0.0-rc.1`; contra otro repo se rechaza. |
 | Revocations | **PASS** | `revocations-1.json` del release idéntico al del repo; lista vacía (`entries: []`); `status --check` online → `revocation: CHECKED`. |
 | Supply chain | **PASS** | `Supply chain` success; `pin-check` valida todas las acciones por SHA; `sha_pinning_required = true`. |
 | Release `v3.0.0-rc.1` | **PASS** | tag anotado en `0ffe68d`, pre-release inmutable, workflow build/publish/verify success, `sha256sum -c` 4/4. |
 | `v3.0.0-rc.2` | **PASS** | tag anotado sobre `51ef185`, pre-release inmutable, workflow `Release` en success; `node scripts/verify-release.mjs v3.0.0-rc.2 --expect-commit 51ef185…` → PASS (22 checks); camino rc.1 → rc.2 → rollback a rc.1 ejecutado (ver `governance/versioning/RC2-READINESS.md`). |
-| `v3.0.0` | **NOT STARTED** | exige canary real PASS. |
+| `v3.0.0` | **NOT PUBLISHED** | canary real PASS cumplido (PR #4 mergeada, ver más abajo). Exige auditoría PLATFORM vigente sobre su SHA, `release-gate` y el workflow `Release`. |
+| Release `release.yml` idempotencia (F-09) | **PARTIAL** | el push del tag rc.2 disparó dos runs de `Release`; la segunda dejó un borrador duplicado (id 403952697, mismo tarball, SBOM distinto) que se eliminó a mano tras compararlo; el release publicado (403951323) no cambió y `verify-release` sigue en 22 checks PASS. `release.yml` no comprueba si el release ya existe: **abierto** (plano de control, cambio con HITL). |
+| Concurrencia de tests en Windows (F-05) | **PARTIAL** | `node --test` con la concurrencia por defecto falla en esta máquina Windows (`Permission denied` en `.git/objects` de repos temporales; tests distintos cada vez); con `--test-concurrency=2`: 657/657 PASS. CI (Linux y Windows) en verde. No se corrigió. |
 
 ## Plataformas y modos (rc.1 instalado desde el release público)
 
@@ -35,18 +37,18 @@ Actualizada: 2026-10-05, sobre `main` = `51ef185` (`v3.0.0-rc.2`; la columna de 
 | Offline sin caché | **PASS (falla cerrado, como debe)** | caché vacía → `DEGRADED_READONLY: release not in cache`; `sync` y `run` se niegan a ejecutar. |
 | Rollback | **PASS** | `rollback` solo con la caché (PAR-ROLLBACK-OFFLINE) y `migrate revert` (ver canary). |
 
-## Canary `template-starter@v2.0.4 → v3` (PR #4)
+## Canary `template-starter@v2.0.4 → v3` (PR #4, mergeada)
 
 | Paso | Estado | Evidencia |
 |---|---|---|
 | Plan | **PASS** | 166 idénticos a Template, 9 modificados, 0 UNKNOWN, 0 colisiones. |
 | Migración | **PASS** | apply reproducible: el árbol de git de una migración nueva desde cero es **idéntico** al de la PR #4. |
-| Lock por SHA / caller L3 por SHA | **PASS** | `0ffe68d`, digest `sha256:53f8cb56…`; `uses: …/l3-consumer.yml@<40-hex>`. |
-| L3 / CI | **PASS** | `l3 / l3-consumer` success (run 37261668915): attestation, bootstrap READY, integridad, ASSESS. |
+| Lock por SHA / caller L3 por SHA | **PASS** | primera pasada rc.1 (`0ffe68d`, digest `sha256:53f8cb56…`); vigente en `main` de `template-starter`: rc.2, `51ef185`, digest `sha256:55b9589f…`; `uses: …/l3-consumer.yml@<40-hex>`. |
+| L3 / CI | **PASS** | `l3 / l3-consumer` success sobre rc.2 en la PR (run 37349342123, HEAD `4b31929`) y reproducido a mano sobre `main` (`9d711d0`): attestation, bootstrap READY v3.0.0-rc.2, integridad, ASSESS. Primera pasada rc.1: run 37261668915. El caller L3 solo dispara en `pull_request` (no hay run en `push`). |
 | Ruleset | **PASS** | `template-starter-main`: único check requerido `l3 / l3-consumer` (id 15368), sin bypass actors, PR obligatoria, sin push directo; verificado por API. Antes: 3 checks que la migración hacía desaparecer (C-2). |
-| Rollback | **PASS con #55** / **PARTIAL con rc.1** | con la plataforma de #55: `REVERTED` e idéntico a `main` (árbol `72efd273…`) en checkout LF **y** CRLF (`autocrlf=true`). Con el código de rc.1 el checkout CRLF queda `PARTIAL` (C-1). |
-| Reviewer independiente | **PASS** | ACCEPT sobre `b72d099`. |
-| Merge del canary | **PENDING_HUMAN** | PR limpia y mergeable; el merge es humano. |
+| Rollback | **PASS con rc.2** / **PARTIAL con rc.1** (rc.2 incluye #55) | con la plataforma de #55: `REVERTED` e idéntico a `main` (árbol `72efd273…`) en checkout LF **y** CRLF (`autocrlf=true`). Con el código de rc.1 el checkout CRLF queda `PARTIAL` (C-1). |
+| Reviewer independiente | **PASS** | ACCEPT sobre `4b31929` (HEAD final de la PR, rc.2); antes ACCEPT sobre `b72d099` (rc.1). |
+| Merge del canary | **PASS** | mergeada por `jlbellonGmail` el 2026-10-05T18:30:41Z (merge commit `9d711d08eaad07593890cac06155d89223360dd8`); verificación post-merge en `governance/canary/CANARY-TEMPLATE-STARTER-2026-10-05.md`. M5.4 cerrado. |
 
 ## Seguridad y gobernanza
 
