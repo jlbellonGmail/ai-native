@@ -102,6 +102,38 @@ test("a dirty tree and an empty/unknown repo are refused before anything is writ
   assert.throws(() => revertMigration({ target: repo({ "b.txt": "1" }) }), MigrateError);
 });
 
+test("revert after a CRLF checkout: line-ending conversion is not a user edit (canary finding, autocrlf=true)", () => {
+  const dir = repo({ "src/app.js": "1\n" });
+  const applied = applyMigration({ target: dir, release: RELEASE, tools: ["claude"] });
+  assert.equal(applied.status, "APPLIED");
+  // what a Windows checkout with core.autocrlf=true does to every text file the migration created
+  const journal = JSON.parse(readFileSync(join(dir, JOURNAL), "utf8"));
+  const textFiles = journal.created.filter((c) => c.path !== JOURNAL && /\.(md|json|ya?ml|toml)$/.test(c.path));
+  assert.ok(textFiles.length > 0, "the migration created text files");
+  for (const c of textFiles) {
+    const p = join(dir, c.path);
+    const text = readFileSync(p, "utf8");
+    assert.ok(!text.includes("\r\n"), `${c.path} was written with LF`);
+    writeFileSync(p, text.replaceAll("\n", "\r\n"));
+  }
+  const r = revertMigration({ target: dir });
+  assert.equal(r.status, "REVERTED", JSON.stringify(r.kept));
+  assert.deepEqual(r.kept, []);
+  assert.equal(status(dir), "");
+});
+
+test("revert still keeps a real edit even when the file also has CRLF endings", () => {
+  const dir = repo({ "src/app.js": "1\n" });
+  applyMigration({ target: dir, release: RELEASE, tools: ["claude"] });
+  const journal = JSON.parse(readFileSync(join(dir, JOURNAL), "utf8"));
+  const victim = journal.created.find((c) => /\.md$/.test(c.path) && c.path !== JOURNAL);
+  const p = join(dir, victim.path);
+  writeFileSync(p, `${readFileSync(p, "utf8")}my own line\n`.replaceAll("\n", "\r\n"));
+  const r = revertMigration({ target: dir });
+  assert.equal(r.status, "PARTIAL");
+  assert.deepEqual(r.kept, [victim.path]);
+});
+
 test("a LOCAL v2-style file that a v3 file would overwrite is a collision that BLOCKS; --keep records the decision and leaves it alone", () => {
   const dir = repo({ "CLAUDE.md": "my own claude rules\n", "src/app.js": "1\n" });
   const plan = planMigration({ target: dir, release: RELEASE, tools: ["claude"] });

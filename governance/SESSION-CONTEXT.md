@@ -15,9 +15,9 @@ Actualizado: 2026-10-04.
 | Hito | Estado |
 |---|---|
 | M0–M4 | Cerrados (ver roadmap). |
-| M5.1 `v3.0.0-rc.1` | **NO publicada.** Bloqueada por el gate de release: auditoría PLATFORM exige ≥ 90 (tolerancia 2 → mínimo efectivo 88). |
-| M5.4 canary `template-starter@v2.0.4 → v3` | No ejecutado (requiere rc.1). |
-| M5.5 `v3.0.0` | No ejecutado. |
+| M5.1 `v3.0.0-rc.1` | **Publicada (2026-10-05)** sobre `0ffe68d`: release inmutable, SHA256SUMS, SBOM CycloneDX (0 componentes: sin dependencias de terceros), attestation sigstore de los 4 assets, revocations idénticas al repo, `init`/`sync --require-attestation`/`doctor`/`status --check` verificados desde el release público. Auditoría PLATFORM 92.5/100 sobre `5a60072` (`.audit/reports/AUDIT-PLATFORM-5a60072.md`), vigente para `0ffe68d` (solo cambió `.audit/**`). |
+| M5.4 canary `template-starter@v2.0.4 → v3` | **En curso, NO cerrado.** PR #4 en `template-starter` (`b72d099`): lock por SHA y L3 real PASS, pero bloqueada por el ruleset (ver «Hallazgos del canary»). |
+| M5.5 `v3.0.0` | **No publicada**: exige canary PASS. |
 | M6 (repos GI) | **No abierto**; requiere autorización explícita. |
 
 Hecho y verificado para rc.1: parity 95/95 con `UNMAPPED=0`; P33, P29, P41/C6, C5 (Claude Code y Codex CONFIRMED; OpenCode `NOT_AVAILABLE_FROM_TOOL`), C3, L3 reusable, migrador v2→v3 y métricas DoD (10/11, 1 `PROXY_ONLY`).
@@ -32,6 +32,12 @@ Hecho y verificado para rc.1: parity 95/95 con `UNMAPPED=0`; P33, P29, P41/C6, C
 | `ccd981f` | **86** | sin BLOCKER ni CRITICAL; MAJOR en Q7/Q8 |
 
 No se baja el umbral, no hay waivers. La PR de remediación `fix/platform-remediation-86` ataca los hallazgos F1–F8 de la auditoría de `ccd981f`; tras su merge humano hay que **ejecutar una auditoría nueva sobre el SHA resultante** y guardar su informe en `.audit/reports/` ligado a ese commit. Solo con score ≥ gate se continúa con `release-gate` → `rc.1` → canary → `v3.0.0`.
+
+## Hallazgos del canary (2026-10-05)
+
+* **C-1, defecto de plataforma (corregido en la PR `fix/migrate-revert-crlf`):** `migrate revert` comparaba hashes crudos y trataba como «editado por el usuario» todo archivo creado cuando el checkout convierte LF→CRLF (`core.autocrlf=true`, el caso normal en Windows), dejando el PR sin revertir (PARTIAL). Con un checkout LF el rollback ya era limpio y byte-idéntico a `main`. Test de regresión: falla sin el fix, pasa con él.
+* **C-2, bloqueo externo (decisión humana, no tocado):** `migrate apply` retiró `.github/workflows/ci.yml` de `template-starter` (idéntico a Template, propiedad de la plataforma) y el ruleset `template-starter-main` exige los checks `circuit-tests`, `product-tests` y `local-reconciler-tests`, que salían de ese archivo. En la PR solo existe `l3 / l3-consumer`, así que queda `BLOCKED` y nadie puede mergearla sin cambiar el ruleset de `template-starter`. No se modifica ese ruleset ni se añaden jobs a `template-starter` (sin capacidades nuevas). Opciones para el maintainer: sustituir los contextos requeridos por `l3 / l3-consumer`, o conservar `ci.yml` con `--keep`. Gap de plataforma asociado: `plan` debería avisar cuando un workflow retirado produce un check requerido por el ruleset del consumidor.
+* Los pendientes conocidos siguen abiertos: alerta #10 de code scanning, F2 (0 aprobaciones) y la revocación de claves antiguas de `ai-native-trust` (NO VERIFICADO).
 
 ## Seguridad y gobernanza (vigente)
 
