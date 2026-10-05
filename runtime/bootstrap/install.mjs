@@ -153,7 +153,7 @@ export function sync({ projectRoot, cacheRoot, fromFile = null, revocations = nu
         throw error;
       }
     } else {
-      return report([`release ${digest} is not in the cache and there is no network source yet; run with --from-file <bundle>`]);
+      return report([`release ${digest} is not in the cache and no bundle source was given (offline, or the download did not run): sync online so the pinned release is downloaded and verified, or pass --from-file <bundle>`]);
     }
     let files;
     try {
