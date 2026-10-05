@@ -35,7 +35,7 @@ Actualizada: 2026-10-05, sobre `main` = `51ef185` (`v3.0.0-rc.2`; la columna de 
 | Offline sin caché | **PASS (falla cerrado, como debe)** | caché vacía → `DEGRADED_READONLY: release not in cache`; `sync` y `run` se niegan a ejecutar. |
 | Rollback | **PASS** | `rollback` solo con la caché (PAR-ROLLBACK-OFFLINE) y `migrate revert` (ver canary). |
 
-## Canary `template-starter@v2.0.4 → v3` (PR #4)
+## Canary `template-starter@v2.0.4 → v3` (PR #4, mergeada)
 
 | Paso | Estado | Evidencia |
 |---|---|---|
@@ -46,7 +46,7 @@ Actualizada: 2026-10-05, sobre `main` = `51ef185` (`v3.0.0-rc.2`; la columna de 
 | Ruleset | **PASS** | `template-starter-main`: único check requerido `l3 / l3-consumer` (id 15368), sin bypass actors, PR obligatoria, sin push directo; verificado por API. Antes: 3 checks que la migración hacía desaparecer (C-2). |
 | Rollback | **PASS con #55** / **PARTIAL con rc.1** | con la plataforma de #55: `REVERTED` e idéntico a `main` (árbol `72efd273…`) en checkout LF **y** CRLF (`autocrlf=true`). Con el código de rc.1 el checkout CRLF queda `PARTIAL` (C-1). |
 | Reviewer independiente | **PASS** | ACCEPT sobre `b72d099`. |
-| Merge del canary | **PENDING_HUMAN** | PR limpia y mergeable; el merge es humano. |
+| Merge del canary | **PASS** | mergeada por `jlbellonGmail` el 2026-10-05T18:30:41Z (merge commit `9d711d08eaad07593890cac06155d89223360dd8`); verificación post-merge en `governance/canary/CANARY-TEMPLATE-STARTER-2026-10-05.md`. M5.4 cerrado. |
 
 ## Seguridad y gobernanza
 

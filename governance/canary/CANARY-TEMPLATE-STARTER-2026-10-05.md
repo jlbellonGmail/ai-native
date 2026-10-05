@@ -1,6 +1,6 @@
 # Evidencia del canary: `template-starter@v2.0.4 → AI-Native v3` (M5.4)
 
-Estado: **PR lista sobre `v3.0.0-rc.2`, merge humano pendiente** (ver «Actualización a rc.2»; las secciones siguientes describen la primera pasada sobre rc.1). Este documento es evidencia, no una declaración de cierre: el canary solo está cerrado cuando la PR se mergea y el consumidor queda funcionando sobre el release.
+Estado: **CERRADO (M5.4 PASS)**. La PR #4 se mergeó sobre `v3.0.0-rc.2` (ver «Actualización a rc.2» y «Verificación post-merge»; las secciones intermedias describen la primera pasada sobre rc.1). Este documento es evidencia, no una declaración de cierre: el canary solo está cerrado cuando la PR se mergea y el consumidor queda funcionando sobre el release.
 
 ## Qué es el canary
 
@@ -69,4 +69,16 @@ Nada de lo anterior se da por hecho.
 * **L3 real (run 37349342123):** `sync --require-attestation` PASS, `doctor` PASS, lock `v3.0.0-rc.2 51ef185`, bootstrap `READY v3.0.0-rc.2`, integridad PASS, ASSESS de 110 rutas → `FULL` (score 207, riesgo `HIGH`).
 * **Rollback con el migrador de rc.2:** `revert` en checkout LF y CRLF (`autocrlf=true`) → árbol `72efd27349a516a7935e8b8e1a66ab1f80e5f52b`, **idéntico** a `main`; repetido por el revisor independiente.
 * **Revisión independiente nueva sobre `4b31929`: ACCEPT**, sin bloqueantes (pins, 105 hashes retirados contra la base, 2.º commit = 3 archivos, CI, ruleset, rollback). Notas no bloqueantes: raíz de confianza = lock de la cabeza por ser la primera adopción (el gate la acota), aviso de STATUS.md ya existente, 0 aprobaciones requeridas (F2).
-* **Pendiente:** merge humano de la PR #4.
+* Merge: mergeada por `jlbellonGmail` el 2026-10-05T18:30:41Z (merge commit `9d711d08eaad07593890cac06155d89223360dd8`).
+
+## Verificación post-merge (2026-10-05)
+
+| Comprobación | Resultado |
+|---|---|
+| Merge y autoría | PR #4 mergeada por `jlbellonGmail` el 2026-10-05T18:30:41Z (merge commit `9d711d08eaad07593890cac06155d89223360dd8`); `main` de `template-starter` = `9d711d0`. |
+| Lock v3 en `main` | `ai-native.lock.json`: `v3.0.0-rc.2`, `51ef185…`, canal `rc`; caller L3 fijado por el mismo SHA. |
+| Ruleset `template-starter-main` | activo, **sin bypass actors**, único check requerido `l3 / l3-consumer`. |
+| CI / L3 post-merge | **No hay workflows en `push`**: el caller L3 solo dispara con `pull_request` (decisión del consumidor, no se cambió). La evidencia de CI es la del PR (run 37349342123, success sobre `4b31929`, cuyo árbol es el de `main`). El L3 se **reprodujo a mano** sobre `9d711d0` con el código de rc.2: `sync --require-attestation` PASS, `doctor` PASS, `status --check` PASS; lock `v3.0.0-rc.2 51ef185`, bootstrap `READY v3.0.0-rc.2`, integridad PASS, ASSESS de 110 rutas → `FULL` (score 207, riesgo `HIGH`); `p45`, `adoption` y `product` `NOT_APPLICABLE`. |
+| Rollback desde `main` | `migrate revert` (migrador del tag `v3.0.0-rc.2`) en checkout LF y CRLF (`autocrlf=true`) → árbol `72efd27349a516a7935e8b8e1a66ab1f80e5f52b`, idéntico al de la base `5d26ec9`. |
+
+Límites que se mantienen: F2 (`required_approving_review_count = 0`, `strict=false`); el aviso «STATUS.md stale» de la integridad es previo y `STATUS.md` no se tocó; C-3 (referencias a rutas retiradas en la documentación de `template-starter`) sigue abierto en ese repositorio; el lock del canary queda en canal `rc` a propósito (consumidor canary: no adopta `v3.0.0` estable por defecto).
