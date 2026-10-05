@@ -24,6 +24,6 @@ Only the latest published release of the v3 line receives fixes. Pre-releases (`
 - Merges to `main` need a PR plus the required checks; the verdict checks are emitted by a separate GitHub App, not by the PR's own workflows.
 - A change to the control plane is never auto-approved: `trust-gate` concludes `neutral` and `merge-gate` blocks it until a human approves in the `ai-native-human-review` Environment.
 - App credentials live only in Environments restricted to `main`, never in repository secrets.
-- Workflow actions are pinned by full commit SHA and checked in CI.
+- Workflow actions are pinned by full commit SHA, checked in CI and enforced by the repository setting `sha_pinning_required` (enabled 2026-10-04; a workflow that uses an unpinned action fails to run).
 
 Known limits are stated honestly in `governance/security/HITL-MERGE-POLICY.md` and `governance/security/SECRETS-BOUNDARY.md`.

@@ -39,6 +39,7 @@ No se baja el umbral, no hay waivers. La PR de remediación `fix/platform-remedi
 * **Pendiente humano:** revocar las claves privadas antiguas de `ai-native-trust`. No verificable por API; **no se da por hecho**.
 * **Merge humano (D6):** el agente no mergea ni aprueba Environments con credenciales del owner. Limitación conocida (F2): no hay segunda identidad humana impuesta por el servidor mientras exista un solo maintainer (`required_approving_review_count = 0`); documentado en `HITL-MERGE-POLICY.md`, no ocultado.
 * **Plano de control (D7):** un PR que toque `.github/**`, `governance/gates/`, etc. deja `trust-gate = neutral`; `merge-gate` lo bloquea hasta la aprobación humana en `ai-native-human-review`. `neutral` nunca es PASS.
+* **SHA pinning (F8):** `sha_pinning_required = true` a nivel de repositorio desde 2026-10-04 (todas las acciones ya estaban fijadas por SHA; `pin-check` lo valida en CI). Verificado con el CI de la PR de remediación.
 * **LICENSE (D8):** propietaria, All Rights Reserved (PR #51).
 * **Alertas:** triage completo en `governance/security/ALERTS-TRIAGE-2026-10-04.md`.
 
