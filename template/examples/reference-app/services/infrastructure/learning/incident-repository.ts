@@ -13,14 +13,12 @@ export class IncidentRepository {
 
         let incidents: Incident[] = [];
 
-        // 🔥 leer existentes
-        if (fs.existsSync(this.filePath)) {
-            try {
-                const raw = fs.readFileSync(this.filePath, "utf-8");
-                incidents = JSON.parse(raw);
-            } catch {
-                incidents = [];
-            }
+        // 🔥 leer existentes (lectura directa: sin existsSync previo, que es una carrera comprobar-y-usar)
+        try {
+            const raw = fs.readFileSync(this.filePath, "utf-8");
+            incidents = JSON.parse(raw);
+        } catch {
+            incidents = [];
         }
 
         // 🔥 agregar nuevo
@@ -38,9 +36,6 @@ export class IncidentRepository {
     }
 
     static getAll(): Incident[] {
-        if (!fs.existsSync(this.filePath)) {
-            return [];
-        }
         try {
             const raw = fs.readFileSync(this.filePath, "utf-8");
             return JSON.parse(raw);
