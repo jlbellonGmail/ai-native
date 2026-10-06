@@ -9,5 +9,6 @@
   "mcpDefaultProfile": "none",
   "docRelevantPaths": ["README.md", "docs/api/**", "pyproject.toml"],
   "testingProfiles": ["smoke", "contract", "coverage"],
+  "productSetupCommand": "python -m pip install --quiet . -r requirements-dev.txt",
   "productTestCommand": "pytest -q"
 }

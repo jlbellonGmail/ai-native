@@ -12,7 +12,7 @@ import { buildBundle, crc32, gzipDeterministic, isShipped, publishedPlatform, sh
 import { findRevocation, parseRevocations, pickHighest } from "./revocations.mjs";
 import { readTar } from "../bootstrap/tar.mjs";
 import { validate } from "../lib/schema-lite.mjs";
-import { downloadRelease, fetchRevocations, parseRepo, bundleAsset } from "../bootstrap/remote.mjs";
+import { downloadRelease, fetchRevocations, parseRepo, bundleAsset, apiHeaders } from "../bootstrap/remote.mjs";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const schema = (n) => JSON.parse(readFileSync(join(repoRoot, "contracts", n), "utf8"));
@@ -261,4 +261,23 @@ test("e2e: build HEAD -> sync --from-file -> run version/doctor; revoked release
   assert.match(revoked.stdout, /revoked/);
   assert.equal(existsSync(join(cache2, "blobs")), false, "a revoked release never reaches the cache");
   for (const d of [out, out2, proj, cache, cache2]) rmSync(d, { recursive: true, force: true });
+});
+
+test("revocations: the api.github.com request carries the token when one exists (anonymous rate limit made runners get HTTP 403) and never invents one", async () => {
+  assert.equal(apiHeaders({}).authorization, undefined);
+  assert.equal(apiHeaders({ GH_TOKEN: "t1" }).authorization, "Bearer t1");
+  assert.equal(apiHeaders({ GITHUB_TOKEN: "t2" }).authorization, "Bearer t2");
+  assert.equal(apiHeaders({ GH_TOKEN: "t1", GITHUB_TOKEN: "t2" }).authorization, "Bearer t1");
+  const seen = [];
+  const prev = process.env.GH_TOKEN;
+  process.env.GH_TOKEN = "tok";
+  try {
+    const r = await fetchRevocations({ repo: "github:o/r", fetchImpl: async (url, init) => { seen.push({ url, init }); return { ok: true, json: async () => [] }; } });
+    assert.equal(r.list, null);
+  } finally {
+    if (prev === undefined) delete process.env.GH_TOKEN; else process.env.GH_TOKEN = prev;
+  }
+  assert.equal(seen.length, 1);
+  assert.match(seen[0].url, /^https:\/\/api\.github\.com\//);
+  assert.equal(seen[0].init.headers.authorization, "Bearer tok");
 });
