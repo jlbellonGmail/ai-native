@@ -6,6 +6,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { hermeticEnv, testFiles, runArgs, DEFAULT_CONCURRENCY } from "./test-hermetic.mjs";
 
+// .native expands Windows 8.3 short names (RUNNER~1) that plain realpathSync leaves alone: git reports the long form
+const real = (p) => realpathSync.native(p);
 const git = (cwd, env, ...args) => spawnSync("git", args, { cwd, env, encoding: "utf8" });
 
 // F-05: an ancestor git repository (a user HOME that is a repo) makes every temp dir that was never `git init`ed
@@ -25,7 +27,7 @@ test("WITHOUT the ceiling a temp dir under a repo HOME resolves to the HOME repo
     delete env.GIT_CEILING_DIRECTORIES;
     const r = git(child, env, "rev-parse", "--show-toplevel");
     assert.equal(r.status, 0, "precondition: the hazard must be reproducible");
-    assert.equal(realpathSync(r.stdout.trim()), home);
+    assert.equal(real(r.stdout.trim()), real(home));
   } finally {
     rmSync(home, { recursive: true, force: true });
   }
@@ -39,7 +41,7 @@ test("hermeticEnv sets GIT_CEILING_DIRECTORIES so the same temp dir is NOT insid
     assert.notEqual(r.status, 0, `expected "not a git repository", got toplevel ${r.stdout}`);
     // a repo created INSIDE the temp root still works (tests init their own repos there)
     assert.equal(git(child, env, "init", "-q", ".").status, 0);
-    assert.equal(realpathSync(git(child, env, "rev-parse", "--show-toplevel").stdout.trim()), realpathSync(child));
+    assert.equal(real(git(child, env, "rev-parse", "--show-toplevel").stdout.trim()), real(child));
   } finally {
     rmSync(home, { recursive: true, force: true });
   }

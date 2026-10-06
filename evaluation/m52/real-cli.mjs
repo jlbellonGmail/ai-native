@@ -18,21 +18,32 @@ const out = value("--out");
 const tag = value("--release-tag");
 if (!out) throw new Error("usage: real-cli.mjs --out <file> [--release-tag vX.Y.Z]");
 
-// npm installs codex/opencode as .cmd shims on Windows, which Node refuses to spawn without a shell: quote every argument
-const NPM_SHIMS = new Set(["codex", "opencode"]);
-const quote = (x) => `"${String(x).replace(/"/g, "\\\"")}"`;
+// npm installs codex/opencode as .cmd shims on Windows, which Node cannot spawn without a shell (and a shell needs quoting).
+// Resolve the real executable behind the shim instead and spawn it directly: no shell, no argument quoting.
+const SHIM_TARGETS = {
+  codex: (dir) => [process.execPath, join(dir, "node_modules", "@openai", "codex", "bin", "codex.js")],
+  opencode: (dir) => [join(dir, "node_modules", "@opencode", "cli", "bin", "opencode.exe")],
+};
+function resolveCommand(cmd) {
+  if (process.platform !== "win32" || !SHIM_TARGETS[cmd]) return [cmd];
+  const found = spawnSync("where.exe", [cmd + ".cmd"], { encoding: "utf8" });
+  const shim = String(found.stdout).split(/\r?\n/).find((l) => l.trim());
+  if (!shim) return [cmd];
+  const target = SHIM_TARGETS[cmd](dirname(shim.trim()));
+  return existsSync(target[target.length - 1]) ? target : [cmd];
+}
 const sh = (cmd, args, opts = {}) => {
   const base = { encoding: "utf8", input: "", maxBuffer: 64 * 1024 * 1024, timeout: 240000, ...opts };
   // OpenCode resolves its project directory from the inherited $PWD, not from the real cwd: keep both in sync
   if (opts.cwd) base.env = { ...process.env, PWD: opts.cwd };
-  if (process.platform === "win32" && NPM_SHIMS.has(cmd)) return spawnSync([cmd, ...args.map(quote)].join(" "), { ...base, shell: true });
-  return spawnSync(cmd, args, base);
+  const [bin, ...prefix] = resolveCommand(cmd);
+  return spawnSync(bin, [...prefix, ...args], base);
 };
 const work = mkdtempSync(join(tmpdir(), "ai-native-realcli-"));
 const proj = join(work, "consumer");
 mkdirSync(proj);
 sh("git", ["init", "-q", "."], { cwd: proj });
-writeFileSync(join(proj, "AGENTS.md"), "# Fixture AGENTS.md\n\nOnly when the request begins with 'Identify yourself', reply with only the word FIXTURE_OK. Any other request: answer it normally.\n");;
+writeFileSync(join(proj, "AGENTS.md"), "# Fixture AGENTS.md\n\nOnly when the request begins with 'Identify yourself', reply with only the word FIXTURE_OK. Any other request: answer it normally.\n");
 
 let source;
 if (tag) {
