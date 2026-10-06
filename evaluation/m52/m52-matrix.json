@@ -152,14 +152,14 @@
       "id": "cli-linux-real",
       "criterion": "Pata Linux de C1-C4 con las CLIs reales (diferida a M5.2 por compat-matrix.json#linuxCoverage)",
       "mandatory": true,
-      "status": "NOT_RUN",
+      "status": "PASS",
       "evidence": [
         "evaluation/m52/evidence/real-cli-linux.json",
         "evaluation/m52/linux-run.sh",
         "evaluation/m52/linux-setup.sh"
       ],
-      "run": "WSL2 Ubuntu 24.04.4, binarios ELF/Node nativos, commit 5f7b39659698e187a59d30c4a0d051d6834d033b: claude 2.1.290 PASS (contexto y rol), codex 0.160.1 contexto PASS, opencode 2.0.23 contexto PASS",
-      "note": "SIGUE NOT_RUN: el rol de OpenCode en Linux no se pudo observar. `opencode auth list` dice 'No authenticated integrations' y el agente generado (con prompt de sistema propio) recibe 403 FreeTierError; el contexto pasó por el nivel gratuito anónimo. Es falta de credenciales de OpenCode en esa WSL, no un defecto observado de la plataforma (en Windows el mismo rol pasa, ver cli-opencode-context-role). Se cierra con `opencode auth login` en la WSL y repitiendo linux-run.sh. Codex config.toml y OpenCode MCP: NOT_AVAILABLE_FROM_TOOL (filas propias)."
+      "run": "WSL2 Ubuntu 24.04.4, binarios ELF/Node nativos, commit 25f9384c57ba59d56de73fa90b4ea1394ab34a86: claude 2.1.290 (contexto y rol) PASS, codex 0.160.1 (contexto) PASS, opencode 2.0.23 (contexto y rol) PASS",
+      "note": "Salvedades, todas escritas en la evidencia: (1) OpenCode corrió con `-m openai/gpt-5.5` porque la WSL no tiene credencial del proveedor `opencode-go` que fija el opencode.json generado: se observó que la config carga, que AGENTS.md se consume y que el prompt del rol generado llega al agente, pero el modelo generado (opencode-go/kimi-k2.7-code) NO se ejercitó en Linux (sí en Windows). (2) Codex: el consumo de .codex/config.toml es NOT_AVAILABLE_FROM_TOOL (fila cli-codex-config). (3) OpenCode MCP: NOT_AVAILABLE_FROM_TOOL (fila cli-opencode-mcp). (4) Un solo host Linux (WSL2), no un runner Ubuntu. Corrida manual reproducible con linux-setup.sh y linux-run.sh; no se creó ningún workflow con secretos."
     },
     {
       "id": "l1",
