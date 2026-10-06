@@ -16,7 +16,7 @@ Esos archivos `VERSION` internos **se conservan** como metadatos históricos de 
 
 - La numeración arranca en **v3.0.0**, sucesora explícita de la línea TEMPLATE v2.x que conocen los consumidores. No hay motivo técnico para v2.x (`ai-native` ya tiene tags locales `v1.0.0`–`v1.3.1`, no publicados en `origin`), así que v3.0.0 es el MAJOR más bajo que no genera ambigüedad.
 - `platform.json` (release asset) lista los componentes de la release y sus versiones internas (`schemaVersion` de cada contrato, `auditMethod`, etc.) junto con su sha256.
-- El `VERSION` de la raíz de `ai-native` vale `3.0.0-dev`: marca la línea v3 aún no publicada en `main`. La versión que consumen los repos GI es la del tag/release publicado, nunca este archivo. La línea interna previa (`1.3.1`, tags locales `v1.0.0`–`v1.3.1`) quedó superseded por v3 y se conserva solo como historia.
+- El `VERSION` de la raíz de `ai-native` vale `3.0.0-dev`: es un marcador de desarrollo en `main`; la línea v3 está publicada como tag/release (`v3.0.0`). La versión que consumen los repos GI es la del tag/release publicado, nunca este archivo. La línea interna previa (`1.3.1`, tags locales `v1.0.0`–`v1.3.1`) quedó superseded por v3 y se conserva solo como historia.
 
 ## Qué cuenta como cada tipo de cambio
 
