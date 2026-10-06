@@ -4,11 +4,11 @@
 > `governance/history/SESSION-CONTEXT-HISTORY-2026-10-04.md`. Fuente de verdad del estado: este archivo, `governance/roadmaps/AI-NATIVE-V3-ROADMAP.md` y Git/GitHub.
 > Política del merge humano: `governance/security/HITL-MERGE-POLICY.md`. Frontera de secretos: `governance/security/SECRETS-BOUNDARY.md`.
 
-Actualizado: 2026-10-05 (post-publicación de `v3.0.0-rc.2`).
+Actualizado: 2026-10-06 (post-publicación de `v3.0.0`).
 
 ## Arquitectura (vigente)
 
-`ai-native` es **un único repositorio** (ADR-001, desde la PR #2): áreas de fábrica `governance/`, `foundation/`, `knowledge/`, `template/`; plataforma v3 en `core/ contracts/ runtime/ mcp/ profiles/ audit/ parity/ evaluation/`; `legacy/` es material congelado, no instrucciones. Versión de la plataforma = tag/release (`VERSION` de la raíz: `3.0.0-dev`, ver `governance/versioning/VERSIONING-POLICY.md`). Última release publicada: `v3.0.0-rc.2`.
+`ai-native` es **un único repositorio** (ADR-001, desde la PR #2): áreas de fábrica `governance/`, `foundation/`, `knowledge/`, `template/`; plataforma v3 en `core/ contracts/ runtime/ mcp/ profiles/ audit/ parity/ evaluation/`; `legacy/` es material congelado, no instrucciones. Versión de la plataforma = tag/release (`VERSION` de la raíz: `3.0.0-dev`, ver `governance/versioning/VERSIONING-POLICY.md`). Última release publicada: `v3.0.0` (estable).
 
 ## Roadmap v3: dónde estamos
 
@@ -18,8 +18,8 @@ Actualizado: 2026-10-05 (post-publicación de `v3.0.0-rc.2`).
 | M5.1 `v3.0.0-rc.1` | **Publicada (2026-10-05)** sobre `0ffe68d`: release inmutable, SHA256SUMS, SBOM CycloneDX (0 componentes: sin dependencias de terceros), attestation sigstore de los 4 assets, revocations idénticas al repo, `init`/`sync --require-attestation`/`doctor`/`status --check` verificados desde el release público. Auditoría PLATFORM 92.5/100 sobre `5a60072` (`.audit/reports/AUDIT-PLATFORM-5a60072.md`), vigente para `0ffe68d` (solo cambió `.audit/**`). |
 | M5.1b `v3.0.0-rc.2` | **Publicada (2026-10-05)** sobre `51ef185` (merge de #58): tag anotado, release inmutable, `scripts/verify-release.mjs v3.0.0-rc.2 --expect-commit 51ef185…` PASS (22 checks), camino rc.1 → rc.2 → rollback ejecutado. Auditoría PLATFORM 93.0/100 sobre `3477428` (`.audit/reports/AUDIT-PLATFORM-3477428.md`), vigente para `51ef185` (solo cambió `.audit/**`). Detalle: `governance/versioning/RC2-READINESS.md`. |
 | M5.4 canary `template-starter@v2.0.4 → v3` | **Cerrado (PASS), 2026-10-05.** PR #4 mergeada por el humano (`9d711d0`) sobre `v3.0.0-rc.2`: lock por SHA, L3 real PASS, reviewer ACCEPT, rollback LF/CRLF idéntico a la base, ruleset con único check `l3 / l3-consumer` y sin bypass actors. Evidencia: `governance/canary/CANARY-TEMPLATE-STARTER-2026-10-05.md`. |
-| M5.2 fixture + matriz muestreada | **Cerrada con la PR #61 (pendiente de merge humano):** veredicto `COMPLETED` (`node evaluation/m52/validate-evidence.mjs --verdict`); online y offline en Ubuntu y Windows con run real, offline con la red realmente inexistente, CLIs reales en Windows y Linux (WSL2), L2 real y defecto real del adapter OpenCode corregido. Matriz: `governance/quality/M5-2-MATRIX.md`. Límites en la propia matriz (OpenCode en Linux con override de modelo; Codex config y OpenCode MCP `NOT_AVAILABLE_FROM_TOOL`). |
-| M5.5 `v3.0.0` | **No publicada** (canary PASS cumplido; falta auditoría PLATFORM vigente sobre el SHA candidato, `release-gate` y publicación). |
+| M5.2 fixture + matriz muestreada | **Cerrada con la PR #61 (mergeada por el humano, `521d203`):** veredicto `COMPLETED` (`node evaluation/m52/validate-evidence.mjs --verdict`); online y offline en Ubuntu y Windows con run real, offline con la red realmente inexistente, CLIs reales en Windows y Linux (WSL2), L2 real y defecto real del adapter OpenCode corregido. Matriz: `governance/quality/M5-2-MATRIX.md`. Límites en la propia matriz (OpenCode en Linux con override de modelo; Codex config y OpenCode MCP `NOT_AVAILABLE_FROM_TOOL`). |
+| M5.5 `v3.0.0` | **Publicada (2026-10-06)** sobre `afd375d564e1c750043ad47e1e4a7b1917073700`: tag anotado, release inmutable, `verify-release` PASS (22 checks). Auditoría PLATFORM **92.25/100** sobre `521d203` (`.audit/reports/AUDIT-PLATFORM-521d203.md`; 0 BLOCKER/CRITICAL/MAJOR, 9 MINOR), vigente por diferir solo en `.audit/**`. |
 | M6 (repos GI) | **No abierto**; requiere autorización explícita. |
 
 Hecho y verificado para rc.1: parity 95/95 con `UNMAPPED=0`; P33, P29, P41/C6, C5 (Claude Code y Codex CONFIRMED; OpenCode `NOT_AVAILABLE_FROM_TOOL`), C3, L3 reusable, migrador v2→v3 y métricas DoD (10/11, 1 `PROXY_ONLY`).
@@ -34,6 +34,7 @@ Hecho y verificado para rc.1: parity 95/95 con `UNMAPPED=0`; P33, P29, P41/C6, C
 | `ccd981f` | **86** | sin BLOCKER ni CRITICAL; MAJOR en Q7/Q8 |
 | `5a60072` | **92.5** | rc.1 (PASS) |
 | `3477428` | **93.0** | rc.2 (PASS): 0 BLOCKER/CRITICAL/MAJOR, 8 MINOR abiertos |
+| `521d203` | **92.25** | `v3.0.0` (PASS): 0 BLOCKER/CRITICAL/MAJOR, 9 MINOR |
 
 No se baja el umbral, no hay waivers. La remediación de F1–F8 (#53) y las posteriores (#55, #56, #57) se auditaron con informes nuevos ligados a su SHA: `5a60072` (92.5, rc.1) y `3477428` (93.0, rc.2). Para `v3.0.0` estable: `release-gate` sobre su propio SHA tras el canary.
 
@@ -63,3 +64,14 @@ No se baja el umbral, no hay waivers. La remediación de F1–F8 (#53) y las pos
 * Commits `wip:` ya mergeados (`d4522af`, `77be44d`, `58358e8`, `bf435fe`, `189f2af`, `6e30b3a`, `6d02325`, `7d25e6d`, `81f06a1`, `5e79672`): la historia publicada no se reescribe; desde entonces los commits son descriptivos.
 * PRs #30, #31 y anteriores se mergearon bajo una dispensa de merge que ya no existe (D6).
 * Template `v2.0.6` publicada y rulesets activos en `template` y `template-starter`; `template-starter` sigue en la baseline v2.0.4 para el canary. El checkout local del maintainer en `<workspace>/template` tiene `ci.yml` modificado sin commitear; no se tocó.
+
+## Transición Template → AI-Native (cerrada con `v3.0.0`)
+
+* **AI-Native `v3.0.0`** = plataforma central vigente. Los consumidores la usan por referencia: versión, SHA/lock, caché, attestation y rollback; no por copia masiva del Template.
+* **Template v2.x** = `LEGACY / TRANSITION`: sin capacidades funcionales nuevas; solo historia, baseline y migración/compatibilidad imprescindible. `legacy/template-v2` no es implementación futura.
+* **template-starter** = canary histórico y consumidor migrado (evidencia brownfield v2 → v3), no plataforma central.
+* Siguiente gran paso: M6 (repos GI), **no abierto**; requiere autorización explícita.
+
+## Residuales abiertos tras `v3.0.0` (no convertidos en PASS)
+
+F2 (`required_approving_review_count = 0`, `strict = false`); claves antiguas de `ai-native-trust` `NO_VERIFICADO`; OpenCode MCP y Codex config `NOT_AVAILABLE_FROM_TOOL`; F-05 `PARTIAL` (sin causa raíz demostrada); sin ruleset de tags (F-04 del informe); P1–P45 sin matriz individual final; PR #48 (Dependabot, plano de control) `KEEP_OPEN_FOR_HITL`.

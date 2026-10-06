@@ -89,7 +89,7 @@
         "evaluation/m52/net-guard.cjs"
       ],
       "run": "local (10/10, 0 intentos de red con caché) y CI: PR #61, SHA 6b060bcb9d0e120274fa1967bcb8b7c7ee11fa6e, run 37394104496, job 112045838431 (windows-latest, success)",
-      "note": "Aislamiento en proceso, NO a nivel de SO (más débil que Docker); está etiquetado así en la evidencia. El job 'pilot offline (windows-latest)' lo repite en CI: pendiente."
+      "note": "Aislamiento en proceso, NO a nivel de SO (más débil que Docker); está etiquetado así en la evidencia. El job 'pilot offline (windows-latest)' lo repite en CI (success, PR #61, run 37394104496, job 112045838431)."
     },
     {
       "id": "cli-claude",
