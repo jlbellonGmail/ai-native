@@ -34,9 +34,10 @@ Hecho y verificado para rc.1: parity 95/95 con `UNMAPPED=0`; P33, P29, P41/C6, C
 | `ccd981f` | **86** | sin BLOCKER ni CRITICAL; MAJOR en Q7/Q8 |
 | `5a60072` | **92.5** | rc.1 (PASS) |
 | `3477428` | **93.0** | rc.2 (PASS): 0 BLOCKER/CRITICAL/MAJOR, 8 MINOR abiertos |
+| `15715ea` | **92.25** | informe PLATFORM del 2026-10-05 (0 BLOCKER/CRITICAL/MAJOR, 9 MINOR); superado por el de `521d203` |
 | `521d203` | **92.25** | `v3.0.0` (PASS): 0 BLOCKER/CRITICAL/MAJOR, 9 MINOR |
 
-No se baja el umbral, no hay waivers. La remediación de F1–F8 (#53) y las posteriores (#55, #56, #57) se auditaron con informes nuevos ligados a su SHA: `5a60072` (92.5, rc.1) y `3477428` (93.0, rc.2). Para `v3.0.0` estable: `release-gate` sobre su propio SHA tras el canary.
+No se baja el umbral, no hay waivers. La remediación de F1–F8 (#53) y las posteriores (#55, #56, #57) se auditaron con informes nuevos ligados a su SHA: `5a60072` (92.5, rc.1) y `3477428` (93.0, rc.2). `v3.0.0` estable se publicó sobre `afd375d`, con auditoría nueva sobre `521d203` (la diferencia es solo `.audit/**`); `release-gate --candidate afd375d…` dio PASS_WITH_WARNINGS (avisos: los informes anteriores quedan STALE).
 
 ## Hallazgos del canary (2026-10-05)
 
