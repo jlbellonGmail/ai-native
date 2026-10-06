@@ -172,6 +172,12 @@ jobs:
         shell: bash
         run: node --test evaluation/metrics/*.test.mjs
 
+      - name: M5.2 evidence validators, release guard (F-09) and hermetic test harness (F-05)
+        shell: bash
+        run: |
+          node --test evaluation/m52/*.test.mjs scripts/test-hermetic.test.mjs
+          node evaluation/m52/validate-evidence.mjs
+
       - name: every committed test file is run by a workflow
         shell: bash
         run: |

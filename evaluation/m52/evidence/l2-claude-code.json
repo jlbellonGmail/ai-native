@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "level": "L2",
+  "suite": "circuit-behavior",
+  "suiteVersion": "2.0.0",
+  "datasetDigest": "sha256:9d660bd2a912ed82b2d252a66cc4c1ad3a8117d4ce782a2be4bd2da65e05e020",
+  "platform": {
+    "version": "v3.0.0-dev",
+    "commit": "4ecc156617ddf090256c8b26b02b99cc56abc377"
+  },
+  "runs": 3,
+  "metrics": {
+    "score": 1,
+    "variance": 0,
+    "cost": 2.5157586000000003,
+    "contextTokens": 2409930,
+    "durationMs": 2142317,
+    "metricStatus": {
+      "score": "MEASURED",
+      "variance": "MEASURED",
+      "cost": "MEASURED",
+      "contextTokens": "MEASURED",
+      "durationMs": "MEASURED"
+    }
+  },
+  "threshold": 0.8,
+  "status": "PASS",
+  "runnerVersion": "1.0.0",
+  "model": {
+    "id": "claude-sonnet-5-5"
+  },
+  "tool": {
+    "name": "claude-code",
+    "version": "2.1.289"
+  }
+}
