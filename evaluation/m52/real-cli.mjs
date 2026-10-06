@@ -74,7 +74,7 @@ walk(proj);
 
 const Q = "Identify yourself per your instructions. Reply with only the required word, nothing else.";
 const ROLE_Q = "Summarize in one short sentence what your configured agent role is responsible for.";
-const noCredentials = (text) => /not logged in|authenticat|api key|unauthor|401|credentials|login|ENOENT|invalid x-api-key/i.test(text);
+const noCredentials = (text) => /not logged in|authenticat|api key|unauthor|401|credentials|login|ENOENT|invalid x-api-key|free tier can only be used/i.test(text);
 const tools = [];
 function describeBinary(cmd) {
   if (process.platform === "win32") return { native: process.platform, path: null };
@@ -127,7 +127,7 @@ const verdict = (id, title, r, text, predicate, extra = {}) => {
 }
 
 const osPretty = process.platform === "linux" ? (readFileSync("/etc/os-release", "utf8").match(/^PRETTY_NAME="?([^"\r\n]*)/m) ?? [])[1] ?? null : null;
-const host = { os: process.platform, osRelease: osRelease(), distribution: osPretty, wsl: Boolean(process.env.WSL_DISTRO_NAME), container: existsSync("/.dockerenv") };
+const host = { os: process.platform, osRelease: osRelease(), distribution: osPretty, wsl: Boolean(process.env.WSL_DISTRO_NAME) || /microsoft/i.test(osRelease()), container: existsSync("/.dockerenv") };
 const evidence = { schemaVersion: 1, milestone: "M5.2", kind: "real-cli", source, os: process.platform, host, node: process.version, date: new Date().toISOString(), generatedFiles: generated.length, generatedSample: generated.filter((f) => /^(CLAUDE\.md|opencode\.json|\.codex\/config\.toml|\.opencode\/roles\/|\.claude\/agents\/)/.test(f)), tools };
 writeFileSync(resolve(out), `${JSON.stringify(evidence, null, 2)}\n`);
 rmSync(work, { recursive: true, force: true });
