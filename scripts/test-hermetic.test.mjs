@@ -4,7 +4,7 @@ import { spawnSync } from "node:child_process";
 import { mkdtempSync, mkdirSync, rmSync, realpathSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { hermeticEnv, testFiles } from "./test-hermetic.mjs";
+import { hermeticEnv, testFiles, runArgs, DEFAULT_CONCURRENCY } from "./test-hermetic.mjs";
 
 const git = (cwd, env, ...args) => spawnSync("git", args, { cwd, env, encoding: "utf8" });
 
@@ -62,4 +62,10 @@ test("hermeticEnv also isolates from the user's global/system git config", () =>
 test("testFiles excludes legacy/ and lists only *.test.mjs", () => {
   const files = testFiles(["a/b.test.mjs", "legacy/x/y.test.mjs", "README.md", "c.test.mjs"]);
   assert.deepEqual(files, ["a/b.test.mjs", "c.test.mjs"]);
+});
+
+test("runArgs defaults to the safe concurrency and honours an explicit one", () => {
+  assert.equal(DEFAULT_CONCURRENCY, 2);
+  assert.deepEqual(runArgs(["a.test.mjs"]), ["--test", "--test-concurrency=2", "a.test.mjs"]);
+  assert.deepEqual(runArgs(["a.test.mjs"], "1"), ["--test", "--test-concurrency=1", "a.test.mjs"]);
 });
