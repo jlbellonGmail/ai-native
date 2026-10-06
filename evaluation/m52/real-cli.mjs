@@ -118,10 +118,17 @@ const verdict = (id, title, r, text, predicate, extra = {}) => {
 {
   const v = sh("opencode", ["--version"]).stdout.trim();
   const run = (extra, q) => { const r = sh("opencode", ["run", "--standalone", "--format", "json", ...extra, q], { cwd: proj }); const text = r.stdout.split("\n").map((l) => { try { const j = JSON.parse(l); return j.type === "text" ? j.part?.text ?? "" : j.type === "error" ? `ERROR ${j.error?.message}` : ""; } catch { return ""; } }).join(""); return { r, text }; };
-  const a = run([], Q), b = run(["--agent", "planner"], ROLE_Q);
+  // The generated opencode.json pins the provider `opencode-go`. When this host has no credential for it but has another
+  // provider, AI_NATIVE_OPENCODE_MODEL=<provider/model> runs the SAME generated agents with `-m`. What is under test
+  // (config loads, AGENTS.md consumed, the generated role prompt reaches the agent) does not depend on the model, but the
+  // generated model itself is then NOT exercised: the override is written into the evidence and the case notes it.
+  const override = process.env.AI_NATIVE_OPENCODE_MODEL || null;
+  const mflag = override ? ["-m", override] : [];
+  const a = run(mflag, Q), b = run([...mflag, "--agent", "planner"], ROLE_Q);
+  const withOverride = (c) => (override ? { ...c, modelOverride: override, note: `ran with -m ${override}: the generated agent model (opencode-go/*) has no credential on this host and was NOT exercised` } : c);
   record("opencode", v, [
-    verdict("context", "generated opencode.json loads and AGENTS.md is answered (no ERROR)", a.r, a.text, (t) => /FIXTURE_OK/.test(t) && !/ERROR/.test(t)),
-    verdict("role", "generated agent planner loads its prompt from .opencode/roles/planner.md", b.r, b.text, (t) => /plan|strateg|ASSESS|SDD/i.test(t) && !/ERROR/.test(t)),
+    withOverride(verdict("context", "generated opencode.json loads and AGENTS.md is answered (no ERROR)", a.r, a.text, (t) => /FIXTURE_OK/.test(t) && !/ERROR/.test(t))),
+    withOverride(verdict("role", "generated agent planner loads its prompt from .opencode/roles/planner.md", b.r, b.text, (t) => /plan|strateg|ASSESS|SDD/i.test(t) && !/ERROR/.test(t))),
     { id: "mcp", title: "OpenCode MCP through the platform gateway", status: "NOT_AVAILABLE_FROM_TOOL", detail: "no reproducible run that observes the gateway from OpenCode (M2.3/C5); kept as NOT_AVAILABLE_FROM_TOOL, not promoted by documentation" },
   ], "opencode");
 }

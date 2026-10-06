@@ -4,7 +4,7 @@
   "kind": "real-cli",
   "source": {
     "kind": "checkout",
-    "commit": "5f7b39659698e187a59d30c4a0d051d6834d033b"
+    "commit": "e1e61c5ad3a1546cc688ea82ad4a8f8bb6a8828a"
   },
   "os": "linux",
   "host": {
@@ -15,7 +15,7 @@
     "container": false
   },
   "node": "v24.9.0",
-  "date": "2026-10-06T01:51:07.027Z",
+  "date": "2026-10-06T02:33:08.902Z",
   "generatedFiles": 24,
   "generatedSample": [
     ".claude/agents/builder.md",
@@ -46,16 +46,16 @@
           "answer": "FIXTURE_OK",
           "exit": 0,
           "model": "claude-opus-5-5",
-          "session": "2c4e0b2e-5afd-4e18-a209-4847c74f94eb"
+          "session": "ad8adf7f-2457-46e2-bb98-9930c4ca107a"
         },
         {
           "id": "role",
           "title": "generated .claude/agents/planner.md loads (--agent planner)",
           "status": "PASS",
-          "answer": "The Planner turns intent, context, constraints, ASSESS output and SDD depth into an executable plan that fits the risk. It produces `spec.md`, `plan.md`, `tasks.md` and `decision.md` as the level requ",
+          "answer": "My configured role is Planner. I turn intent, context, constraints and the ASSESS output into a plan sized to the risk. The plan covers dependencies, risks, pending decisions and the evidence required",
           "exit": 0,
           "model": "claude-sonnet-5-5",
-          "session": "3e903a03-bff8-4b28-ba2f-9881be184c1c"
+          "session": "927545be-aae6-43a0-b0b4-254c25b23b83"
         }
       ],
       "status": "PASS"

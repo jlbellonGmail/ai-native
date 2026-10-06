@@ -69,3 +69,9 @@ test("a Linux real-CLI run must record its distribution and use native binaries 
   assert.match(checkRealCli(leaked).join("\n"), /native binary/);
   assert.match(checkRealCli({ ...linux, host: { os: "linux" } }).join("\n"), /distribution/);
 });
+
+test("a real-CLI case that ran with a model override must say so", () => {
+  const good = load("evaluation/m52/evidence/real-cli-checkout.json");
+  const bad = { ...good, tools: good.tools.map((t) => (t.tool === "opencode" ? { ...t, cases: t.cases.map((c) => (c.id === "role" ? { ...c, modelOverride: "openai/gpt-5.5" } : c)) } : t)) };
+  assert.match(checkRealCli(bad).join("\n"), /model override must be explained/);
+});

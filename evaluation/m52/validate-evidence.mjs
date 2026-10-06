@@ -71,6 +71,7 @@ export function checkRealCli(e) {
     const states = t.cases.map((c) => c.status);
     if (t.status === "PASS" && states.some((s) => s !== "PASS")) errors.push(`${t.tool}: status PASS but a case is not PASS`);
     if (t.status === "FAIL" && !states.includes("FAIL")) errors.push(`${t.tool}: status FAIL but no case failed`);
+    for (const c of t.cases) if (c.modelOverride && !c.note) errors.push(`${t.tool}/${c.id}: a model override must be explained in a note`);
     for (const c of t.cases) if (c.status === "PASS" && c.id !== "generated-config" && !c.answer) errors.push(`${t.tool}/${c.id}: PASS without the tool's answer`);
   }
   if (e.os === "linux") {
