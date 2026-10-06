@@ -15,7 +15,7 @@ test("the committed matrix and every committed evidence file are consistent", ()
   assert.deepEqual(checkMatrix(matrix(), root), []);
   assert.deepEqual(checkL2(load("evaluation/m52/evidence/l2-claude-code.json"), load("evaluation/m52/evidence/l2-claude-code.calls.json")), []);
   for (const f of ["offline-docker-rc2", "offline-guard-rc2"]) assert.deepEqual(checkOffline(load(`evaluation/m52/evidence/${f}.json`)), [], f);
-  for (const f of ["real-cli-checkout", "real-cli-rc2-published"]) assert.deepEqual(checkRealCli(load(`evaluation/m52/evidence/${f}.json`)), [], f);
+  for (const f of ["real-cli-checkout", "real-cli-rc2-published", "real-cli-linux"]) assert.deepEqual(checkRealCli(load(`evaluation/m52/evidence/${f}.json`)), [], f);
 });
 
 test("a PASS row must cite evidence that exists; unknown statuses and missing fields are rejected", () => {

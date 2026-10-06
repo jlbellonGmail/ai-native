@@ -87,7 +87,7 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
     ...checkMatrix(load("evaluation/m52/m52-matrix.json")),
     ...checkL2(load("evaluation/m52/evidence/l2-claude-code.json"), load("evaluation/m52/evidence/l2-claude-code.calls.json")).map((e) => `l2: ${e}`),
     ...["offline-docker-rc2", "offline-guard-rc2"].flatMap((f) => checkOffline(load(`evaluation/m52/evidence/${f}.json`)).map((e) => `${f}: ${e}`)),
-    ...["real-cli-checkout", "real-cli-rc2-published"].flatMap((f) => checkRealCli(load(`evaluation/m52/evidence/${f}.json`)).map((e) => `${f}: ${e}`)),
+    ...["real-cli-checkout", "real-cli-rc2-published", "real-cli-linux"].flatMap((f) => checkRealCli(load(`evaluation/m52/evidence/${f}.json`)).map((e) => `${f}: ${e}`)),
   ];
   for (const e of errors) console.error(`ERROR ${e}`);
   const v = closureVerdict(load("evaluation/m52/m52-matrix.json"));
