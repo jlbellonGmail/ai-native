@@ -60,3 +60,12 @@ test("the real-CLI check never accepts PASS for a tool whose case is NOT_AVAILAB
   const bad = { ...good, tools: good.tools.map((t) => (t.tool === "codex-cli" ? { ...t, status: "PASS" } : t)) };
   assert.match(checkRealCli(bad).join("\n"), /codex-cli: status PASS but a case is not PASS/);
 });
+
+test("a Linux real-CLI run must record its distribution and use native binaries (a Windows binary leaked by WSL interop is refused)", () => {
+  const base = load("evaluation/m52/evidence/real-cli-checkout.json");
+  const linux = { ...base, os: "linux", host: { os: "linux", distribution: "Ubuntu 24.04", wsl: true }, tools: base.tools.map((t) => ({ ...t, binary: { path: "/home/u/.local/npm/bin/x", realPath: "/home/u/.local/npm/x", kind: "ELF 64-bit", native: true } })) };
+  assert.deepEqual(checkRealCli(linux), []);
+  const leaked = { ...linux, tools: linux.tools.map((t, i) => (i === 0 ? { ...t, binary: { path: "/mnt/c/x/claude", realPath: "/mnt/c/x/claude.exe", kind: "PE32+", native: false } } : t)) };
+  assert.match(checkRealCli(leaked).join("\n"), /native binary/);
+  assert.match(checkRealCli({ ...linux, host: { os: "linux" } }).join("\n"), /distribution/);
+});

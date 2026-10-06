@@ -73,6 +73,10 @@ export function checkRealCli(e) {
     if (t.status === "FAIL" && !states.includes("FAIL")) errors.push(`${t.tool}: status FAIL but no case failed`);
     for (const c of t.cases) if (c.status === "PASS" && c.id !== "generated-config" && !c.answer) errors.push(`${t.tool}/${c.id}: PASS without the tool's answer`);
   }
+  if (e.os === "linux") {
+    if (!e.host?.distribution) errors.push("a Linux run must record the distribution");
+    for (const t of e.tools ?? []) if (!t.binary?.native) errors.push(`${t.tool}: a Linux run must use a native binary, got ${t.binary?.realPath ?? t.binary?.path ?? "none"} [${t.binary?.kind ?? ""}]`);
+  }
   if (!["claude-code", "codex-cli", "opencode"].every((n) => (e.tools ?? []).some((t) => t.tool === n))) errors.push("the three tools must be present");
   return errors;
 }
