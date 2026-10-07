@@ -110,8 +110,14 @@ function productTests({ project, lock, platformRoot, run }) {
   if (!profileId) return check("product", "FAIL", "lock declares no profile");
   const profilePath = join(platformRoot, "profiles", `${profileId}.json`);
   if (!existsSync(profilePath)) return check("product", "FAIL", `profile '${profileId}' not found in the pinned platform`);
-  const command = JSON.parse(readFileSync(profilePath, "utf8")).productTestCommand;
+  const profile = JSON.parse(readFileSync(profilePath, "utf8"));
+  const command = profile.productTestCommand;
   if (!command) return check("product", "NOT_APPLICABLE", "profile declares no productTestCommand");
+  // The setup command comes from the pinned platform profile (like the test command), never from the consumer PR.
+  if (profile.productSetupCommand) {
+    const s = run(profile.productSetupCommand, { cwd: project, shell: true, encoding: "utf8", timeout: 10 * 60 * 1000, maxBuffer: 32 * 1024 * 1024 });
+    if (s.status !== 0) return check("product", "FAIL", `setup \`${profile.productSetupCommand}\` exit ${s.status ?? s.signal}: dependencies could not be installed, tests not run`);
+  }
   const r = run(command, { cwd: project, shell: true, encoding: "utf8", timeout: 10 * 60 * 1000, maxBuffer: 32 * 1024 * 1024 });
   return r.status === 0 ? check("product", "PASS", `\`${command}\` exit 0`) : check("product", "FAIL", `\`${command}\` exit ${r.status ?? r.signal}`);
 }

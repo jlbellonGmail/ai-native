@@ -170,3 +170,30 @@ test("the product-test profile comes from the BASE lock: a PR cannot switch to a
   assert.equal(r.checks.find((c) => c.id === "product").status, "FAIL", "judged by the base profile (factory), whose command fails");
   assert.match(r.checks.find((c) => c.id === "product").detail, /exit 5/);
 });
+
+test("L3 product tests: the profile's productSetupCommand runs first; a failing setup fails closed and the tests do not run", () => {
+  const proj = consumer();
+  const platformRoot = tmp();
+  mkdirSync(join(platformRoot, "profiles"), { recursive: true });
+  const marker = join(proj, "setup-ran.txt");
+  const node = `"${process.execPath}"`;
+  const setup = `${node} -e "require('fs').writeFileSync(process.argv[1],'x')" "${marker.replaceAll("\\", "/")}"`;
+  writeFileSync(join(platformRoot, "profiles", "factory.json"), JSON.stringify({ productSetupCommand: setup, productTestCommand: `${node} -e "process.exit(require('fs').existsSync(process.argv[1])?0:9)" "${marker.replaceAll("\\", "/")}"` }));
+  const ok = runL3({ project: proj, cache, platformRoot }).checks.find((c) => c.id === "product");
+  assert.equal(ok.status, "PASS", "the tests only pass if the setup ran before them");
+  writeFileSync(join(platformRoot, "profiles", "factory.json"), JSON.stringify({ productSetupCommand: `${node} -e "process.exit(4)"`, productTestCommand: `${node} -e "process.exit(0)"` }));
+  const bad = runL3({ project: proj, cache, platformRoot }).checks.find((c) => c.id === "product");
+  assert.equal(bad.status, "FAIL");
+  assert.match(bad.detail, /setup .* exit 4.*tests not run/);
+});
+
+test("python profiles declare a setup command and l3-consumer.yml sets up a pinned Python (clean-runner product tests)", () => {
+  for (const id of ["python-lib", "python-service"]) {
+    const p = JSON.parse(readFileSync(join(repoRoot, "profiles", `${id}.json`), "utf8"));
+    assert.equal(p.productTestCommand, "pytest -q");
+    assert.match(p.productSetupCommand, /pip install/);
+  }
+  const yml = readFileSync(join(repoRoot, ".github", "workflows", "l3-consumer.yml"), "utf8").replaceAll("\r\n", "\n");
+  assert.match(yml, /uses: actions\/setup-python@[0-9a-f]{40} # v/);
+  assert.ok(yml.indexOf("Set up Python") < yml.indexOf("name: L3 consumer gate"), "Python is set up before the gate runs");
+});

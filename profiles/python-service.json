@@ -9,5 +9,6 @@
   "mcpDefaultProfile": "none",
   "docRelevantPaths": ["docs/api/**", "openapi.yaml", "src/**/routes/**"],
   "testingProfiles": ["smoke", "contract", "coverage", "load"],
+  "productSetupCommand": "python -m pip install --quiet . -r requirements-dev.txt",
   "productTestCommand": "pytest -q"
 }

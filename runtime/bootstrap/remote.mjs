@@ -79,6 +79,14 @@ export async function downloadRelease({ lock, fetchImpl = fetch, verifier = ghAt
   return errors.length ? { errors, warnings, attested } : { bytes, errors, warnings, attested };
 }
 
+/** Headers for api.github.com only. A token (GH_TOKEN/GITHUB_TOKEN, present on Actions runners) lifts the anonymous rate limit that made shared runner IPs get HTTP 403. */
+export function apiHeaders(env = process.env) {
+  const headers = { accept: "application/vnd.github+json", "user-agent": "ai-native-bootstrap" };
+  const token = env.GH_TOKEN || env.GITHUB_TOKEN;
+  if (token) headers.authorization = `Bearer ${token}`;
+  return headers;
+}
+
 /**
  * Highest valid revocations-<n>.json among the repo's releases. An offline or
  * unreachable source is a warning (reads must keep working); a list that
@@ -95,7 +103,7 @@ export async function fetchRevocations({ repo, fetchImpl = fetch, verifier = ghA
   let releases;
   try {
     const res = await fetchImpl(`https://api.github.com/repos/${slug}/releases?per_page=100`, {
-      headers: { accept: "application/vnd.github+json", "user-agent": "ai-native-bootstrap" },
+      headers: apiHeaders(),
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     releases = await res.json();

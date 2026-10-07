@@ -45,6 +45,7 @@
       "items": { "type": "string", "enum": ["smoke", "contract", "coverage", "mutation", "load", "performance", "chaos", "e2e"] },
       "description": "Which risk-based testing profiles (H4/W6) this consumer's stack can actually run; selection by SDD level happens at runtime, this just bounds what's available."
     },
+    "productSetupCommand": { "type": ["string", "null"], "default": null, "description": "Command the L3 consumer gate runs (from the pinned platform profile, never from the consumer PR) before productTestCommand to install the consumer's dependencies on a clean runner; null means no setup." },
     "productTestCommand": { "type": ["string", "null"], "default": null, "description": "Command pr-gate runs for CI-02; null means NOT_APPLICABLE, not FAIL." }
   }
 }
