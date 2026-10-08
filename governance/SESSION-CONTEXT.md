@@ -20,7 +20,7 @@ Actualizado: 2026-10-06 (post-publicación de `v3.0.0`).
 | M5.4 canary `template-starter@v2.0.4 → v3` | **Cerrado (PASS), 2026-10-05.** PR #4 mergeada por el humano (`9d711d0`) sobre `v3.0.0-rc.2`: lock por SHA, L3 real PASS, reviewer ACCEPT, rollback LF/CRLF idéntico a la base, ruleset con único check `l3 / l3-consumer` y sin bypass actors. Evidencia: `governance/canary/CANARY-TEMPLATE-STARTER-2026-10-05.md`. |
 | M5.2 fixture + matriz muestreada | **Cerrada con la PR #61 (mergeada por el humano, `521d203`):** veredicto `COMPLETED` (`node evaluation/m52/validate-evidence.mjs --verdict`); online y offline en Ubuntu y Windows con run real, offline con la red realmente inexistente, CLIs reales en Windows y Linux (WSL2), L2 real y defecto real del adapter OpenCode corregido. Matriz: `governance/quality/M5-2-MATRIX.md`. Límites en la propia matriz (OpenCode en Linux con override de modelo; Codex config y OpenCode MCP `NOT_AVAILABLE_FROM_TOOL`). |
 | M5.5 `v3.0.0` | **Publicada (2026-10-06)** sobre `afd375d564e1c750043ad47e1e4a7b1917073700`: tag anotado, release inmutable, `verify-release` PASS (22 checks). Auditoría PLATFORM **92.25/100** sobre `521d203` (`.audit/reports/AUDIT-PLATFORM-521d203.md`; 0 BLOCKER/CRITICAL/MAJOR, 9 MINOR), vigente por diferir solo en `.audit/**`. Verificación posterior (upgrade, rollback, offline): `governance/versioning/V3.0.0-POST-RELEASE-VERIFICATION.md`. |
-| M6 (repos GI) | **No abierto**; requiere autorización explícita. |
+| M6 (repos GI) | **Cerrado (2026-10-08):** 7 repos GI migrados a `v3.0.1`, PRs mergeadas, CI post-merge verde y rulesets activos. Evidencia y límites: `governance/migration/M6-CLOSURE-2026-10-08.md`. |
 
 Hecho y verificado para rc.1: parity 95/95 con `UNMAPPED=0`; P33, P29, P41/C6, C5 (Claude Code y Codex CONFIRMED; OpenCode `NOT_AVAILABLE_FROM_TOOL`), C3, L3 reusable, migrador v2→v3 y métricas DoD (10/11, 1 `PROXY_ONLY`).
 
@@ -71,7 +71,7 @@ No se baja el umbral, no hay waivers. La remediación de F1–F8 (#53) y las pos
 * **AI-Native `v3.0.0`** = plataforma central vigente. Los consumidores la usan por referencia: versión, SHA/lock, caché, attestation y rollback; no por copia masiva del Template.
 * **Template v2.x** = `LEGACY / TRANSITION`: sin capacidades funcionales nuevas; solo historia, baseline y migración/compatibilidad imprescindible. `legacy/template-v2` no es implementación futura.
 * **template-starter** = canary histórico y consumidor migrado (evidencia brownfield v2 → v3), no plataforma central.
-* Siguiente gran paso: M6 (repos GI), **no abierto**; requiere autorización explícita.
+* Siguiente gran paso: M7 (limpieza/depuración), **no abierto**; requiere autorización explícita.
 
 ## Residuales abiertos tras `v3.0.0` (no convertidos en PASS)
 
