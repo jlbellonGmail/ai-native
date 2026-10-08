@@ -9,7 +9,7 @@ Fuente de las brechas: `governance/migration/M6-CLOSURE-2026-10-08.md` y `M6-PRO
 | 3 | `STATUS:AUTO` exigido sin generador | DESIGN_GAP → DEFER | Falta una herramienta (capacidad nueva). Workaround: el consumidor escribe el bloque. |
 | 4 | Migrador no poda dependencias modificadas del circuito retirado | DESIGN_GAP → DEFER | Mejora del migrador; el residuo lo cubre la limpieza GI de M7 caso por caso. |
 | 5 | `gi-common-persons` usa URLs de release sin hash | ACCEPTED_LIMITATION → DEFER | Riesgo de cadena de suministro declarado en M6. Arreglo en el consumidor (`--require-hashes`), no en la plataforma; fuera del alcance de limpieza. |
-| 6 | `pyproject.toml` mínimo altera la inferencia de ruff (`requires-python`) | BUG → FIX_IN_v3.0.2 | El migrador generó un `pyproject` que cambió el comportamiento del linter (43 UP017 en `gi-ot`). Corregido en el consumidor (`30cd22a`). |
+| 6 | `pyproject.toml` mínimo altera la inferencia de ruff (`requires-python`) | DESIGN_GAP → FIX_IN_v3.0.2 | Reportado en M6 como «puede cambiar» (43 UP017 en `gi-ot`, corregido en el consumidor `30cd22a`); no re-reproducido en M7, por eso no se etiqueta BUG. |
 | 7 | Migrador retira `guard-develop-branch.yml` sin sustituto previo | BUG → FIX_IN_v3.0.2 | Mitigado: los 7 rulesets `protect-develop-m6` están activos. Falta un aviso/condición previa en `plan` (análogo a `ruleset-guard.mjs`). |
 
 # PR #48 (Dependabot `actions/checkout` 4.2.2 → 7.0.1) — READ-ONLY
