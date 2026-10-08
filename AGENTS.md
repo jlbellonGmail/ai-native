@@ -111,7 +111,7 @@ specs/       hardening specifications (SDD records)
 evaluation/  fixtures, compatibility evidence (C1-C6), metrics and audit fixtures
 parity/      v2.0.5 parity registry (capabilities, tests, files; UNMAPPED must stay 0)
 audit/       audit method and audit profiles (the audit engine lives in runtime/audit/)
-scripts/     repository utility scripts (deprecated ones are under scripts/_deprecated/ and must not be used)
+scripts/     repository utility scripts
 ```
 
 Control plane (changes force a neutral trust-gate and human review, see `governance/gates/gates.json`): `.github/**`, `governance/gates/**`, `governance/rulesets/**`, `runtime/gates/**`, `core/security-policy.json`, `contracts/**`, `AGENTS.md`, `CLAUDE.md`. The agent never merges PRs with the owner credentials (see `governance/security/HITL-MERGE-POLICY.md`).

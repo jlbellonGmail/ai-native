@@ -78,7 +78,7 @@ function main() {
   const root = runAudit(["inspect", "--repo", REPOS.root]).json;
   assert(root.result === "PASS", "Root inventory should pass as static inspection.");
   assert(root.packageInventory.status === "PASS", "Root package.json should be inventoried.");
-  assert(scriptByName(root, "w1t1:verify").classification.result === "BLOCKED", "Root package-level validator wrapper should be blocked.");
+  assert(scriptByName(root, "validate:audit-safe-script-mode").classification.result === "BLOCKED", "Root package-level validator wrapper should be blocked.");
 
   const foundation = runAudit(["inspect", "--repo", REPOS.foundation]).json;
   assert(foundation.packageInventory.status === "PASS", "foundation/ package.json should be inventoried.");

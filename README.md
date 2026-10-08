@@ -90,7 +90,7 @@ node foundation/scripts/validate-enterprise-10-10.mjs
 node knowledge/scripts/validate-enterprise-evaluation.mjs
 ```
 
-The old `scripts/_deprecated/ai-cli.mjs` and `quality-gates.mjs` were retired in M0.2 (see the roadmap) and must not be used.
+The old `ai-cli.mjs` and `quality-gates.mjs` scripts were removed in M7 (retired in M0.2; recoverable from Git history) and must not be reintroduced.
 
 ## License
 
