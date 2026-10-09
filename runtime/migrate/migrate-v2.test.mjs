@@ -391,8 +391,15 @@ test("gap 7 (fail closed): ruleset include/exclude matrix decides whether develo
     ["rules do not protect (deletion only)", rs([D], [], { rules: [{ type: "deletion" }] }), false],
     ["no conditions", [{ enforcement: "active", rules }], false],
     ["garbage payload", null, false],
+    ["tag-target ruleset", rs([D], [], { target: "tag" }), false],
+    ["branch-target ruleset", rs([D], [], { target: "branch" }), true],
+    ["exclude with many wildcards (bounded, not interpretable)", rs([D], ["refs/heads/" + "*a".repeat(14) + "x"]), false],
+    ["exclude with stacked stars (bounded)", rs([D], ["refs/heads/" + "**".repeat(30) + "x"]), false],
+    ["exclude longer than 200 chars", rs([D], ["refs/heads/" + "z".repeat(250)]), false],
   ];
+  const t0 = Date.now();
   for (const [name, payload, expected] of cases) assert.equal(prot(payload, "develop"), expected, name);
+  assert.ok(Date.now() - t0 < 2000, "no pathological backtracking");
   assert.equal(prot(rs(["refs/heads/main"]), "main"), true, "the branch is a parameter");
 });
 

@@ -262,7 +262,9 @@ export function fetchBranchProtected({ repo, branch, run = gh }) {
  * segment) and `**` (any depth); `?`, `[...]`, `{...}`, `\` and non-strings are AMBIGUOUS (null). `loose` lets `*` cross `/`.
  */
 function patternToRegExp(pattern, loose = false) {
-  if (typeof pattern !== "string" || !pattern || /[?[\]{}\\]/.test(pattern)) return null;
+  if (typeof pattern !== "string" || !pattern || pattern.length > 200 || /[?[\]{}\\]/.test(pattern)) return null;
+  // bounded backtracking: a pattern with many wildcards is treated as not interpretable (fail closed) instead of hanging
+  if ((pattern.match(/\*\*|\*/g) ?? []).length > 4) return null;
   const body = pattern.split(/(\*\*|\*)/).map((t) => (t === "**" ? ".*" : t === "*" ? (loose ? ".*" : "[^/]*") : t.replace(/[.+^${}()|]/g, "\\$&"))).join("");
   return new RegExp(`^${body}$`);
 }
@@ -279,6 +281,7 @@ export function protectsBranchFromRulesets(payload, branch) {
   const ref = `refs/heads/${branch}`;
   return list.some((rs) => {
     if (!rs || typeof rs !== "object" || rs.enforcement !== "active") return false;
+    if (rs.target !== undefined && rs.target !== "branch") return false; // a tag/push ruleset says nothing about the branch
     const rn = rs.conditions?.ref_name;
     const inc = rn?.include ?? [];
     const exc = rn?.exclude ?? [];
