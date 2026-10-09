@@ -42,8 +42,8 @@ const FILES = [
   { file: "test_start_work_unit.py", functions: 10, action: "MOVE", destination: "tests/circuit/start", capabilities: ["CIR-02"] },
   { file: "test_status_scripts.py", functions: 12, action: "MOVE", destination: "tests/state/status", capabilities: ["STA-03", "STA-04", "STA-05"] },
   { file: "test_supply_chain_policy.py", functions: 3, action: "MOVE", destination: "tests/supply-chain", capabilities: ["CI-08"] },
-  { file: "test_template_consumer_upgrade.py", functions: 4, action: "KEEP_LEGACY_AND_REPLACE", destination: "legacy/template-v2/tests (frozen) + tests/migrate", capabilities: ["DIS-02"] },
-  { file: "test_template_starter_sync.py", functions: 1, action: "KEEP_LEGACY_AND_REPLACE", destination: "legacy/template-v2/tests (frozen) + tests/migrate", capabilities: ["DIS-01"] },
+  { file: "test_template_consumer_upgrade.py", functions: 4, action: "KEEP_LEGACY_AND_REPLACE", destination: "template@v2.0.5:tests (tag) + tests/migrate", capabilities: ["DIS-02"] },
+  { file: "test_template_starter_sync.py", functions: 1, action: "KEEP_LEGACY_AND_REPLACE", destination: "template@v2.0.5:tests (tag) + tests/migrate", capabilities: ["DIS-01"] },
   { file: "test_workunit_lib.py", functions: 13, action: "MOVE", destination: "tests/circuit", capabilities: ["CIR-01", "STA-01"] },
 ];
 

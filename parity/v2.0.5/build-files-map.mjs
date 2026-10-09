@@ -3,7 +3,7 @@
 // TEMPLATE v2.0.5 (tag v2.0.5, commit 92a797c) to capability groups and
 // destination. Mechanical transcription of Contrato de Paridad (ADR-002)
 // section 4. Individual-file granularity (576 rows) is not attempted here;
-// git ls-tree at legacy/template-v2 (M1.1) is the authoritative per-file
+// git ls-tree at template@v2.0.5 (M1.1) is the authoritative per-file
 // list once TEMPLATE is imported.
 import { writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -46,7 +46,7 @@ const output = {
   schemaVersion: 1,
   source: "Contrato de Paridad TEMPLATE v2.0.5 -> AI-NATIVE v3, seccion 4 (governance/adr/ADR-002-contrato-paridad-template-v205.md)",
   generatedBy: "parity/v2.0.5/build-files-map.mjs",
-  granularity: "area (13 rows). Per-individual-file granularity (576 rows) becomes available from `git ls-tree -r --name-only v2.0.5` once legacy/template-v2 is imported in M1.1; this file will be superseded/extended then.",
+  granularity: "area (13 rows). Per-individual-file granularity (576 rows) becomes available from `git ls-tree -r --name-only v2.0.5` once template@v2.0.5 is imported in M1.1; this file will be superseded/extended then.",
   totalAreas: AREAS.length,
   totalFiles,
   unmappedFiles: 0,

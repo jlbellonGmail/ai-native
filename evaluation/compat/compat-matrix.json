@@ -214,7 +214,7 @@
       "capability": "comportamiento-roles",
       "status": "CONFIRMED",
       "evidence": "evaluation/compat/findings.md#c4-identidad",
-      "notes": "--agent selecciona un agente/rol declarado; equivalente directo al 'opencode.agent' de core/agents.json (ya presente en el agents.json heredado de legacy/template-v2)."
+      "notes": "--agent selecciona un agente/rol declarado; equivalente directo al 'opencode.agent' de core/agents.json (ya presente en el agents.json heredado de template@v2.0.5)."
     },
     {
       "id": "C4",

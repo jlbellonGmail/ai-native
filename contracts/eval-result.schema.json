@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://ai-native.local/contracts/eval-result.schema.json",
   "title": "Evaluation result (L1/L2/L3)",
-  "description": "Extends TEMPLATE v2.0.5's legacy/template-v2/.agentic/schemas/agentic-eval-result.schema.json (evalSuite/scenario/expected/actual/pass), which never ran an actual agent (D-4: its 'actual' was hand-authored to equal 'expected', EVL-01 in capabilities.json). This version requires runs>=1 and explicit metricStatus per metric (regression guard for AGT-06's 'cost: null' with no explanation), and adds the level/platform/pack/consumer identification needed so a result is never mistaken for evidence of a different commit, model or dataset (Y13/Y41 in the session's addenda).",
+  "description": "Extends TEMPLATE v2.0.5's template@v2.0.5:.agentic/schemas/agentic-eval-result.schema.json (evalSuite/scenario/expected/actual/pass), which never ran an actual agent (D-4: its 'actual' was hand-authored to equal 'expected', EVL-01 in capabilities.json). This version requires runs>=1 and explicit metricStatus per metric (regression guard for AGT-06's 'cost: null' with no explanation), and adds the level/platform/pack/consumer identification needed so a result is never mistaken for evidence of a different commit, model or dataset (Y13/Y41 in the session's addenda).",
   "type": "object",
   "required": ["schemaVersion", "level", "suite", "suiteVersion", "datasetDigest", "platform", "runs", "metrics", "status"],
   "properties": {

@@ -33,7 +33,7 @@ fields; a consumer on `schemaVersion` N or N-1 must still be readable.
 
 `unit-event.schema.json`, `platform`-adjacent ideas and the role/model/MCP/
 security-policy shapes consolidate and extend TEMPLATE v2.0.5's
-`.agentic/schemas/*.json` (imported read-only at `legacy/template-v2/.agentic/schemas/`,
+`.agentic/schemas/*.json` (imported read-only at `template@v2.0.5:.agentic/schemas/`,
 AGT-09 in `parity/v2.0.5/capabilities.json`). Where a v2 schema's shape is
 reused close to verbatim, the file says so in its `description`.
 

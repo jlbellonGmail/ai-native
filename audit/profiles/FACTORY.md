@@ -22,7 +22,7 @@ Este perfil no redefine la puntuación ni las reglas de ejecución: sólo fija c
 |---|---|
 | Q1 Contrato | El roadmap, los contratos y el plan de paridad coinciden con lo implementado (UNMAPPED=0). |
 | Q2 Reutilización | Lo que sale de la fábrica se genera/deriva, no se copia a mano. |
-| Q3 Arquitectura | Áreas con responsabilidad única; legado congelado en `legacy/`. |
+| Q3 Arquitectura | Áreas con responsabilidad única; legado histórico solo como evidencia compacta en `parity/v2.0.5/legacy-import-manifest.json`. |
 | Q4 Documentación | AGENTS.md agnóstico y sin estado temporal; estado sólo en governance/. |
 | Q5 Calidad | Toda fase cerrada tiene tests y evidencia de CI real; sin tests degradados. |
 | Q6 Release | Fases cierran por merge con CI verde; sin cierre sin push. |
