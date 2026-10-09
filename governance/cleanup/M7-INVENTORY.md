@@ -1,6 +1,6 @@
 # M7 — Inventario de limpieza (legado / deprecated)
 
-Estado: **M7 EN CURSO** (no `M7_COMPLETED`). Base: `origin/main` `9c7db00` (PR #69). Este documento registra solo lo verificado con comandos; lo no auditado figura como `NOT_STARTED`/`INVENTORIED`.
+Estado: **M7 en cierre** (no `M7_COMPLETED` hasta los merges humanos; estado final y métricas en `M7-CLOSURE.md`). Base: `origin/main` `9c7db00` (PR #69). Este documento registra solo lo verificado con comandos; lo no auditado figura como `NOT_STARTED`/`INVENTORIED`.
 
 Clasificación: ACTIVE, REQUIRED_FOR_{RUNTIME,CI,RELEASE,ROLLBACK,AUDIT,MIGRATION,COMPATIBILITY}, HISTORICAL_EVIDENCE, SUPERSEDED, UNUSED, UNKNOWN. Solo SUPERSEDED y UNUSED se eliminan.
 

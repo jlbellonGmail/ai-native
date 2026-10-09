@@ -71,7 +71,7 @@ No se baja el umbral, no hay waivers. La remediación de F1–F8 (#53) y las pos
 * **AI-Native `v3.0.1`** = plataforma central vigente. Los consumidores la usan por referencia: versión, SHA/lock, caché, attestation y rollback; no por copia masiva del Template.
 * **Template v2.x** = `LEGACY / TRANSITION`: sin capacidades funcionales nuevas; solo historia, baseline y migración/compatibilidad imprescindible. `legacy/template-v2` no es implementación futura.
 * **template-starter** = canary histórico y consumidor migrado (evidencia brownfield v2 → v3), no plataforma central.
-* M7 (limpieza/depuración) **en curso** (autorizado el 2026-10-08): inventario y lotes en `governance/cleanup/`. No abre v3.0.2 ni otro milestone.
+* M7 (limpieza/depuración): cierre propuesto en `governance/cleanup/M7-CLOSURE.md` (PR final). Se da por `COMPLETED` tras el merge humano de esa PR y de gi-ot #7 / gi-clinicadental #64, con el CI post-merge verde. No abre v3.0.2 ni otro milestone.
 
 ## Residuales abiertos tras `v3.0.0` (no convertidos en PASS)
 
