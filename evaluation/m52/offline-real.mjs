@@ -70,7 +70,7 @@ function check(id, title, cache, args, expectation) {
   const r = offline(cache, args);
   const attempts = mode === "guard" ? guardAttempts().length - before : null;
   const verdict = expectation(r, attempts);
-  cases.push({ id, title, args: args.join(" "), exit: r.exit, status: r.json?.status ?? null, state: r.json?.state ?? null, revocation: r.json?.revocation ?? null, errors: (r.json?.errors ?? []).slice(0, 2), warnings: (r.json?.warnings ?? []).slice(0, 2), networkAttempts: attempts, ok: verdict.ok, expected: verdict.expected });
+  cases.push({ id, title, args: args.join(" "), exit: r.exit, status: r.json?.status ?? null, state: r.json?.state ?? null, revocation: r.json?.revocation ?? null, errors: (r.json?.errors ?? []).slice(0, 2), stderr: r.json ? undefined : (r.stderr ?? "").trim().slice(0, 300), warnings: (r.json?.warnings ?? []).slice(0, 2), networkAttempts: attempts, ok: verdict.ok, expected: verdict.expected });
 }
 const passing = (r) => r.exit === 0 && ["PASS", "PASS_WITH_WARNINGS"].includes(r.json?.status);
 const failsClosed = (r) => r.exit !== 0 && !["PASS", "PASS_WITH_WARNINGS"].includes(r.json?.status ?? "");
@@ -114,5 +114,5 @@ const evidence = {
 };
 writeFileSync(resolve(out), `${JSON.stringify(evidence, null, 2)}\n`);
 try { rmSync(work, { recursive: true, force: true }); } catch { /* best effort: temp dir */ }
-console.log(JSON.stringify({ status: evidence.status, mode, ...evidence.totals, failed: cases.filter((c) => !c.ok).map((c) => `${c.id}: exit=${c.exit} status=${c.status} state=${c.state} ${(c.errors ?? []).join(" | ")}`) }, null, 2));
+console.log(JSON.stringify({ status: evidence.status, mode, ...evidence.totals, failed: cases.filter((c) => !c.ok).map((c) => `${c.id}: exit=${c.exit} status=${c.status} state=${c.state} ${(c.errors ?? []).join(" | ")}${c.stderr ? ` stderr=${c.stderr}` : ""}`) }, null, 2));
 process.exit(evidence.status === "PASS" ? 0 : 1);
