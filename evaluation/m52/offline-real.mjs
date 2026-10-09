@@ -12,6 +12,7 @@ import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, write
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { OFFLINE_IMAGE } from "./offline-image.mjs";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const argv = process.argv.slice(2);
@@ -19,7 +20,7 @@ const value = (n) => (argv.includes(n) ? argv[argv.indexOf(n) + 1] : null);
 const tag = value("--tag");
 const mode = value("--mode") ?? "docker";
 const out = value("--out");
-const image = value("--image") ?? "node:24-bookworm";
+const image = value("--image") ?? OFFLINE_IMAGE;
 if (!tag || !out || !["docker", "guard"].includes(mode)) throw new Error("usage: offline-real.mjs --tag <vX> --mode docker|guard --out <file>");
 const repo = "jlbellonGmail/ai-native";
 const cli = join(repoRoot, "runtime", "bootstrap", "cli.mjs");
