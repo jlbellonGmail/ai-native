@@ -263,9 +263,11 @@ export function fetchBranchProtected({ repo, branch, run = gh }) {
  * empty or oversized patterns are AMBIGUOUS. Supports literals, `*` (one path segment) and `**` (any depth); `loose` lets
  * `*` cross `/` (used for EXCLUDE patterns, where over-matching is the safe direction).
  */
-function patternToMatcher(pattern, loose = false) {
+export function patternToMatcher(pattern, loose = false) {
   if (typeof pattern !== "string" || !pattern || pattern.length > 200 || /[?[\]{}\\]/.test(pattern)) return null;
-  const tokens = pattern.split(/(\*\*|\*)/).filter((t) => t !== "");
+  // EXCLUDE (loose) mode also treats `**/` as "zero or more directories" (fnmatch convention), so `refs/heads/**/develop` covers
+  // `refs/heads/develop`; INCLUDE mode keeps `**` + a literal `/` (stricter: it can only match less, never more).
+  const tokens = pattern.split(loose ? /(\*\*\/|\*\*|\*)/ : /(\*\*|\*)/).filter((t) => t !== "");
   return (ref) => {
     if (typeof ref !== "string" || ref.length > 255) return false;
     // reach[t][i]: the first t tokens can consume exactly the first i characters of ref
@@ -273,7 +275,13 @@ function patternToMatcher(pattern, loose = false) {
     reach[0] = true;
     for (const t of tokens) {
       const next = new Array(ref.length + 1).fill(false);
-      if (t === "**" || t === "*") {
+      if (t === "**/") {
+        let open = false; // an earlier position reached, so "anything ending in /" can lead here
+        for (let i = 0; i <= ref.length; i += 1) {
+          next[i] = reach[i] || (open && ref[i - 1] === "/");
+          if (reach[i]) open = true;
+        }
+      } else if (t === "**" || t === "*") {
         const crosses = t === "**" || loose;
         let open = false; // some earlier position reaches here with a wildcard that can still extend
         for (let i = 0; i <= ref.length; i += 1) {

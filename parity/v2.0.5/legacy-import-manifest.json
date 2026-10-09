@@ -6,6 +6,7 @@
  "removedIn": "v3.0.2",
  "fileCount": 165,
  "aggregateSha256": "18eb6dae31674a3650f8b1c4a8dd014eb9694e15be1f56cc7f96bbf5a0b4f539",
+ "aggregateAlgorithm": "sha256 over the concatenation, in path order, of the lines `<file sha256>  <path>\n` (paths as listed in `files`)",
  "files": [
   {
    "path": "README.md",

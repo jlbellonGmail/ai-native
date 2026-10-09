@@ -447,3 +447,35 @@ test("gap 1 (implicit dependency): python profiles declare requiredFiles [pytest
   }
   assert.ok(planMigration({ target: repo(files), release: RELEASE, tools: ["claude"], profile: "factory" }).retire.some((r) => r.path === "pytest.ini"), "factory does not run pytest");
 });
+
+test("gap 7 (matcher): `**/` in an EXCLUDE covers zero or more directories; the glob matcher agrees with a reference regex on a deterministic fuzz and never fails open", async () => {
+  const { patternToMatcher, protectsBranchFromRulesets: prot } = await import("./ruleset-guard.mjs");
+  const rules = [{ type: "pull_request" }];
+  const rs = (include, exclude) => [{ enforcement: "active", conditions: { ref_name: { include, exclude } }, rules }];
+  const D = "refs/heads/develop";
+  for (const ex of ["refs/heads/**/develop", "refs/**/heads/develop", "refs/heads/**/dev*", "refs/heads/**/*", "**/develop", "refs/**/develop"]) assert.equal(prot(rs([D], [ex]), "develop"), false, `exclude ${ex} touches develop`);
+  assert.equal(prot(rs([D], ["refs/heads/**/release"]), "develop"), true, "unrelated ** exclude");
+  assert.equal(prot(rs(["refs/heads/**/develop"], []), "develop"), false, "INCLUDE `**/` is strict (needs a directory): not provable");
+  const special = new Set([".", "+", "^", "$", "{", "}", "(", ")", "|", "[", "]", "\\"]);
+  const reference = (pattern, loose) => {
+    let re = "";
+    for (let i = 0; i < pattern.length;) {
+      if (loose && pattern.startsWith("**/", i)) { re += "(?:.*/)?"; i += 3; }
+      else if (pattern.startsWith("**", i)) { re += ".*"; i += 2; }
+      else if (pattern[i] === "*") { re += loose ? ".*" : "[^/]*"; i += 1; }
+      else { re += special.has(pattern[i]) ? `\${pattern[i]}` : pattern[i]; i += 1; }
+    }
+    return new RegExp(`^${re}$`, "s");
+  };
+  let seed = 12345; // deterministic LCG
+  const rnd = (n) => { seed = (seed * 1103515245 + 12345) % 2147483648; return seed % n; };
+  const alpha = ["a", "b", "/", ".", "*", "**", "**/"];
+  for (let k = 0; k < 4000; k += 1) {
+    const pattern = Array.from({ length: 1 + rnd(7) }, () => alpha[rnd(alpha.length)]).join("");
+    const text = (rnd(2) ? "refs/heads/" : "") + Array.from({ length: rnd(10) }, () => "ab/."[rnd(4)]).join("");
+    for (const loose of [false, true]) {
+      const match = patternToMatcher(pattern, loose);
+      if (match) assert.equal(match(text), reference(pattern, loose).test(text), `${loose ? "exclude" : "include"} ${pattern} vs ${text}`);
+    }
+  }
+});

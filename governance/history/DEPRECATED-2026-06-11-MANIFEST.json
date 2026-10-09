@@ -5,6 +5,7 @@
  "removedIn": "v3.0.2",
  "fileCount": 120,
  "aggregateSha256": "54fa5eeee7f06f9f8f1459500c93b1562b79da79b9d28be55c18abc735984202",
+ "aggregateAlgorithm": "sha256 over the concatenation, in path order, of the lines `<file sha256>  <path>\n` (paths as listed in `files`)",
  "files": [
   {
    "path": "foundation/_deprecated/2026-06-11/DEPRECATION_INDEX.md",
