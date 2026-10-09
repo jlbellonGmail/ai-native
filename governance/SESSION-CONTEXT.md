@@ -4,11 +4,11 @@
 > `governance/history/SESSION-CONTEXT-HISTORY-2026-10-04.md`. Fuente de verdad del estado: este archivo, `governance/roadmaps/AI-NATIVE-V3-ROADMAP.md` y Git/GitHub.
 > Política del merge humano: `governance/security/HITL-MERGE-POLICY.md`. Frontera de secretos: `governance/security/SECRETS-BOUNDARY.md`.
 
-Actualizado: 2026-10-06 (post-publicación de `v3.0.0`).
+Actualizado: 2026-10-08 (post-M6, M7 en curso).
 
 ## Arquitectura (vigente)
 
-`ai-native` es **un único repositorio** (ADR-001, desde la PR #2): áreas de fábrica `governance/`, `foundation/`, `knowledge/`, `template/`; plataforma v3 en `core/ contracts/ runtime/ mcp/ profiles/ audit/ parity/ evaluation/`; `legacy/` es material congelado, no instrucciones. Versión de la plataforma = tag/release (`VERSION` de la raíz: `3.0.0-dev`, ver `governance/versioning/VERSIONING-POLICY.md`). Última release publicada: `v3.0.0` (estable).
+`ai-native` es **un único repositorio** (ADR-001, desde la PR #2): áreas de fábrica `governance/`, `foundation/`, `knowledge/`, `template/`; plataforma v3 en `core/ contracts/ runtime/ mcp/ profiles/ audit/ parity/ evaluation/`; `legacy/` es material congelado, no instrucciones. Versión de la plataforma = tag/release (`VERSION` de la raíz: `3.0.0-dev`, ver `governance/versioning/VERSIONING-POLICY.md`). Última release publicada: `v3.0.1` (estable, `Latest`; tag sobre `da84fb1`; verificación en `governance/versioning/V3.0.1-POST-RELEASE-VERIFICATION.md`). `v3.0.0` y las prereleases `alpha.1`, `rc.1`, `rc.2` se conservan como historia publicada.
 
 ## Roadmap v3: dónde estamos
 
@@ -68,10 +68,10 @@ No se baja el umbral, no hay waivers. La remediación de F1–F8 (#53) y las pos
 
 ## Transición Template → AI-Native (cerrada con `v3.0.0`)
 
-* **AI-Native `v3.0.0`** = plataforma central vigente. Los consumidores la usan por referencia: versión, SHA/lock, caché, attestation y rollback; no por copia masiva del Template.
+* **AI-Native `v3.0.1`** = plataforma central vigente. Los consumidores la usan por referencia: versión, SHA/lock, caché, attestation y rollback; no por copia masiva del Template.
 * **Template v2.x** = `LEGACY / TRANSITION`: sin capacidades funcionales nuevas; solo historia, baseline y migración/compatibilidad imprescindible. `legacy/template-v2` no es implementación futura.
 * **template-starter** = canary histórico y consumidor migrado (evidencia brownfield v2 → v3), no plataforma central.
-* Siguiente gran paso: M7 (limpieza/depuración), **no abierto**; requiere autorización explícita.
+* M7 (limpieza/depuración) **en curso** (autorizado el 2026-10-08): inventario y lotes en `governance/cleanup/`. No abre v3.0.2 ni otro milestone.
 
 ## Residuales abiertos tras `v3.0.0` (no convertidos en PASS)
 
