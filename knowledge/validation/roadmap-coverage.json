@@ -26,7 +26,7 @@
     "W7-T3": ["docs/architecture/architecture-principles.md"],
     "W7-T4": ["docs/onboarding/developer-onboarding.md"],
     "W7-T5": ["docs/onboarding/developer-onboarding.md"],
-    "W7-T6": ["docs/runbooks/ops-runbook.md", "docs/playbooks/working-with-ai-agents.md"],
+    "W7-T6": ["docs/runbooks/ops-runbook.md", "docs/playbooks/working-with-ai-agents.md"],
     "W8-T5": ["scripts/validate-structure.mjs"]
   },
   "taskStates": {
@@ -54,7 +54,7 @@
     "W7-T3": "IMPLEMENTED_BY_EXISTING_FILES",
     "W7-T4": "IMPLEMENTED_BY_EXISTING_FILES",
     "W7-T5": "IMPLEMENTED_BY_EXISTING_FILES",
-    "W7-T6": "IMPLEMENTED_BY_EXISTING_FILES",
+    "W7-T6": "IMPLEMENTED_BY_EXISTING_FILES",
     "W8-T5": "IMPLEMENTED_BY_REPAIR"
   }
 }
