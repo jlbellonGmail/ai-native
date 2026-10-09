@@ -390,13 +390,13 @@ function main() {
       if (src.error) throw new MigrateError(src.error);
       if (src.notChecked) rulesetNote = `${RULESET_CODES.NOT_CHECKED}: --skip-ruleset-check; required checks that a retired workflow produced will NOT be reported`;
       const developProtected = resolveDevelopProtected({ target, developBranch: value("--develop-branch") ?? "develop", file: value("--develop-ruleset-file"), consumerRepo: value("--consumer-repo"), skip: argv.includes("--skip-ruleset-check") });
-      if (!developProtected) warnings.push("NO_PROTECTION_GAP: a verified ruleset on the develop branch was not found, so the v2 guard-develop-branch.yml is KEPT (pass --develop-ruleset-file or --consumer-repo once the ruleset exists)");
       common.developProtected = developProtected;
       const r = cmd === "plan" ? planMigration({ ...common, requiredChecks: src.requiredChecks }) : applyMigration({ ...common, requiredChecks: src.requiredChecks, acceptRulesetChange: argv.includes("--accept-ruleset-change") });
       const p = r.plan ?? r;
       data = { mode: cmd, ...(r.status ? { result: r.status } : {}), counts: p.counts, keptByProfile: p.keptByProfile, keptNoGuard: p.keptNoGuard, retire: p.retire.length, replace: p.replace, create: p.create, keptIdentical: p.keptIdentical.length, keptLocal: p.keptLocal.length, collisions: p.collisions, unresolved: p.unresolved.map((c) => c.path) };
       data.rulesetCheck = p.rulesetCheck;
       if (rulesetNote) warnings.push(rulesetNote);
+      if (p.keptNoGuard?.length) warnings.push("NO_PROTECTION_GAP: a verified ruleset on the develop branch was not found, so the v2 guard-develop-branch.yml is KEPT (pass --develop-ruleset-file or --consumer-repo once the ruleset exists)");
       const accepted = cmd === "apply" && r.status !== "BLOCKED" && argv.includes("--accept-ruleset-change");
       for (const f of p.rulesetCheck?.findings ?? []) {
         const line = `${f.code}: ${f.detail}. Action: ${f.action}`;

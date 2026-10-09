@@ -393,13 +393,21 @@ test("gap 7 (fail closed): ruleset include/exclude matrix decides whether develo
     ["garbage payload", null, false],
     ["tag-target ruleset", rs([D], [], { target: "tag" }), false],
     ["branch-target ruleset", rs([D], [], { target: "branch" }), true],
-    ["exclude with many wildcards (bounded, not interpretable)", rs([D], ["refs/heads/" + "*a".repeat(14) + "x"]), false],
-    ["exclude with stacked stars (bounded)", rs([D], ["refs/heads/" + "**".repeat(30) + "x"]), false],
+    ["many-wildcard exclude that does not cover develop is evaluated exactly (linear matcher)", rs([D], ["refs/heads/" + "*a".repeat(14) + "x"]), true],
+    ["stacked-star exclude that does not cover develop", rs([D], ["refs/heads/" + "**".repeat(30) + "x"]), true],
+    ["stacked-star exclude that DOES cover develop", rs([D], ["refs/heads/" + "**".repeat(30)]), false],
     ["exclude longer than 200 chars", rs([D], ["refs/heads/" + "z".repeat(250)]), false],
   ];
   const t0 = Date.now();
   for (const [name, payload, expected] of cases) assert.equal(prot(payload, "develop"), expected, name);
   assert.ok(Date.now() - t0 < 2000, "no pathological backtracking");
+  const t1 = Date.now();
+  const hostile = "a".repeat(250);
+  for (const pat of ["refs/heads/*a*a*a*b", "**a**a**a**ab", "refs/heads/" + "*a".repeat(40) + "b"]) {
+    prot(rs(["~ALL"], [pat]), hostile);
+    prot(rs([pat]), hostile);
+  }
+  assert.ok(Date.now() - t1 < 1000, "hostile patterns against a 250-char branch finish in linear time");
   assert.equal(prot(rs(["refs/heads/main"]), "main"), true, "the branch is a parameter");
   for (const bad of ["x".repeat(300), "", "a b", "../x", 7, null]) assert.equal(prot(rs(["~ALL"]), bad), false, `implausible branch ${JSON.stringify(bad)?.slice(0, 20)}`);
 });
@@ -419,6 +427,9 @@ test("gap 7 (CLI wiring): --develop-ruleset-file, --develop-branch and --skip-ru
     return { kept: report.migration.keptNoGuard.map((k) => k.path), warnings: report.warnings.join("\n") };
   };
   assert.deepEqual(run().kept, [GUARD], "no ruleset source: guard kept");
+  const noGuardRepo = repo({ "src/a.txt": "1\n" });
+  const quiet = spawnSync(process.execPath, [cli, "plan", "--target", noGuardRepo, "--repo", RELEASE.repo, "--version", "v3.0.1", "--commit", RELEASE.commit, "--digest", RELEASE.digest, "--tool", "claude", "--skip-ruleset-check", "--json"], { encoding: "utf8" });
+  assert.doesNotMatch(JSON.parse(quiet.stdout).warnings.join("\n"), /NO_PROTECTION_GAP/, "no guard file, no protection-gap noise");
   assert.match(run().warnings, /NO_PROTECTION_GAP/);
   assert.deepEqual(run("--develop-ruleset-file", ruleset([])).kept, [], "verified active ruleset: guard may be retired");
   assert.deepEqual(run("--develop-ruleset-file", ruleset(["refs/heads/dev*"])).kept, [GUARD], "pattern exclusion: guard kept");

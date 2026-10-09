@@ -258,15 +258,36 @@ export function fetchBranchProtected({ repo, branch, run = gh }) {
 }
 
 /**
- * Ref-name pattern -> RegExp, or null when it cannot be interpreted with certainty. Supports literals, `*` (one path
- * segment) and `**` (any depth); `?`, `[...]`, `{...}`, `\` and non-strings are AMBIGUOUS (null). `loose` lets `*` cross `/`.
+ * Ref-name glob matcher with LINEAR-time dynamic programming (no regex, so no catastrophic backtracking). Returns a
+ * `(ref) => boolean`, or null when the pattern cannot be interpreted with certainty: `?`, `[...]`, `{...}`, `\`, non-strings,
+ * empty or oversized patterns are AMBIGUOUS. Supports literals, `*` (one path segment) and `**` (any depth); `loose` lets
+ * `*` cross `/` (used for EXCLUDE patterns, where over-matching is the safe direction).
  */
-function patternToRegExp(pattern, loose = false) {
+function patternToMatcher(pattern, loose = false) {
   if (typeof pattern !== "string" || !pattern || pattern.length > 200 || /[?[\]{}\\]/.test(pattern)) return null;
-  // bounded backtracking: a pattern with many wildcards is treated as not interpretable (fail closed) instead of hanging
-  if ((pattern.match(/\*\*|\*/g) ?? []).length > 4) return null;
-  const body = pattern.split(/(\*\*|\*)/).map((t) => (t === "**" ? ".*" : t === "*" ? (loose ? ".*" : "[^/]*") : t.replace(/[.+^${}()|]/g, "\\$&"))).join("");
-  return new RegExp(`^${body}$`);
+  const tokens = pattern.split(/(\*\*|\*)/).filter((t) => t !== "");
+  return (ref) => {
+    if (typeof ref !== "string" || ref.length > 255) return false;
+    // reach[t][i]: the first t tokens can consume exactly the first i characters of ref
+    let reach = new Array(ref.length + 1).fill(false);
+    reach[0] = true;
+    for (const t of tokens) {
+      const next = new Array(ref.length + 1).fill(false);
+      if (t === "**" || t === "*") {
+        const crosses = t === "**" || loose;
+        let open = false; // some earlier position reaches here with a wildcard that can still extend
+        for (let i = 0; i <= ref.length; i += 1) {
+          if (reach[i]) open = true;
+          next[i] = open;
+          if (!crosses && ref[i] === "/") open = false;
+        }
+      } else {
+        for (let i = 0; i + t.length <= ref.length; i += 1) if (reach[i] && ref.startsWith(t, i)) next[i + t.length] = true;
+      }
+      reach = next;
+    }
+    return reach[ref.length];
+  };
 }
 
 /**
@@ -287,12 +308,12 @@ export function protectsBranchFromRulesets(payload, branch) {
     const inc = rn?.include ?? [];
     const exc = rn?.exclude ?? [];
     if (!Array.isArray(inc) || !Array.isArray(exc)) return false;
-    const included = inc.some((p) => p === ref || p === "~ALL" || patternToRegExp(p)?.test(ref) === true);
+    const included = inc.some((p) => p === ref || p === "~ALL" || patternToMatcher(p)?.(ref) === true);
     if (!included) return false;
     const excluded = exc.some((p) => {
       if (p === ref || p === "~ALL" || p === "~DEFAULT_BRANCH") return true;
-      const re = patternToRegExp(p, true);
-      return re === null || re.test(ref);
+      const match = patternToMatcher(p, true);
+      return match === null || match(ref);
     });
     return !excluded && protectsBranch(rs.rules ?? []);
   });
