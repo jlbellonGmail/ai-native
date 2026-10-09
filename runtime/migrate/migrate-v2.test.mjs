@@ -463,19 +463,30 @@ test("gap 7 (matcher): `**/` in an EXCLUDE covers zero or more directories; the 
       if (loose && pattern.startsWith("**/", i)) { re += "(?:.*/)?"; i += 3; }
       else if (pattern.startsWith("**", i)) { re += ".*"; i += 2; }
       else if (pattern[i] === "*") { re += loose ? ".*" : "[^/]*"; i += 1; }
-      else { re += special.has(pattern[i]) ? `\${pattern[i]}` : pattern[i]; i += 1; }
+      else { re += special.has(pattern[i]) ? "\\" + pattern[i] : pattern[i]; i += 1; }
     }
     return new RegExp(`^${re}$`, "s");
   };
+  const stats = { compared: 0, positives: 0, dotPositives: 0 };
   let seed = 12345; // deterministic LCG
-  const rnd = (n) => { seed = (seed * 1103515245 + 12345) % 2147483648; return seed % n; };
+  const rnd = (n) => { seed = (seed * 1103515245 + 12345) % 2147483648; return Math.floor(seed / 65536) % n; }; // high bits: the low bits of an LCG have a tiny period
   const alpha = ["a", "b", "/", ".", "*", "**", "**/"];
   for (let k = 0; k < 4000; k += 1) {
-    const pattern = Array.from({ length: 1 + rnd(7) }, () => alpha[rnd(alpha.length)]).join("");
-    const text = (rnd(2) ? "refs/heads/" : "") + Array.from({ length: rnd(10) }, () => "ab/."[rnd(4)]).join("");
+    const tokens = Array.from({ length: 1 + rnd(7) }, () => alpha[rnd(alpha.length)]);
+    const pattern = tokens.join("");
+    // half of the texts are EXPANSIONS of the pattern (wildcards replaced by random strings): they produce real positives, dotted ones included
+    const expand = () => tokens.map((t) => (t.startsWith("*") ? Array.from({ length: rnd(4) }, () => "ab/."[rnd(4)]).join("") + (t === "**/" && rnd(2) ? "/" : "") : t)).join("");
+    const text = rnd(2) ? expand() : (rnd(2) ? "refs/heads/" : "") + Array.from({ length: rnd(10) }, () => "ab/."[rnd(4)]).join("");
     for (const loose of [false, true]) {
       const match = patternToMatcher(pattern, loose);
-      if (match) assert.equal(match(text), reference(pattern, loose).test(text), `${loose ? "exclude" : "include"} ${pattern} vs ${text}`);
+      if (!match) continue;
+      const want = reference(pattern, loose).test(text);
+      assert.equal(match(text), want, `${loose ? "exclude" : "include"} ${pattern} vs ${text}`);
+      stats.compared += 1;
+      if (want) stats.positives += 1;
+      if (want && pattern.includes(".")) stats.dotPositives += 1;
     }
   }
+  // guard against a vacuous fuzz (a broken reference once made every dotted pattern disagree silently)
+  assert.ok(stats.compared > 4000 && stats.positives > 300 && stats.dotPositives > 20, JSON.stringify(stats));
 });
