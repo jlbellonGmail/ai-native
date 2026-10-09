@@ -456,16 +456,23 @@ test("gap 7 (matcher): `**/` in an EXCLUDE covers zero or more directories; the 
   for (const ex of ["refs/heads/**/develop", "refs/**/heads/develop", "refs/heads/**/dev*", "refs/heads/**/*", "**/develop", "refs/**/develop"]) assert.equal(prot(rs([D], [ex]), "develop"), false, `exclude ${ex} touches develop`);
   assert.equal(prot(rs([D], ["refs/heads/**/release"]), "develop"), true, "unrelated ** exclude");
   assert.equal(prot(rs(["refs/heads/**/develop"], []), "develop"), false, "INCLUDE `**/` is strict (needs a directory): not provable");
+  // review MINORs, closed fail-closed: an INCLUDE `**` counts as one segment (cannot over-claim), an EXCLUDE ignores case (cannot under-claim)
+  assert.equal(prot(rs(["refs/**"], []), "develop"), false, "include refs/** is not provably covering refs/heads/develop");
+  assert.equal(prot(rs(["***/**"], []), "develop"), false);
+  assert.equal(prot(rs(["refs/heads/**"], []), "develop"), true, "include refs/heads/** still covers a one-segment branch");
+  assert.equal(prot(rs([D], ["refs/heads/DEVELOP"]), "develop"), false, "exclude differing only in case is treated as touching develop");
+  assert.equal(prot(rs([D], ["refs/heads/Dev*"]), "develop"), false);
+  assert.equal(prot(rs(["refs/heads/Develop"], []), "develop"), false, "include is case-sensitive");
   const special = new Set([".", "+", "^", "$", "{", "}", "(", ")", "|", "[", "]", "\\"]);
   const reference = (pattern, loose) => {
     let re = "";
     for (let i = 0; i < pattern.length;) {
       if (loose && pattern.startsWith("**/", i)) { re += "(?:.*/)?"; i += 3; }
-      else if (pattern.startsWith("**", i)) { re += ".*"; i += 2; }
+      else if (pattern.startsWith("**", i)) { re += loose ? ".*" : "[^/]*"; i += 2; }
       else if (pattern[i] === "*") { re += loose ? ".*" : "[^/]*"; i += 1; }
       else { re += special.has(pattern[i]) ? "\\" + pattern[i] : pattern[i]; i += 1; }
     }
-    return new RegExp(`^${re}$`, "s");
+    return new RegExp(`^${re}$`, loose ? "si" : "s");
   };
   const stats = { compared: 0, positives: 0, dotPositives: 0 };
   let seed = 12345; // deterministic LCG
