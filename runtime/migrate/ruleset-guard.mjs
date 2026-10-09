@@ -258,9 +258,21 @@ export function fetchBranchProtected({ repo, branch, run = gh }) {
 }
 
 /**
- * A SAVED ruleset (export/file) carries no per-branch filtering, so it only counts when it is `active` and its
- * `conditions.ref_name` includes the branch (refs/heads/<branch> or ~ALL) and does not exclude it. `~DEFAULT_BRANCH` is
- * not accepted (it cannot be resolved offline). Anything else is "not protected" (fail-safe).
+ * Ref-name pattern -> RegExp, or null when it cannot be interpreted with certainty. Supports literals, `*` (one path
+ * segment) and `**` (any depth); `?`, `[...]`, `{...}`, `\` and non-strings are AMBIGUOUS (null). `loose` lets `*` cross `/`.
+ */
+function patternToRegExp(pattern, loose = false) {
+  if (typeof pattern !== "string" || !pattern || /[?[\]{}\\]/.test(pattern)) return null;
+  const body = pattern.split(/(\*\*|\*)/).map((t) => (t === "**" ? ".*" : t === "*" ? (loose ? ".*" : "[^/]*") : t.replace(/[.+^${}()|]/g, "\\$&"))).join("");
+  return new RegExp(`^${body}$`);
+}
+
+/**
+ * A SAVED ruleset (export/file) carries no per-branch filtering, so it counts only when it can be PROVEN to protect the
+ * branch (fail closed; any doubt keeps the v2 guard): `enforcement` is `active`; `conditions.ref_name.include` has the
+ * exact ref, `~ALL`, or a pattern that provably matches it; and NO `exclude` entry can touch it: a literal or glob that
+ * matches the ref (`refs/heads/dev*`, `refs/heads/*`), `~DEFAULT_BRANCH`/`~ALL` (cannot be resolved offline) or anything
+ * not interpretable. Unrelated excludes (`refs/heads/release/*`) are fine. The rules must really protect (see `protectsBranch`).
  */
 export function protectsBranchFromRulesets(payload, branch) {
   const list = Array.isArray(payload) ? payload : [payload];
@@ -270,7 +282,14 @@ export function protectsBranchFromRulesets(payload, branch) {
     const rn = rs.conditions?.ref_name;
     const inc = rn?.include ?? [];
     const exc = rn?.exclude ?? [];
-    if (!inc.some((p) => p === ref || p === "~ALL") || exc.includes(ref)) return false;
-    return protectsBranch(rs.rules ?? []);
+    if (!Array.isArray(inc) || !Array.isArray(exc)) return false;
+    const included = inc.some((p) => p === ref || p === "~ALL" || patternToRegExp(p)?.test(ref) === true);
+    if (!included) return false;
+    const excluded = exc.some((p) => {
+      if (p === ref || p === "~ALL" || p === "~DEFAULT_BRANCH") return true;
+      const re = patternToRegExp(p, true);
+      return re === null || re.test(ref);
+    });
+    return !excluded && protectsBranch(rs.rules ?? []);
   });
 }

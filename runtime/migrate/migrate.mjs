@@ -114,7 +114,7 @@ export function planMigration({ target, release, profile = "factory", tools = ["
   const keptByProfile = [];
   const keptNoGuard = [];
   for (const r of [...retire]) {
-    const need = commands.find((c) => referencesPath(c.command, r.path));
+    const need = commands.find((c) => (c.file !== undefined ? c.file === r.path : referencesPath(c.command, r.path)));
     const unprotected = PROTECTION_GUARDS.includes(r.path) && developProtected !== true;
     if (!need && !unprotected) continue;
     retire.splice(retire.indexOf(r), 1);
@@ -148,7 +148,9 @@ function profileCommands(releaseRoot, profile) {
   const text = readOrNull(join(releaseRoot, "profiles", `${profile}.json`));
   if (text === null) return [];
   const p = JSON.parse(text.toString("utf8"));
-  return ["productSetupCommand", "productTestCommand"].filter((f) => typeof p[f] === "string").map((field) => ({ field, command: p[field] }));
+  const fromCommands = ["productSetupCommand", "productTestCommand"].filter((f) => typeof p[f] === "string").map((field) => ({ field, command: p[field] }));
+  const declared = (Array.isArray(p.requiredFiles) ? p.requiredFiles : []).filter((f) => typeof f === "string").map((file) => ({ field: "requiredFiles", file }));
+  return [...fromCommands, ...declared];
 }
 const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 // `-r ./f`, `-rf` and `--requirement=f` are all ways pip names a file: normalise them to " f" before matching the path as a token

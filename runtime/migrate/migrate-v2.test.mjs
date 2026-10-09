@@ -365,3 +365,66 @@ test("gap 1 (review MINOR): `-r ./f`, `-rf`, `--requirement=f` and `-c f` count 
   for (const cmd of ["pip install -r requirements-dev.txt", "pip install -r ./requirements-dev.txt", "pip install -rrequirements-dev.txt", "pip install --requirement=requirements-dev.txt", "pip install -c requirements-dev.txt x", "pip install . -r requirements-dev.txt && pytest"]) assert.equal(referencesPath(cmd, F), true, cmd);
   for (const cmd of ["pip install -r requirements-dev.txt.bak", "pip install -r my-requirements-dev.txt", "pip install ."]) assert.equal(referencesPath(cmd, F), false, cmd);
 });
+
+test("gap 7 (fail closed): ruleset include/exclude matrix decides whether develop is provably protected", async () => {
+  const { protectsBranchFromRulesets: prot } = await import("./ruleset-guard.mjs");
+  const rules = [{ type: "pull_request", parameters: {} }];
+  const rs = (include, exclude = [], extra = {}) => [{ enforcement: "active", conditions: { ref_name: { include, exclude } }, rules, ...extra }];
+  const D = "refs/heads/develop";
+  const cases = [
+    ["literal include, no exclude", rs([D]), true],
+    ["include ~ALL, unrelated exclude", rs(["~ALL"], ["refs/heads/release/*"]), true],
+    ["include refs/heads/* (provably matches develop)", rs(["refs/heads/*"]), true],
+    ["literal exclude of develop", rs(["~ALL"], [D]), false],
+    ["exclude refs/heads/dev*", rs([D], ["refs/heads/dev*"]), false],
+    ["exclude refs/heads/*", rs([D], ["refs/heads/*"]), false],
+    ["exclude refs/heads/**", rs([D], ["refs/heads/**"]), false],
+    ["exclude ~DEFAULT_BRANCH (unresolvable offline)", rs([D], ["~DEFAULT_BRANCH"]), false],
+    ["exclude ambiguous char class", rs([D], ["refs/heads/d[a-z]velop"]), false],
+    ["exclude not a string", rs([D], [7]), false],
+    ["exclude not an array", rs([D], "refs/heads/dev*"), false],
+    ["include ambiguous (?)", rs(["refs/heads/dev?lop"]), false],
+    ["include other branch", rs(["refs/heads/main"]), false],
+    ["include nothing", rs([]), false],
+    ["disabled ruleset", rs([D], [], { enforcement: "disabled" }), false],
+    ["evaluate-only ruleset", rs([D], [], { enforcement: "evaluate" }), false],
+    ["rules do not protect (deletion only)", rs([D], [], { rules: [{ type: "deletion" }] }), false],
+    ["no conditions", [{ enforcement: "active", rules }], false],
+    ["garbage payload", null, false],
+  ];
+  for (const [name, payload, expected] of cases) assert.equal(prot(payload, "develop"), expected, name);
+  assert.equal(prot(rs(["refs/heads/main"]), "main"), true, "the branch is a parameter");
+});
+
+test("gap 7 (CLI wiring): --develop-ruleset-file, --develop-branch and --skip-ruleset-check decide whether the guard is retired", () => {
+  const files = { [GUARD]: fixture("guard-develop-branch.yml"), "src/a.txt": "1\n" };
+  const cli = join(here, "migrate.mjs");
+  const ruleset = (exclude) => {
+    const f = join(mkdtempSync(join(tmpdir(), "ai-native-rs-")), "ruleset.json");
+    writeFileSync(f, JSON.stringify([{ enforcement: "active", conditions: { ref_name: { include: ["refs/heads/develop"], exclude } }, rules: [{ type: "pull_request" }] }]));
+    return f;
+  };
+  const run = (...extra) => {
+    const dir = repo(files);
+    const r = spawnSync(process.execPath, [cli, "plan", "--target", dir, "--repo", RELEASE.repo, "--version", "v3.0.1", "--commit", RELEASE.commit, "--digest", RELEASE.digest, "--tool", "claude", "--skip-ruleset-check", "--json", ...extra], { encoding: "utf8" });
+    const report = JSON.parse(r.stdout);
+    return { kept: report.migration.keptNoGuard.map((k) => k.path), warnings: report.warnings.join("\n") };
+  };
+  assert.deepEqual(run().kept, [GUARD], "no ruleset source: guard kept");
+  assert.match(run().warnings, /NO_PROTECTION_GAP/);
+  assert.deepEqual(run("--develop-ruleset-file", ruleset([])).kept, [], "verified active ruleset: guard may be retired");
+  assert.deepEqual(run("--develop-ruleset-file", ruleset(["refs/heads/dev*"])).kept, [GUARD], "pattern exclusion: guard kept");
+  assert.deepEqual(run("--develop-ruleset-file", ruleset([]), "--develop-branch", "staging").kept, [GUARD], "ruleset is for develop, branch asked is staging: guard kept");
+  assert.deepEqual(run("--develop-ruleset-file", join(tmpdir(), "does-not-exist.json")).kept, [GUARD], "unreadable file: guard kept");
+});
+
+test("gap 1 (implicit dependency): python profiles declare requiredFiles [pytest.ini]; the migrator keeps an identical pytest.ini for them and retires it for factory", () => {
+  const pytestIni = fixture("pytest.ini").toString("utf8");
+  const files = { "pytest.ini": pytestIni, "src/a.py": "x = 1\n" };
+  for (const profile of ["python-lib", "python-service", "python-app", "python-scripts"]) {
+    const plan = planMigration({ target: repo(files), release: RELEASE, tools: ["claude"], profile });
+    assert.ok(!plan.retire.some((r) => r.path === "pytest.ini"), `${profile} keeps pytest.ini`);
+    assert.ok(plan.keptByProfile.some((k) => k.path === "pytest.ini" && /requiredFiles/.test(k.reason)), profile);
+  }
+  assert.ok(planMigration({ target: repo(files), release: RELEASE, tools: ["claude"], profile: "factory" }).retire.some((r) => r.path === "pytest.ini"), "factory does not run pytest");
+});

@@ -243,3 +243,23 @@ test("gap 6: the lock schema accepts productDir only as a safe relative path", a
   assert.deepEqual(validate({ ...lock, productDir: "services/api" }, schema), []);
   for (const bad of ["../x", "/abs", "a/../b/", "C:/x", ""]) assert.notDeepEqual(validate({ ...lock, productDir: bad }, schema), [], bad);
 });
+
+test("gap 2 (productDir at run time): a non-string, traversing, absolute or missing productDir fails closed and runs nothing; a valid one runs there", async () => {
+  const { productTests } = await import("./l3.mjs");
+  const platformRoot = tmp();
+  mkdirSync(join(platformRoot, "profiles"), { recursive: true });
+  const nodeBin = `"${process.execPath}"`;
+  writeFileSync(join(platformRoot, "profiles", "factory.json"), JSON.stringify({ productTestCommand: `${nodeBin} -e "process.exit(require('fs').existsSync('marker.txt')?0:9)"` }));
+  const project = tmp();
+  put(project, "sub/marker.txt", "x\n");
+  const ran = [];
+  const run = (cmd, opts) => { ran.push(opts.cwd); return spawnSync(cmd, { ...opts, shell: true }); };
+  const go = (productDir) => productTests({ project, lock: { profiles: ["factory"], productDir }, platformRoot, run });
+  for (const bad of [42, null, ["sub"], "../x", "/etc", "C:/x", "sub/../../x", "nope"]) {
+    assert.equal(go(bad).status, "FAIL", JSON.stringify(bad));
+  }
+  assert.deepEqual(ran, [], "nothing was executed for an invalid productDir");
+  assert.equal(go("sub").status, "PASS");
+  assert.equal(ran.length, 1);
+  assert.equal(go(undefined).status, "FAIL", "root has no marker.txt");
+});

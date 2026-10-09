@@ -105,7 +105,7 @@ export function runL3({ project, cache, base = null, requireBase = false, platfo
   return finish(checks, { depth, changed: changed.length });
 }
 
-function productTests({ project, lock, platformRoot, run }) {
+export function productTests({ project, lock, platformRoot, run }) {
   const profileId = lock.profiles?.[0];
   if (!profileId) return check("product", "FAIL", "lock declares no profile");
   const profilePath = join(platformRoot, "profiles", `${profileId}.json`);
