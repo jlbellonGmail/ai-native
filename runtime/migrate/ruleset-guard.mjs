@@ -233,6 +233,7 @@ export function protectsBranch(payload) {
       else if (Array.isArray(x.required_status_checks) && x.required_status_checks.length > 0) found = true;
       else if (Array.isArray(x.contexts) && x.contexts.length > 0) found = true;
       else if (x.required_pull_request_reviews) found = true;
+      else if (x.required_status_checks && !Array.isArray(x.required_status_checks) && ((x.required_status_checks.contexts ?? []).length > 0 || (x.required_status_checks.checks ?? []).length > 0)) found = true;
     }
   };
   visit(payload);
@@ -254,4 +255,22 @@ export function fetchBranchProtected({ repo, branch, run = gh }) {
     try { return { protected: protectsBranch(JSON.parse(classic.stdout)) }; } catch { return { error: `unreadable branch-protection response for ${repo}@${branch}` }; }
   }
   return { protected: false };
+}
+
+/**
+ * A SAVED ruleset (export/file) carries no per-branch filtering, so it only counts when it is `active` and its
+ * `conditions.ref_name` includes the branch (refs/heads/<branch> or ~ALL) and does not exclude it. `~DEFAULT_BRANCH` is
+ * not accepted (it cannot be resolved offline). Anything else is "not protected" (fail-safe).
+ */
+export function protectsBranchFromRulesets(payload, branch) {
+  const list = Array.isArray(payload) ? payload : [payload];
+  const ref = `refs/heads/${branch}`;
+  return list.some((rs) => {
+    if (!rs || typeof rs !== "object" || rs.enforcement !== "active") return false;
+    const rn = rs.conditions?.ref_name;
+    const inc = rn?.include ?? [];
+    const exc = rn?.exclude ?? [];
+    if (!inc.some((p) => p === ref || p === "~ALL") || exc.includes(ref)) return false;
+    return protectsBranch(rs.rules ?? []);
+  });
 }

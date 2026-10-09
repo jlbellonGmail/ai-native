@@ -344,3 +344,17 @@ test("gap 6: the migration never creates or edits pyproject.toml / ruff config, 
     assert.equal(revertMigration({ target: dir }).status, "REVERTED");
   }
 });
+
+test("gap 7 (review): a saved ruleset counts only if active and aimed at the develop branch; classic payloads are understood", async () => {
+  const { protectsBranchFromRulesets, protectsBranch } = await import("./ruleset-guard.mjs");
+  const rules = [{ type: "pull_request", parameters: {} }];
+  const rs = (o) => ({ enforcement: "active", conditions: { ref_name: { include: ["refs/heads/develop"], exclude: [] } }, rules, ...o });
+  assert.equal(protectsBranchFromRulesets([rs()], "develop"), true);
+  assert.equal(protectsBranchFromRulesets([rs({ enforcement: "disabled" })], "develop"), false);
+  assert.equal(protectsBranchFromRulesets([rs({ enforcement: "evaluate" })], "develop"), false);
+  assert.equal(protectsBranchFromRulesets([rs({ conditions: { ref_name: { include: ["refs/heads/main"], exclude: [] } } })], "develop"), false, "ruleset for main only");
+  assert.equal(protectsBranchFromRulesets([rs({ conditions: { ref_name: { include: ["~ALL"], exclude: ["refs/heads/develop"] } } })], "develop"), false);
+  assert.equal(protectsBranchFromRulesets([rs({ rules: [{ type: "deletion" }] })], "develop"), false);
+  assert.equal(protectsBranch({ required_status_checks: { contexts: ["ci"], checks: [] } }), true, "classic branch protection");
+  assert.equal(protectsBranch({ required_status_checks: { contexts: [], checks: [] } }), false);
+});

@@ -29,7 +29,7 @@ import { buildReport, renderOutput, exitCodeForReport } from "../lib/json.mjs";
 import { statusFromCounts } from "../lib/result.mjs";
 import { validate } from "../lib/schema-lite.mjs";
 import { planBump, applyBump } from "./bump.mjs";
-import { checkRulesetImpact, fetchRequiredChecks, fetchBranchProtected, protectsBranch, requiredChecksFrom, CODES as RULESET_CODES } from "./ruleset-guard.mjs";
+import { checkRulesetImpact, fetchRequiredChecks, fetchBranchProtected, protectsBranchFromRulesets, requiredChecksFrom, CODES as RULESET_CODES } from "./ruleset-guard.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const PLATFORM_ROOT = join(here, "..", "..");
@@ -358,7 +358,7 @@ export function resolveRequiredChecks({ target, baseBranch, rulesetFile, consume
 /** gap 7: true ONLY when a ruleset/branch protection on the develop branch is verified; anything unreadable is false (fail-safe). */
 export function resolveDevelopProtected({ target, developBranch, file, consumerRepo, skip }) {
   if (file) {
-    try { return protectsBranch(JSON.parse(readFileSync(resolve(file), "utf8"))); } catch { return false; }
+    try { return protectsBranchFromRulesets(JSON.parse(readFileSync(resolve(file), "utf8")), developBranch); } catch { return false; }
   }
   if (skip) return false;
   const repo = consumerRepo ?? originRepo(target);

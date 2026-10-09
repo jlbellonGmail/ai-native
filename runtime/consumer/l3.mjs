@@ -115,7 +115,8 @@ function productTests({ project, lock, platformRoot, run }) {
   if (!command) return check("product", "NOT_APPLICABLE", "profile declares no productTestCommand");
   // monorepo/subdir: the directory comes from the lock (base branch, schema-validated), never from the consumer PR
   let cwd = project;
-  if (lock.productDir) {
+  if (lock.productDir !== undefined) {
+    if (typeof lock.productDir !== "string") return check("product", "FAIL", "productDir must be a string");
     cwd = resolve(project, lock.productDir);
     const rel = relative(project, cwd);
     if (!/^[A-Za-z0-9_][A-Za-z0-9_.\/-]*$/.test(lock.productDir) || rel.startsWith("..") || isAbsolute(rel) || !existsSync(cwd)) return check("product", "FAIL", `productDir '${lock.productDir}' is invalid or missing`);
