@@ -1,6 +1,6 @@
 # M7 — Cierre (limpieza de legado y deprecated)
 
-Fecha: 2026-10-09. Base: `main` `8f8f30c` (PR #74, mergeada por `jlbellonGmail`; sus 6 workflows post-merge —CI, pilot, CodeQL, Trivy, SBOM, Supply chain— en success). Estado: **`M7_COMPLETED`** al mergear esta PR y quedar verde el CI post-merge de `main`; esta PR solo registra el estado posterior a #74 (limpieza local, rama final, PR #48 reverificada, avisos en GI). Hasta ese merge el estado es `FINAL_HUMAN_MERGE_REQUIRED`. Detalle de candidatos: `M7-INVENTORY.md`, `M7-PLATFORM-GAPS-AND-PR48.md`.
+Fecha: 2026-10-09. Base: `main` `c8c7d05` (PR #75, mergeada por `jlbellonGmail`; sus 6 workflows post-merge —CI, pilot, CodeQL, Trivy, SBOM, Supply chain— en success; parity UNMAPPED=0, doc-drift e integrity PASS). Estado: **`M7_READY_FOR_HUMAN_MERGES`**: queda solo el merge humano de las PRs documentales de GI listadas en Residuales (ninguna toca código, DB ni API) y de esta PR. Detalle de candidatos: `M7-INVENTORY.md`, `M7-PLATFORM-GAPS-AND-PR48.md`.
 
 ## Alcance
 
@@ -70,14 +70,21 @@ Criterio de los scripts retirados: sin referencias por nombre ni por stem en wor
 * `C:\Proyectos\_m6`: 7 clones y 6 venvs (969 MB → 3 MB), tras comprobar 0 cambios, 0 untracked, 0 stashes y 0 commits ausentes de un remoto; después, los archivos sueltos restantes y el directorio (3 MB → 0, ver abajo).
 * `C:\Proyectos\.tmp-template-filtered` (solo caché de pytest) y `C:\Proyectos\Errores-CI-Detalle.txt` (volcado reproducible de logs de CI, salida de `Extraer-Errores-CI.ps1`).
 * `C:\Proyectos\_m7`: 7 clones (34 MB) y el directorio, tras comprobar 0 cambios, 0 untracked, 0 stashes y 0 commits no subidos; sus ramas ya estaban mergeadas.
+* `C:\Proyectos\_work_starter` y `_work_template`: clones de `template-starter` y `template` (remoto idéntico, 0 cambios, 0 untracked, 0 stashes, 0 commits sin subir). TEMP reproducible.
+* `C:\Proyectos\Backup-GitHubActions-20260930-131920` (8 `ci.yml`) y `Backup-ai-native-workflows-20260930-135416` (12 workflows): SUPERSEDED. Los 20 archivos se compararon por hash de blob con el historial de Git de cada repo y existen todos.
+* `C:\Proyectos\Upgrade-TemplateConsumer.ps1`: SUPERSEDED. Actualizaba un consumidor desde un checkout de Template v2.x; sin ningún consumidor (ni repos, docs, scripts, perfiles de PowerShell ni tareas programadas), Template es LEGACY/TRANSITION y el migrador `runtime/migrate/migrate.mjs` migró los 7 GI en M6.
+* `gi-clinicadental:respaldo/develop-antes-tooling-headroom` (`207a84e`): MERGED. Es ancestro de `develop` (`compare`: ahead 0, behind 50); sus commits siguen en el historial de `develop`.
+* ai-native: ramas `docs/m7-final-state` y `docs/m7-completed`, tras sus merges (#74, #75).
 * Clones/worktrees temporales eliminados en total: 15 (7 + 7 + 1).
 
 **Conservado:**
 * ai-native: `main`, `develop` (ver arriba) y `dependabot/github_actions/actions/checkout-7.0.1` (PR #48 abierta).
-* GI: `develop`, `main`, `gh-pages` donde existe; `gi-ot:feature/10-validacion-postgresql` (PR cerrada sin merge, trabajo no integrado); `gi-clinicadental:respaldo/develop-antes-tooling-headroom` (sin PR, respaldo).
+* GI: `develop`, `main`, `gh-pages` donde existe; `gi-ot:feature/10-validacion-postgresql` (UNKNOWN, se conserva): 7 commits exclusivos (2026-08-31 a 2026-09-02) y 9 por detrás de `develop`; su PR #2 se cerró sin merge porque el Punto 10 se rehízo bajo Template v2 (PR #4, `de04bac`; `runs/v2.0.0/10-validacion-postgresql`). Probablemente SUPERSEDED, pero no se ha demostrado equivalencia de sus 61 archivos con `develop`, y no se borra trabajo exclusivo sin demostrarla.
 * Ya no queda nada de `C:\Proyectos\_m6`: los 18 archivos sueltos se clasificaron y se eliminaron. Logs de CI (`*-ci.log`, 2,5 MB): REPRODUCIBLE_TEMP (los runs viven en GitHub). `rel/platform.json`: manifest del release v3.0.1, reproducible desde el asset publicado. `*-removed.txt` y `base-*.yml`: recuperables de los diffs de las PRs de M6 mergeadas. `migrate_repo.sh`, `ship.sh`, `cleanup.py`, `prune_*.py`, `restore_steps.py`, `migrate-args*.txt`: herramientas de una sola vez de M6 con commit y digest fijados, sustituidas por `runtime/migrate/` (migrador canónico) y `governance/migration/` (evidencia); ningún repo queda por migrar.
-* `C:\Proyectos\` raíz: ~35 scripts y CSV de auditoría de GitHub Actions del 2026-09-30, `Upgrade-TemplateConsumer.ps1`, `backup-accidental-clinicadental-en-gi-ot.patch`, `Backup-*`, `_work_starter`, `_work_template`, `worktrees/`, `gi-common-tenants.git-history-backup`. Son anteriores a M6 y son evidencia puntual del 2026-09-30 (los CSV no se pueden regenerar con el estado de entonces) o respaldos sin reemplazo demostrado: HISTORICAL_EVIDENCE/BACKUP, no se tocan. `Upgrade-TemplateConsumer.ps1`: sin ningún consumidor (solo lo cita este documento) y Template es LEGACY/TRANSITION → candidato a eliminación; se conserva por estar fuera del repo y existir duda. Decisión del maintainer.
-* Checkouts del maintainer (`C:\Proyectos\gi-*`, `template`, `template-starter`): no tocados.
+* `C:\Proyectos\_archive-actions-audit-2026-09-30\` (321 KB, con README): CSV de la auditoría de Actions del 2026-09-30 (HISTORICAL_EVIDENCE: instantáneas no regenerables) y sus scripts de una sola vez (HISTORICAL_TOOL, cambios ya aplicados en Git, sin consumidores). Revisar el 2027-01-09 y borrar si nadie los ha necesitado.
+* `C:\Proyectos\backup-accidental-clinicadental-en-gi-ot.patch`: BACKUP_REQUIRED/UNKNOWN. Cambios de documentación de `gi-clinicadental` hechos por error en `gi-ot` (2026-09-17); una línea distintiva del parche no aparece en el historial de ningún repo, así que es trabajo no integrado. Se conserva hasta que el maintainer lo integre o descarte.
+* `C:\Proyectos\gi-common-tenants.git-history-backup`: BACKUP_REQUIRED. Contiene 4 commits (2026-09-18, starter creado desde Template v2.0.1) que no están en el remoto actual. Protege el historial previo a la reescritura; conservar mientras se quiera poder recuperarlo.
+* `C:\Proyectos\worktrees\` (15 worktrees de la era Template v2; dos con cambios sin commitear del maintainer) y los checkouts `gi-*`, `template`, `template-starter`: del maintainer, no tocados.
 
 ## Métricas (`git ls-tree` / `git grep -I` sobre commits fijos)
 
@@ -90,7 +97,7 @@ Criterio de los scripts retirados: sin referencias por nombre ni por stem en wor
 
 *Las cifras de gi-ot y gi-clinicadental se midieron sobre los HEAD de sus PRs (`1688e3e`, `871d5d6`); el merge no añade contenido propio.
 
-ai-native: archivos `_deprecated/` 125 → 120; `legacy/` 165 → 165; AGENTS.md 12 → 12. El total de archivos incluye los 3 documentos nuevos de `governance/cleanup/`. Ramas remotas: ai-native 21 → 3 (`main`, `develop`, dependabot); GI: 77 menos. Disco local: `_m6` 969 MB → 0 (3 MB tras el primer lote); `_m7` 34 MB → 0. La reducción es modesta a propósito: el grueso (`legacy/`, `_deprecated/`) tiene consumidores demostrados. No se midió duplicación.
+ai-native (recalculado sobre `c8c7d05`): 1519 archivos, 178 483 líneas de texto, 247 scripts (`.ps1/.sh/.mjs/.js/.py` fuera de `legacy/`), 14 workflows, `_deprecated/` 125 → 120 archivos, `legacy/` 165 → 165, ramas remotas 21 → 3 (`main`, `develop`, dependabot). Las líneas suben 178 409 → 178 483 solo por los documentos de cierre añadidos tras #73. GI: 77 ramas remotas menos, más `gi-clinicadental:respaldo/develop-antes-tooling-headroom`. Disco local: `_m6` 969 MB → 0; `_m7` 34 MB → 0; sin `_work_*` ni backups de Actions; worktrees de ai-native: 1. La reducción es modesta a propósito: el grueso (`legacy/`, `_deprecated/`) tiene consumidores demostrados. No se midió duplicación.
 
 ## Brechas de plataforma de M6 — clasificación final (v3.0.2 no iniciada)
 
@@ -117,11 +124,11 @@ Recomendación exacta (humana): `@dependabot rebase`; añadir una nota de govern
 
 ## Residuales
 
-* Documentación obsoleta del circuito Template en los GI: en `gi-common-tenants` (#21), `gi-common-persons` (#17) y `gi-common-crm` (#8), cuyo AGENTS.md cita `.agentic/`, `CONSTITUTION.md` y scripts retirados, se abrió una PR de un aviso de dos líneas que declara la plataforma vigente (pendiente de merge humano; no es estructural). En gi-platform-core, gi-ocr, gi-clinicadental y gi-ot el manual sigue describiendo adopciones de Template (v2.0.0/v2.0.4) sin aviso, pero conservan `.agentic/` y la mayoría de los scripts que citan: MINOR, sin cambio. No se reescribe documentación histórica.
+* Documentación obsoleta en los GI (PRs solo de Markdown, CI y L3 verdes en el HEAD indicado, pendientes de merge humano): gi-common-tenants #21 (`81944eb`), gi-common-persons #17 (`ac4dcb2`), gi-common-crm #8 (`e2473ee`) —enlace roto a `CONSTITUTION.md` sustituido por `core/constitution.md` de v3.0.1 y lista de archivos inexistentes—; gi-ot #8, gi-ocr #39, gi-platform-core #43, gi-clinicadental #65 —afirmaciones vigentes falsas («Template vigente/activo/operativo») y archivos citados inexistentes—. Los runs/, la procedencia de baseline y los SHAs de adopción son históricos y no se tocan. Barrido de enlaces Markdown relativos de ai-native: 0 rotos.
 * Quitar `_deprecated` de foundation/knowledge/template: PR de plano de control aparte, si se desea.
 * gi-ocr: tres scripts posiblemente de producto (UNKNOWN). `gi-platform-core`: dos scripts con solo referencias documentales (UNKNOWN).
-* `gi-ot:feature/10-validacion-postgresql` y `gi-clinicadental:respaldo/develop-antes-tooling-headroom`: ramas con trabajo no integrado o de respaldo; decisión del maintainer.
-* Raíz de `C:\Proyectos` (arriba): evidencia y respaldos del 2026-09-30; decisión del maintainer.
+* `gi-ot:feature/10-validacion-postgresql`: ver «Conservado»; UNKNOWN, decisión del maintainer.
+* Raíz de `C:\Proyectos`: el parche accidental, el backup de historial de tenants y `worktrees/` (ver «Conservado»); decisión del maintainer.
 * `gi-common-tenants`: `tests/test_status_auto_commit_semantics.py` falla en local Windows (`unable to access 'NUL'`), preexistente.
 * F2, claves antiguas de `ai-native-trust`, F-05 y demás residuales de `SESSION-CONTEXT.md`: sin cambios.
 
