@@ -1,6 +1,6 @@
 # M7 — Cierre (limpieza de legado y deprecated)
 
-Fecha: 2026-10-09. Base: `main` `6fc600c` (PR #73). Estado al redactar: **`M7_FINAL_PR_READY_FOR_HUMAN_MERGE`**. Esta PR solo actualiza el documento con el estado real posterior a los merges; M7 se da por `COMPLETED` cuando esta PR esté mergeada por un humano y el CI post-merge de `main` esté verde. Detalle de candidatos: `M7-INVENTORY.md`, `M7-PLATFORM-GAPS-AND-PR48.md`.
+Fecha: 2026-10-09. Base: `main` `8f8f30c` (PR #74, mergeada por `jlbellonGmail`; sus 6 workflows post-merge —CI, pilot, CodeQL, Trivy, SBOM, Supply chain— en success). Estado: **`M7_COMPLETED`** al mergear esta PR y quedar verde el CI post-merge de `main`; esta PR solo registra el estado posterior a #74 (limpieza local, rama final, PR #48 reverificada, avisos en GI). Hasta ese merge el estado es `FINAL_HUMAN_MERGE_REQUIRED`. Detalle de candidatos: `M7-INVENTORY.md`, `M7-PLATFORM-GAPS-AND-PR48.md`.
 
 ## Alcance
 
@@ -67,15 +67,16 @@ Criterio de los scripts retirados: sin referencias por nombre ni por stem en wor
 **Eliminado:**
 * ai-native: 19 ramas remotas mergeadas (las 18 de antes de #72 más `docs/m7-closure`), ramas locales equivalentes y el worktree `_m6/ai-native-closure`. SHA de cada rama guardados fuera del repo durante la sesión.
 * GI: 77 ramas remotas cuya PR estaba MERGED y cuyo SHA era idéntico al HEAD de la PR (gi-clinicadental 28, gi-ocr 17, gi-platform-core 12, gi-common-tenants 9, gi-common-persons 8, gi-ot 2, gi-common-crm 1); recuperables vía `refs/pull/N/head`.
-* `C:\Proyectos\_m6`: 7 clones y 6 venvs (969 MB → 3 MB), tras comprobar 0 cambios, 0 untracked, 0 stashes y 0 commits ausentes de un remoto.
+* `C:\Proyectos\_m6`: 7 clones y 6 venvs (969 MB → 3 MB), tras comprobar 0 cambios, 0 untracked, 0 stashes y 0 commits ausentes de un remoto; después, los archivos sueltos restantes y el directorio (3 MB → 0, ver abajo).
+* `C:\Proyectos\.tmp-template-filtered` (solo caché de pytest) y `C:\Proyectos\Errores-CI-Detalle.txt` (volcado reproducible de logs de CI, salida de `Extraer-Errores-CI.ps1`).
 * `C:\Proyectos\_m7`: 7 clones (34 MB) y el directorio, tras comprobar 0 cambios, 0 untracked, 0 stashes y 0 commits no subidos; sus ramas ya estaban mergeadas.
 * Clones/worktrees temporales eliminados en total: 15 (7 + 7 + 1).
 
 **Conservado:**
 * ai-native: `main`, `develop` (ver arriba) y `dependabot/github_actions/actions/checkout-7.0.1` (PR #48 abierta).
 * GI: `develop`, `main`, `gh-pages` donde existe; `gi-ot:feature/10-validacion-postgresql` (PR cerrada sin merge, trabajo no integrado); `gi-clinicadental:respaldo/develop-antes-tooling-headroom` (sin PR, respaldo).
-* `C:\Proyectos\_m6` (~3 MB): `migrate_repo.sh`, `ship.sh`, `prune_*.py`, `cleanup.py`, `restore_steps.py`, `base-*.yml`, `*-ci.log`, `*-removed.txt`, `migrate-args*.txt`, `rel/`. Son archivos únicos fuera de Git (herramientas de migración puntuales y logs de CI con más de unos días); el migrador canónico y la evidencia de M6 están en `runtime/migrate/` y `governance/migration/`, pero no se demuestra que sean reproducibles → no se borran.
-* `C:\Proyectos\` raíz: ~35 scripts y CSV de auditoría de GitHub Actions del 2026-09-30, `Upgrade-TemplateConsumer.ps1`, `backup-accidental-clinicadental-en-gi-ot.patch`, `Backup-*`, `_work_starter`, `_work_template`, `worktrees/`, `gi-common-tenants.git-history-backup`. Son anteriores a M6, no son artefactos de M6/M7 y no se demuestra que sean reproducibles o inútiles (evidencia puntual del 2026-09-30, herramientas del maintainer): no se tocan. Decisión del maintainer.
+* Ya no queda nada de `C:\Proyectos\_m6`: los 18 archivos sueltos se clasificaron y se eliminaron. Logs de CI (`*-ci.log`, 2,5 MB): REPRODUCIBLE_TEMP (los runs viven en GitHub). `rel/platform.json`: manifest del release v3.0.1, reproducible desde el asset publicado. `*-removed.txt` y `base-*.yml`: recuperables de los diffs de las PRs de M6 mergeadas. `migrate_repo.sh`, `ship.sh`, `cleanup.py`, `prune_*.py`, `restore_steps.py`, `migrate-args*.txt`: herramientas de una sola vez de M6 con commit y digest fijados, sustituidas por `runtime/migrate/` (migrador canónico) y `governance/migration/` (evidencia); ningún repo queda por migrar.
+* `C:\Proyectos\` raíz: ~35 scripts y CSV de auditoría de GitHub Actions del 2026-09-30, `Upgrade-TemplateConsumer.ps1`, `backup-accidental-clinicadental-en-gi-ot.patch`, `Backup-*`, `_work_starter`, `_work_template`, `worktrees/`, `gi-common-tenants.git-history-backup`. Son anteriores a M6 y son evidencia puntual del 2026-09-30 (los CSV no se pueden regenerar con el estado de entonces) o respaldos sin reemplazo demostrado: HISTORICAL_EVIDENCE/BACKUP, no se tocan. `Upgrade-TemplateConsumer.ps1`: sin ningún consumidor (solo lo cita este documento) y Template es LEGACY/TRANSITION → candidato a eliminación; se conserva por estar fuera del repo y existir duda. Decisión del maintainer.
 * Checkouts del maintainer (`C:\Proyectos\gi-*`, `template`, `template-starter`): no tocados.
 
 ## Métricas (`git ls-tree` / `git grep -I` sobre commits fijos)
@@ -89,7 +90,7 @@ Criterio de los scripts retirados: sin referencias por nombre ni por stem en wor
 
 *Las cifras de gi-ot y gi-clinicadental se midieron sobre los HEAD de sus PRs (`1688e3e`, `871d5d6`); el merge no añade contenido propio.
 
-ai-native: archivos `_deprecated/` 125 → 120; `legacy/` 165 → 165; AGENTS.md 12 → 12. El total de archivos incluye los 3 documentos nuevos de `governance/cleanup/`. Ramas remotas: ai-native 21 → 3 (`main`, `develop`, dependabot); GI: 77 menos. Disco local: `_m6` 969 MB → 3 MB; `_m7` 34 MB → 0. La reducción es modesta a propósito: el grueso (`legacy/`, `_deprecated/`) tiene consumidores demostrados. No se midió duplicación.
+ai-native: archivos `_deprecated/` 125 → 120; `legacy/` 165 → 165; AGENTS.md 12 → 12. El total de archivos incluye los 3 documentos nuevos de `governance/cleanup/`. Ramas remotas: ai-native 21 → 3 (`main`, `develop`, dependabot); GI: 77 menos. Disco local: `_m6` 969 MB → 0 (3 MB tras el primer lote); `_m7` 34 MB → 0. La reducción es modesta a propósito: el grueso (`legacy/`, `_deprecated/`) tiene consumidores demostrados. No se midió duplicación.
 
 ## Brechas de plataforma de M6 — clasificación final (v3.0.2 no iniciada)
 
@@ -109,18 +110,18 @@ Las brechas 1, 2, 6 y 7 afectarían a cualquier migración nueva de un repo Pyth
 
 ## PR #48 (Dependabot `actions/checkout` 4.2.2 → 7.0.1) — `KEEP_OPEN`
 
-Reverificada el 2026-10-09: abierta, HEAD `718c519` (sin cambios desde 2026-10-06), base `521d203`, 26 commits por detrás de `main`; toca los 14 workflows (plano de control); `main` sigue en v4.2.2, así que no está superseded ni hace falta una PR de reemplazo (repetiría los mismos 14 cambios). Fallos, leídos en los logs de la ejecución del 2026-10-06 (no se han repetido desde entonces):
+Reverificada el 2026-10-09: abierta, HEAD `718c519` (sin cambios desde 2026-10-06), base `521d203`, 28 commits por detrás de `main`; toca los 14 workflows (plano de control); `main` sigue en v4.2.2, así que no está superseded ni hace falta una PR de reemplazo (repetiría los mismos 14 cambios). Fallos, leídos en los logs de la ejecución del 2026-10-06 (no se han repetido desde entonces):
 * `pr-gate` y `security-scan`: `docs-gate/DOCS_NOT_UPDATED` (14 archivos de comportamiento, ninguna nota de governance). Es el mismo hallazgo en ambos.
 * `ai-native/merge-gate`: el log de `merge-gate-job` dice `MERGE_GATE_FAIL: CHECK_FAILED, HUMAN_REVIEW_REQUIRED` con `'pr-gate' concluded 'failure'` y `'ai-native/trust-gate' is neutral (control plane changed)`. Es consecuencia de `pr-gate`, pero aun corrigiéndolo seguiría bloqueado por la revisión humana obligatoria.
 Recomendación exacta (humana): `@dependabot rebase`; añadir una nota de governance para el docs-gate; revisar el cambio de acción (v4 → v7); aprobar en `ai-native-human-review`. No se mergea ni modifica en M7.
 
 ## Residuales
 
-* Documentación obsoleta del circuito Template (referencias a `close-feature`, `ready-for-pr`, etc.) en gi-platform-core, gi-ocr, gi-common-tenants, gi-common-persons y otros: deuda señalada en M6, no tocada por ser documentación/contexto de cada producto.
+* Documentación obsoleta del circuito Template en los GI: en `gi-common-tenants` (#21), `gi-common-persons` (#17) y `gi-common-crm` (#8), cuyo AGENTS.md cita `.agentic/`, `CONSTITUTION.md` y scripts retirados, se abrió una PR de un aviso de dos líneas que declara la plataforma vigente (pendiente de merge humano; no es estructural). En gi-platform-core, gi-ocr, gi-clinicadental y gi-ot el manual sigue describiendo adopciones de Template (v2.0.0/v2.0.4) sin aviso, pero conservan `.agentic/` y la mayoría de los scripts que citan: MINOR, sin cambio. No se reescribe documentación histórica.
 * Quitar `_deprecated` de foundation/knowledge/template: PR de plano de control aparte, si se desea.
 * gi-ocr: tres scripts posiblemente de producto (UNKNOWN). `gi-platform-core`: dos scripts con solo referencias documentales (UNKNOWN).
 * `gi-ot:feature/10-validacion-postgresql` y `gi-clinicadental:respaldo/develop-antes-tooling-headroom`: ramas con trabajo no integrado o de respaldo; decisión del maintainer.
-* Archivos sueltos de `_m6` y de la raíz de `C:\Proyectos` (arriba): decisión del maintainer.
+* Raíz de `C:\Proyectos` (arriba): evidencia y respaldos del 2026-09-30; decisión del maintainer.
 * `gi-common-tenants`: `tests/test_status_auto_commit_semantics.py` falla en local Windows (`unable to access 'NUL'`), preexistente.
 * F2, claves antiguas de `ai-native-trust`, F-05 y demás residuales de `SESSION-CONTEXT.md`: sin cambios.
 
