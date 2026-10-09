@@ -1,6 +1,6 @@
 # M7 — Cierre (limpieza de legado y deprecated)
 
-Fecha: 2026-10-09. Base: `main` `c8c7d05` (PR #75, mergeada por `jlbellonGmail`; sus 6 workflows post-merge —CI, pilot, CodeQL, Trivy, SBOM, Supply chain— en success; parity UNMAPPED=0, doc-drift e integrity PASS). Estado: **`M7_READY_FOR_HUMAN_MERGES`**: queda solo el merge humano de las PRs documentales de GI listadas en Residuales (ninguna toca código, DB ni API) y de esta PR. Detalle de candidatos: `M7-INVENTORY.md`, `M7-PLATFORM-GAPS-AND-PR48.md`.
+Fecha: 2026-10-09. SHA final vigente: `main` `cb34566` (PR #76; antes de la PR que sincroniza este estado). Snapshot histórico de las mediciones de este documento: `main` `c8c7d05` (PR #75, mergeada por `jlbellonGmail`; sus 6 workflows post-merge —CI, pilot, CodeQL, Trivy, SBOM, Supply chain— en success; parity UNMAPPED=0, doc-drift e integrity PASS). Estado: **`M7_COMPLETED`** (verificado tras los merges humanos de las PRs documentales de GI y de #76: `main` `cb34566` con CI, pilot, CodeQL, Trivy, SBOM y Supply chain en success; `develop` de los 7 GI en el merge commit con CI en success y rulesets activos). Detalle de candidatos: `M7-INVENTORY.md`, `M7-PLATFORM-GAPS-AND-PR48.md`.
 
 ## Alcance
 
@@ -17,6 +17,16 @@ Repos revisados: ai-native (limpieza profunda con evidencia); gi-platform-core, 
 | gi-common-tenants | #20 | `8469792` | ACCEPT | `d26db64` | CI de `develop` verde; ruleset activo |
 | gi-ot | #7 | `1688e3e` | ACCEPT | `4b8b25d` | CI de `develop` verde (7 jobs); ruleset activo; 8 checks requeridos presentes |
 | gi-clinicadental | #64 | `871d5d6` | ACCEPT | `d9c97a4` | CI de `develop` verde (`test`); ruleset activo |
+| ai-native | #74 estado final | `505dcda` | ACCEPT | `8f8f30c` | 6 workflows verdes |
+| ai-native | #75 estado y limpieza tras #74 | `8003514` | ACCEPT_WITH_MINORS | `c8c7d05` | 6 workflows verdes; parity UNMAPPED=0, doc-drift e integrity PASS |
+| gi-platform-core | #43 documentación vigente | `700efb0` | ACCEPT | `36d9bb3` | CI de `develop` verde; ruleset activo |
+| gi-common-tenants | #21 documentación vigente | `4b3b674` | ACCEPT | `dafcf98` | CI de `develop` verde; ruleset activo |
+| gi-common-persons | #17 documentación vigente | `e765397` | ACCEPT | `6c30674` | CI de `develop` verde; ruleset activo |
+| gi-common-crm | #8 documentación vigente | `7f06d0d` | ACCEPT | `8e3465f` | CI de `develop` verde; ruleset activo |
+| gi-ocr | #39 documentación vigente | `6c069cb` | ACCEPT_WITH_MINORS | `b99442e` | CI de `develop` verde; ruleset activo |
+| gi-ot | #8 documentación vigente | `d7c714c` | ACCEPT | `82bddf5` | CI de `develop` verde; ruleset activo |
+| gi-clinicadental | #65 documentación vigente | `99a4703` | ACCEPT | `59443d0` | CI de `develop` verde; ruleset activo |
+| ai-native | #76 cierre de residuos | `6cbc5ff` | ACCEPT | `cb34566` | 6 workflows verdes sobre `main`; parity UNMAPPED=0, doc-drift e integrity PASS |
 
 `merged_by` figura como `jlbellonGmail` en todas, la misma cuenta con la que opera `gh` el agente; la autoría humana se apoya en la declaración del maintainer (igual que en M6). Límite heredado de M6: `l3 / l3-consumer` solo corre en `pull_request`; su PASS consta en el HEAD revisado de cada PR, no en el commit de merge.
 
@@ -97,7 +107,7 @@ Criterio de los scripts retirados: sin referencias por nombre ni por stem en wor
 
 *Las cifras de gi-ot y gi-clinicadental se midieron sobre los HEAD de sus PRs (`1688e3e`, `871d5d6`); el merge no añade contenido propio.
 
-ai-native (recalculado sobre `c8c7d05`): 1519 archivos, 178 424 líneas de texto, 247 scripts (`.ps1/.sh/.mjs/.js/.py` fuera de `legacy/`), 14 workflows, `_deprecated/` 125 → 120 archivos, `legacy/` 165 → 165, ramas remotas 21 → 3 (`main`, `develop`, dependabot). Las líneas suben 178 409 → 178 424 (+15) por los documentos de cierre añadidos tras #73. GI: 78 ramas remotas menos (77 de PRs mergeadas más `gi-clinicadental:respaldo/develop-antes-tooling-headroom`, mergeada en `develop`). Disco local: `_m6` 969 MB → 0; `_m7` 34 MB → 0; sin `_work_*` ni backups de Actions; worktrees de ai-native: 1. La reducción es modesta a propósito: el grueso (`legacy/`, `_deprecated/`) tiene consumidores demostrados. No se midió duplicación.
+ai-native (snapshot histórico sobre `c8c7d05`): 1519 archivos, 178 424 líneas de texto, 247 scripts (`.ps1/.sh/.mjs/.js/.py` fuera de `legacy/`), 14 workflows, `_deprecated/` 125 → 120 archivos, `legacy/` 165 → 165, ramas remotas 21 → 3 (`main`, `develop`, dependabot). Las líneas suben 178 409 → 178 424 (+15) por los documentos de cierre añadidos tras #73. GI: 78 ramas remotas menos (77 de PRs mergeadas más `gi-clinicadental:respaldo/develop-antes-tooling-headroom`, mergeada en `develop`). Disco local: `_m6` 969 MB → 0; `_m7` 34 MB → 0; sin `_work_*` ni backups de Actions; worktrees de ai-native: 1. La reducción es modesta a propósito: el grueso (`legacy/`, `_deprecated/`) tiene consumidores demostrados. No se midió duplicación. Recalculado sobre el estado final `cb34566` (árbol del commit): 1519 archivos, 178 431 líneas de texto (+7 respecto a `c8c7d05`, por los documentos de #76), 247 scripts, 14 workflows, `_deprecated/` 120, `legacy/` 165.
 
 ## Brechas de plataforma de M6 — clasificación final (v3.0.2 no iniciada)
 
@@ -117,14 +127,14 @@ Las brechas 1, 2, 6 y 7 afectarían a cualquier migración nueva de un repo Pyth
 
 ## PR #48 (Dependabot `actions/checkout` 4.2.2 → 7.0.1) — `KEEP_OPEN`
 
-Reverificada el 2026-10-09: abierta, HEAD `718c519` (sin cambios desde 2026-10-06), base `521d203`, 30 commits por detrás de `main` (`c8c7d05`); toca los 14 workflows (plano de control); `main` sigue en v4.2.2, así que no está superseded ni hace falta una PR de reemplazo (repetiría los mismos 14 cambios). Fallos, leídos en los logs de la ejecución del 2026-10-06 (no se han repetido desde entonces):
+Reverificada el 2026-10-09: abierta, HEAD `718c519` (sin cambios desde 2026-10-06), base `521d203`, 30 commits por detrás de `main` (`c8c7d05`, snapshot de esta verificación; reconsultada tras #76: sigue abierta, mismo HEAD, 36 commits por detrás de `main` `cb34566`); toca los 14 workflows (plano de control); `main` sigue en v4.2.2, así que no está superseded ni hace falta una PR de reemplazo (repetiría los mismos 14 cambios). Fallos, leídos en los logs de la ejecución del 2026-10-06 (no se han repetido desde entonces):
 * `pr-gate` y `security-scan`: `docs-gate/DOCS_NOT_UPDATED` (14 archivos de comportamiento, ninguna nota de governance). Es el mismo hallazgo en ambos.
 * `ai-native/merge-gate`: el log de `merge-gate-job` dice `MERGE_GATE_FAIL: CHECK_FAILED, HUMAN_REVIEW_REQUIRED` con `'pr-gate' concluded 'failure'` y `'ai-native/trust-gate' is neutral (control plane changed)`. Es consecuencia de `pr-gate`, pero aun corrigiéndolo seguiría bloqueado por la revisión humana obligatoria.
 Recomendación exacta (humana): `@dependabot rebase`; añadir una nota de governance para el docs-gate; revisar el cambio de acción (v4 → v7); aprobar en `ai-native-human-review`. No se mergea ni modifica en M7.
 
 ## Residuales
 
-* Documentación obsoleta en los GI (PRs solo de Markdown, CI y L3 verdes en el HEAD indicado, pendientes de merge humano): gi-common-tenants #21 (`4b3b674`), gi-common-persons #17 (`e765397`), gi-common-crm #8 (`7f06d0d`) —enlaces rotos a `CONSTITUTION.md` (AGENTS, ROADMAP, `fundamentos-v2`) sustituidos por `core/constitution.md` de v3.0.1 y lista completa de archivos citados que no existen—; gi-ot #8 (`d7c714c`), gi-ocr #39 (`6c069cb`), gi-platform-core #43 (`700efb0`), gi-clinicadental #65 (`99a4703`) —afirmaciones vigentes falsas («Template vigente/activo/operativo») y archivos citados inexistentes—. Los runs/, la procedencia de baseline y los SHAs de adopción son históricos y no se tocan. Barrido de enlaces Markdown relativos: 0 rotos en la documentación operativa de ai-native y en los 7 GI (con estas PRs aplicadas; excluidos `runs/`, `legacy/`, `_deprecated/` y archivos históricos; el único enlace roto conocido, `legacy/template-v2/ROADMAP.md:69` → `runs/v1.1.0/`, está en material congelado).
+* Documentación obsoleta en los GI (PRs solo de Markdown, CI y L3 verdes en el HEAD indicado; las 7 están mergeadas por `jlbellonGmail` en el `develop` de cada repo, ver tabla de PRs): gi-common-tenants #21 (`4b3b674`), gi-common-persons #17 (`e765397`), gi-common-crm #8 (`7f06d0d`) —enlaces rotos a `CONSTITUTION.md` (AGENTS, ROADMAP, `fundamentos-v2`) sustituidos por `core/constitution.md` de v3.0.1 y lista completa de archivos citados que no existen—; gi-ot #8 (`d7c714c`), gi-ocr #39 (`6c069cb`), gi-platform-core #43 (`700efb0`), gi-clinicadental #65 (`99a4703`) —afirmaciones vigentes falsas («Template vigente/activo/operativo») y archivos citados inexistentes—. Los runs/, la procedencia de baseline y los SHAs de adopción son históricos y no se tocan. Barrido de enlaces Markdown relativos: 0 rotos en la documentación operativa de ai-native y en los 7 GI (con estas PRs ya aplicadas; excluidos `runs/`, `legacy/`, `_deprecated/` y archivos históricos; el único enlace roto conocido, `legacy/template-v2/ROADMAP.md:69` → `runs/v1.1.0/`, está en material congelado).
 * Quitar `_deprecated` de foundation/knowledge/template: PR de plano de control aparte, si se desea.
 * gi-ocr: tres scripts posiblemente de producto (UNKNOWN). `gi-platform-core`: dos scripts con solo referencias documentales (UNKNOWN).
 * `gi-ot:feature/10-validacion-postgresql`: ver «Conservado»; UNKNOWN, decisión del maintainer.
