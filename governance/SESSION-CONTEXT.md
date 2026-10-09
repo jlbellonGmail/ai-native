@@ -4,7 +4,7 @@
 > `governance/history/SESSION-CONTEXT-HISTORY-2026-10-04.md`. Fuente de verdad del estado: este archivo, `governance/roadmaps/AI-NATIVE-V3-ROADMAP.md` y Git/GitHub.
 > Política del merge humano: `governance/security/HITL-MERGE-POLICY.md`. Frontera de secretos: `governance/security/SECRETS-BOUNDARY.md`.
 
-Actualizado: 2026-10-09 (post-M6; M7 `READY_FOR_HUMAN_MERGES`).
+Actualizado: 2026-10-09 (post-M6; M7 `COMPLETED`).
 
 ## Arquitectura (vigente)
 
@@ -71,7 +71,7 @@ No se baja el umbral, no hay waivers. La remediación de F1–F8 (#53) y las pos
 * **AI-Native `v3.0.1`** = plataforma central vigente. Los consumidores la usan por referencia: versión, SHA/lock, caché, attestation y rollback; no por copia masiva del Template.
 * **Template v2.x** = `LEGACY / TRANSITION`: sin capacidades funcionales nuevas; solo historia, baseline y migración/compatibilidad imprescindible. `legacy/template-v2` no es implementación futura.
 * **template-starter** = canary histórico y consumidor migrado (evidencia brownfield v2 → v3), no plataforma central.
-* M7 (limpieza/depuración): `M7_READY_FOR_HUMAN_MERGES`; pasa a `COMPLETED` cuando se mergeen las PRs documentales de GI pendientes (ver `governance/cleanup/M7-CLOSURE.md`, Residuales) y el CI post-merge de `main` esté verde. Las PRs de limpieza (ai-native #70/#72/#73/#74/#75, gi-common-tenants #20, gi-ot #7, gi-clinicadental #64) están mergeadas con CI verde y los tres GI quedan `CLEANED`. No abre v3.0.2 (`NOT_STARTED`) ni otro milestone; PR #48 sigue `KEEP_OPEN`.
+* M7 (limpieza/depuración): `COMPLETED` (2026-10-09); detalle en `governance/cleanup/M7-CLOSURE.md`. Las PRs de limpieza (ai-native #70/#72/#73/#74/#75, gi-common-tenants #20, gi-ot #7, gi-clinicadental #64) están mergeadas con CI verde y los tres GI quedan `CLEANED`. No abre v3.0.2 (`NOT_STARTED`) ni otro milestone; PR #48 sigue `KEEP_OPEN`.
 
 ## Residuales abiertos tras `v3.0.0` (no convertidos en PASS)
 

@@ -1,6 +1,6 @@
 # M7 — Cierre (limpieza de legado y deprecated)
 
-Fecha: 2026-10-09. Base: `main` `c8c7d05` (PR #75, mergeada por `jlbellonGmail`; sus 6 workflows post-merge —CI, pilot, CodeQL, Trivy, SBOM, Supply chain— en success; parity UNMAPPED=0, doc-drift e integrity PASS). Estado: **`M7_READY_FOR_HUMAN_MERGES`**: queda solo el merge humano de las PRs documentales de GI listadas en Residuales (ninguna toca código, DB ni API) y de esta PR. Detalle de candidatos: `M7-INVENTORY.md`, `M7-PLATFORM-GAPS-AND-PR48.md`.
+Fecha: 2026-10-09. Base: `main` `c8c7d05` (PR #75, mergeada por `jlbellonGmail`; sus 6 workflows post-merge —CI, pilot, CodeQL, Trivy, SBOM, Supply chain— en success; parity UNMAPPED=0, doc-drift e integrity PASS). Estado: **`M7_COMPLETED`** (verificado tras los merges humanos de las PRs documentales de GI y de #76: `main` `cb34566` con CI, pilot, CodeQL, Trivy, SBOM y Supply chain en success; `develop` de los 7 GI en el merge commit con CI en success y rulesets activos). Detalle de candidatos: `M7-INVENTORY.md`, `M7-PLATFORM-GAPS-AND-PR48.md`.
 
 ## Alcance
 
