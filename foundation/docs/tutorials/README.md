@@ -12,4 +12,4 @@ This directory contains guided adoption material for teams using
 
 Tutorial content must point to active product paths under `runtime/`, `roles/`,
 `security/`, `observability/`, `config/` or `scripts/`. Historical or uncertain
-material belongs in `_deprecated/2026-06-11/` until it is reviewed.
+material is not kept in the tree: record it in a `governance/history/` manifest.

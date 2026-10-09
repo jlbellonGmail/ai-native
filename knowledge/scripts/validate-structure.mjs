@@ -96,7 +96,7 @@ assert(coverage.taskStates["W5-T5"] === "IMPLEMENTED", "W5-T5 must be implemente
 assert(coverage.taskStates["W5-T6"] === "IMPLEMENTED", "W5-T6 must be implemented");
 assert(!Object.hasOwn(coverage.taskStates, "W6-T1"), "W6-T1 must remain unopened");
 
-const emptyDirs = walkDirs(root).filter((dir) => !dir.includes("_deprecated"));
+const emptyDirs = walkDirs(root);
 assert(emptyDirs.length === 0, `empty active directories found: ${emptyDirs.join(", ")}`);
 
 console.log("ai-knowledge structure validation PASS");

@@ -1,5 +1,0 @@
-{
-    "setup-worktree": ,
-    "cleanup-on-remove": true,
-    "max-parallel-trees": 8
-}

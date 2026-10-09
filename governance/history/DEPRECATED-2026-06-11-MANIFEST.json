@@ -1,0 +1,610 @@
+{
+ "schemaVersion": 1,
+ "description": "Manifest compacto de los directorios `_deprecated/2026-06-11` de foundation/, knowledge/ y template/ tal como existian en 857b09c, antes de retirarlos en v3.0.2. Eran codigo y documentos superseded (runtime TS antiguo, roles/pipelines legacy, analisis de fuente), sin consumidores ejecutables salvo cuatro validadores historicos W8 que se retiraron con ellos. El contenido es recuperable con `git show 857b09c:<path>`.",
+ "lastCommitWithTree": "857b09c",
+ "removedIn": "v3.0.2",
+ "fileCount": 120,
+ "aggregateSha256": "54fa5eeee7f06f9f8f1459500c93b1562b79da79b9d28be55c18abc735984202",
+ "files": [
+  {
+   "path": "foundation/_deprecated/2026-06-11/DEPRECATION_INDEX.md",
+   "bytes": 1144,
+   "sha256": "d5397e8d0f105502b3d6e04b4c7645c9bfe522d6a153055ed0d1a45634f8247f"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/README.md",
+   "bytes": 2889,
+   "sha256": "2dab4c39e63144f3a5e63131c30c446c2729125197299b476a674d024c4c6621"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/ai-context/AI_AUDIT_ENTRYPOINT.md",
+   "bytes": 461,
+   "sha256": "717b301997a8d61955e9b8654e6d91a49d0d62fbcbbdea61b9bb901cbe137c63"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/ai-context/README.md",
+   "bytes": 986,
+   "sha256": "b85e5b63ca351b2ebf07d46ce3289da727af7b312466bdbd0448c9ad8467507e"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/ai-context/audit/audit-prompt.md",
+   "bytes": 2156,
+   "sha256": "b7c7cde1d0d813e31a9f3caffbcbb697558a9f021104b831b0146f1836c2c680"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/ai-context/audit/audit-system.md",
+   "bytes": 2852,
+   "sha256": "d7ccfc068f9d1298496e7b3944a96fe1c03784cee7644102dc8e1ae0aa2a8596"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/ai-context/context.md",
+   "bytes": 2783,
+   "sha256": "853e34e41fcc914a3eee631946a4836a0256d93ddda3612be907de47f483e1d8"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/ai-context/core/audit-agent.md",
+   "bytes": 1392,
+   "sha256": "56addf4461c17890476190ef4edee49dc74f3f4b27adf996f89c73c686a3c3ff"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/ai-context/guides/create_project.md",
+   "bytes": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/ai-context/index.md",
+   "bytes": 897,
+   "sha256": "8dba54fa1106cd7cbf60e693db081bd1382c39f104a07dcac760511208261186"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/ai-context/knowledge/index.md",
+   "bytes": 419,
+   "sha256": "aff011428f6d9da4b1947d560ab6dcee7644b12d68749d27c19fcf1662bf831b"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/antigravity-local-rules/rules.md",
+   "bytes": 3184,
+   "sha256": "5bc55e05a82544ea25389b47dc930972d9ad2b2a033a6e9827b34e4938f76d4e"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/duplicate-detection.contract.json",
+   "bytes": 4288,
+   "sha256": "e0b12be0d923c08d9beed399a3e6f6eeea0b2bdcf1d4147b0363c882897d6d5d"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/duplicate-detection.md",
+   "bytes": 2615,
+   "sha256": "69fe12ccce168143be9bb1f554cb212abde3ceac77f3002c0e93562ea81b58c8"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/empty-telemetry-placeholders/.gitkeep",
+   "bytes": 444,
+   "sha256": "10ce05e43227ec83c4dc2b279eedda645f9a8846ecaae38901f18a8a6906140f"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/historical-archive.contract.json",
+   "bytes": 4204,
+   "sha256": "f2fe4d5409e76bace83700174462f6c567efeacb82f5ed1d5f8c37d3de087dc4"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/historical-archive.md",
+   "bytes": 1938,
+   "sha256": "8a7417b00be11a3077940105ed8be9b419fef5fdba5b092346fe0b118198af21"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/legacy-ai-error-system/core/error-context.ts",
+   "bytes": 237,
+   "sha256": "2264791a19dee8371b1afa0f40bfcf4c0de18732fb50dc871c8fa4a391ea839d"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/legacy-ai-error-system/core/error-handler.ts",
+   "bytes": 907,
+   "sha256": "293214ca175e0a5f34916446c8e40e495670a5cef712130bcde710b75c4c3821"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/legacy-ai-error-system/core/error-types.ts",
+   "bytes": 536,
+   "sha256": "a2685ecda0a6aacd9cd0e704762b1010ef6c783f200fdc28ea446207512812c7"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/legacy-ai-error-system/core/retry-engine.ts",
+   "bytes": 773,
+   "sha256": "e1e3394b1af14d9a1bd0540da182ff125287ba2be189c278bf70fb77a150aabb"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/legacy-ai-error-system/integration/with-error-handling.ts",
+   "bytes": 1184,
+   "sha256": "740c2f9ab1a6d29e43a127e89905b1547b29e7a02ec5323a2944ff4c9a3b3b93"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/legacy-ai-error-system/logging/incident-writer.ts",
+   "bytes": 706,
+   "sha256": "3c00515f01e0d218626f48a6988094ee57bb8b488018cdd29eec989c03528f11"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/legacy-ai-error-system/logging/logger.ts",
+   "bytes": 476,
+   "sha256": "98ade6dbc314d10f22927cfc5955d134fcacb275ae0eef978e1cdbf2891aac28"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/legacy-ai-error-system/strategies/retry.strategy.ts",
+   "bytes": 721,
+   "sha256": "f0214c1cea4a17d7348ef46acf0a17253b443487478a05b4eec0140525408672"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/legacy-ai-pipelines/feature_delivery.md",
+   "bytes": 1436,
+   "sha256": "e967928c202a1e8646b87fe11fc318cc69d2eea69cd9da67f8a7a5593616f352"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/legacy-ai-roles/architect.md",
+   "bytes": 1029,
+   "sha256": "ad02013b917275946af6360356b70ff7eb75cfcc68da867a642ca5be34f3f6e2"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/legacy-ai-roles/developer.md",
+   "bytes": 989,
+   "sha256": "2579a74d05aa5eaf53956721488f9ebeebcf2d111bba21059e74f7ba539d5fac"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/legacy-ai-roles/documentation.md",
+   "bytes": 936,
+   "sha256": "f192ef4e3c777cbd12d454c10692c5e1157a747bbbf34c061b2e6465fcbe6c87"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/legacy-ai-roles/product_manager.md",
+   "bytes": 1018,
+   "sha256": "8f4b47a8a4e67f0d5673b0dd85c7d352fc41cb4c27628bb368bbc20d7c0e72d3"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/legacy-ai-roles/reviewer.md",
+   "bytes": 968,
+   "sha256": "dc1a426fe3cf9f3505203ceec0263444039293b3c77f4f52a53bc7074aaa5718"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/legacy-ai-roles/verifier.md",
+   "bytes": 991,
+   "sha256": "248a7c691c808a351b4ff85863e6f3aa9176ecf3ce18f3de7b18b0e70b67655d"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/legacy-ai-runtime/core/decision-tracker.ts",
+   "bytes": 1713,
+   "sha256": "933277674903101088efcef7b211b3b3cb1eb057015cc77ca5eacf1e68a101c2"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/legacy-ai-runtime/core/integration/with-runtime.ts",
+   "bytes": 451,
+   "sha256": "4d17b188f6c152b1533b8d4a696ab4fdb4416245e010fbfd2f9784370a23e10c"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/legacy-ai-runtime/core/runtime.ts",
+   "bytes": 2168,
+   "sha256": "de2b3cae8100b4df7d244cc5f60dc9db7ccf9fd9452f4956278d71fd8d07d99b"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/legacy-ai-runtime/core/session-manager.ts",
+   "bytes": 947,
+   "sha256": "c5f69de1a4ae3a0ebb9f8d88d2d45ddbac93c7df4d716287371af3ac675e3aec"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/legacy-ai-runtime/evolution/auto-actions.ts",
+   "bytes": 801,
+   "sha256": "4d0a96b338bb5a407cb6381da35fcdd3af52eeaee67e1d28d99fbeabab9ed2b4"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/legacy-ai-runtime/evolution/self-improvement.ts",
+   "bytes": 1570,
+   "sha256": "627119b0c72ee5cb8691efbeb9ebc573e1d0fe2e130f672c57cff116a4f0b791"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/legacy-ai-runtime/evolution/skills-registry.ts",
+   "bytes": 546,
+   "sha256": "bff0a067da3f7c2248c1b90011a77e9fa948335a07ef77cfa20ab53fb3c55d8f"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/legacy-ai-runtime/evolution/skills/auto-email-validation.skill.ts",
+   "bytes": 392,
+   "sha256": "42003ca9355af0f5df2352f60c1f2a42da1c61db0a66af77311d53b7ab7b82ec"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/legacy-ai-runtime/models/decision.model.ts",
+   "bytes": 816,
+   "sha256": "637474144e4ab52c9da319306e7b4741ef1d62843c80509e5e6b77c0f529e69a"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/legacy-ai-runtime/models/session.model.ts",
+   "bytes": 175,
+   "sha256": "3add0cdde378f5baa5be790241f4605cd38dd23ff7666b06355230f577cb7385"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/legacy-ai-runtime/storage/file-runtime.repository.ts",
+   "bytes": 923,
+   "sha256": "460805a5fabcf6ff7dd52ac2393780e78f419afb0be6540924292eb760c25ccd"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/legacy-ai-workflows/ai-tdd-cycle.md",
+   "bytes": 998,
+   "sha256": "2bb3766cdd1965bbf082237e02dfe3cc92702925fe3d7346430aff9722f328a0"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/legacy-ai-workflows/feature-development.md",
+   "bytes": 844,
+   "sha256": "c8b8ba6d9193aa270c08cb0aec082a9da518ff45f1315e5bbe8bba8b9a0e2bab"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/legacy-ai-workflows/project-initialization.md",
+   "bytes": 3271,
+   "sha256": "8738e717c499ecca9d3030a9d391166fb18d2b5cfc255765c9bab7e6a7bdbb50"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/legacy-governance-bundle/pipelines/feature_delivery.md",
+   "bytes": 1436,
+   "sha256": "e967928c202a1e8646b87fe11fc318cc69d2eea69cd9da67f8a7a5593616f352"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/legacy-governance-bundle/prompts/README.md",
+   "bytes": 1155,
+   "sha256": "2dfc7f81c3e5cab9da1cd4b793c14e198c032933c1fbae74e8ae77bcbe059377"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/legacy-governance-bundle/prompts/domain/domain_context.md",
+   "bytes": 1302,
+   "sha256": "b2725b7fa3b300b9b29f58fdd9c0f478661177831c1349cd729008a9b98ad3e9"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/legacy-governance-bundle/prompts/guardrails/prompt_injection.md",
+   "bytes": 419,
+   "sha256": "36a36a832632e42af83dd062628795dc99c5777d1a5d133150c6c2bee8b05e6f"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/legacy-governance-bundle/prompts/system/agent_behavior.md",
+   "bytes": 784,
+   "sha256": "8ffbf341a29a5098f4bd57b68380bb3d286046577c23257cd38e4af7629c98f3"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/legacy-governance-bundle/prompts/system/framework_behavior.md",
+   "bytes": 4166,
+   "sha256": "65c388db7ebf07a2f67ab364b4a8da5da55d178b6622247dc691ed1f1b5133e7"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/legacy-governance-bundle/prompts/system/project_start.md",
+   "bytes": 2970,
+   "sha256": "b73efa18cd60d37a66b7cbecc7df970a03a7d4c459787cc0fe9ead43d2421194"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/legacy-governance-bundle/roles/architect.md",
+   "bytes": 1029,
+   "sha256": "ad02013b917275946af6360356b70ff7eb75cfcc68da867a642ca5be34f3f6e2"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/legacy-governance-bundle/roles/developer.md",
+   "bytes": 989,
+   "sha256": "2579a74d05aa5eaf53956721488f9ebeebcf2d111bba21059e74f7ba539d5fac"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/legacy-governance-bundle/roles/documentation.md",
+   "bytes": 936,
+   "sha256": "f192ef4e3c777cbd12d454c10692c5e1157a747bbbf34c061b2e6465fcbe6c87"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/legacy-governance-bundle/roles/product_manager.md",
+   "bytes": 1018,
+   "sha256": "8f4b47a8a4e67f0d5673b0dd85c7d352fc41cb4c27628bb368bbc20d7c0e72d3"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/legacy-governance-bundle/roles/reviewer.md",
+   "bytes": 968,
+   "sha256": "dc1a426fe3cf9f3505203ceec0263444039293b3c77f4f52a53bc7074aaa5718"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/legacy-governance-bundle/roles/verifier.md",
+   "bytes": 991,
+   "sha256": "248a7c691c808a351b4ff85863e6f3aa9176ecf3ce18f3de7b18b0e70b67655d"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/legacy-governance-bundle/rules.md",
+   "bytes": 3184,
+   "sha256": "5bc55e05a82544ea25389b47dc930972d9ad2b2a033a6e9827b34e4938f76d4e"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/legacy-governance-bundle/workflows/ai-tdd-cycle.md",
+   "bytes": 998,
+   "sha256": "2bb3766cdd1965bbf082237e02dfe3cc92702925fe3d7346430aff9722f328a0"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/legacy-governance-bundle/workflows/feature-development.md",
+   "bytes": 844,
+   "sha256": "c8b8ba6d9193aa270c08cb0aec082a9da518ff45f1315e5bbe8bba8b9a0e2bab"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/legacy-governance-bundle/workflows/project-initialization.md",
+   "bytes": 3271,
+   "sha256": "8738e717c499ecca9d3030a9d391166fb18d2b5cfc255765c9bab7e6a7bdbb50"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/legacy-inventory.contract.json",
+   "bytes": 4230,
+   "sha256": "bf6715fb84a4a4cbb44e744800f31cf364d3638333f57f9715661315bfc47dae"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/legacy-inventory.md",
+   "bytes": 2602,
+   "sha256": "0753e98b8e835c9808c5a92140aec78ce638055d6407db80cac52aa2ad7ebe0a"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/legacy-product-scope/MVP.md",
+   "bytes": 12189,
+   "sha256": "e2869bc9700bbe7819768a884307d39216418746f3f8367dbdfbb117fba05c71"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/obsolete-artifacts.contract.json",
+   "bytes": 4777,
+   "sha256": "cfe16ddc9899caea9f9640cd29defbe485c3566d14b909127b4ee09539ea3636"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/obsolete-artifacts.md",
+   "bytes": 2919,
+   "sha256": "6c7593330efc20bd8602ec8913cfbc0cb007abf620c3f8f093fb3f8e8ccad798"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/source-legacy-analysis/app/layout.tsx",
+   "bytes": 190,
+   "sha256": "24e46e7b3f2e407a2788a3971de6e4d3cd60ca9d89b6b4b40fb646f332a8c7f2"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/source-legacy-analysis/app/page.tsx",
+   "bytes": 757,
+   "sha256": "bf91d04d12248318868c4da5ab7a341d151d343c8318b69320ee6d1f54eb17e7"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/source-legacy-analysis/components/Dashboard.tsx",
+   "bytes": 8611,
+   "sha256": "8daa5df6853e78833a30f2bfbcf91be2539bacee156739adf7a78da5e4c2ba8a"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/source-legacy-analysis/components/hotspots.tsx",
+   "bytes": 545,
+   "sha256": "ff4f9cb355148479b44c82d975925e08c35687dd5ce263ea0840f2cf4c9f4d0a"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/source-legacy-analysis/components/score-card.tsx",
+   "bytes": 342,
+   "sha256": "c89aa21721f48157b8d718ad167bbc1012fefed7e222056e442861ca01e0f75e"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/source-legacy-analysis/components/trend-chart.tsx",
+   "bytes": 605,
+   "sha256": "7188f535a5053339de69e73a1f390418398c97662dc262e4a74afc508acd2801"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/source-legacy-analysis/lib/data.ts",
+   "bytes": 300,
+   "sha256": "e6527024d44fe91c3ae2946f865d484e6e92221c3ed7a4863e37085b5c38d5f2"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/source-legacy-analysis/next-env.d.ts",
+   "bytes": 251,
+   "sha256": "7ad303e40d4fddf44f156129e397511953a71481c5cfd86b1862649aaaf240cc"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/source-legacy-analysis/next.config.mjs",
+   "bytes": 92,
+   "sha256": "1e3206cb200e264fdddb4dbb2e4772daebc839fdbc94b78316d74892a0de6fa2"
+  },
+  {
+   "path": "foundation/_deprecated/2026-06-11/source-legacy-analysis/tsconfig.json",
+   "bytes": 653,
+   "sha256": "2483d8a6ce74e9a4cbd06084d1f6e870512ed3fe5e28bf7262f3ee7cffa3a2a6"
+  },
+  {
+   "path": "knowledge/_deprecated/2026-06-11/README.md",
+   "bytes": 2828,
+   "sha256": "77fe08409ae38cf1873a14973a38e657920002e08345bb088426ad684dec20ff"
+  },
+  {
+   "path": "knowledge/_deprecated/2026-06-11/ai-context/AI_AUDIT_ENTRYPOINT.md",
+   "bytes": 461,
+   "sha256": "717b301997a8d61955e9b8654e6d91a49d0d62fbcbbdea61b9bb901cbe137c63"
+  },
+  {
+   "path": "knowledge/_deprecated/2026-06-11/ai-context/README.md",
+   "bytes": 986,
+   "sha256": "b85e5b63ca351b2ebf07d46ce3289da727af7b312466bdbd0448c9ad8467507e"
+  },
+  {
+   "path": "knowledge/_deprecated/2026-06-11/ai-context/audit/audit-prompt.md",
+   "bytes": 1535,
+   "sha256": "69ecb4a2fea602b89636022ba390abfbfd0f0c37bd83efe928b84ac4b26fdcd3"
+  },
+  {
+   "path": "knowledge/_deprecated/2026-06-11/ai-context/audit/audit-system.md",
+   "bytes": 494,
+   "sha256": "4c8fc9945b98e9266502f68a51a6bf127bdc24c8c4270c8649f1cf223d0f8a26"
+  },
+  {
+   "path": "knowledge/_deprecated/2026-06-11/ai-context/context.md",
+   "bytes": 2783,
+   "sha256": "853e34e41fcc914a3eee631946a4836a0256d93ddda3612be907de47f483e1d8"
+  },
+  {
+   "path": "knowledge/_deprecated/2026-06-11/ai-context/core/audit-agent.md",
+   "bytes": 962,
+   "sha256": "ab1ef71afb7ee3e4379a1f37d079f2feef678dbbf74abcfa98179de447434fb3"
+  },
+  {
+   "path": "knowledge/_deprecated/2026-06-11/ai-context/guides/create_project.md",
+   "bytes": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "path": "knowledge/_deprecated/2026-06-11/ai-context/index.md",
+   "bytes": 897,
+   "sha256": "8dba54fa1106cd7cbf60e693db081bd1382c39f104a07dcac760511208261186"
+  },
+  {
+   "path": "knowledge/_deprecated/2026-06-11/ai-context/knowledge/index.md",
+   "bytes": 419,
+   "sha256": "aff011428f6d9da4b1947d560ab6dcee7644b12d68749d27c19fcf1662bf831b"
+  },
+  {
+   "path": "knowledge/_deprecated/2026-06-11/duplicate-detection.contract.json",
+   "bytes": 1531,
+   "sha256": "6dad2beb6c30d157dc46b0477ba991378700a42563bf03af50736bda202dca75"
+  },
+  {
+   "path": "knowledge/_deprecated/2026-06-11/duplicate-detection.md",
+   "bytes": 1180,
+   "sha256": "2b14dca6c6459833c1248126f966b5997b5dcdb51dd2a3680745990ad51bc989"
+  },
+  {
+   "path": "knowledge/_deprecated/2026-06-11/historical-archive.contract.json",
+   "bytes": 1364,
+   "sha256": "4cd24f8967b08bd0bed6dcf7f11a8ed589fa1224271ae734358c941e92fe9f6e"
+  },
+  {
+   "path": "knowledge/_deprecated/2026-06-11/historical-archive.md",
+   "bytes": 1641,
+   "sha256": "3e35d7e2b98e8c5919d6e916fda8a65dcd1ce1ec5f5e797254825879ce569735"
+  },
+  {
+   "path": "knowledge/_deprecated/2026-06-11/legacy-inventory.contract.json",
+   "bytes": 1149,
+   "sha256": "726672842b4bc0a853241d72c7fbe0bf3c71dfc8ba2aa4040fcfd12e3da8ce23"
+  },
+  {
+   "path": "knowledge/_deprecated/2026-06-11/legacy-inventory.md",
+   "bytes": 1116,
+   "sha256": "50a792dad346ddd65ebc9de9715fd11aa292bcdcb0fe6bdfac6152b45a07d159"
+  },
+  {
+   "path": "knowledge/_deprecated/2026-06-11/obsolete-artifacts.contract.json",
+   "bytes": 1346,
+   "sha256": "ef752aee726f9c515db566f2087e920f4d9e5d893b2ab535542514260cc4de35"
+  },
+  {
+   "path": "knowledge/_deprecated/2026-06-11/obsolete-artifacts.md",
+   "bytes": 1408,
+   "sha256": "8fd78c3d302d6b1d15676321cea3ad109931cae35796b9f0e957cab8647b36e0"
+  },
+  {
+   "path": "template/_deprecated/2026-06-11/DEPRECATION_INDEX.md",
+   "bytes": 531,
+   "sha256": "cd0cdb29c7a4dc0a7f04077e181b1e4d80b44b2731ba2204c5c98f6a105c22ca"
+  },
+  {
+   "path": "template/_deprecated/2026-06-11/README.md",
+   "bytes": 2924,
+   "sha256": "f78e0512fcea557248bc15a294220683e1514e95372325d83b441d106ce4f690"
+  },
+  {
+   "path": "template/_deprecated/2026-06-11/cursor-worktree-state/worktrees.json",
+   "bytes": 86,
+   "sha256": "4fffc2d9e3c43fe2a89dfc11798bb1740d6bd044335f7e8e0fdc24a702519110"
+  },
+  {
+   "path": "template/_deprecated/2026-06-11/duplicate-detection.contract.json",
+   "bytes": 2901,
+   "sha256": "98c613d470394b9eacef79a5619c7ad7c14c0190576eef805a1825db6b9744a4"
+  },
+  {
+   "path": "template/_deprecated/2026-06-11/duplicate-detection.md",
+   "bytes": 2028,
+   "sha256": "75b9711262e6f594adb2621e1b88c1edae22e8aedbb964403ace18fad205f1a8"
+  },
+  {
+   "path": "template/_deprecated/2026-06-11/historical-archive.contract.json",
+   "bytes": 2877,
+   "sha256": "aabfe2abf309228c61ce960181a9d46a6c735216d77d8a1e0fb345aa71216b20"
+  },
+  {
+   "path": "template/_deprecated/2026-06-11/historical-archive.md",
+   "bytes": 1994,
+   "sha256": "31ba6325ec704d21f8c6e087d1261746c5f6c56b8194a7089b8c2c8004ace3b5"
+  },
+  {
+   "path": "template/_deprecated/2026-06-11/legacy-inventory.contract.json",
+   "bytes": 2500,
+   "sha256": "05a9eb6a00fead4526c931bb965febc1d8c5fffa68c38b676b97dee58d40347e"
+  },
+  {
+   "path": "template/_deprecated/2026-06-11/legacy-inventory.md",
+   "bytes": 1760,
+   "sha256": "466d397d0d167cde452b68ec0f2f8fe8321212a6f48f01de4f99a89e694b8ae6"
+  },
+  {
+   "path": "template/_deprecated/2026-06-11/obsolete-artifacts.contract.json",
+   "bytes": 2986,
+   "sha256": "ed1b10d197a517b1f08513d592a0461bbb63af1d592e12ee2b3bc61f4b323f9e"
+  },
+  {
+   "path": "template/_deprecated/2026-06-11/obsolete-artifacts.md",
+   "bytes": 2409,
+   "sha256": "6df43769785e474758b3ddbdf70236274698801bfa87c3643075a2aab531c2f7"
+  },
+  {
+   "path": "template/_deprecated/2026-06-11/package-lock.json",
+   "bytes": 280942,
+   "sha256": "6a17462dcf386256ffd5f7c87b6983b6a7933a2beb1ad4dc79c5ce35de8a18e4"
+  },
+  {
+   "path": "template/_deprecated/2026-06-11/runtime-data/decision-dec_1774414581359_r8r45a.json",
+   "bytes": 489,
+   "sha256": "7e563c4013e5b7dfea90d2efcf6ef8aade7f6fb8bf2e0ccf1cb78a14d220aa10"
+  },
+  {
+   "path": "template/_deprecated/2026-06-11/runtime-data/session-1774414581353.json",
+   "bytes": 186,
+   "sha256": "3f497adff19661cf00e292ac498e7c4865ebd8e0fd47d13a5d924303f252775a"
+  },
+  {
+   "path": "template/_deprecated/2026-06-11/runtime-logs/incidents-history.json",
+   "bytes": 6914,
+   "sha256": "aab9a97d4d70b930f8554f1309cf02d764144722b6011e70c83a2649ae4386ed"
+  },
+  {
+   "path": "template/_deprecated/2026-06-11/source-legacy-analysis/knowledge/GLOSSARY.md",
+   "bytes": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "path": "template/_deprecated/2026-06-11/source-legacy-analysis/knowledge/README.md",
+   "bytes": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "path": "template/_deprecated/2026-06-11/source-legacy-analysis/knowledge/index.md",
+   "bytes": 498,
+   "sha256": "3e6606e08e3c371211d691ccce4f3b7dff7456bdc3bb73e8923dcfc501b68c87"
+  },
+  {
+   "path": "template/_deprecated/2026-06-11/source-legacy-analysis/supabase/README.md",
+   "bytes": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "path": "template/_deprecated/2026-06-11/source-legacy-analysis/supabase/migrations/00000000000000_security_defaults.sql",
+   "bytes": 627,
+   "sha256": "e71e32e968d806c8fd0d917651c693b2a57b2e43b7cd3f5b2cbdb55290416f0d"
+  },
+  {
+   "path": "template/_deprecated/2026-06-11/source-legacy-analysis/supabase/migrations/AGENTS.md",
+   "bytes": 1060,
+   "sha256": "20d77be5a9a79f7eb4ca9b214cdab2435d9c5dc435f944b5b2f1bf24aed6c8c5"
+  },
+  {
+   "path": "template/_deprecated/2026-06-11/source-legacy-analysis/supabase/migrations/README.md",
+   "bytes": 0,
+   "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+   "path": "template/_deprecated/2026-06-11/source-legacy-analysis/supabase/migrations/xxxx_create_users.sql",
+   "bytes": 140,
+   "sha256": "d6d353fa823d7880c49a661009bcf3b4994f2b8b713c07b9ebffaf3512742946"
+  },
+  {
+   "path": "template/_deprecated/2026-06-11/source-legacy-analysis/supabase/seed.sql",
+   "bytes": 245,
+   "sha256": "32765fa3a560299081052d671a12ecddd4167497630d276de02e960e1f36970b"
+  }
+ ]
+}

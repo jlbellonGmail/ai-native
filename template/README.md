@@ -16,7 +16,6 @@ validation rules and examples that downstream projects can copy or automate.
 | `validation/` | Tests, validators and roadmap coverage checks. |
 | `config/` | Template configuration, AI context and knowledge config. |
 | `docs/` | Setup, architecture, overview and roadmap mapping. |
-| `_deprecated/` | Recoverable legacy or ambiguous content no longer in active template surface. |
 
 ## Validate
 

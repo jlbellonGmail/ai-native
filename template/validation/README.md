@@ -45,5 +45,4 @@ W6-T7 testing audit final is defined in `testing-audit-final.md` and
 H4 executable testing profiles are defined in `testing-profiles.md` and
 `testing/profiles/testing-profiles.json`.
 
-W8-T1 legacy inventory is defined in `_deprecated/2026-06-11/legacy-inventory.md`
-and `_deprecated/2026-06-11/legacy-inventory.contract.json`.
+W8-T1..T4 (legacy inventory, historical archive, duplicate detection, obsolete artifacts) were retired in v3.0.2; see `governance/history/DEPRECATED-2026-06-11-MANIFEST.json`.
