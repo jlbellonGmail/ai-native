@@ -401,6 +401,7 @@ test("gap 7 (fail closed): ruleset include/exclude matrix decides whether develo
   for (const [name, payload, expected] of cases) assert.equal(prot(payload, "develop"), expected, name);
   assert.ok(Date.now() - t0 < 2000, "no pathological backtracking");
   assert.equal(prot(rs(["refs/heads/main"]), "main"), true, "the branch is a parameter");
+  for (const bad of ["x".repeat(300), "", "a b", "../x", 7, null]) assert.equal(prot(rs(["~ALL"]), bad), false, `implausible branch ${JSON.stringify(bad)?.slice(0, 20)}`);
 });
 
 test("gap 7 (CLI wiring): --develop-ruleset-file, --develop-branch and --skip-ruleset-check decide whether the guard is retired", () => {

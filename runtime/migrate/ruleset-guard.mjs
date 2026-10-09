@@ -278,6 +278,7 @@ function patternToRegExp(pattern, loose = false) {
  */
 export function protectsBranchFromRulesets(payload, branch) {
   const list = Array.isArray(payload) ? payload : [payload];
+  if (typeof branch !== "string" || branch.length > 255 || !/^[A-Za-z0-9][A-Za-z0-9._\/-]*$/.test(branch)) return false; // not a plausible branch name: nothing is provable (also bounds the matching cost)
   const ref = `refs/heads/${branch}`;
   return list.some((rs) => {
     if (!rs || typeof rs !== "object" || rs.enforcement !== "active") return false;

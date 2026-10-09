@@ -15,7 +15,6 @@ node scripts/validate-chaos-testing.mjs
 node scripts/validate-coverage-validation.mjs
 node scripts/validate-testing-audit-final.mjs
 node scripts/validate-testing-profiles.mjs
-node scripts/validate-legacy-inventory.mjs
 ```
 
 `tests/` contains the reference test suite moved from the old root `tests/`
