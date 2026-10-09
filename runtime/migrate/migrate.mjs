@@ -151,7 +151,10 @@ function profileCommands(releaseRoot, profile) {
   return ["productSetupCommand", "productTestCommand"].filter((f) => typeof p[f] === "string").map((field) => ({ field, command: p[field] }));
 }
 const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-const referencesPath = (command, path) => new RegExp(`(^|[\\s"'=])${escapeRe(path)}($|[\\s"';&|])`).test(command);
+// `-r ./f`, `-rf` and `--requirement=f` are all ways pip names a file: normalise them to " f" before matching the path as a token
+const normalizeCommand = (command) => command.replace(/(^|\s)(-r|--requirement(?:=|\s+)|-c|--constraint(?:=|\s+))\s*/g, "$1$2 ").replace(/(^|[\s"'=])\.\//g, "$1");
+export const referencesPath = (command, path) => referencesNormalized(normalizeCommand(command), path);
+const referencesNormalized = (command, path) => new RegExp(`(^|[\\s"'=])${escapeRe(path)}($|[\\s"';&|])`).test(command);
 
 const WORKFLOW = /^\.github\/workflows\/[^/]+\.ya?ml$/;
 
@@ -389,7 +392,7 @@ function main() {
       common.developProtected = developProtected;
       const r = cmd === "plan" ? planMigration({ ...common, requiredChecks: src.requiredChecks }) : applyMigration({ ...common, requiredChecks: src.requiredChecks, acceptRulesetChange: argv.includes("--accept-ruleset-change") });
       const p = r.plan ?? r;
-      data = { mode: cmd, ...(r.status ? { result: r.status } : {}), counts: p.counts, retire: p.retire.length, replace: p.replace, create: p.create, keptIdentical: p.keptIdentical.length, keptLocal: p.keptLocal.length, collisions: p.collisions, unresolved: p.unresolved.map((c) => c.path) };
+      data = { mode: cmd, ...(r.status ? { result: r.status } : {}), counts: p.counts, keptByProfile: p.keptByProfile, keptNoGuard: p.keptNoGuard, retire: p.retire.length, replace: p.replace, create: p.create, keptIdentical: p.keptIdentical.length, keptLocal: p.keptLocal.length, collisions: p.collisions, unresolved: p.unresolved.map((c) => c.path) };
       data.rulesetCheck = p.rulesetCheck;
       if (rulesetNote) warnings.push(rulesetNote);
       const accepted = cmd === "apply" && r.status !== "BLOCKED" && argv.includes("--accept-ruleset-change");
