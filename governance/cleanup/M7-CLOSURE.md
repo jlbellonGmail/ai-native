@@ -97,7 +97,7 @@ Criterio de los scripts retirados: sin referencias por nombre ni por stem en wor
 
 *Las cifras de gi-ot y gi-clinicadental se midieron sobre los HEAD de sus PRs (`1688e3e`, `871d5d6`); el merge no añade contenido propio.
 
-ai-native (recalculado sobre `c8c7d05`): 1519 archivos, 178 483 líneas de texto, 247 scripts (`.ps1/.sh/.mjs/.js/.py` fuera de `legacy/`), 14 workflows, `_deprecated/` 125 → 120 archivos, `legacy/` 165 → 165, ramas remotas 21 → 3 (`main`, `develop`, dependabot). Las líneas suben 178 409 → 178 483 solo por los documentos de cierre añadidos tras #73. GI: 77 ramas remotas menos, más `gi-clinicadental:respaldo/develop-antes-tooling-headroom`. Disco local: `_m6` 969 MB → 0; `_m7` 34 MB → 0; sin `_work_*` ni backups de Actions; worktrees de ai-native: 1. La reducción es modesta a propósito: el grueso (`legacy/`, `_deprecated/`) tiene consumidores demostrados. No se midió duplicación.
+ai-native (recalculado sobre `c8c7d05`): 1519 archivos, 178 424 líneas de texto, 247 scripts (`.ps1/.sh/.mjs/.js/.py` fuera de `legacy/`), 14 workflows, `_deprecated/` 125 → 120 archivos, `legacy/` 165 → 165, ramas remotas 21 → 3 (`main`, `develop`, dependabot). Las líneas suben 178 409 → 178 424 (+15) por los documentos de cierre añadidos tras #73. GI: 78 ramas remotas menos (77 de PRs mergeadas más `gi-clinicadental:respaldo/develop-antes-tooling-headroom`, mergeada en `develop`). Disco local: `_m6` 969 MB → 0; `_m7` 34 MB → 0; sin `_work_*` ni backups de Actions; worktrees de ai-native: 1. La reducción es modesta a propósito: el grueso (`legacy/`, `_deprecated/`) tiene consumidores demostrados. No se midió duplicación.
 
 ## Brechas de plataforma de M6 — clasificación final (v3.0.2 no iniciada)
 
