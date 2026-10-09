@@ -25,6 +25,11 @@
       "minItems": 1,
       "items": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" }
     },
+    "productDir": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.-]*(/[A-Za-z0-9_][A-Za-z0-9_.-]*)*$",
+      "description": "Monorepo/subdir: relative directory (no absolute path, no `..`) where the profile's productSetupCommand/productTestCommand run. Read from the lock on the BASE branch, so a PR cannot redirect it. Default: the repository root."
+    },
     "mcpProfiles": {
       "type": "array",
       "default": [],

@@ -17,7 +17,7 @@
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
-import { dirname, join, resolve } from "node:path";
+import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { readLock, status as bootstrapStatus } from "../bootstrap/install.mjs";
 import { checkIntegrity } from "../status/integrity.mjs";
@@ -113,12 +113,19 @@ function productTests({ project, lock, platformRoot, run }) {
   const profile = JSON.parse(readFileSync(profilePath, "utf8"));
   const command = profile.productTestCommand;
   if (!command) return check("product", "NOT_APPLICABLE", "profile declares no productTestCommand");
+  // monorepo/subdir: the directory comes from the lock (base branch, schema-validated), never from the consumer PR
+  let cwd = project;
+  if (lock.productDir) {
+    cwd = resolve(project, lock.productDir);
+    const rel = relative(project, cwd);
+    if (!/^[A-Za-z0-9_][A-Za-z0-9_.\/-]*$/.test(lock.productDir) || rel.startsWith("..") || isAbsolute(rel) || !existsSync(cwd)) return check("product", "FAIL", `productDir '${lock.productDir}' is invalid or missing`);
+  }
   // The setup command comes from the pinned platform profile (like the test command), never from the consumer PR.
   if (profile.productSetupCommand) {
-    const s = run(profile.productSetupCommand, { cwd: project, shell: true, encoding: "utf8", timeout: 10 * 60 * 1000, maxBuffer: 32 * 1024 * 1024 });
+    const s = run(profile.productSetupCommand, { cwd, shell: true, encoding: "utf8", timeout: 10 * 60 * 1000, maxBuffer: 32 * 1024 * 1024 });
     if (s.status !== 0) return check("product", "FAIL", `setup \`${profile.productSetupCommand}\` exit ${s.status ?? s.signal}: dependencies could not be installed, tests not run`);
   }
-  const r = run(command, { cwd: project, shell: true, encoding: "utf8", timeout: 10 * 60 * 1000, maxBuffer: 32 * 1024 * 1024 });
+  const r = run(command, { cwd, shell: true, encoding: "utf8", timeout: 10 * 60 * 1000, maxBuffer: 32 * 1024 * 1024 });
   return r.status === 0 ? check("product", "PASS", `\`${command}\` exit 0`) : check("product", "FAIL", `\`${command}\` exit ${r.status ?? r.signal}`);
 }
 

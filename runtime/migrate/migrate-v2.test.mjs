@@ -271,3 +271,76 @@ test("CLI on the real starter: apply with --accept-ruleset-change exits 0 and re
   assert.equal(revertMigration({ target: starter }).status, "REVERTED");
   assert.equal(status(starter), "");
 });
+
+// ---------- v3.0.2 gaps 1 and 7: the migrator never retires what the profile needs or the only protection of `develop`
+const FIXTURES = join(here, "..", "..", "evaluation", "fixtures", "migrate");
+const fixture = (n) => readFileSync(join(FIXTURES, n));
+const GUARD = ".github/workflows/guard-develop-branch.yml";
+
+test("gap 1: a python profile that installs `-r requirements-dev.txt` keeps that platform-owned file; a profile that does not need it retires it", () => {
+  const files = { "requirements-dev.txt": fixture("requirements-dev.txt"), "src/app.py": "x = 1\n" };
+  const py = planMigration({ target: repo(files), release: RELEASE, tools: ["claude"], profile: "python-lib" });
+  assert.ok(!py.retire.some((r) => r.path === "requirements-dev.txt"), "python-lib needs it");
+  assert.ok(py.keptByProfile.some((k) => k.path === "requirements-dev.txt" && /productSetupCommand/.test(k.reason)), JSON.stringify(py.keptByProfile));
+  const fac = planMigration({ target: repo(files), release: RELEASE, tools: ["claude"], profile: "factory" });
+  assert.ok(fac.retire.some((r) => r.path === "requirements-dev.txt"), "factory does not reference it");
+  assert.deepEqual(fac.keptByProfile, []);
+});
+
+test("gap 1: apply on a python profile leaves requirements-dev.txt in place and revert is byte-identical (consumer without it is unaffected)", () => {
+  const dir = repo({ "requirements-dev.txt": fixture("requirements-dev.txt"), "src/app.py": "x = 1\n" });
+  assert.equal(applyMigration({ target: dir, release: RELEASE, tools: ["claude"], profile: "python-service" }).status, "APPLIED");
+  assert.ok(existsSync(join(dir, "requirements-dev.txt")));
+  assert.equal(revertMigration({ target: dir }).status, "REVERTED");
+  assert.equal(status(dir), "");
+  const without = planMigration({ target: repo({ "src/app.py": "x = 1\n" }), release: RELEASE, tools: ["claude"], profile: "python-lib" });
+  assert.deepEqual(without.keptByProfile, []);
+});
+
+test("gap 7: guard-develop-branch.yml is kept unless a protecting ruleset is verified (NO PROTECTION GAP); then it is retired", () => {
+  const files = { [GUARD]: fixture("guard-develop-branch.yml"), "src/a.txt": "1\n" };
+  for (const developProtected of [undefined, false]) {
+    const plan = planMigration({ target: repo(files), release: RELEASE, tools: ["claude"], developProtected });
+    assert.ok(!plan.retire.some((r) => r.path === GUARD), `developProtected=${developProtected}: the guard must stay`);
+    assert.ok(plan.keptNoGuard.some((k) => k.path === GUARD));
+  }
+  const ok = planMigration({ target: repo(files), release: RELEASE, tools: ["claude"], developProtected: true });
+  assert.ok(ok.retire.some((r) => r.path === GUARD));
+  assert.deepEqual(ok.keptNoGuard, []);
+});
+
+test("gap 7: apply without a verified ruleset keeps the guard and rollback restores a clean tree", () => {
+  const dir = repo({ [GUARD]: fixture("guard-develop-branch.yml"), "src/a.txt": "1\n" });
+  assert.equal(applyMigration({ target: dir, release: RELEASE, tools: ["claude"] }).status, "APPLIED");
+  assert.ok(existsSync(join(dir, GUARD)), "no protection gap after apply");
+  assert.equal(revertMigration({ target: dir }).status, "REVERTED");
+  assert.equal(status(dir), "");
+});
+
+test("gap 7: protectsBranch recognises pull_request / required checks (repo with ruleset, missing required checks, empty)", async () => {
+  const { protectsBranch, fetchBranchProtected } = await import("./ruleset-guard.mjs");
+  assert.equal(protectsBranch([{ type: "pull_request", parameters: {} }]), true);
+  assert.equal(protectsBranch([{ type: "required_status_checks", parameters: { required_status_checks: [{ context: "l3 / l3-consumer" }] } }]), true);
+  assert.equal(protectsBranch([{ type: "required_status_checks", parameters: { required_status_checks: [] } }]), false, "required checks missing");
+  assert.equal(protectsBranch([{ type: "deletion" }]), false);
+  assert.equal(protectsBranch([]), false, "repo without ruleset");
+  const run = (stdout, status = 0) => () => ({ status, stdout, stderr: "" });
+  assert.deepEqual(fetchBranchProtected({ repo: "o/r", branch: "develop", run: (a) => (a[1].includes("/rules/") ? { status: 0, stdout: "[]", stderr: "" } : { status: 1, stdout: "", stderr: "404 Not Found" }) }), { protected: false });
+  assert.deepEqual(fetchBranchProtected({ repo: "o/r", branch: "develop", run: run('[{"type":"pull_request"}]') }), { protected: true });
+  assert.ok(fetchBranchProtected({ repo: "o/r", branch: "develop", run: run("", 1) }).error, "unreadable is an error, never protected");
+});
+
+test("gap 6: the migration never creates or edits pyproject.toml / ruff config, so ruff's inferred target-version cannot change", () => {
+  const withCfg = { "pyproject.toml": "[tool.ruff]\nline-length = 100\n", "ruff.toml": "target-version = \"py39\"\n", "src/a.py": "x = 1\n" };
+  for (const files of [withCfg, { "src/a.py": "x = 1\n" }]) {
+    const dir = repo(files);
+    const before = Object.fromEntries(["pyproject.toml", "ruff.toml", ".ruff.toml", "setup.py", "setup.cfg"].map((f) => [f, existsSync(join(dir, f)) ? readFileSync(join(dir, f), "utf8") : null]));
+    for (const profile of ["python-lib", "python-app", "python-scripts"]) {
+      const plan = planMigration({ target: dir, release: RELEASE, tools: ["claude"], profile });
+      for (const f of Object.keys(before)) assert.ok(![...plan.create, ...plan.replace, ...plan.retire.map((r) => r.path)].includes(f), `${profile}: ${f} must not be touched`);
+    }
+    assert.equal(applyMigration({ target: dir, release: RELEASE, tools: ["claude"], profile: "python-app" }).status, "APPLIED");
+    for (const [f, text] of Object.entries(before)) assert.equal(existsSync(join(dir, f)) ? readFileSync(join(dir, f), "utf8") : null, text, `${f} is byte-identical after the migration`);
+    assert.equal(revertMigration({ target: dir }).status, "REVERTED");
+  }
+});

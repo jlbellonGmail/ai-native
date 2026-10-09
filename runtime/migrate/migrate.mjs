@@ -29,7 +29,7 @@ import { buildReport, renderOutput, exitCodeForReport } from "../lib/json.mjs";
 import { statusFromCounts } from "../lib/result.mjs";
 import { validate } from "../lib/schema-lite.mjs";
 import { planBump, applyBump } from "./bump.mjs";
-import { checkRulesetImpact, fetchRequiredChecks, requiredChecksFrom, CODES as RULESET_CODES } from "./ruleset-guard.mjs";
+import { checkRulesetImpact, fetchRequiredChecks, fetchBranchProtected, protectsBranch, requiredChecksFrom, CODES as RULESET_CODES } from "./ruleset-guard.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const PLATFORM_ROOT = join(here, "..", "..");
@@ -49,6 +49,8 @@ export const PLATFORM_OWNED = [
   ".github/workflows/ci.yml", ".github/workflows/guard-develop-branch.yml",
   ".github/workflows/post-hitl-merge-gate.yml", ".github/workflows/post-merge-close-feature.yml",
 ];
+/** Retired only once the replacement protection is verified (gap 7: "NO PROTECTION GAP"); see `developProtected` in planMigration. */
+export const PROTECTION_GUARDS = [".github/workflows/guard-develop-branch.yml"];
 const matcher = (globs) => { const res = globs.map(globToRegExp); return (p) => res.some((re) => re.test(p)); };
 const isProtected = matcher(PROTECTED);
 const isPlatformOwned = matcher(PLATFORM_OWNED);
@@ -92,7 +94,7 @@ jobs:
  * `requiredChecks` ([{context}]) are the status checks the consumer's ruleset requires; when given, the plan reports every one
  * that would stop reporting because its workflow is retired (RULESET_REQUIRED_CHECK_WILL_DISAPPEAR). undefined = not checked.
  */
-export function planMigration({ target, release, profile = "factory", tools = ["claude", "codex", "opencode"], baseBranch = "main", keep = [], releaseRoot = PLATFORM_ROOT, requiredChecks = undefined }) {
+export function planMigration({ target, release, profile = "factory", tools = ["claude", "codex", "opencode"], baseBranch = "main", keep = [], releaseRoot = PLATFORM_ROOT, requiredChecks = undefined, developProtected = undefined }) {
   const root = resolve(target);
   if (git(root, "status", "--porcelain")) throw new MigrateError("working tree is not clean: commit or stash first (no migration over uncommitted changes)");
   const inv = inventory(root);
@@ -105,6 +107,21 @@ export function planMigration({ target, release, profile = "factory", tools = ["
     if (isProtected(f.path)) continue;
     if (f.classification === "IDENTICAL_TO_TEMPLATE") (isPlatformOwned(f.path) ? retire : keptIdentical).push({ path: f.path, sha256: `sha256:${f.sha256}` });
     else keptLocal.push({ path: f.path, classification: f.classification });
+  }
+  // gap 1: a platform-owned file the ACTIVE PROFILE still needs (e.g. the python profiles' `-r requirements-dev.txt`) is never
+  // retired; the rule is central and declarative (it reads the profile's own commands), not a per-consumer patch.
+  const commands = profileCommands(releaseRoot, profile);
+  const keptByProfile = [];
+  const keptNoGuard = [];
+  for (const r of [...retire]) {
+    const need = commands.find((c) => referencesPath(c.command, r.path));
+    const unprotected = PROTECTION_GUARDS.includes(r.path) && developProtected !== true;
+    if (!need && !unprotected) continue;
+    retire.splice(retire.indexOf(r), 1);
+    keptIdentical.push(r);
+    if (need) keptByProfile.push({ path: r.path, reason: `profile '${profile}' ${need.field} references it` });
+    // gap 7: the reactive v2 guard is the ONLY protection of `develop` until a ruleset is verified; keep it by default (fail-safe)
+    else keptNoGuard.push({ path: r.path, reason: "no verified ruleset protects the branch this guard covers (NO PROTECTION GAP)" });
   }
   const retiring = new Set(retire.map((r) => r.path));
   const lockText = canonical({ schemaVersion: 1, platform: { repo: release.repo, version: release.version, commit: release.commit, digest: release.digest, channel: /-(alpha|rc)\./.test(release.version) ? "rc" : "stable" }, profiles: [profile], mcpProfiles: [], packs: [], overrides: {} });
@@ -122,8 +139,19 @@ export function planMigration({ target, release, profile = "factory", tools = ["
   }
   const unresolved = collisions.filter((c) => !keep.includes(c.path));
   const rulesetCheck = rulesetImpact({ root, requiredChecks, retire, add });
-  return { root, counts: inv.counts, retire, keptIdentical, keptLocal, create, replace, collisions, unresolved, kept: collisions.filter((c) => keep.includes(c.path)), add, blocked: unresolved.length > 0, rulesetCheck };
+  return { root, counts: inv.counts, retire, keptIdentical, keptByProfile, keptNoGuard, keptLocal, create, replace, collisions, unresolved, kept: collisions.filter((c) => keep.includes(c.path)), add, blocked: unresolved.length > 0, rulesetCheck };
 }
+
+/** [{field, command}] the profile runs in the consumer (setup/test); [] when the profile is unknown or declares none. */
+function profileCommands(releaseRoot, profile) {
+  if (!/^[a-z][a-z0-9-]*$/.test(profile)) return [];
+  const text = readOrNull(join(releaseRoot, "profiles", `${profile}.json`));
+  if (text === null) return [];
+  const p = JSON.parse(text.toString("utf8"));
+  return ["productSetupCommand", "productTestCommand"].filter((f) => typeof p[f] === "string").map((field) => ({ field, command: p[field] }));
+}
+const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const referencesPath = (command, path) => new RegExp(`(^|[\\s"'=])${escapeRe(path)}($|[\\s"';&|])`).test(command);
 
 const WORKFLOW = /^\.github\/workflows\/[^/]+\.ya?ml$/;
 
@@ -327,6 +355,16 @@ export function resolveRequiredChecks({ target, baseBranch, rulesetFile, consume
   return r.error ? { error: `${RULESET_CODES.UNREADABLE}: ${r.error}` } : { requiredChecks: r.required };
 }
 
+/** gap 7: true ONLY when a ruleset/branch protection on the develop branch is verified; anything unreadable is false (fail-safe). */
+export function resolveDevelopProtected({ target, developBranch, file, consumerRepo, skip }) {
+  if (file) {
+    try { return protectsBranch(JSON.parse(readFileSync(resolve(file), "utf8"))); } catch { return false; }
+  }
+  if (skip) return false;
+  const repo = consumerRepo ?? originRepo(target);
+  return repo ? fetchBranchProtected({ repo, branch: developBranch }).protected === true : false;
+}
+
 function main() {
   const argv = process.argv.slice(2);
   const cmd = argv.shift();
@@ -346,6 +384,9 @@ function main() {
       const src = resolveRequiredChecks({ target, baseBranch: common.baseBranch, rulesetFile: value("--ruleset-file"), consumerRepo: value("--consumer-repo"), skip: argv.includes("--skip-ruleset-check") });
       if (src.error) throw new MigrateError(src.error);
       if (src.notChecked) rulesetNote = `${RULESET_CODES.NOT_CHECKED}: --skip-ruleset-check; required checks that a retired workflow produced will NOT be reported`;
+      const developProtected = resolveDevelopProtected({ target, developBranch: value("--develop-branch") ?? "develop", file: value("--develop-ruleset-file"), consumerRepo: value("--consumer-repo"), skip: argv.includes("--skip-ruleset-check") });
+      if (!developProtected) warnings.push("NO_PROTECTION_GAP: a verified ruleset on the develop branch was not found, so the v2 guard-develop-branch.yml is KEPT (pass --develop-ruleset-file or --consumer-repo once the ruleset exists)");
+      common.developProtected = developProtected;
       const r = cmd === "plan" ? planMigration({ ...common, requiredChecks: src.requiredChecks }) : applyMigration({ ...common, requiredChecks: src.requiredChecks, acceptRulesetChange: argv.includes("--accept-ruleset-change") });
       const p = r.plan ?? r;
       data = { mode: cmd, ...(r.status ? { result: r.status } : {}), counts: p.counts, retire: p.retire.length, replace: p.replace, create: p.create, keptIdentical: p.keptIdentical.length, keptLocal: p.keptLocal.length, collisions: p.collisions, unresolved: p.unresolved.map((c) => c.path) };

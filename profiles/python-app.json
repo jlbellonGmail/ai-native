@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "id": "python-app",
+  "description": "Aplicacion o servicio Python que NO es un paquete instalable en la raiz (sin pyproject/setup; dependencias en requirements.txt). No exige `pip install .`.",
+  "tools": ["claude", "codex", "opencode"],
+  "gitModel": { "integrationBranch": "main", "branchNamePattern": "^(feature|milestone|maintenance)/" },
+  "governance": { "mode": "SingleMaintainer" },
+  "mergeMethod": "squash",
+  "mcpDefaultProfile": "none",
+  "docRelevantPaths": ["README.md", "docs/api/**", "openapi.yaml"],
+  "testingProfiles": ["smoke", "contract", "coverage"],
+  "productSetupCommand": "python -m pip install --quiet -r requirements.txt -r requirements-dev.txt",
+  "productTestCommand": "pytest -q"
+}

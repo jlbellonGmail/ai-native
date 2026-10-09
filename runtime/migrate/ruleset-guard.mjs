@@ -217,3 +217,41 @@ export function fetchRequiredChecks({ repo, branch, run = gh }) {
   }
   return { required };
 }
+
+/**
+ * Gap 7: does the payload (API response or saved file) contain a rule that really protects the branch? A pull-request rule
+ * or required status checks count; an empty ruleset, or only `deletion`/`creation` rules, do not (the reactive v2 guard
+ * would still be the only thing stopping a direct push).
+ */
+export function protectsBranch(payload) {
+  let found = false;
+  const visit = (x) => {
+    if (Array.isArray(x)) x.forEach(visit);
+    else if (x && typeof x === "object") {
+      if (x.type === "pull_request" || (x.type === "required_status_checks" && (x.parameters?.required_status_checks ?? []).length > 0)) found = true;
+      else if (Array.isArray(x.rules)) x.rules.forEach(visit);
+      else if (Array.isArray(x.required_status_checks) && x.required_status_checks.length > 0) found = true;
+      else if (Array.isArray(x.contexts) && x.contexts.length > 0) found = true;
+      else if (x.required_pull_request_reviews) found = true;
+    }
+  };
+  visit(payload);
+  return found;
+}
+
+/** Live check that `branch` of `repo` is protected. Returns {protected} or {error}; an unreadable answer is never "protected". */
+export function fetchBranchProtected({ repo, branch, run = gh }) {
+  if (!/^[A-Za-z0-9](?:[A-Za-z0-9-]*)\/(?!\.{1,2}$)[\w.-]+$/.test(repo ?? "")) return { error: `invalid consumer repo '${repo}' (expected owner/name)` };
+  const rules = run(["api", `repos/${repo}/rules/branches/${encodeURIComponent(branch)}`]);
+  if (rules.error || rules.status !== 0) return { error: `could not read the rules of ${repo}@${branch}: ${(rules.stderr || rules.error?.message || "gh failed").trim().split("\n")[0]}` };
+  try {
+    if (protectsBranch(JSON.parse(rules.stdout))) return { protected: true };
+  } catch {
+    return { error: `unreadable ruleset response for ${repo}@${branch}` };
+  }
+  const classic = run(["api", `repos/${repo}/branches/${encodeURIComponent(branch)}/protection`]);
+  if (!classic.error && classic.status === 0) {
+    try { return { protected: protectsBranch(JSON.parse(classic.stdout)) }; } catch { return { error: `unreadable branch-protection response for ${repo}@${branch}` }; }
+  }
+  return { protected: false };
+}
