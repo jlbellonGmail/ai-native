@@ -117,7 +117,7 @@ Las brechas 1, 2, 6 y 7 afectarían a cualquier migración nueva de un repo Pyth
 
 ## PR #48 (Dependabot `actions/checkout` 4.2.2 → 7.0.1) — `KEEP_OPEN`
 
-Reverificada el 2026-10-09: abierta, HEAD `718c519` (sin cambios desde 2026-10-06), base `521d203`, 28 commits por detrás de `main`; toca los 14 workflows (plano de control); `main` sigue en v4.2.2, así que no está superseded ni hace falta una PR de reemplazo (repetiría los mismos 14 cambios). Fallos, leídos en los logs de la ejecución del 2026-10-06 (no se han repetido desde entonces):
+Reverificada el 2026-10-09: abierta, HEAD `718c519` (sin cambios desde 2026-10-06), base `521d203`, 30 commits por detrás de `main` (`c8c7d05`); toca los 14 workflows (plano de control); `main` sigue en v4.2.2, así que no está superseded ni hace falta una PR de reemplazo (repetiría los mismos 14 cambios). Fallos, leídos en los logs de la ejecución del 2026-10-06 (no se han repetido desde entonces):
 * `pr-gate` y `security-scan`: `docs-gate/DOCS_NOT_UPDATED` (14 archivos de comportamiento, ninguna nota de governance). Es el mismo hallazgo en ambos.
 * `ai-native/merge-gate`: el log de `merge-gate-job` dice `MERGE_GATE_FAIL: CHECK_FAILED, HUMAN_REVIEW_REQUIRED` con `'pr-gate' concluded 'failure'` y `'ai-native/trust-gate' is neutral (control plane changed)`. Es consecuencia de `pr-gate`, pero aun corrigiéndolo seguiría bloqueado por la revisión humana obligatoria.
 Recomendación exacta (humana): `@dependabot rebase`; añadir una nota de governance para el docs-gate; revisar el cambio de acción (v4 → v7); aprobar en `ai-native-human-review`. No se mergea ni modifica en M7.
