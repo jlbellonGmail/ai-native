@@ -69,9 +69,9 @@ No se baja el umbral, no hay waivers. La remediación de F1–F8 (#53) y las pos
 ## Transición Template → AI-Native (cerrada con `v3.0.0`)
 
 * **AI-Native `v3.0.1`** = plataforma central vigente. Los consumidores la usan por referencia: versión, SHA/lock, caché, attestation y rollback; no por copia masiva del Template.
-* **Template v2.x** = `LEGACY / TRANSITION`: sin capacidades funcionales nuevas; solo historia, baseline y migración/compatibilidad imprescindible. `legacy/template-v2` no es implementación futura.
+* **Template v2.x** = `LEGACY / TRANSITION`: sin capacidades funcionales nuevas; solo historia, baseline y migración/compatibilidad imprescindible. El árbol `legacy/template-v2` fue retirado en v3.0.2 (manifest en `parity/v2.0.5/legacy-import-manifest.json`).
 * **template-starter** = canary histórico y consumidor migrado (evidencia brownfield v2 → v3), no plataforma central.
-* M7 (limpieza/depuración): `COMPLETED` (2026-10-09); detalle en `governance/cleanup/M7-CLOSURE.md`. Las PRs de limpieza (ai-native #70/#72/#73/#74/#75, gi-common-tenants #20, gi-ot #7, gi-clinicadental #64) están mergeadas con CI verde y los tres GI quedan `CLEANED`. No abre v3.0.2 (`NOT_STARTED`) ni otro milestone; PR #48 sigue `KEEP_OPEN`.
+* M7 (limpieza/depuración): `COMPLETED` (2026-10-09); detalle en `governance/cleanup/M7-CLOSURE.md`. Las PRs de limpieza (ai-native #70/#72/#73/#74/#75, gi-common-tenants #20, gi-ot #7, gi-clinicadental #64) están mergeadas con CI verde y los tres GI quedan `CLEANED`. No abre v3.0.2 (`CANDIDATE`, ver `governance/versioning/V3.0.2-PATCH.md` y `governance/cleanup/FINAL-CONSOLIDATION.md`) ni otro milestone; PR #48 sigue `KEEP_OPEN`.
 
 ## Residuales abiertos tras `v3.0.0` (no convertidos en PASS)
 
