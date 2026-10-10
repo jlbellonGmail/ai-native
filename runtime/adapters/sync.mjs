@@ -15,6 +15,7 @@ import { checkEntryPoints, loadAgents, loadMcpCatalog, loadRolePrompt } from "./
 import { buildClaudeBridge, buildClaudeMcpJson, buildClaudeAgentFile } from "./claude.mjs";
 import { buildCodexConfigToml, buildCodexRoleProfileToml, buildCodexReadme } from "./codex.mjs";
 import { buildOpenCodeConfig } from "./opencode.mjs";
+import { buildCommandFiles, findObsoleteCommands } from "./commands.mjs";
 import { loadSkillsRegistry, selectSkills, materialize as materializeSkills, check as checkSkills } from "./skills.mjs";
 import { buildReport, renderOutput, exitCodeForReport } from "../lib/json.mjs";
 import { RESULT_STATUS, statusFromCounts } from "../lib/result.mjs";
@@ -53,6 +54,8 @@ export function buildToolFiles(root, { tools = ALL_TOOLS, mcpProfile = "none", g
   if (tools.includes("opencode")) {
     files["opencode.json"] = buildOpenCodeConfig(agents, mcp, { rolesDir: opencodeRolesDir });
   }
+
+  Object.assign(files, buildCommandFiles(root, { tools }));
 
   for (const [name, role] of Object.entries(agents.roles)) {
     const prompt = loadRolePrompt(root, role);
@@ -124,6 +127,7 @@ export function sync(root, { tools = ALL_TOOLS, profile, role, level } = {}) {
       unlinkSync(fullPath);
     }
   }
+  for (const relativePath of findObsoleteCommands(root)) rmSync(join(root, relativePath), { force: true });
   const registry = loadSkillsRegistry(root);
   const skillIds = selectSkills(registry, { profile, role, level });
   materializeSkills(root, skillIds);
@@ -155,6 +159,8 @@ export function check(root, { tools = ALL_TOOLS, profile, role, level } = {}) {
   for (const relativePath of findObsoleteAdapters(root, agents)) {
     problems.push(`obsolete generated adapter: ${relativePath}`);
   }
+
+  for (const relativePath of findObsoleteCommands(root)) problems.push(`obsolete generated command: ${relativePath}`);
 
   const registry = loadSkillsRegistry(root);
   const skillIds = selectSkills(registry, { profile, role, level });
