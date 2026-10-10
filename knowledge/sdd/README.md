@@ -26,6 +26,11 @@ the specification and plan gates are both passed.
 | `templates/verification-template.md` | Verification report template. |
 | `contracts/sdd-package.contract.json` | Machine-readable SDD package contract. |
 | `validation/validate-sdd-package.mjs` | Local validator for package structure and scope. |
+| `methodology/` | Per-phase methodology (levels, EARS, clarify, plan, tasks, implementation/TDD, validation, review, change, modes), loaded on demand. |
+| `QUICKSTART.md` | The whole workflow in five minutes (`/feature`, `/sdd-*`). |
+| `ARCHITECTURE.md` | Where each capability lives (foundation / knowledge / template / consumer) and why. |
+| `agents-contract-detail.md` | Verbatim detailed checklists behind the `AGENTS.md` router (factory-only). |
+| `goals/GI-BATCH-UPGRADE.goal.md` | Ready-to-run goal template for a delta-only batch upgrade of consumer repositories. |
 
 ## Use In A Real Project
 

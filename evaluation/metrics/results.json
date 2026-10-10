@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-03T21:59:27.671Z",
-  "platformCommit": "f590bebd7aacd029f8c4fa6bb1487cd03510babe",
+  "generatedAt": "2026-10-10T23:36:53.249Z",
+  "platformCommit": "ed364a960867673815176ebd5ecb14312d414fb2",
   "machine": {
     "platform": "win32",
-    "node": "v26.7.0",
+    "node": "v26.10.0",
     "cpus": 12
   },
   "baseline": {
@@ -23,13 +23,13 @@
       "met": true,
       "method": "ai-native.lock.json + the entry points the adapters generate (CLAUDE.md, .mcp.json, opencode.json, .codex/config.toml). Plan SS15.1 (a) is a CLOSED list of 12; 7 of its entries are not implemented yet (bootstrap.ps1 was replaced by the node CLI, AGENTS.md kernel block, .claude/settings.json, the two caller workflows, the .gitignore block).",
       "disclosure": {
-        "derivedAdapterFiles": 15,
-        "totalGeneratedWithDerived": 20,
+        "derivedAdapterFiles": 42,
+        "totalGeneratedWithDerived": 47,
         "note": "agents, role profiles and lazy skill mirrors are regenerable from the lock by `adapters`; counted this way the figure is 20, ABOVE the target. Whether they are committed or gitignored is a consumer policy that is not enforced yet."
       }
     },
     "bytesCopiedPerConsumer": {
-      "value": 2167,
+      "value": 2182,
       "unit": "bytes",
       "baseline": 911238,
       "reduction": 0.9976,
@@ -37,42 +37,42 @@
       "met": true,
       "method": "bytes of the committed managed set above vs the sum of tracked bytes of template-starter v2.0.4",
       "disclosure": {
-        "withDerivedBytes": 49310,
-        "withDerivedReduction": 0.9459
+        "withDerivedBytes": 78788,
+        "withDerivedReduction": 0.9135
       }
     },
     "bootstrapTimeWithCache": {
-      "value": 129,
+      "value": 147,
       "unit": "ms (median of 9)",
       "target": "<= 300",
       "met": true,
       "samples": [
+        147,
+        164,
+        156,
+        161,
+        142,
+        142,
         132,
-        130,
-        129,
-        217,
-        146,
-        128,
-        127,
-        129,
-        126
+        189,
+        130
       ],
       "method": "wall clock of `node runtime/bootstrap/cli.mjs sync --offline` (process start included) with a warm content-addressed cache",
       "disclosure": {
-        "statusMedianMs": 174,
-        "bareNodeStartupMedianMs": 72,
+        "statusMedianMs": 137,
+        "bareNodeStartupMedianMs": 67,
         "note": "includes a full verification of the cached release before use (PAR-CACHE-VERIFY-BEFORE-EXEC)"
       }
     },
     "bootstrapTimeWithoutCache": {
-      "value": 279,
+      "value": 229,
       "unit": "ms (median of 3, --from-file, no network)",
       "target": "<= 30000",
       "met": true,
       "samples": [
-        279,
-        167,
-        291
+        246,
+        204,
+        229
       ],
       "method": "wall clock of `sync --from-file <bundle> --offline` against an EMPTY cache: extract, hash every file, publish atomically",
       "disclosure": {
@@ -102,13 +102,13 @@
       "method": "applyBump on a git repo, git diff --name-only"
     },
     "contextAtReentryTokens": {
-      "value": 702,
+      "value": 753,
       "unit": "tokens (estimate: chars / 4)",
       "target": "<= 2500",
       "baseline": "about 6500-7500",
       "met": true,
       "kernelLines": 52,
-      "skills": 4,
+      "skills": 5,
       "method": "core/kernel.md + the frontmatter of every canonical skill; the estimate is chars/4, NOT a tokenizer count"
     },
     "capabilitiesCentralized": {

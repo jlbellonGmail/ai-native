@@ -52,6 +52,18 @@
         "STANDARD",
         "FULL"
       ]
+    },
+    {
+      "id": "sdd",
+      "profiles": [
+        "*"
+      ],
+      "roles": [
+        "*"
+      ],
+      "levels": [
+        "*"
+      ]
     }
   ]
 }
