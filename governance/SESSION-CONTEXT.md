@@ -57,7 +57,7 @@ No se baja el umbral, no hay waivers. La remediación de F1–F8 (#53) y las pos
 
 ## Dependabot
 
-* #48 (`actions/checkout` 4.2.2 → 7.0.1): toca el plano de control; fail-closed esperado (`docs-gate`, `trust-gate = neutral`, `merge-gate`). **Sin mergear**; requiere revisión humana y una nota de gobernanza.
+* #48 (`actions/checkout` 4.2.2 → 7.0.1): toca el plano de control; fail-closed esperado (`docs-gate`, `trust-gate = neutral`, `merge-gate`). **CLOSED / SUPERSEDED por #78** (cerrada sin mergear el 2026-10-10; el bump de checkout a 7.0.1 llegó a `main` con #78, que incluye la nota de gobernanza que el gate exigía). El fail-closed descrito era el estado mientras estuvo abierta.
 * #23–#26 (dependencias de `legacy/` y `foundation/`): sus parches están aplicados en la PR de remediación; se cierran tras su merge.
 
 ## Decisiones y hechos que no se reescriben
@@ -71,8 +71,8 @@ No se baja el umbral, no hay waivers. La remediación de F1–F8 (#53) y las pos
 * **AI-Native `v3.0.1`** = plataforma central vigente. Los consumidores la usan por referencia: versión, SHA/lock, caché, attestation y rollback; no por copia masiva del Template.
 * **Template v2.x** = `LEGACY / TRANSITION`: sin capacidades funcionales nuevas; solo historia, baseline y migración/compatibilidad imprescindible. El árbol `legacy/template-v2` fue retirado en v3.0.2 (manifest en `parity/v2.0.5/legacy-import-manifest.json`).
 * **template-starter** = canary histórico y consumidor migrado (evidencia brownfield v2 → v3), no plataforma central.
-* M7 (limpieza/depuración): `COMPLETED` (2026-10-09); detalle en `governance/cleanup/M7-CLOSURE.md`. Las PRs de limpieza (ai-native #70/#72/#73/#74/#75, gi-common-tenants #20, gi-ot #7, gi-clinicadental #64) están mergeadas con CI verde y los tres GI quedan `CLEANED`. No abre v3.0.2 (`CANDIDATE`, ver `governance/versioning/V3.0.2-PATCH.md` y `governance/cleanup/FINAL-CONSOLIDATION.md`) ni otro milestone; PR #48 sigue `KEEP_OPEN`.
+* M7 (limpieza/depuración): `COMPLETED` (2026-10-09); detalle en `governance/cleanup/M7-CLOSURE.md`. Las PRs de limpieza (ai-native #70/#72/#73/#74/#75, gi-common-tenants #20, gi-ot #7, gi-clinicadental #64) están mergeadas con CI verde y los tres GI quedan `CLEANED`. No abre v3.0.2 (`CANDIDATE`, ver `governance/versioning/V3.0.2-PATCH.md` y `governance/cleanup/FINAL-CONSOLIDATION.md`) ni otro milestone; PR #48 quedó `CLOSED / SUPERSEDED` por #78 (2026-10-10; estaba `KEEP_OPEN` al cerrar M7).
 
 ## Residuales abiertos tras `v3.0.0` (no convertidos en PASS)
 
-F2 (`required_approving_review_count = 0`, `strict = false`); claves antiguas de `ai-native-trust` `NO_VERIFICADO`; OpenCode MCP y Codex config `NOT_AVAILABLE_FROM_TOOL`; F-05 `PARTIAL` (sin causa raíz demostrada); sin ruleset de tags (F-04 del informe); P1–P45 sin matriz individual final; PR #48 (Dependabot, plano de control) `KEEP_OPEN_FOR_HITL`.
+F2 (`required_approving_review_count = 0`, `strict = false`); claves antiguas de `ai-native-trust` `NO_VERIFICADO`; OpenCode MCP y Codex config `NOT_AVAILABLE_FROM_TOOL`; F-05 `PARTIAL` (sin causa raíz demostrada); sin ruleset de tags (F-04 del informe); P1–P45 sin matriz individual final; PR #48 (Dependabot, plano de control) `CLOSED / SUPERSEDED` por #78 (era `KEEP_OPEN_FOR_HITL` al cerrar M7).

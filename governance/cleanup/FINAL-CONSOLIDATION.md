@@ -56,7 +56,7 @@ Archivo en `C:\Proyectos\_archive\2026-10-09\` con `README.md` manifest: parche 
 
 * `gi-ot:feature/10-validacion-postgresql`: **7 commits exclusivos** → se conserva.
 * `origin/develop` (ai-native): sin commits exclusivos; no se borró (decisión humana sobre ramas remotas).
-* `dependabot/.../checkout-7.0.1`: la retirará el cierre de #48.
+* `dependabot/.../checkout-7.0.1`: retirada al cerrarse #48 como superseded por #78 (2026-10-10); la rama ya no existe.
 
 ## Métricas (objetos Git; `main` = `f8612b0`, #78 = `7e4c6a3`, #79 = `bb0398a`)
 
