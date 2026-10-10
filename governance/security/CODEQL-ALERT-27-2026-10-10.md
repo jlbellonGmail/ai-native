@@ -7,7 +7,7 @@ Fecha: 2026-10-10. Estado: **EXPLICADA (no introducida por #79)**. **No se ha de
 | Clase | Resultado |
 |---|---|
 | A. Vulnerabilidad real introducida por #79 | **No**: `l3-consumer.yml` no cambia en #79 salvo el pin de `actions/checkout` (el de #78). |
-| B. Artefacto del análisis del merge ref de una PR grande | **Sí** (ver experimentos): aparece con ≥ 305 ficheros cambiados, con cualquier contenido, incluso con solo borrados. |
+| B. Artefacto del análisis del merge ref de una PR grande | **Sí** (ver experimentos): aparece con 305 o más ficheros cambiados y no con 211 o menos, con cualquier contenido, incluso con solo borrados (el umbral real está entre 212 y 305; no se acotó más). |
 | C. Falso positivo ya triado | **Sí, para el mismo hallazgo**: `main` ya lo tiene (alerta **#18**, mismo `rule.id`, fichero y línea, descartada como `false positive` por el owner el 2026-10-05). |
 
 ## Hechos medidos (CodeQL `/language:actions`, resultados del SARIF)
@@ -24,7 +24,7 @@ Fecha: 2026-10-10. Estado: **EXPLICADA (no introducida por #79)**. **No se ha de
 | **#79 con el `.github` de #78 (D)** | **369** | **1** (#27) |
 | **#79** | **369** | **1** (#27) |
 
-* Todas las ramas `< 305` ficheros dan 0; todas las `≥ 305`, 1, **independientemente del contenido** (E son solo borrados). El propio resumen del check de CodeQL dice: *«Alerts not introduced by this pull request might have been detected because the code changes were too large.»* Es el comportamiento documentado: por encima de un tamaño el análisis deja de acotarse al diff y reporta el estado completo, que es lo que `main` ya reporta.
+* Todas las ramas probadas con ≤ 211 ficheros dan 0 y todas las de 305 o más, 1, **independientemente del contenido** (E son solo borrados); el umbral exacto entre 212 y 304 no se midió. El propio resumen del check de CodeQL dice: *«Alerts not introduced by this pull request might have been detected because the code changes were too large.»* Eso es coherente con una hipótesis (por encima de cierto tamaño el análisis deja de acotarse al diff y reporta el estado completo, que es lo que `main` ya reporta), pero **GitHub no documenta ese umbral ni ese mecanismo**: es una conclusión empírica de estos experimentos, no un comportamiento documentado.
 * La huella (`primaryLocationLineHash`) cambió de `6bc77edd671f08f8:1` (main, pin v4.2.2) a `ae547d973d6b49ea:1` (PR, pin v7.0.1): por eso GitHub no la empareja con la #18 descartada y la muestra como alerta nueva (#27). No es un hallazgo nuevo: mismo `rule.id`, fichero y línea.
 * Alerta de otra clase: durante estas pruebas CodeQL levantó **#30 `js/http-to-file-access`** en `evaluation/m52/update-offline-image.mjs` (código nuevo de #78). Esa **sí era real y se corrigió** (el script ya no escribe datos de red a disco): ver `ACTIONS-CHECKOUT-7.0.1.md`.
 
