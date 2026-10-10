@@ -8,7 +8,7 @@ Actualizado: 2026-10-09 (post-M6; M7 `COMPLETED`).
 
 ## Arquitectura (vigente)
 
-`ai-native` es **un único repositorio** (ADR-001, desde la PR #2): áreas de fábrica `governance/`, `foundation/`, `knowledge/`, `template/`; plataforma v3 en `core/ contracts/ runtime/ mcp/ profiles/ audit/ parity/ evaluation/`; `legacy/` es material congelado, no instrucciones. Versión de la plataforma = tag/release (`VERSION` de la raíz: `3.0.0-dev`, ver `governance/versioning/VERSIONING-POLICY.md`). Última release publicada: `v3.0.1` (estable, `Latest`; tag sobre `da84fb1`; verificación en `governance/versioning/V3.0.1-POST-RELEASE-VERIFICATION.md`). `v3.0.0` y las prereleases `alpha.1`, `rc.1`, `rc.2` se conservan como historia publicada.
+`ai-native` es **un único repositorio** (ADR-001, desde la PR #2): áreas de fábrica `governance/`, `foundation/`, `knowledge/`, `template/`; plataforma v3 en `core/ contracts/ runtime/ mcp/ profiles/ audit/ parity/ evaluation/`; `legacy/` es material congelado, no instrucciones. Versión de la plataforma = tag/release (`VERSION` de la raíz: `3.0.0-dev`, ver `governance/versioning/VERSIONING-POLICY.md`). Última release publicada: `v3.0.2` (2026-10-10; tag sobre `ca43c7b`; verificación en `governance/versioning/V3.0.2-POST-RELEASE-VERIFICATION.md`). `v3.0.1` (tag sobre `da84fb1`; `governance/versioning/V3.0.1-POST-RELEASE-VERIFICATION.md`) queda como release anterior. `v3.0.0` y las prereleases `alpha.1`, `rc.1`, `rc.2` se conservan como historia publicada.
 
 ## Roadmap v3: dónde estamos
 
@@ -68,10 +68,10 @@ No se baja el umbral, no hay waivers. La remediación de F1–F8 (#53) y las pos
 
 ## Transición Template → AI-Native (cerrada con `v3.0.0`)
 
-* **AI-Native `v3.0.1`** = plataforma central vigente. Los consumidores la usan por referencia: versión, SHA/lock, caché, attestation y rollback; no por copia masiva del Template.
+* **AI-Native `v3.0.2`** = plataforma central vigente (publicada 2026-10-10). Cada consumidor GI sigue fijado a la versión de su propio `ai-native.lock.json` hasta que se mergee su PR de bump. Los consumidores la usan por referencia: versión, SHA/lock, caché, attestation y rollback; no por copia masiva del Template.
 * **Template v2.x** = `LEGACY / TRANSITION`: sin capacidades funcionales nuevas; solo historia, baseline y migración/compatibilidad imprescindible. El árbol `legacy/template-v2` fue retirado en v3.0.2 (manifest en `parity/v2.0.5/legacy-import-manifest.json`).
 * **template-starter** = canary histórico y consumidor migrado (evidencia brownfield v2 → v3), no plataforma central.
-* M7 (limpieza/depuración): `COMPLETED` (2026-10-09); detalle en `governance/cleanup/M7-CLOSURE.md`. Las PRs de limpieza (ai-native #70/#72/#73/#74/#75, gi-common-tenants #20, gi-ot #7, gi-clinicadental #64) están mergeadas con CI verde y los tres GI quedan `CLEANED`. No abre v3.0.2 (`CANDIDATE`, ver `governance/versioning/V3.0.2-PATCH.md` y `governance/cleanup/FINAL-CONSOLIDATION.md`) ni otro milestone; PR #48 quedó `CLOSED / SUPERSEDED` por #78 (2026-10-10; estaba `KEEP_OPEN` al cerrar M7).
+* M7 (limpieza/depuración): `COMPLETED` (2026-10-09); detalle en `governance/cleanup/M7-CLOSURE.md`. Las PRs de limpieza (ai-native #70/#72/#73/#74/#75, gi-common-tenants #20, gi-ot #7, gi-clinicadental #64) están mergeadas con CI verde y los tres GI quedan `CLEANED`. M7 no abrió v3.0.2: se autorizó y publicó después (ver `governance/versioning/V3.0.2-PATCH.md`) ni otro milestone; PR #48 quedó `CLOSED / SUPERSEDED` por #78 (2026-10-10; estaba `KEEP_OPEN` al cerrar M7).
 
 ## Residuales abiertos tras `v3.0.0` (no convertidos en PASS)
 
