@@ -19,6 +19,7 @@ fields; a consumer on `schemaVersion` N or N-1 must still be readable.
 | `sdd-levels.schema.json` + `sdd-levels.json` | the LIGHT/STANDARD/FULL contract: steps, required artifacts, convergence budget | this repo (data) | `runtime/circuit/assess`, `runtime/circuit/contract` |
 | `state-machine.schema.json` + `state-machine.json` | the Work Unit state machine: states, transitions, preconditions | this repo (data) | `runtime/circuit/*` |
 | `assess-rules.schema.json` + `assess-rules.json` | ASSESS signal weights, breadth rules and score thresholds (M3.2) | this repo (data) | `runtime/circuit/assess` |
+| `sdd-workflow.schema.json` + `sdd-workflow.json` | the conceptual SDD model: roles (Coordinator/Planner/Implementer/Reviewer -> runtime role), work units (Task/Feature/Milestone), levels (light/normal/full), modes and the `/feature` + `/sdd-*` command catalog | this repo (data) | `runtime/circuit/sdd-workflow`, `runtime/adapters/commands` |
 | `work-unit-manifest.schema.json` | `work-unit.json`, a Milestone's grouped-items manifest (+ optional task DAG) (M3.2) | `runtime/circuit/start-unit` | `runtime/circuit/identity`, `runtime/circuit/contract` |
 | `skills-registry.schema.json` | `.agents/skills/registry.json`, profile/role/level applicability per skill (M3.3) | this repo (data) | `runtime/adapters/skills` |
 | `result-status.schema.json` | the PASS/PASS_WITH_WARNINGS/FAIL/ERROR/NOT_RUN/NOT_APPLICABLE envelope every gate returns | every validator/gate | CI, `ai-native status` |

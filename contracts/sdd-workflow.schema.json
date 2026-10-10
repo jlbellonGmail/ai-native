@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-native.local/contracts/sdd-workflow.schema.json",
+  "title": "sdd-workflow.json (canonical SDD roles, work units, modes and commands)",
+  "description": "The single machine-readable source for the conceptual SDD model: which roles exist and which runtime role implements each, how Task/Feature/Milestone map onto the circuit modes, how light/normal/full map onto sdd-levels.json, the three working modes, and the canonical /sdd-* command catalog. Adapters project `commands` into .claude/commands and .opencode/commands; runtime/circuit/sdd-workflow.mjs validates it. Agent-neutral: no tool-specific path is canonical.",
+  "type": "object",
+  "required": ["schemaVersion", "roles", "workUnits", "levels", "modes", "commands", "retiredNames"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "roles": {
+      "type": "array",
+      "minItems": 4,
+      "description": "Conceptual roles. `runtimeRole` is the id in core/agents.json that implements it; null means an orchestration duty performed by the main session (no spawnable agent, no extra permissions).",
+      "items": {
+        "type": "object",
+        "required": ["id", "runtimeRole", "writes", "summary"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z]+$" },
+          "runtimeRole": { "type": ["string", "null"] },
+          "legacyIds": { "type": "array", "items": { "type": "string" } },
+          "writes": { "type": "string", "enum": ["nothing", "spec-artifacts", "code-and-tests", "state-only"] },
+          "summary": { "type": "string" }
+        }
+      }
+    },
+    "workUnits": {
+      "type": "array",
+      "minItems": 3,
+      "items": {
+        "type": "object",
+        "required": ["id", "circuitMode", "defaultLevel", "specFolder", "summary"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "enum": ["task", "feature", "milestone"] },
+          "circuitMode": { "type": "string", "enum": ["Maintenance", "Feature", "Milestone"] },
+          "defaultLevel": { "type": "string", "enum": ["light", "normal", "full"] },
+          "specFolder": { "type": "boolean" },
+          "contains": { "type": "array", "items": { "type": "string" } },
+          "summary": { "type": "string" }
+        }
+      }
+    },
+    "levels": {
+      "type": "array",
+      "minItems": 3,
+      "description": "User-facing level -> contracts/sdd-levels.json key. Selection is by risk/scope/reversibility/impact/complexity/criticality/uncertainty (see knowledge/sdd/methodology/levels.md), not by file count alone.",
+      "items": {
+        "type": "object",
+        "required": ["id", "circuitLevel"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "enum": ["light", "normal", "full"] },
+          "circuitLevel": { "type": "string", "enum": ["LIGHT", "STANDARD", "FULL"] }
+        }
+      }
+    },
+    "modes": {
+      "type": "array",
+      "minItems": 3,
+      "description": "Same methodology in every mode; only who drives the phases changes.",
+      "items": {
+        "type": "object",
+        "required": ["id", "driver"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "enum": ["manual", "guided", "automatic"] },
+          "driver": { "type": "string", "enum": ["user", "user-with-status", "coordinator"] }
+        }
+      }
+    },
+    "commands": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name", "phase", "role", "usage", "summary", "body", "mutatesCode", "readOnly"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string", "pattern": "^(feature|sdd-[a-z]+(-[a-z]+)*)$" },
+          "phase": { "type": "string", "enum": ["route", "specify", "clarify", "plan", "tasks", "implement", "validate", "analyze", "change", "status"] },
+          "role": { "type": "string", "pattern": "^[a-z]+$" },
+          "usage": { "type": "string" },
+          "summary": { "type": "string" },
+          "body": { "type": "string", "pattern": "^core/commands/[a-z-]+\\.md$" },
+          "mutatesCode": { "type": "boolean" },
+          "readOnly": { "type": "boolean" },
+          "levels": { "type": "array", "items": { "type": "string", "enum": ["light", "normal", "full"] } }
+        }
+      }
+    },
+    "retiredNames": {
+      "type": "array",
+      "description": "Names that must not reappear outside this contract and its migration notes (Implementer is the ROLE, implement is the ACTION).",
+      "items": { "type": "string" }
+    }
+  }
+}

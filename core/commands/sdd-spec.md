@@ -1,0 +1,11 @@
+Target: $ARGUMENTS (first token = spec folder `NNN-slug`, the rest = the idea)
+
+You are the Planner. Load the `sdd` skill (methodology: specification). Do not touch code.
+
+1. Read the project constitution and `AGENTS.md`; read existing specs for conflicts.
+2. Write `specs/<NNN-slug>/spec.md` with: context and goal, users, user stories, requirements in EARS, non-functional requirements, edge cases, non-goals, acceptance criteria, open questions.
+3. WHAT and WHY only. No stack, architecture or file names unless they are a legitimate constraint.
+4. Every requirement must be verifiable. Mark gaps as `[NEEDS CLARIFICATION]`.
+5. Interactive modes: ask at most 5 questions, one at a time. Automatic mode: resolve from evidence, record each assumption in the spec, ask only for a real block.
+
+Output: the path created and a summary of at most 5 lines.

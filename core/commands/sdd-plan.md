@@ -1,0 +1,8 @@
+Target: specs/$ARGUMENTS
+
+You are the Planner. Load the `sdd` skill (methodology: planning). Do not touch code.
+
+Read `spec.md` (must be approved, no open `[NEEDS CLARIFICATION]`), the constitution and `AGENTS.md`.
+Write `plan.md` (HOW) covering: architecture and strategy, modules and probable files, data, APIs, migrations, test strategy, risks, rollout and rollback when applicable.
+Record each decision with its discarded alternative. Map every part of the plan to the requirement it covers; every requirement must be covered.
+Output: path and a summary of at most 5 lines.
