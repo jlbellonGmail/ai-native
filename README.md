@@ -58,7 +58,7 @@ node runtime/release/build.mjs --version v3.0.0-rc.1 --out ./out --commit "$(git
 node scripts/verify-release.mjs <tag> --expect-commit <sha>
 ```
 
-Releases: https://github.com/jlbellonGmail/ai-native/releases (`v3.0.0` stable and earlier `v3.0.0-rc.N` pre-releases).
+Releases: https://github.com/jlbellonGmail/ai-native/releases (latest stable `v3.0.2`; earlier `v3.0.1`, `v3.0.0` and the `v3.0.0-rc.N` pre-releases).
 State of the quality evidence: `governance/quality/QUALITY-MATRIX.md`.
 
 ## Using the platform from a consumer repository
