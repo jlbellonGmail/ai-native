@@ -1,6 +1,6 @@
 # Consolidación final — depuración de legado y v3.0.2
 
-Estado: **PLATFORM_CLEAN_READY_FOR_HUMAN_MERGES** (no `PLATFORM_CLEAN_AND_STABLE`: ver «Pendiente»). Base: `main` `f8612b0` (post-M7). PRs: **#78** (`chore/actions-checkout-7.0.1`) y **#79** (`fix/v3.0.2-migrator-profile-gaps`, apilada sobre #78). Este documento solo afirma lo verificado con comandos; las cifras salen de objetos Git (`ls-tree`, `git grep -c`, `diff`), no del árbol de trabajo, y están medidas sobre el **commit de código `1e2df8b`**: el commit que añade este texto cambia solo documentación, de modo que recalcular sobre el HEAD de la PR da más líneas de texto y de inserciones (las de estos documentos) y el mismo resto.
+Estado: **PLATFORM_CLEAN_READY_FOR_HUMAN_MERGES** (no `PLATFORM_CLEAN_AND_STABLE`: ver «Pendiente»). Base: `main` `f8612b0` (post-M7). PRs: **#78** (`chore/actions-checkout-7.0.1`) y **#79** (`fix/v3.0.2-migrator-profile-gaps`, apilada sobre #78). Este documento solo afirma lo verificado con comandos; las cifras salen de objetos Git (`ls-tree`, `git grep -c`, `diff`), no del árbol de trabajo, y están medidas sobre el **commit de código `bb0398a`**: el commit que añade este texto cambia solo documentación, de modo que recalcular sobre el HEAD de la PR da más líneas de texto y de inserciones (las de estos documentos) y el mismo resto.
 
 ## Qué se eliminó (#79)
 
@@ -24,10 +24,10 @@ Consumidores de `legacy/` reemplazados: test P43 (B31) → 4 workflows v2.0.5 re
 
 `CANDIDATE`, **no publicada**. Detalle, contrato de protección y sintaxis soportada: `governance/versioning/V3.0.2-PATCH.md`. Brechas 1, 2, 6 y 7 corregidas con regresiones.
 
-Verificación local sobre el código de #79 (`1e2df8b`; el commit siguiente solo añade documentación):
+Verificación local sobre el código de #79 (`bb0398a`; el commit siguiente solo añade documentación):
 
-* **Suite hermética oficial** (`node scripts/test-hermetic.mjs`, concurrencia por defecto, una corrida por vez): **el gate «3 corridas completas consecutivas verdes» NO se alcanzó sobre `1e2df8b`**: 7 corridas, 4 verdes y 3 rojas, mejor racha 2 consecutivas (dos veces). Sobre `cc8ee64` (mismo código salvo los cambios de la última revisión) sí hubo **3 consecutivas 718/718** (299 s, 263 s, 280 s) en 6 corridas. **Los 6 tests fallidos de las 5 corridas rojas con log conservado tienen la misma firma de git** (`unable to write file .git/objects/…: Permission denied`), ninguno otra; todos pasan aislados 3/3. Causa de entorno demostrada con los logs, vínculo con antivirus de terceros solo correlacional y **no corregible desde el repositorio**: detalle y mitigación (decisión del usuario) en `V3.0.2-PATCH.md`, «Estabilidad». El CI remoto es la referencia reproducible.
-* Validadores, todos con salida 0 sobre `1e2df8b`: `validate-parity` (`UNMAPPED=0`), `validate-contracts`, `validate-core`, `validate-compat-matrix`, `validate-doc-drift`, `validate-integrity`, `validate-entrypoints`, `validate-actions-pinned`, `validate-ci-tests-listed` (78 ficheros de test); `git diff --check origin/main HEAD`: 0.
+* **Suite hermética oficial** (`node scripts/test-hermetic.mjs`, concurrencia por defecto, una corrida por vez): **el gate «3 corridas completas consecutivas verdes» NO se alcanzó sobre el código final `bb0398a`** (2 corridas: 1 verde 719/719 y 1 roja) **ni sobre `1e2df8b`** (7 corridas, 4 verdes, mejor racha 2). Sobre `cc8ee64` (código anterior a las últimas revisiones) sí hubo **3 consecutivas 718/718** (299 s, 263 s, 280 s) en 6 corridas. Se dejó de reintentar tras cuatro series. **Los 9 tests fallidos de las 6 corridas rojas con log conservado (15 corridas en total) tienen la misma firma de git** (`unable to write file .git/objects/…: Permission denied`), ninguno otra; todos pasan aislados 3/3. Causa de entorno demostrada con los logs, vínculo con antivirus de terceros solo correlacional y **no corregible desde el repositorio**: detalle y mitigación (decisión del usuario) en `V3.0.2-PATCH.md`, «Estabilidad». El CI remoto es la referencia reproducible.
+* Validadores, todos con salida 0 sobre `bb0398a`: `validate-parity` (`UNMAPPED=0`), `validate-contracts`, `validate-core`, `validate-compat-matrix`, `validate-doc-drift`, `validate-integrity`, `validate-entrypoints`, `validate-actions-pinned`, `validate-ci-tests-listed` (78 ficheros de test); `git diff --check origin/main HEAD`: 0.
 
 ## GI
 
@@ -58,12 +58,12 @@ Archivo en `C:\Proyectos\_archive\2026-10-09\` con `README.md` manifest: parche 
 * `origin/develop` (ai-native): sin commits exclusivos; no se borró (decisión humana sobre ramas remotas).
 * `dependabot/.../checkout-7.0.1`: la retirará el cierre de #48.
 
-## Métricas (objetos Git; `main` = `f8612b0`, #78 = `7e4c6a3`, #79 = `1e2df8b`)
+## Métricas (objetos Git; `main` = `f8612b0`, #78 = `7e4c6a3`, #79 = `bb0398a`)
 
 | Métrica | `main` | #78 | #79 (apilada sobre #78) |
 |---|---|---|---|
 | Archivos versionados | 1519 | 1524 | 1245 |
-| Líneas de texto (`git grep -I -c ''`) | 178 441 | 178 564 | 137 881 |
+| Líneas de texto (`git grep -I -c ''`) | 178 441 | 178 564 | 137 918 |
 | `scripts/` | 10 | 10 | 10 |
 | Workflows | 14 | 14 | 14 |
 | Validadores `validate-*.mjs` | 66 | 66 | 54 |
@@ -76,8 +76,8 @@ Archivo en `C:\Proyectos\_archive\2026-10-09\` con `README.md` manifest: parche 
 | Diff | Ficheros | Inserciones | Borrados |
 |---|---|---|---|
 | `main`..#78 | 20 | 144 | 21 |
-| #78..#79 (cambios **propios** de #79) | 361 | 2 626 | 43 316 |
-| `main`..#79 (total apilado) | 379 | 2 769 | 43 336 |
+| #78..#79 (cambios **propios** de #79) | 361 | 2 663 | 43 316 |
+| `main`..#79 (total apilado) | 379 | 2 806 | 43 336 |
 
 Métricas de GI y de contexto (FASES 20 y 23) **no medidas** en esta ejecución.
 
@@ -94,7 +94,7 @@ Métricas de GI y de contexto (FASES 20 y 23) **no medidas** en esta ejecución.
 
 ## Riesgos residuales
 
-* **Entorno de pruebas local:** la suite local falla de forma esporádica con `unable to write file .git/objects/…: Permission denied` (5 de 13 corridas con log; ver `V3.0.2-PATCH.md`, «Estabilidad»); pasan aislados y no hay otra firma de error.
+* **Entorno de pruebas local:** la suite local falla de forma esporádica con `unable to write file .git/objects/…: Permission denied` (6 de 15 corridas con log, 9 tests; ver `V3.0.2-PATCH.md`, «Estabilidad»); pasan aislados y no hay otra firma de error.
 * El contrato de protección no exige aprobaciones humanas (el contrato de AI-Native las fija en 0 por el modelo de un solo maintainer, F2).
 * `python-app`/`python-scripts` exigen `requirements*.txt` en el consumidor; sin ellos el gate L3 falla cerrado.
 * El gate local de 3 corridas verdes no se cumple sobre el código final por un error de entorno (ver «v3.0.2»); la decisión de aceptar el CI remoto como referencia es humana.
