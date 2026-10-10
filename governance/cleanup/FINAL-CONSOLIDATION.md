@@ -39,14 +39,14 @@ Clasificación propuesta (sin acciones en GitHub): `template` = **HISTORICAL_REF
 
 ## PR #48 y PR #78 (actions/checkout 4.2.2 → 7.0.1)
 
-Dependabot quedó 39 commits detrás de `main` (checks en rojo por base obsoleta y por `docs-gate`). Los checkouts `pull_request_target` toman `base.sha` con `persist-credentials: false` (compatibles con v7). Reemplazo controlado: **#78** (19 pins en 14 workflows + nota `governance/security/ACTIONS-CHECKOUT-7.0.1.md`). Decisión: #48 `SUPERSEDED_BY #78`; cerrar #48 al mergear #78 (merge humano, control plane).
+Dependabot quedó 39 commits detrás de `main` (checks en rojo por base obsoleta y por `docs-gate`). Los checkouts `pull_request_target` toman `base.sha` con `persist-credentials: false` (compatibles con v7). Reemplazo controlado: **#78** (19 pins en 14 workflows + nota `governance/security/ACTIONS-CHECKOUT-7.0.1.md`). Decisión: #48 `SUPERSEDED_BY #78`; #78 se mergeó (merge humano, control plane) y #48 se cerró el 2026-10-10.
 
 #78 incluye además el cambio de la imagen del job `pilot offline (ubuntu)`: Docker Hub devolvía `toomanyrequests` (límite anónimo) y el job fallaba con exit 125; ahora usa el espejo oficial `public.ecr.aws/docker/library/node:24-bookworm@sha256:3d27e5c1…` (mismo digest de índice que Docker Hub), con la coherencia tag/digest comprobada **sin red** (`offline-image.index.json` + `sha256` + anotaciones Node 24/bookworm, probado por mutación) y un actualizador explícito que no escribe nada en disco.
 
 ## Alertas de code scanning
 
 * `js/http-to-file-access` (código nuevo de #78): **real y corregida** en origen.
-* `actions/untrusted-checkout/medium` #27 (`l3-consumer.yml:116`): **`KNOWN_MERGE_REF_CODEQL_FINDING`**, explicada y sin descartar (sin waiver): mismo hallazgo que la #18 ya descartada en `main`, con otra huella por el cambio de pin; en los experimentos aparece solo en análisis de PR con ≥ 305 ficheros cambiados (umbral **medido, no documentado por GitHub**; el resumen del check solo dice que pueden detectarse alertas no introducidas por la PR «porque los cambios son demasiado grandes»). Evidencia y experimentos: `governance/security/CODEQL-ALERT-27-2026-10-10.md`.
+* `actions/untrusted-checkout/medium` #27 (`l3-consumer.yml:116`): **`PREEXISTING_MAIN_FINDING`** (abierta en `main` desde #78, no introducida por #79), explicada y sin descartar (sin waiver): mismo hallazgo que la #18 ya descartada en `main`, con otra huella por el cambio de pin; en los experimentos aparece solo en análisis de PR con ≥ 305 ficheros cambiados (umbral **medido, no documentado por GitHub**; el resumen del check solo dice que pueden detectarse alertas no introducidas por la PR «porque los cambios son demasiado grandes»). Evidencia y experimentos: `governance/security/CODEQL-ALERT-27-2026-10-10.md`.
 
 ## Local (fuera del repo)
 
