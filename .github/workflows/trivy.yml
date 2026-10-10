@@ -2,7 +2,7 @@ name: Trivy
 
 # M0.3b: filesystem scan (vulnerabilities in lockfiles, credential leaks, IaC and
 # workflow misconfiguration). HIGH/CRITICAL fail the job; no ignore file is
-# used to lower the gate.
+# used to lower the gate. legacy/ is frozen import material and is scanned too.
 
 on:
   push:

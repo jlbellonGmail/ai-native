@@ -6,8 +6,15 @@ name: CI
 # No package install step: every validator here imports only node: builtins
 # (verified 2026-09-30), so there is nothing to install.
 #
-# v3.0.2: the legacy/template-v2 pytest baseline job was retired together with the frozen tree; its compact
-# traceability lives in parity/v2.0.5/legacy-import-manifest.json (governance/cleanup/FINAL-CONSOLIDATION.md).
+# M1.1: also runs the legacy/template-v2 pytest suite (TEMPLATE v2.0.5,
+# filtered import) as the real, measured baseline — not assumed. This is the
+# authoritative measurement: a local Windows run on a single developer
+# machine showed abnormal per-test latency (a single trivial test took ~29s
+# in isolation) and cascading OSError failures once the full 285-test suite
+# ran back-to-back, which is environment-specific resource contention, not a
+# code defect — confirmed by running the same tests individually, where they
+# passed. GitHub-hosted runners are the controlled, reproducible environment
+# this baseline is measured against.
 #
 # Deliberately excluded from this workflow (tracked in the roadmap):
 # - Security workflows (CodeQL/Trivy/SBOM/dependency-review/supply-chain):
@@ -271,3 +278,30 @@ jobs:
       - name: L1 evaluation suite against the real circuit code (M4.6)
         shell: bash
         run: node runtime/evals/cli.mjs l1
+
+  legacy-template-baseline:
+    name: legacy/template-v2 baseline (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Python / pwsh versions
+        shell: bash
+        run: |
+          python3 --version 2>/dev/null || python --version
+          pwsh --version
+
+      - name: Install test dependencies
+        shell: bash
+        working-directory: legacy/template-v2
+        run: pip install -r requirements-dev.txt
+
+      - name: pytest (baseline, not assumed)
+        shell: bash
+        working-directory: legacy/template-v2
+        run: python -m pytest -v
