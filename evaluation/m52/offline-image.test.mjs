@@ -39,8 +39,9 @@ test("offline-real.mjs takes its default image from offline-image.mjs and has no
   assert.doesNotMatch(src, /"node:24-bookworm"/);
 });
 
-test("the updater only needs the tag, never writes without verifying digest == sha256(body)", () => {
+test("the updater verifies digest == sha256(body) against the registry and never writes network data to disk (js/http-to-file-access)", () => {
   const src = readFileSync(new URL("./update-offline-image.mjs", import.meta.url), "utf8");
   assert.match(src, /docker-content-digest/i);
   assert.match(src, /createHash\("sha256"\)/);
+  assert.doesNotMatch(src, /writeFile|appendFile|createWriteStream|copyFile/, "no file writes: stdout only");
 });
