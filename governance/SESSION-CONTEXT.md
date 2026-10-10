@@ -4,7 +4,15 @@
 > `governance/history/SESSION-CONTEXT-HISTORY-2026-10-04.md`. Fuente de verdad del estado: este archivo, `governance/roadmaps/AI-NATIVE-V3-ROADMAP.md` y Git/GitHub.
 > Política del merge humano: `governance/security/HITL-MERGE-POLICY.md`. Frontera de secretos: `governance/security/SECRETS-BOUNDARY.md`.
 
-Actualizado: 2026-10-09 (post-M6; M7 `COMPLETED`).
+Actualizado: 2026-10-10 (iniciativa de depuración y estabilización cerrada).
+
+```text
+STATUS: PLATFORM_CLEAN_AND_STABLE
+INITIATIVE: CLOSED
+STABLE_BASELINE: v3.0.2
+```
+
+Criterio de cierre y pendientes aceptados (`NOT_REQUIRED_FOR_COMPLETION`, que no reabren la iniciativa): `governance/versioning/V3.0.2-POST-RELEASE-VERIFICATION.md`, «Cierre formal de la iniciativa».
 
 ## Arquitectura (vigente)
 
