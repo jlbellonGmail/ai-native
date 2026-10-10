@@ -248,12 +248,12 @@ test("PAR-PR-GATE: aggregate gate passes on this repo and reports product tests 
 // ---------- P43 / B31: script injection
 import { findScriptInjection } from "./supply-chain.mjs";
 
-test("P43: the detector flags the real B31 lines of the legacy v2.0.5 workflows (and nothing else)", () => {
-  const hitl = findScriptInjection(read("legacy/template-v2/.github/workflows/post-hitl-merge-gate.yml"));
-  const merge = findScriptInjection(read("legacy/template-v2/.github/workflows/post-merge-close-feature.yml"));
+test("P43: the detector flags the real B31 lines of the v2.0.5 workflows (compact fixtures) (and nothing else)", () => {
+  const hitl = findScriptInjection(read("evaluation/fixtures/supply-chain/v2.0.5-post-hitl-merge-gate.yml"));
+  const merge = findScriptInjection(read("evaluation/fixtures/supply-chain/v2.0.5-post-merge-close-feature.yml"));
   assert.deepEqual(hitl.map((h) => h.line), [42]);
   assert.deepEqual(merge.map((h) => h.line), [25]);
-  for (const f of ["ci", "docs", "guard-develop-branch"]) assert.deepEqual(findScriptInjection(read(`legacy/template-v2/.github/workflows/${f}.yml`)), [], f);
+  for (const f of ["supply-chain/v2.0.5-ci.yml", "supply-chain/v2.0.5-docs.yml", "migrate/guard-develop-branch.yml"]) assert.deepEqual(findScriptInjection(read(`evaluation/fixtures/${f}`)), [], f);
 });
 
 test("P43: PR fixture with a malicious branch -- interpolation is flagged, the env: form is not", () => {

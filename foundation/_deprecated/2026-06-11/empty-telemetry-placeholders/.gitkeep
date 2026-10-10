@@ -1,6 +1,0 @@
-Intentionally empty. Git does not track empty directories, so this placeholder
-keeps this path present. Referenced by duplicate-detection.contract.json,
-historical-archive.contract.json, legacy-inventory.contract.json and
-obsolete-artifacts.contract.json (disposition: retain_placeholder_evidence /
-retain_historical_evidence). Restored 2026-09-30 (M0.2) after it was lost by
-the git subtree import (empty directories are never stored by Git).

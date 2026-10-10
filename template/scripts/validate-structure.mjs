@@ -60,7 +60,7 @@ for (const task in coverage.tasks) {
   }
 }
 
-// Check for empty active directories (skip _deprecated and scaffold reference paths)
+// Check for empty active directories (skip scaffold reference paths)
 const emptyDirs = [];
 function walkDirs(dirPath) {
   try {
@@ -110,9 +110,9 @@ function isScaffoldReferencePath(dirPath) {
   return false;
 }
 
-// Filter out _deprecated directories and scaffold reference paths, then check for truly empty active dirs
+// Filter out scaffold reference paths, then check for truly empty active dirs
 const meaningfulEmptyDirs = emptyDirs
-  .filter((d) => !d.includes("_deprecated") && !isScaffoldReferencePath(d))
+  .filter((d) => !isScaffoldReferencePath(d))
   .filter((d) => checkDirEmpty(d));
 
 if (meaningfulEmptyDirs.length > 0) {

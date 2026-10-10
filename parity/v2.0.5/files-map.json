@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "source": "Contrato de Paridad TEMPLATE v2.0.5 -> AI-NATIVE v3, seccion 4 (governance/adr/ADR-002-contrato-paridad-template-v205.md)",
   "generatedBy": "parity/v2.0.5/build-files-map.mjs",
-  "granularity": "area (13 rows). Per-individual-file granularity (576 rows) becomes available from `git ls-tree -r --name-only v2.0.5` once legacy/template-v2 is imported in M1.1; this file will be superseded/extended then.",
+  "granularity": "area (13 rows). Per-individual-file granularity (576 rows) becomes available from `git ls-tree -r --name-only v2.0.5` once template@v2.0.5 is imported in M1.1; this file will be superseded/extended then.",
   "totalAreas": 13,
   "totalFiles": 576,
   "unmappedFiles": 0,

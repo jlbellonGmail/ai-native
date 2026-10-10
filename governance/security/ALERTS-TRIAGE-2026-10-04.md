@@ -29,8 +29,8 @@ Las alertas `FIXED` se cierran solas cuando el reanálisis de `main` ya no detec
 | 2 | high | `brace-expansion` | `foundation/pnpm-lock.yaml` | FIXED | 5.0.6 → 5.0.12 (mismo cambio que la PR #26). |
 | 26 | medium | `brace-expansion` | `foundation/pnpm-lock.yaml` | FIXED | Ídem. |
 | 20 | medium | `baseline-browser-mapping` | `foundation/pnpm-lock.yaml` | FIXED | 2.10.33 → 2.11.27 (como la PR #25). |
-| 28 | medium | `pytest` | `legacy/template-v2/requirements-dev.txt` | FIXED | 8.3.5 → 9.0.3 (como la PR #24). |
-| 29 | medium | `mkdocs-material` | `legacy/template-v2/requirements-docs.txt` | FIXED | 9.6.18 → 9.7.7 (como la PR #23). |
+| 28 | medium | `pytest` | `template@v2.0.5:requirements-dev.txt` | FIXED | 8.3.5 → 9.0.3 (como la PR #24). |
+| 29 | medium | `mkdocs-material` | `template@v2.0.5:requirements-docs.txt` | FIXED | 9.6.18 → 9.7.7 (como la PR #23). |
 | 77, 78 | high | `postcss` | `template/_deprecated/2026-06-11/package-lock.json` | ACCEPTED_WITH_JUSTIFICATION | Lockfile duplicado y **deprecado** (el activo es `pnpm-lock.yaml`); nunca se instala ni se ejecuta. Los contratos de `template` referencian su ruta como evidencia de archivo, por lo que no se borra. Descartadas como *not used*. |
 | 42, 83 | medium | `postcss` | idem | ACCEPTED_WITH_JUSTIFICATION | Ídem. |
 | 59 | low | `esbuild` | idem | ACCEPTED_WITH_JUSTIFICATION | Ídem. |

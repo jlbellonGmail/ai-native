@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "id": "python-scripts",
+  "description": "Repositorio Python de scripts u operaciones sin paquete ni requirements de runtime: solo instala las dependencias de desarrollo/test (requirements-dev.txt).",
+  "tools": ["claude", "codex", "opencode"],
+  "gitModel": { "integrationBranch": "main", "branchNamePattern": "^(feature|milestone|maintenance)/" },
+  "governance": { "mode": "SingleMaintainer" },
+  "mergeMethod": "squash",
+  "mcpDefaultProfile": "none",
+  "docRelevantPaths": ["README.md"],
+  "testingProfiles": ["smoke"],
+  "requiredFiles": ["pytest.ini"],
+  "productSetupCommand": "python -m pip install --quiet -r requirements-dev.txt",
+  "productTestCommand": "pytest -q"
+}

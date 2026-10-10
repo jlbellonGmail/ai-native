@@ -217,3 +217,155 @@ export function fetchRequiredChecks({ repo, branch, run = gh }) {
   }
   return { required };
 }
+
+/**
+ * PROTECTION CONTRACT (gap 7). The v2 `guard-develop-branch.yml` reverted any direct push to `develop` and any force-push.
+ * It may be retired only when the same is PROVEN to be prevented, and "proven" is exactly the contract AI-Native already
+ * enforces on its own branches (`verifyRuleset` in runtime/gates/ruleset.mjs, `governance/rulesets/main.json`):
+ *   - the ruleset is `active` (not `evaluate`/`disabled`) and targets branches;
+ *   - `bypass_actors` is PRESENT and EMPTY (policy: none). A missing or unreadable list is "unknown", never "empty";
+ *   - the rules include `deletion`, `non_fast_forward` and `pull_request`.
+ * Deliberately NOT required: `required_approving_review_count > 0` (the contract itself sets 0 for the single-maintainer
+ * model, F2) or any particular status check (the old guard checked neither); nothing is added beyond the contract.
+ * Anything not demonstrably satisfying it keeps the guard (FAIL CLOSED).
+ */
+export const PROTECTION_RULES = ["deletion", "non_fast_forward", "pull_request"];
+
+/** True when `rules` (array of {type}) contains every rule type of the contract. */
+export function satisfiesProtectionContract(rules) {
+  if (!Array.isArray(rules)) return false;
+  const types = new Set(rules.map((r) => r?.type));
+  return PROTECTION_RULES.every((t) => types.has(t));
+}
+
+/** True only for a ruleset object whose own flags satisfy the contract (the bypass list must be a real, empty array). */
+function rulesetFlagsOk(rs) {
+  return Boolean(rs) && typeof rs === "object" && rs.enforcement === "active" && rs.target === "branch" && Array.isArray(rs.bypass_actors) && rs.bypass_actors.length === 0;
+}
+
+/**
+ * Classic branch protection (GET /branches/:b/protection) equivalent to the contract: pull-request reviews required,
+ * force-pushes and deletions disallowed, and NO bypass in either of its two forms (the analogue of an empty bypass list):
+ * admins are not exempt (`enforce_admins`) AND `required_pull_request_reviews.bypass_pull_request_allowances` names no user,
+ * team or app. An absent allowance object means none; a present one with anything in it, or a non-object, is a bypass/unknown.
+ */
+export function classicProtectionOk(p) {
+  if (!p || typeof p !== "object" || !p.required_pull_request_reviews || typeof p.required_pull_request_reviews !== "object") return false;
+  const allow = p.required_pull_request_reviews.bypass_pull_request_allowances;
+  const noAllowance = allow === undefined || (allow !== null && typeof allow === "object" && ["users", "teams", "apps"].every((k) => allow[k] === undefined || (Array.isArray(allow[k]) && allow[k].length === 0)));
+  return noAllowance && p.allow_force_pushes?.enabled === false && p.allow_deletions?.enabled === false && p.enforce_admins?.enabled === true;
+}
+
+/**
+ * Live check that `branch` of `repo` is protected per the contract. Returns {protected, reason} or {error}. Only a ruleset
+ * whose full definition (GET /rulesets/:id, the only call that exposes `bypass_actors`) satisfies the contract counts; a
+ * definition that cannot be read (permissions, organisation rulesets, errors) is UNKNOWN => not protected.
+ */
+export function fetchBranchProtected({ repo, branch, run = gh }) {
+  if (!/^[A-Za-z0-9](?:[A-Za-z0-9-]*)\/(?!\.{1,2}$)[\w.-]+$/.test(repo ?? "")) return { error: `invalid consumer repo '${repo}' (expected owner/name)` };
+  const rules = run(["api", `repos/${repo}/rules/branches/${encodeURIComponent(branch)}`]);
+  if (rules.error || rules.status !== 0) return { error: `could not read the rules of ${repo}@${branch}: ${(rules.stderr || rules.error?.message || "gh failed").trim().split("\n")[0]}` };
+  let effective;
+  try {
+    effective = JSON.parse(rules.stdout);
+  } catch {
+    return { error: `unreadable ruleset response for ${repo}@${branch}` };
+  }
+  let why = "no ruleset applies to the branch";
+  if (Array.isArray(effective) && effective.length) {
+    why = null;
+    if (!satisfiesProtectionContract(effective)) why = "the effective rules lack deletion, non_fast_forward or pull_request";
+    // every ruleset that contributes a rule must itself be active with an EMPTY bypass list (only the full definition shows it)
+    for (const id of new Set(effective.map((r) => r?.ruleset_id))) {
+      if (why) break;
+      const source = effective.find((r) => r?.ruleset_id === id)?.ruleset_source_type;
+      if (!Number.isInteger(id) || source !== "Repository") { why = `bypass_actors UNKNOWN: ruleset ${id} is not a repository ruleset readable here (source ${source})`; break; }
+      const def = run(["api", `repos/${repo}/rulesets/${id}`]);
+      if (def.error || def.status !== 0) { why = `bypass_actors UNKNOWN: could not read ruleset ${id}`; break; }
+      let parsed = null;
+      try { parsed = JSON.parse(def.stdout); } catch { /* unreadable */ }
+      if (!parsed || !Array.isArray(parsed.bypass_actors)) why = `bypass_actors UNKNOWN: ruleset ${id} does not expose the list (insufficient permission?)`;
+      else if (!rulesetFlagsOk(parsed)) why = `ruleset ${id} is not active/branch-targeted or has bypass actors`;
+    }
+    if (!why) return { protected: true, reason: "an active ruleset with no bypass actors enforces deletion, non_fast_forward and pull_request" };
+  }
+  const classic = run(["api", `repos/${repo}/branches/${encodeURIComponent(branch)}/protection`]);
+  if (!classic.error && classic.status === 0) {
+    try {
+      return classicProtectionOk(JSON.parse(classic.stdout)) ? { protected: true, reason: "classic branch protection satisfies the contract" } : { protected: false, reason: why ?? "classic branch protection does not satisfy the contract" };
+    } catch { return { error: `unreadable branch-protection response for ${repo}@${branch}` }; }
+  }
+  return { protected: false, reason: why ?? "no ruleset or branch protection could be shown to apply" };
+}
+
+/**
+ * Ref-name glob matcher with LINEAR-time dynamic programming (no regex, so no catastrophic backtracking). Returns a
+ * `(ref) => boolean`, or null when the pattern cannot be interpreted with certainty: `?`, `[...]`, `{...}`, `\`, non-strings,
+ * empty or oversized patterns are AMBIGUOUS. Supports literals, `*` (one path segment) and `**` (any depth); `loose` lets
+ * `*` cross `/` (used for EXCLUDE patterns, where over-matching is the safe direction).
+ */
+export function patternToMatcher(pattern, loose = false) {
+  if (typeof pattern !== "string" || !pattern || pattern.length > 200 || /[?[\]{}\\]/.test(pattern)) return null;
+  if (pattern.includes("***")) return null; // runs of 3+ stars have no single reading across glob engines: ambiguous
+  // EXCLUDE (loose) mode also treats `**/` as "zero or more directories" (fnmatch convention), so `refs/heads/**/develop` covers
+  // `refs/heads/develop`; INCLUDE mode keeps `**` + a literal `/` (stricter: it can only match less, never more).
+  const tokens = pattern.split(loose ? /(\*\*\/|\*\*|\*)/ : /(\*\*|\*)/).filter((t) => t !== "");
+  const lower = loose ? tokens.map((t) => t.toLowerCase()) : tokens; // EXCLUDE mode is case-insensitive (matches MORE: the safe direction)
+  return (rawRef) => {
+    if (typeof rawRef !== "string" || rawRef.length > 255) return false;
+    const ref = loose ? rawRef.toLowerCase() : rawRef;
+    // reach[t][i]: the first t tokens can consume exactly the first i characters of ref
+    let reach = new Array(ref.length + 1).fill(false);
+    reach[0] = true;
+    for (const t of lower) {
+      const next = new Array(ref.length + 1).fill(false);
+      if (t === "**/") {
+        let open = false; // an earlier position reached, so "anything ending in /" can lead here
+        for (let i = 0; i <= ref.length; i += 1) {
+          next[i] = reach[i] || (open && ref[i - 1] === "/");
+          if (reach[i]) open = true;
+        }
+      } else if (t === "**" || t === "*") {
+        const crosses = loose; // INCLUDE mode: `**` is treated like `*` (one segment), so an include can only match LESS than the real glob
+        let open = false; // some earlier position reaches here with a wildcard that can still extend
+        for (let i = 0; i <= ref.length; i += 1) {
+          if (reach[i]) open = true;
+          next[i] = open;
+          if (!crosses && ref[i] === "/") open = false;
+        }
+      } else {
+        for (let i = 0; i + t.length <= ref.length; i += 1) if (reach[i] && ref.startsWith(t, i)) next[i + t.length] = true;
+      }
+      reach = next;
+    }
+    return reach[ref.length];
+  };
+}
+
+/**
+ * A SAVED ruleset (export/file) carries no per-branch filtering, so it counts only when it can be PROVEN to protect the
+ * branch (fail closed; any doubt keeps the v2 guard): `enforcement` is `active`; `conditions.ref_name.include` has the
+ * exact ref, `~ALL`, or a pattern that provably matches it; and NO `exclude` entry can touch it: a literal or glob that
+ * matches the ref (`refs/heads/dev*`, `refs/heads/*`), `~DEFAULT_BRANCH`/`~ALL` (cannot be resolved offline) or anything
+ * not interpretable. Unrelated excludes (`refs/heads/release/*`) are fine. The rules must satisfy the PROTECTION CONTRACT (see `satisfiesProtectionContract`).
+ */
+export function protectsBranchFromRulesets(payload, branch) {
+  const list = Array.isArray(payload) ? payload : [payload];
+  if (typeof branch !== "string" || branch.length > 255 || !/^[A-Za-z0-9][A-Za-z0-9._\/-]*$/.test(branch)) return false; // not a plausible branch name: nothing is provable (also bounds the matching cost)
+  const ref = `refs/heads/${branch}`;
+  return list.some((rs) => {
+    if (!rulesetFlagsOk(rs)) return false; // active, branch target, and a PRESENT empty bypass list (missing = unknown = not protected)
+    const rn = rs.conditions?.ref_name;
+    const inc = rn?.include ?? [];
+    const exc = rn?.exclude ?? [];
+    if (!Array.isArray(inc) || !Array.isArray(exc)) return false;
+    const included = inc.some((p) => p === ref || p === "~ALL" || patternToMatcher(p)?.(ref) === true);
+    if (!included) return false;
+    const excluded = exc.some((p) => {
+      if (p === ref || p === "~ALL" || p === "~DEFAULT_BRANCH") return true;
+      const match = patternToMatcher(p, true);
+      return match === null || match(ref);
+    });
+    return !excluded && satisfiesProtectionContract(rs.rules);
+  });
+}

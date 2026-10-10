@@ -24,7 +24,6 @@ ai-native/
 ├── governance/           # Roadmaps, ADRs, gates config, rulesets, session context
 ├── .github/workflows/    # CI, security, release, and the trust/merge/pr/L3 gates
 ├── .agents/skills/       # Canonical skills
-├── legacy/template-v2/   # TEMPLATE v2.0.5 baseline (imported, filtered)
 ├── template/ foundation/ knowledge/   # Consolidated areas (git subtree), see ADR-001
 └── scripts/              # Repository scripts (validate-actions-pinned, ...)
 ```

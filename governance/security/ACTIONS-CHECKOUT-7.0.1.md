@@ -17,7 +17,7 @@ La PR #48 de Dependabot quedó 39 commits detrás de `main` y falla `pr-gate` y 
 
 ## Evidencia
 
-`node scripts/validate-actions-pinned.mjs` PASS (todas las acciones fijadas por SHA completo); `node --test runtime/gates/*.test.mjs scripts/*.test.mjs` 80/80. Control plane (`.github/**`): merge humano; al mergear, cerrar #48 como superseded.
+`node scripts/validate-actions-pinned.mjs` PASS (todas las acciones fijadas por SHA completo); `node --test runtime/gates/*.test.mjs scripts/*.test.mjs` 80/80. Control plane (`.github/**`): merge humano. Hecho: #78 mergeada y #48 cerrada como superseded el 2026-10-10.
 
 ## Pilot offline (Linux): imagen y Docker Hub
 

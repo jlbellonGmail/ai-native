@@ -88,7 +88,7 @@ Criterio de los scripts retirados: sin referencias por nombre ni por stem en wor
 * Clones/worktrees temporales eliminados en total: 15 (7 + 7 + 1).
 
 **Conservado:**
-* ai-native: `main`, `develop` (ver arriba) y `dependabot/github_actions/actions/checkout-7.0.1` (PR #48 abierta).
+* ai-native: `main`, `develop` (ver arriba) y `dependabot/github_actions/actions/checkout-7.0.1` (PR #48 abierta al cerrar M7; el 2026-10-10 se cerró como superseded por #78 y la rama ya no existe).
 * GI: `develop`, `main`, `gh-pages` donde existe; `gi-ot:feature/10-validacion-postgresql` (UNKNOWN, se conserva): 7 commits exclusivos (2026-08-31 a 2026-09-02) y 9 por detrás de `develop`; su PR #2 se cerró sin merge porque el Punto 10 se rehízo bajo Template v2 (PR #4, `de04bac`; `runs/v2.0.0/10-validacion-postgresql`). Probablemente SUPERSEDED, pero no se ha demostrado equivalencia de sus 61 archivos con `develop`, y no se borra trabajo exclusivo sin demostrarla.
 * Ya no queda nada de `C:\Proyectos\_m6`: los 18 archivos sueltos se clasificaron y se eliminaron. Logs de CI (`*-ci.log`, 2,5 MB): REPRODUCIBLE_TEMP (los runs viven en GitHub). `rel/platform.json`: manifest del release v3.0.1, reproducible desde el asset publicado. `*-removed.txt` y `base-*.yml`: recuperables de los diffs de las PRs de M6 mergeadas. `migrate_repo.sh`, `ship.sh`, `cleanup.py`, `prune_*.py`, `restore_steps.py`, `migrate-args*.txt`: herramientas de una sola vez de M6 con commit y digest fijados, sustituidas por `runtime/migrate/` (migrador canónico) y `governance/migration/` (evidencia); ningún repo queda por migrar.
 * `C:\Proyectos\_archive-actions-audit-2026-09-30\` (321 KB, con README): CSV de la auditoría de Actions del 2026-09-30 (HISTORICAL_EVIDENCE: instantáneas no regenerables) y sus scripts de una sola vez (HISTORICAL_TOOL, cambios ya aplicados en Git, sin consumidores). Revisar el 2027-01-09 y borrar si nadie los ha necesitado.
@@ -125,7 +125,9 @@ Fuente: `governance/migration/M6-CLOSURE-2026-10-08.md`. Las brechas 1 y 7 está
 
 Las brechas 1, 2, 6 y 7 afectarían a cualquier migración nueva de un repo Python; no queda ningún repo GI por migrar, así que no hay urgencia.
 
-## PR #48 (Dependabot `actions/checkout` 4.2.2 → 7.0.1) — `KEEP_OPEN`
+## PR #48 (Dependabot `actions/checkout` 4.2.2 → 7.0.1) — `KEEP_OPEN` al cerrar M7; hoy `CLOSED / SUPERSEDED` por #78
+
+**Actualización 2026-10-10:** #48 se cerró (04:32Z) sin mergear tras mergearse #78, que aplicó el mismo bump (`actions/checkout` 7.0.1, SHA `3d3c42e`) sobre un `main` actual con la nota de gobernanza exigida por el gate. Lo que sigue es el snapshot histórico de M7 y no describe el estado actual.
 
 Reverificada el 2026-10-09: abierta, HEAD `718c519` (sin cambios desde 2026-10-06), base `521d203`, 30 commits por detrás de `main` (`c8c7d05`, snapshot de esta verificación; reconsultada tras #76: sigue abierta, mismo HEAD, 36 commits por detrás de `main` `cb34566`); toca los 14 workflows (plano de control); `main` sigue en v4.2.2, así que no está superseded ni hace falta una PR de reemplazo (repetiría los mismos 14 cambios). Fallos, leídos en los logs de la ejecución del 2026-10-06 (no se han repetido desde entonces):
 * `pr-gate` y `security-scan`: `docs-gate/DOCS_NOT_UPDATED` (14 archivos de comportamiento, ninguna nota de governance). Es el mismo hallazgo en ambos.

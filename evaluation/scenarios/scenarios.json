@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "suite": "circuit-behavior",
   "suiteVersion": "2.0.0",
-  "description": "EVL-01. Escenarios A-J de TEMPLATE v2.0.5 (legacy/template-v2/evals/scenarios.json) reconvertidos de 'actual escrito a mano igual a expected' (D-4) a un dataset con `input` real: el harness (runtime/evals/harness.mjs) ejecuta el codigo real del circuito y calcula `actual`. Un escenario con campo `actual` es rechazado. `kind` elige el ejecutor; `expected` es lo que debe producir; la comparacion es por subconjunto sobre las claves de `expected`.",
+  "description": "EVL-01. Escenarios A-J de TEMPLATE v2.0.5 (template@v2.0.5:evals/scenarios.json) reconvertidos de 'actual escrito a mano igual a expected' (D-4) a un dataset con `input` real: el harness (runtime/evals/harness.mjs) ejecuta el codigo real del circuito y calcula `actual`. Un escenario con campo `actual` es rechazado. `kind` elige el ejecutor; `expected` es lo que debe producir; la comparacion es por subconjunto sobre las claves de `expected`.",
   "scenarios": [
     { "id": "A-trivial", "version": "2.0.0", "kind": "assess", "question": "Un cambio trivial evita ceremonia innecesaria?", "input": { "changedPaths": ["docs/readme.md"] }, "expected": { "depth": "LIGHT", "risk": "LOW", "requiredReviewsInclude": ["code"] } },
     { "id": "B-normal", "version": "2.0.0", "kind": "assess", "question": "Una feature normal usa SDD proporcional?", "input": { "changedPaths": ["src/a.js", "src/b.js"] }, "expected": { "depth": "STANDARD", "risk": "MEDIUM" } },

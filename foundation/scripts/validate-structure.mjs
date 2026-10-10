@@ -54,7 +54,7 @@ for (const [task, files] of Object.entries(coverage.tasks)) {
   for (const file of files) assert(exists(file), `${task} maps missing file ${file}`);
 }
 
-const emptyDirs = walkDirs(root).filter((dir) => !dir.includes("_deprecated"));
+const emptyDirs = walkDirs(root);
 assert(emptyDirs.length === 0, `empty active directories found: ${emptyDirs.join(", ")}`);
 
 console.log("ai-foundation structure validation PASS");

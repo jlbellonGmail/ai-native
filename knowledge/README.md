@@ -20,7 +20,6 @@ to decide whether AI-native work is acceptable.
 | `config/` | Machine-readable schemas and policies. |
 | `validation/` | Coverage maps and validation entry points. |
 | `scripts/` | Local validators. |
-| `_deprecated/` | Recoverable legacy or tool-context material no longer part of active product. |
 
 ## Validate
 

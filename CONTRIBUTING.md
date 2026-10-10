@@ -32,7 +32,7 @@ Never put credentials in the repository, in a PR, or in a workflow that a branch
 
 ## Legacy material
 
-`legacy/` and every `_deprecated/` directory are frozen history, not instructions. Do not extend them; see `legacy/README.md`.
+`_deprecated/` directories (when present) are frozen history, not instructions. Do not extend them. The former `legacy/` tree was retired in v3.0.2; see `parity/v2.0.5/legacy-import-manifest.json`.
 
 ## Reporting security problems
 

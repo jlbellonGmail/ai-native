@@ -3,7 +3,7 @@
 # runs the node implementation against (M3.1, PAR-RESULT-SEMANTICS / P3).
 # Exits 0 on full conformance, 1 otherwise. No Pester dependency (matches
 # ci.yml's "no install step" convention for this repo's own runtime/lib,
-# as opposed to legacy/template-v2's pytest suite which does install
+# as opposed to template@v2.0.5's pytest suite which does install
 # requirements-dev.txt).
 $ErrorActionPreference = "Stop"
 . (Join-Path $PSScriptRoot "result.ps1")

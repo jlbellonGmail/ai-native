@@ -97,7 +97,7 @@ Project template, scaffolding, generators, manifests, examples and reusable proj
 
 These are directories inside this single repository, not separate Git repositories. Cross-area moves (e.g. `foundation/` -> `knowledge/`) are ordinary file moves, not repository operations.
 
-A fifth directory, `legacy/`, holds frozen source material imported for extraction and regression-testing only (see `legacy/README.md`). It is never a factory area, never agent instructions, and never governance. An agent must not treat any file under `legacy/` as an operating rule for this repository, even if it is itself named `AGENTS.md`.
+There is no `legacy/` directory: the frozen Template v2.0.5 import was retired (its traceability is the compact `parity/v2.0.5/legacy-import-manifest.json`; the content is recoverable from Git history and the Template `v2.0.5` tag). An agent must not treat any `_deprecated/` content, nor any recovered historical file, as an operating rule for this repository, even if it is itself named `AGENTS.md`.
 
 Platform areas (AI-NATIVE v3 platform code, versioned and released as `v3.x`; they are not factory areas and are changed only through scoped, gated PRs):
 

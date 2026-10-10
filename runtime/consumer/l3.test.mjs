@@ -2,7 +2,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, symlinkSync, writeFileSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -196,4 +196,83 @@ test("python profiles declare a setup command and l3-consumer.yml sets up a pinn
   const yml = readFileSync(join(repoRoot, ".github", "workflows", "l3-consumer.yml"), "utf8").replaceAll("\r\n", "\n");
   assert.match(yml, /uses: actions\/setup-python@[0-9a-f]{40} # v/);
   assert.ok(yml.indexOf("Set up Python") < yml.indexOf("name: L3 consumer gate"), "Python is set up before the gate runs");
+});
+
+test("gap 2: python profiles for app/service, scripts-only and package root: only the package-root profile installs `.`; none needs a placeholder package", () => {
+  const read = (id) => JSON.parse(readFileSync(join(repoRoot, "profiles", `${id}.json`), "utf8"));
+  for (const id of ["python-lib", "python-service", "python-app", "python-scripts"]) assert.equal(read(id).productTestCommand, "pytest -q", id);
+  for (const id of ["python-app", "python-scripts"]) {
+    assert.doesNotMatch(read(id).productSetupCommand, /pip install\s+(--quiet\s+)?\./, `${id} must not assume an installable root package`);
+    assert.match(read(id).productSetupCommand, /-r requirements-dev\.txt/, id);
+  }
+  assert.match(read("python-app").productSetupCommand, /-r requirements\.txt/);
+  assert.doesNotMatch(read("python-scripts").productSetupCommand, /-r requirements\.txt/);
+  assert.match(read("python-lib").productSetupCommand, /pip install --quiet \./);
+});
+
+test("gap 2: monorepo/subdir: setup and tests run in the lock's productDir; traversal, absolute paths and a missing dir fail closed", () => {
+  const platformRoot = tmp();
+  mkdirSync(join(platformRoot, "profiles"), { recursive: true });
+  const nodeBin = `"${process.execPath}"`;
+  const proj = consumer();
+  put(proj, "services/api/marker.txt", "here\n");
+  writeFileSync(join(platformRoot, "profiles", "factory.json"), JSON.stringify({ productTestCommand: `${nodeBin} -e "process.exit(require('fs').existsSync('marker.txt')?0:9)"` }));
+  const setDir = (dir) => {
+    const lock = JSON.parse(readFileSync(join(proj, "ai-native.lock.json"), "utf8"));
+    if (dir === undefined) delete lock.productDir; else lock.productDir = dir;
+    writeFileSync(join(proj, "ai-native.lock.json"), JSON.stringify(lock, null, 2));
+    git(proj, "commit", "-qam", `productDir ${dir}`);
+    return runL3({ project: proj, cache, platformRoot });
+  };
+  const product = (r) => r.checks.find((c) => c.id === "product");
+  assert.equal(product(setDir(undefined)).status, "FAIL", "root has no marker.txt");
+  assert.equal(product(setDir("services/api")).status, "PASS");
+  // an invalid dir is stopped by the lock check (schema) or, failing that, by the product step itself: never run
+  for (const bad of ["../x", "/etc", "services/nope"]) {
+    const r = setDir(bad);
+    assert.equal(r.status, "FAIL", bad);
+    assert.notEqual(product(r)?.status, "PASS", bad);
+  }
+});
+
+test("gap 6: the lock schema accepts productDir only as a safe relative path", async () => {
+  const { validate } = await import("../lib/schema-lite.mjs");
+  const schema = JSON.parse(readFileSync(join(repoRoot, "contracts", "lock.schema.json"), "utf8"));
+  const lock = JSON.parse(readFileSync(join(repoRoot, "evaluation", "fixtures", "migrate", "lock-sample.json"), "utf8"));
+  assert.deepEqual(validate({ ...lock }, schema), []);
+  assert.deepEqual(validate({ ...lock, productDir: "services/api" }, schema), []);
+  for (const bad of ["../x", "/abs", "a/../b/", "C:/x", ""]) assert.notDeepEqual(validate({ ...lock, productDir: bad }, schema), [], bad);
+});
+
+test("gap 2 (productDir at run time): a non-string, traversing, absolute or missing productDir fails closed and runs nothing; a valid one runs there", async () => {
+  const { productTests } = await import("./l3.mjs");
+  const platformRoot = tmp();
+  mkdirSync(join(platformRoot, "profiles"), { recursive: true });
+  const nodeBin = `"${process.execPath}"`;
+  writeFileSync(join(platformRoot, "profiles", "factory.json"), JSON.stringify({ productTestCommand: `${nodeBin} -e "process.exit(require('fs').existsSync('marker.txt')?0:9)"` }));
+  const project = tmp();
+  put(project, "sub/marker.txt", "x\n");
+  const ran = [];
+  const run = (cmd, opts) => { ran.push(opts.cwd); return spawnSync(cmd, { ...opts, shell: true }); };
+  const go = (productDir) => productTests({ project, lock: { profiles: ["factory"], productDir }, platformRoot, run });
+  for (const bad of [42, null, ["sub"], "../x", "/etc", "C:/x", "sub/../../x", "nope"]) {
+    assert.equal(go(bad).status, "FAIL", JSON.stringify(bad));
+  }
+  assert.deepEqual(ran, [], "nothing was executed for an invalid productDir");
+  assert.equal(go("sub").status, "PASS");
+  assert.equal(ran.length, 1);
+  assert.equal(go(undefined).status, "FAIL", "root has no marker.txt");
+
+  // a link INSIDE the project that points OUTSIDE it (lexically fine, really not): must fail closed and run nothing
+  const outside = tmp();
+  put(outside, "marker.txt", "x\n"); // the command would PASS there, so only the check can stop it
+  symlinkSync(outside, join(project, "escape"), process.platform === "win32" ? "junction" : "dir");
+  const before = ran.length;
+  const escaped = go("escape");
+  assert.equal(escaped.status, "FAIL", "a symlink/junction leaving the project is refused");
+  assert.match(escaped.detail, /resolves outside the project/);
+  assert.equal(ran.length, before, "nothing ran in the escaped directory");
+  // ... while a link that stays inside the project is fine
+  symlinkSync(join(project, "sub"), join(project, "inside"), process.platform === "win32" ? "junction" : "dir");
+  assert.equal(go("inside").status, "PASS", "a link that resolves inside the project is allowed");
 });

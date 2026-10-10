@@ -18,7 +18,6 @@ knowledge registries.
 | `scripts/` | Auditing, validation and setup automation. |
 | `docs/` | Architecture, operational and ENTERPRISE-10-10 roadmap mapping. |
 | `examples/` | Minimal usage examples for foundation contracts. |
-| `_deprecated/` | Recoverable legacy or ambiguous content moved out of the active product surface. |
 
 ## Validate
 

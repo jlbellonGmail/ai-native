@@ -322,7 +322,7 @@
       "file": "test_template_consumer_upgrade.py",
       "functions": 4,
       "action": "KEEP_LEGACY_AND_REPLACE",
-      "destination": "legacy/template-v2/tests (frozen) + tests/migrate",
+      "destination": "template@v2.0.5:tests (tag) + tests/migrate",
       "capabilities": [
         "DIS-02"
       ]
@@ -331,7 +331,7 @@
       "file": "test_template_starter_sync.py",
       "functions": 1,
       "action": "KEEP_LEGACY_AND_REPLACE",
-      "destination": "legacy/template-v2/tests (frozen) + tests/migrate",
+      "destination": "template@v2.0.5:tests (tag) + tests/migrate",
       "capabilities": [
         "DIS-01"
       ]

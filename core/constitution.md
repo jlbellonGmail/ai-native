@@ -2,7 +2,7 @@
 
 Normativa estable de diseño para AI-NATIVE v3. Preserva (GOV-02, `PRESERVED`)
 los 18 principios de TEMPLATE v2.0.5's `CONSTITUTION.md`
-(`legacy/template-v2/CONSTITUTION.md`), referenciados desde
+(`template@v2.0.5:CONSTITUTION.md`), referenciados desde
 `governance/adr/ADR-001-arquitectura-referencia-versionada.md`. El
 comportamiento ejecutable vigente vive en `core/kernel.md` (bloque mínimo) y
 en el AGENTS.md de cada consumidor (bloque local); los principios no
