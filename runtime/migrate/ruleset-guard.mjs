@@ -265,6 +265,7 @@ export function fetchBranchProtected({ repo, branch, run = gh }) {
  */
 export function patternToMatcher(pattern, loose = false) {
   if (typeof pattern !== "string" || !pattern || pattern.length > 200 || /[?[\]{}\\]/.test(pattern)) return null;
+  if (pattern.includes("***")) return null; // runs of 3+ stars have no single reading across glob engines: ambiguous
   // EXCLUDE (loose) mode also treats `**/` as "zero or more directories" (fnmatch convention), so `refs/heads/**/develop` covers
   // `refs/heads/develop`; INCLUDE mode keeps `**` + a literal `/` (stricter: it can only match less, never more).
   const tokens = pattern.split(loose ? /(\*\*\/|\*\*|\*)/ : /(\*\*|\*)/).filter((t) => t !== "");
@@ -313,6 +314,7 @@ export function protectsBranchFromRulesets(payload, branch) {
   const ref = `refs/heads/${branch}`;
   return list.some((rs) => {
     if (!rs || typeof rs !== "object" || rs.enforcement !== "active") return false;
+    if (Array.isArray(rs.bypass_actors) ? rs.bypass_actors.length > 0 : rs.bypass_actors !== undefined) return false; // someone can push around it: the reactive guard is still needed (fail closed)
     if (rs.target !== undefined && rs.target !== "branch") return false; // a tag/push ruleset says nothing about the branch
     const rn = rs.conditions?.ref_name;
     const inc = rn?.include ?? [];

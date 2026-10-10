@@ -394,7 +394,7 @@ test("gap 7 (fail closed): ruleset include/exclude matrix decides whether develo
     ["tag-target ruleset", rs([D], [], { target: "tag" }), false],
     ["branch-target ruleset", rs([D], [], { target: "branch" }), true],
     ["many-wildcard exclude that does not cover develop is evaluated exactly (linear matcher)", rs([D], ["refs/heads/" + "*a".repeat(14) + "x"]), true],
-    ["stacked-star exclude that does not cover develop", rs([D], ["refs/heads/" + "**".repeat(30) + "x"]), true],
+    ["stacked-star exclude (contains ***: ambiguous, treated as touching develop)", rs([D], ["refs/heads/" + "**".repeat(30) + "x"]), false],
     ["stacked-star exclude that DOES cover develop", rs([D], ["refs/heads/" + "**".repeat(30)]), false],
     ["exclude longer than 200 chars", rs([D], ["refs/heads/" + "z".repeat(250)]), false],
   ];
@@ -463,6 +463,11 @@ test("gap 7 (matcher): `**/` in an EXCLUDE covers zero or more directories; the 
   assert.equal(prot(rs([D], ["refs/heads/DEVELOP"]), "develop"), false, "exclude differing only in case is treated as touching develop");
   assert.equal(prot(rs([D], ["refs/heads/Dev*"]), "develop"), false);
   assert.equal(prot(rs(["refs/heads/Develop"], []), "develop"), false, "include is case-sensitive");
+  assert.equal(prot(rs([D], ["refs/heads/***/develop"]), "develop"), false, "`***` is ambiguous: treated as touching develop");
+  assert.equal(prot(rs([D], ["refs/heads/**/**/develop"]), "develop"), false);
+  assert.equal(prot(rs(["refs/heads/***"], []), "develop"), false, "ambiguous include is not provable");
+  assert.equal(prot([{ ...rs([D], [])[0], bypass_actors: [{ actor_id: 5, actor_type: "RepositoryRole", bypass_mode: "always" }] }], "develop"), false, "an always-bypass actor can push around the ruleset: keep the guard");
+  assert.equal(prot([{ ...rs([D], [])[0], bypass_actors: [] }], "develop"), true, "no bypass actors: provable");
   const special = new Set([".", "+", "^", "$", "{", "}", "(", ")", "|", "[", "]", "\\"]);
   const reference = (pattern, loose) => {
     let re = "";
@@ -476,7 +481,7 @@ test("gap 7 (matcher): `**/` in an EXCLUDE covers zero or more directories; the 
   };
   const stats = { compared: 0, positives: 0, dotPositives: 0 };
   let seed = 12345; // deterministic LCG
-  const rnd = (n) => { seed = (seed * 1103515245 + 12345) % 2147483648; return Math.floor(seed / 65536) % n; }; // high bits: the low bits of an LCG have a tiny period
+  const rnd = (n) => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return (seed >>> 16) % n; }; // exact 32-bit LCG (Math.imul), high bits
   const alpha = ["a", "b", "/", ".", "*", "**", "**/"];
   for (let k = 0; k < 4000; k += 1) {
     const tokens = Array.from({ length: 1 + rnd(7) }, () => alpha[rnd(alpha.length)]);
