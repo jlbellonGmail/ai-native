@@ -245,10 +245,15 @@ function rulesetFlagsOk(rs) {
 
 /**
  * Classic branch protection (GET /branches/:b/protection) equivalent to the contract: pull-request reviews required,
- * force-pushes and deletions disallowed, and admins NOT exempt (the analogue of an empty bypass list).
+ * force-pushes and deletions disallowed, and NO bypass in either of its two forms (the analogue of an empty bypass list):
+ * admins are not exempt (`enforce_admins`) AND `required_pull_request_reviews.bypass_pull_request_allowances` names no user,
+ * team or app. An absent allowance object means none; a present one with anything in it, or a non-object, is a bypass/unknown.
  */
 export function classicProtectionOk(p) {
-  return Boolean(p) && typeof p === "object" && Boolean(p.required_pull_request_reviews) && p.allow_force_pushes?.enabled === false && p.allow_deletions?.enabled === false && p.enforce_admins?.enabled === true;
+  if (!p || typeof p !== "object" || !p.required_pull_request_reviews || typeof p.required_pull_request_reviews !== "object") return false;
+  const allow = p.required_pull_request_reviews.bypass_pull_request_allowances;
+  const noAllowance = allow === undefined || (allow !== null && typeof allow === "object" && ["users", "teams", "apps"].every((k) => allow[k] === undefined || (Array.isArray(allow[k]) && allow[k].length === 0)));
+  return noAllowance && p.allow_force_pushes?.enabled === false && p.allow_deletions?.enabled === false && p.enforce_admins?.enabled === true;
 }
 
 /**

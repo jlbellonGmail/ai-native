@@ -2,7 +2,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, symlinkSync, writeFileSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -262,4 +262,17 @@ test("gap 2 (productDir at run time): a non-string, traversing, absolute or miss
   assert.equal(go("sub").status, "PASS");
   assert.equal(ran.length, 1);
   assert.equal(go(undefined).status, "FAIL", "root has no marker.txt");
+
+  // a link INSIDE the project that points OUTSIDE it (lexically fine, really not): must fail closed and run nothing
+  const outside = tmp();
+  put(outside, "marker.txt", "x\n"); // the command would PASS there, so only the check can stop it
+  symlinkSync(outside, join(project, "escape"), process.platform === "win32" ? "junction" : "dir");
+  const before = ran.length;
+  const escaped = go("escape");
+  assert.equal(escaped.status, "FAIL", "a symlink/junction leaving the project is refused");
+  assert.match(escaped.detail, /resolves outside the project/);
+  assert.equal(ran.length, before, "nothing ran in the escaped directory");
+  // ... while a link that stays inside the project is fine
+  symlinkSync(join(project, "sub"), join(project, "inside"), process.platform === "win32" ? "junction" : "dir");
+  assert.equal(go("inside").status, "PASS", "a link that resolves inside the project is allowed");
 });

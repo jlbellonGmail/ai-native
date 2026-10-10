@@ -105,6 +105,16 @@ test("live: when several rulesets contribute rules, EVERY one needs an empty byp
 test("live: classic branch protection counts only when it equals the contract (reviews + no force-push + no deletion + admins enforced)", () => {
   const classic = { required_pull_request_reviews: { required_approving_review_count: 0 }, allow_force_pushes: { enabled: false }, allow_deletions: { enabled: false }, enforce_admins: { enabled: true } };
   assert.equal(classicProtectionOk(classic), true);
+  const withAllow = (allow) => ({ ...classic, required_pull_request_reviews: { ...classic.required_pull_request_reviews, bypass_pull_request_allowances: allow } });
+  assert.equal(classicProtectionOk(withAllow({ users: [], teams: [], apps: [] })), true, "an EMPTY allowance list is no bypass");
+  assert.equal(classicProtectionOk(withAllow({})), true);
+  assert.equal(classicProtectionOk(withAllow({ users: [{ login: "someone" }], teams: [], apps: [] })), false, "a user can bypass the required reviews");
+  assert.equal(classicProtectionOk(withAllow({ users: [], teams: [{ slug: "admins" }], apps: [] })), false, "a team can bypass");
+  assert.equal(classicProtectionOk(withAllow({ users: [], teams: [], apps: [{ slug: "bot" }] })), false, "an app can bypass");
+  assert.equal(classicProtectionOk(withAllow(null)), false, "null = unknown");
+  assert.equal(classicProtectionOk(withAllow("none")), false, "non-object = unknown");
+  assert.equal(classicProtectionOk(withAllow({ users: "x" })), false, "malformed list = unknown");
+  assert.equal(classicProtectionOk({ ...classic, required_pull_request_reviews: "yes" }), false);
   assert.equal(classicProtectionOk({ ...classic, enforce_admins: { enabled: false } }), false, "admins can bypass");
   assert.equal(classicProtectionOk({ ...classic, allow_force_pushes: { enabled: true } }), false);
   assert.equal(classicProtectionOk({ ...classic, allow_deletions: { enabled: true } }), false);

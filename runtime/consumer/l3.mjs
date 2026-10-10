@@ -15,7 +15,7 @@
 // --require-base is what the PR workflow passes: with no resolvable base the circuit and p45 checks FAIL
 // instead of degrading to NOT_APPLICABLE (a gate must not fail open when its context is missing).
 import { createHash } from "node:crypto";
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -120,6 +120,10 @@ export function productTests({ project, lock, platformRoot, run }) {
     cwd = resolve(project, lock.productDir);
     const rel = relative(project, cwd);
     if (!/^[A-Za-z0-9_][A-Za-z0-9_.\/-]*$/.test(lock.productDir) || rel.startsWith("..") || isAbsolute(rel) || !existsSync(cwd)) return check("product", "FAIL", `productDir '${lock.productDir}' is invalid or missing`);
+    // the lexical check above does not follow symlinks/junctions: a link inside the consumer that points outside it must not
+    // become the working directory (the platform runs the profile's commands there), so compare the REAL paths too
+    const realRel = relative(realpathSync(project), realpathSync(cwd));
+    if (realRel.startsWith("..") || isAbsolute(realRel)) return check("product", "FAIL", `productDir '${lock.productDir}' resolves outside the project (symlink or junction)`);
   }
   // The setup command comes from the pinned platform profile (like the test command), never from the consumer PR.
   if (profile.productSetupCommand) {

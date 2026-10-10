@@ -1,6 +1,6 @@
 // `migrate` v2 -> v3, on a REAL v2 consumer (template-starter v2.0.4, pinned by SHA; needs github.com: SKIPs locally,
 // FAILS with AI_NATIVE_REQUIRE_NETWORK=1) plus synthetic edge cases that do not need the network.
-import test, { after, afterEach, beforeEach } from "node:test";
+import test, { after } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, existsSync } from "node:fs";
@@ -28,25 +28,29 @@ try {
   starterBase = null;
   if (process.env.AI_NATIVE_REQUIRE_NETWORK === "1") throw error;
 }
-// ... and a PRIVATE working copy per test (`starter`). The tests used to share and mutate a single clone: a test that failed
-// half-way (a commit, a journal or a retired file left behind) made every later real-starter test fail in a cascade, which
-// looked like "random" failures of different tests that passed in isolation.
+// ... and a PRIVATE working copy for each test that uses it (`starterTest`), removed afterwards. The tests used to share and
+// mutate a single clone, so a test that failed half-way (a commit, a journal or a retired file left behind) contaminated the
+// next ones. Synthetic tests never touch `starter` and pay nothing.
 let starter = null;
 let copies = 0;
-beforeEach(() => {
-  starter = null;
-  if (!starterBase) return;
-  starter = join(base, `starter-${(copies += 1)}`);
-  execFileSync("git", ["clone", "-q", "--no-hardlinks", starterBase, starter], { stdio: "pipe" });
-  git(starter, "checkout", "-q", "--detach", STARTER_V204);
-});
-afterEach(() => {
-  if (starter) rmSync(starter, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
-});
 const net = { skip: starterBase ? false : "github.com not reachable (set AI_NATIVE_REQUIRE_NETWORK=1 to make this a failure)", timeout: 280000 };
+/** `test` for a case that needs the real v2 consumer: skipped without network, runs on its own private clone of it. */
+function starterTest(name, fn) {
+  test(name, net, async () => {
+    starter = join(base, `starter-${(copies += 1)}`);
+    execFileSync("git", ["clone", "-q", "--no-hardlinks", starterBase, starter], { stdio: "pipe" });
+    git(starter, "checkout", "-q", "--detach", STARTER_V204);
+    try {
+      await fn();
+    } finally {
+      rmSync(starter, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
+      starter = null;
+    }
+  });
+}
 const status = (dir) => git(dir, "status", "--porcelain", "--untracked-files=all");
 
-test("real starter v2.0.4: plan is read-only, classifies everything, retires only platform-owned IDENTICAL files", net, () => {
+starterTest("real starter v2.0.4: plan is read-only, classifies everything, retires only platform-owned IDENTICAL files", () => {
   const plan = planMigration({ target: starter, release: RELEASE });
   assert.equal(status(starter), "", "plan writes nothing");
   assert.equal(plan.counts.UNKNOWN, 0);
@@ -63,7 +67,7 @@ test("real starter v2.0.4: plan is read-only, classifies everything, retires onl
   assert.ok(plan.keptLocal.some((f) => f.path === ".github/workflows/post-hitl-merge-gate.yml"));
 });
 
-test("real starter v2.0.4: apply -> only the migration changes the tree -> revert gives a byte-identical clean tree", net, () => {
+starterTest("real starter v2.0.4: apply -> only the migration changes the tree -> revert gives a byte-identical clean tree", () => {
   const head = git(starter, "rev-parse", "HEAD");
   const applied = applyMigration({ target: starter, release: RELEASE });
   assert.equal(applied.status, "APPLIED", JSON.stringify(applied.plan?.unresolved));
@@ -85,7 +89,7 @@ test("real starter v2.0.4: apply -> only the migration changes the tree -> rever
   assert.equal(git(starter, "diff", "--stat", "HEAD"), "", "and the tree is byte-identical to the base");
 });
 
-test("real starter v2.0.4: a user edit made after apply survives revert (PARTIAL), and the journal is kept", net, () => {
+starterTest("real starter v2.0.4: a user edit made after apply survives revert (PARTIAL), and the journal is kept", () => {
   applyMigration({ target: starter, release: RELEASE });
   writeFileSync(join(starter, "ai-native.lock.json"), `${readFileSync(join(starter, "ai-native.lock.json"), "utf8")}\n`);
   const r = revertMigration({ target: starter });
@@ -176,7 +180,7 @@ test("runs/, .audit/, ROADMAP.md, STATUS.md and docs/producto are never retired 
   }
 });
 
-test("a file edited and committed after the plan is MODIFIED at apply time: it is never retired and survives apply and revert", net, () => {
+starterTest("a file edited and committed after the plan is MODIFIED at apply time: it is never retired and survives apply and revert", () => {
   const plan = planMigration({ target: starter, release: RELEASE });
   const victim = plan.retire.at(-1).path;
   const edited = `${readFileSync(join(starter, victim), "utf8")}\nedited after the plan\n`;
@@ -192,7 +196,7 @@ test("a file edited and committed after the plan is MODIFIED at apply time: it i
   assert.equal(status(starter), "");
 });
 
-test("a failure DURING apply (after deletions started) rolls back through the journal that was written first", net, () => {
+starterTest("a failure DURING apply (after deletions started) rolls back through the journal that was written first", () => {
   const boom = new Error("injected failure after the retire phase");
   assert.throws(() => applyMigration({ target: starter, release: RELEASE, hooks: { afterRetire: () => { throw boom; } } }), /injected failure/);
   assert.ok(!existsSync(join(starter, JOURNAL)), "a clean rollback removes its journal");
@@ -207,7 +211,7 @@ test("apply is all-or-nothing on a bad release: a lock that does not validate le
   assert.equal(existsSync(join(dir, JOURNAL)), false);
 });
 
-test("revert never overwrites a file the user created at a retired path after apply", net, () => {
+starterTest("revert never overwrites a file the user created at a retired path after apply", () => {
   const applied = applyMigration({ target: starter, release: RELEASE });
   assert.equal(applied.status, "APPLIED");
   const retired = applied.removed.find((p) => !applied.written.includes(p));
@@ -252,7 +256,7 @@ test("a bad release is rejected by the LOCK validation specifically (not by an u
   assert.equal(git(dir, "status", "--porcelain", "--untracked-files=all"), "");
 });
 
-test("real starter v2.0.4 + its real ruleset: the 3 required checks WILL_DISAPPEAR (C-2); apply is refused until accepted; the L3 check is proposed", net, () => {
+starterTest("real starter v2.0.4 + its real ruleset: the 3 required checks WILL_DISAPPEAR (C-2); apply is refused until accepted; the L3 check is proposed", () => {
   // required checks of ruleset template-starter-main (24421920), as the API returns them
   const required = ["circuit-tests", "product-tests", "local-reconciler-tests"].map((context) => ({ context, integrationId: 15368 }));
   const plan = planMigration({ target: starter, release: RELEASE, tools: ["claude"], requiredChecks: required });
@@ -271,7 +275,7 @@ test("real starter v2.0.4 + its real ruleset: the 3 required checks WILL_DISAPPE
   assert.equal(status(starter), "");
 });
 
-test("CLI on the real starter: apply with --accept-ruleset-change exits 0 and reports the accepted findings as warnings; without it, it is refused", net, () => {
+starterTest("CLI on the real starter: apply with --accept-ruleset-change exits 0 and reports the accepted findings as warnings; without it, it is refused", () => {
   const rsFile = join(base, "required.json");
   writeFileSync(rsFile, JSON.stringify([{ type: "required_status_checks", parameters: { required_status_checks: ["circuit-tests", "product-tests", "local-reconciler-tests"].map((context) => ({ context, integration_id: 15368 })) } }]));
   const cli = (...extra) => spawnSync(process.execPath, [join(here, "migrate.mjs"), "apply", "--target", starter, "--repo", RELEASE.repo, "--version", RELEASE.version, "--commit", RELEASE.commit, "--digest", RELEASE.digest, "--tool", "claude", "--ruleset-file", rsFile, "--json", ...extra], { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });

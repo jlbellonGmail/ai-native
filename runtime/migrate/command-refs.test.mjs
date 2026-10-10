@@ -19,8 +19,6 @@ test("supported syntax: every way of naming the file counts as a reference", () 
     "pip install -r 'requirements-dev.txt'",
     "pip install . -r requirements-dev.txt && pytest",
     "(pip install -r requirements-dev.txt)",
-    "x=$(pip install -r requirements-dev.txt)",
-    "`pip install -r requirements-dev.txt`",
     "pip install -r requirements-dev.txt;pytest",
     "pip install -r requirements-dev.txt|tee log",
     "pip install -r requirements-dev.txt>log",
@@ -53,12 +51,17 @@ test("a different file that merely contains the name is NOT a reference", () => 
 });
 
 test("unsupported forms are opaque: every candidate is treated as referenced (kept)", () => {
-  for (const cmd of ["pip install -r $FILE", "pip install -r ${FILE}", 'pip install -r "$REQS"', "pip install -r $1", "eval pip install -r x", "bash -c 'pip install -r x'", "sh -c 'pytest'", "zsh -lc pytest", "ls | xargs pip install -r", "pip install -r {requirements,constraints}.txt"]) {
+  for (const cmd of ["pip install -r $FILE", "pip install -r ${FILE}", 'pip install -r "$REQS"', "pip install -r $1", "eval pip install -r x", "bash -c 'pip install -r x'", "sh -c 'pytest'", "zsh -lc pytest", "ls | xargs pip install -r", "pip install -r {requirements,constraints}.txt",
+    // review: shell-valid spellings of the SAME name that the matcher cannot see must be opaque (=> kept), never "not referenced"
+    'pip install -r requirements-"dev".txt', 'pip install -r r"equirements-dev.txt"', "pip install -r requirements-d''ev.txt", "pip install -r requirements-d\\ev.txt",
+    "pip install -r $(printf requirements-d%s.txt ev)", "x=$(pip install -r requirements-dev.txt)", "`pip install -r requirements-dev.txt`", "pip install -r <(cat requirements-dev.txt)", "cat >(tee requirements-dev.txt)",
+    "pip install -r sub\\requirements-dev.txt", "pip install -r requirements\\\n-dev.txt", "pip install \\\n  -r requirements-dev.txt",
+  ]) {
     assert.equal(commandIsOpaque(cmd), true, `opaque: ${cmd}`);
     assert.equal(referencesPath(cmd, F), true, `kept: ${cmd}`);
     assert.equal(referencesPath(cmd, "anything/else.cfg"), true, `kept (any candidate): ${cmd}`);
   }
-  for (const cmd of ["python -m pip install --quiet . -r requirements-dev.txt", "pytest -q", "x=$(pip list)", "pip install -r requirements.txt && pytest -q"]) assert.equal(commandIsOpaque(cmd), false, `analysable: ${cmd}`);
+  for (const cmd of ["python -m pip install --quiet . -r requirements-dev.txt", "pytest -q", "pip install -r requirements.txt && pytest -q"]) assert.equal(commandIsOpaque(cmd), false, `analysable: ${cmd}`);
 });
 
 test("the shipped python profiles are analysable and keep exactly what they name", async () => {

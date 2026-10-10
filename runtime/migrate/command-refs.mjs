@@ -8,13 +8,15 @@
 //   - as a word, quoted or not:                  pip install -r requirements-dev.txt     "requirements-dev.txt"
 //   - glued to an option:                        -rrequirements-dev.txt   --requirement=requirements-dev.txt   -c f   --constraint f
 //   - with a relative prefix or a variable root: ./requirements-dev.txt   sub/requirements-dev.txt   ${ROOT}/requirements-dev.txt
-//   - after redirections, subshells, backticks, comments, separators:   >requirements-dev.txt  (pip -r f)  `cat f`  # f  ; & | ,
+//   - after redirections, plain parenthesised subshells, comments, separators:   >requirements-dev.txt  (pip -r f)  # f  ; & | ,
 //   - in any letter case (case-insensitive file systems, and keeping a file is the safe error);
 //   - through glob words (`requirements-*.txt`, `requirements?dev.txt`, `req[a-z]*.txt`) that match the path or its base name.
 // NOT a reference: a different file that merely contains the name (`requirements-dev.txt.bak`, `my-requirements-dev.txt`).
 //
 // UNSUPPORTED (cannot be analysed => `commandIsOpaque` => EVERY candidate file is treated as referenced, i.e. kept):
-//   variable expansion used as a word (`$FILE`, `${FILE}`), `eval`, `sh|bash|zsh|dash -c ...`, `xargs`, brace lists `{a,b}`.
+//   variable expansion (`$FILE`, `${FILE}`), command substitution `$(...)` and backticks, process substitution `<(...)` `>(...)`,
+//   `eval`, `sh|bash|zsh|dash -c ...`, `xargs`, brace lists `{a,b}`, ANY backslash (escapes, Windows paths, line continuations),
+//   and quotes in the middle of a word (`requirements-"dev".txt`, `d''ev`): all of them can spell a name the matcher cannot see.
 
 const OPAQUE = [
   /\$\{?[A-Za-z_@*#?0-9]/, // $VAR, ${VAR}, $1, $@
@@ -22,6 +24,11 @@ const OPAQUE = [
   /(^|[\s;&|(`])(?:ba|z|da|k)?sh\s+(?:-[A-Za-z]*\s+)*-[A-Za-z]*c(\s|$)/,
   /(^|[\s;&|(`])xargs(\s|$)/,
   /\{[^{}]*,[^{}]*\}/, // brace expansion
+  /\$\(/, // command substitution: the name may be computed
+  /`/, // backticks: same
+  /[<>]\(/, // process substitution
+  /\\/, // any backslash: escapes, `\` + newline inside a word, Windows separators
+  /[A-Za-z0-9_.\-/]["']+[A-Za-z0-9_.\-/]/, // a quote in the middle of a word splits a name: r"equirements-dev.txt", d''ev
 ];
 
 /** True when the command cannot be analysed with certainty (see UNSUPPORTED above). */
