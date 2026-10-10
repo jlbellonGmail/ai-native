@@ -156,7 +156,7 @@ const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 // `-r ./f`, `-rf` and `--requirement=f` are all ways pip names a file: normalise them to " f" before matching the path as a token
 const normalizeCommand = (command) => command.replace(/(^|\s)(-r|--requirement(?:=|\s+)|-c|--constraint(?:=|\s+))\s*/g, "$1$2 ").replace(/(^|[\s"'=])\.\//g, "$1");
 export const referencesPath = (command, path) => referencesNormalized(normalizeCommand(command), path);
-const referencesNormalized = (command, path) => new RegExp(`(^|[\\s"'=])${escapeRe(path)}($|[\\s"';&|])`).test(command);
+const referencesNormalized = (command, path) => new RegExp(`(^|[\\s"'=(\`])${escapeRe(path)}($|[\\s"';&|)\`])`).test(command);
 
 const WORKFLOW = /^\.github\/workflows\/[^/]+\.ya?ml$/;
 

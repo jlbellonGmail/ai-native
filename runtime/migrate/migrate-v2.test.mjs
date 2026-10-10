@@ -362,7 +362,7 @@ test("gap 7 (review): a saved ruleset counts only if active and aimed at the dev
 test("gap 1 (review MINOR): `-r ./f`, `-rf`, `--requirement=f` and `-c f` count as references; another file name does not", async () => {
   const { referencesPath } = await import("./migrate.mjs");
   const F = "requirements-dev.txt";
-  for (const cmd of ["pip install -r requirements-dev.txt", "pip install -r ./requirements-dev.txt", "pip install -rrequirements-dev.txt", "pip install --requirement=requirements-dev.txt", "pip install -c requirements-dev.txt x", "pip install . -r requirements-dev.txt && pytest"]) assert.equal(referencesPath(cmd, F), true, cmd);
+  for (const cmd of ["pip install -r requirements-dev.txt", "pip install -r ./requirements-dev.txt", "pip install -rrequirements-dev.txt", "pip install --requirement=requirements-dev.txt", "pip install -c requirements-dev.txt x", "pip install . -r requirements-dev.txt && pytest", "(pip install -r requirements-dev.txt)", "x=$(pip install -r requirements-dev.txt)", "`pip install -r requirements-dev.txt`"]) assert.equal(referencesPath(cmd, F), true, cmd);
   for (const cmd of ["pip install -r requirements-dev.txt.bak", "pip install -r my-requirements-dev.txt", "pip install ."]) assert.equal(referencesPath(cmd, F), false, cmd);
 });
 

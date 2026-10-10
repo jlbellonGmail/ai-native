@@ -22,7 +22,7 @@ Consumidores de `legacy/` reemplazados: test P43 (B31) → 4 workflows v2.0.5 re
 
 ## v3.0.2
 
-`CANDIDATE`, **no publicada**. Detalle y regresiones: `governance/versioning/V3.0.2-PATCH.md`. Brechas 1, 2, 6 y 7 corregidas en la rama con regresiones; suite hermética completa `692/692` PASS (`node scripts/test-hermetic.mjs`), y `validate-parity`, `validate-contracts`, `validate-core`, `validate-compat-matrix`, `validate-doc-drift`, `validate-integrity`, `validate-entrypoints`, `validate-actions-pinned`, `validate-ci-tests-listed` PASS.
+`CANDIDATE`, **no publicada**. Detalle y regresiones: `governance/versioning/V3.0.2-PATCH.md`. Brechas 1, 2, 6 y 7 corregidas en la rama con regresiones; suite hermética completa `701/701` PASS en dos corridas consecutivas con `node scripts/test-hermetic.mjs --concurrency 1` sobre el código de la rama (recuento a la fecha de redacción; el valor vigente es el de la última corrida en el CI de la PR), y `validate-parity`, `validate-contracts`, `validate-core`, `validate-compat-matrix`, `validate-doc-drift`, `validate-integrity`, `validate-entrypoints`, `validate-actions-pinned`, `validate-ci-tests-listed` PASS.
 
 ## GI
 
@@ -50,15 +50,15 @@ Archivo en `C:\Proyectos\_archive\2026-10-09\` con `README.md` manifest: parche 
 
 | Métrica | Antes | Después |
 |---|---|---|
-| Archivos versionados | 1519 | 1233 |
+| Archivos versionados | 1519 | 1239 (incluye la rama de #78) |
 | `_deprecated` | 120 | 0 |
 | `legacy/` | 165 | 0 |
 | Validadores `validate-*.mjs` | 66 | 54 |
 | Workflows | 14 | 14 |
 | Contratos (`contracts/`) | 27 | 27 (`lock.schema.json` ampliado) |
 | Perfiles | 6 | 8 (`python-app`, `python-scripts`) |
-| Tests `*.test.mjs` | 75 | 75 (+ regresiones 1/2/6/7) |
-| Diff total | | −43 412 / +1 883 líneas, 347 archivos |
+| Tests `*.test.mjs` | 75 | 76 (+ `offline-image.test.mjs`; regresiones 1/2/6/7 añadidas a ficheros existentes) |
+| Diff total (`origin/main`..rama de #79, que incluye #78) | | −43 305 / +2 215 líneas, 369 archivos |
 
 Métricas de GI y de contexto (FASES 20 y 23) **no medidas** en esta ejecución.
 
@@ -77,4 +77,4 @@ Métricas de GI y de contexto (FASES 20 y 23) **no medidas** en esta ejecución.
 
 * La verificación de protección de `develop` (brecha 7) es heurística (`pull_request` / required checks); un ruleset atípico se trata como «no protegido» (conserva el guard: fail-safe).
 * `python-app`/`python-scripts` exigen `requirements*.txt` en el consumidor; sin ellos el gate L3 falla cerrado.
-* Cuatro tests (3 de `l3.test.mjs` y uno nuevo) fallaron en una primera pasada de la suite completa y pasaron aislados y en la reejecución completa (692/692); coherente con la contención de Windows documentada en `scripts/test-hermetic.mjs`, pero no se investigó la causa exacta.
+* Bajo carga (concurrencia por defecto) aparecieron 1–5 fallos por corrida en tests que crean repos `git` temporales, **distintos en cada corrida**, que pasan aislados y en corridas con `--concurrency 1`; coherente con la contención de Windows documentada en `scripts/test-hermetic.mjs`, causa exacta no investigada. Las 3 últimas corridas completas con `--concurrency 1` dieron 701/701 (2 de 3; la otra falló 1 test que pasó aislado).
