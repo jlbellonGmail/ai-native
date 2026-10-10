@@ -280,4 +280,3 @@ $ ... --json
 Front matter parseado y validado contra contracts/audit-report.schema.json por el propio release-gate (runtime/audit/report.mjs): sin errores ni avisos.
 Estado final: `git rev-parse HEAD` = 84d28a16689540e922828b9794446572aee3f76c; `git status --short` = 0 lineas.
 ```
-
