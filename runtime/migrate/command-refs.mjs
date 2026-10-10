@@ -1,61 +1,47 @@
 // Does a profile command (`productSetupCommand` / `productTestCommand`) depend on a given repository file? Used by `migrate` so
-// it never retires a platform-owned file the profile still needs (gap 1). This is deliberately NOT a shell parser: it is a
-// small, documented, CONSERVATIVE matcher. Wrong answers are allowed in exactly one direction: saying "referenced" for a file
-// that is not (the file is kept, a harmless leftover), never saying "not referenced" for one that is (the file would be
-// retired and the consumer's gate would break). Precise dependencies belong in the profile's declarative `requiredFiles`.
+// it never retires a platform-owned file the profile still needs (gap 1). This is deliberately NOT a shell parser, and it does
+// not try to enumerate every way a shell can spell a name. It works by ALLOWLIST: a command is analysed only when it is made
+// of a small, boring alphabet and runs nothing that could read files on its own; ANYTHING else is "opaque" and then EVERY
+// candidate file is treated as referenced (kept). Wrong answers therefore go in exactly one direction: "referenced" for a file
+// that is not (a harmless leftover), never "not referenced" for one that is. Precise implicit dependencies (`pytest` reading
+// `pytest.ini`) belong in the profile's declarative `requiredFiles`; the commands come from the platform, never from a PR.
 //
-// SUPPORTED SYNTAX (a path counts as referenced when it appears as a path or as the tail of a path):
+// ANALYSABLE: the whole command uses only   A-Z a-z 0-9  space tab newline  _ . - / = : , ; & | < > # " ' ( )
+//   and a path counts as referenced when it appears:
 //   - as a word, quoted or not:                  pip install -r requirements-dev.txt     "requirements-dev.txt"
 //   - glued to an option:                        -rrequirements-dev.txt   --requirement=requirements-dev.txt   -c f   --constraint f
-//   - with a relative prefix or a variable root: ./requirements-dev.txt   sub/requirements-dev.txt   ${ROOT}/requirements-dev.txt
-//   - after redirections, plain parenthesised subshells, comments, separators:   >requirements-dev.txt  (pip -r f)  # f  ; & | ,
-//   - in any letter case (case-insensitive file systems, and keeping a file is the safe error);
-//   - through glob words (`requirements-*.txt`, `requirements?dev.txt`, `req[a-z]*.txt`) that match the path or its base name.
+//   - with a relative prefix or as a tail:       ./requirements-dev.txt   sub/requirements-dev.txt   ../requirements-dev.txt
+//   - after redirections, subshells, comments and separators:   >f  (pip -r f)  # f  ; & | ,
+//   - in any letter case (case-insensitive file systems; keeping a file is the safe error);
+//   - as a directory that contains it:           pytest tests   ->   tests/test_x.py   (a lone `.` is the project root, not a reference)
 // NOT a reference: a different file that merely contains the name (`requirements-dev.txt.bak`, `my-requirements-dev.txt`).
 //
-// UNSUPPORTED (cannot be analysed => `commandIsOpaque` => EVERY candidate file is treated as referenced, i.e. kept):
-//   variable expansion (`$FILE`, `${FILE}`), command substitution `$(...)` and backticks, process substitution `<(...)` `>(...)`,
-//   `eval`, `sh|bash|zsh|dash -c ...`, `xargs`, brace lists `{a,b}`, ANY backslash (escapes, Windows paths, line continuations),
-//   and quotes in the middle of a word (`requirements-"dev".txt`, `d''ev`): all of them can spell a name the matcher cannot see.
+// OPAQUE (=> everything is kept): any other character (so `$ % ^ ! ~ @ + * ? [ ] { } \` backtick, non-ASCII: variable and
+//   cmd.exe expansion, globs and extglobs, escapes, Windows paths, command/process substitution, response files, ANSI-C quoting,
+//   computed names), quotes in the middle of a word (`requirements-"dev".txt`, `d''ev`), `eval`, `sh|bash|zsh|dash -c`, `xargs`,
+//   interpreter code strings (`python -c`, `node -e`, `pwsh -Command`, `cmd /c`), task runners (`make`, `tox`, `npm`, …), and
+//   running a script that can read anything (`*.sh`, `*.ps1`, `*.bat`, `*.cmd`, `python x.py`, `node x.js`).
 
+const ALPHABET = /^[A-Za-z0-9 \t\r\n_.\-/=:,;&|<>#"'()]*$/;
 const OPAQUE = [
-  /\$\{?[A-Za-z_@*#?0-9]/, // $VAR, ${VAR}, $1, $@
-  /(^|[\s;&|(`])eval(\s|$)/,
-  /(^|[\s;&|(`])(?:ba|z|da|k)?sh\s+(?:-[A-Za-z]*\s+)*-[A-Za-z]*c(\s|$)/,
-  /(^|[\s;&|(`])xargs(\s|$)/,
-  /\{[^{}]*,[^{}]*\}/, // brace expansion
-  /\$\(/, // command substitution: the name may be computed
-  /`/, // backticks: same
-  /[<>]\(/, // process substitution
-  /\\/, // any backslash: escapes, `\` + newline inside a word, Windows separators
+  /[<>]\(/, // process substitution: both characters are in the alphabet, the combination is not analysable
   /[A-Za-z0-9_.\-/]["']+[A-Za-z0-9_.\-/]/, // a quote in the middle of a word splits a name: r"equirements-dev.txt", d''ev
+  /(^|[\s;&|(])eval(\s|$)/,
+  /(^|[\s;&|(])(?:ba|z|da|k)?sh\s+(?:-[A-Za-z]*\s+)*-[A-Za-z]*c(\s|$)/,
+  /(^|[\s;&|(])xargs(\s|$)/,
+  /(^|[\s;&|(])(?:python[\d.]*|py|node|deno|bun|ruby|perl|php|pwsh|powershell|cmd)(?:\.exe)?\s+(?:-{1,2}[A-Za-z]+\s+)*(?:-c|-e|-p|-Command|-EncodedCommand|\/c|\/k)(\s|$)/i, // an interpreter given code: only flags may sit between (so `python -m pip install -c f` is NOT matched)
+  /(^|[\s;&|(])(?:make|gmake|just|tox|nox|npm|npx|pnpm|yarn|poetry|pipenv|uv|invoke|task|rake|gradle|mvn|bash|sh|zsh|dash|ksh)(\s|$)/, // runners and shells: what they execute is outside this command
+  /\.(?:sh|bash|ps1|bat|cmd)(?![A-Za-z0-9_-])/i, // a script
+  /(^|[\s;&|(])(?:python[\d.]*|py|node|deno|bun|ruby|perl)(?:\.exe)?\s+(?:-[\w-]+\s+)*[^\s-][^\s]*\.(?:py|js|mjs|cjs|rb|pl)(?![A-Za-z0-9_-])/i, // runs a script file
 ];
 
-/** True when the command cannot be analysed with certainty (see UNSUPPORTED above). */
-export const commandIsOpaque = (command) => OPAQUE.some((re) => re.test(command));
+/** True when the command cannot be analysed with certainty (see OPAQUE above). */
+export const commandIsOpaque = (command) => typeof command === "string" && (!ALPHABET.test(command) || OPAQUE.some((re) => re.test(command)));
 
 const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 // `-r f`, `-rf`, `--requirement=f`, `-c f`, `--constraint f`: pip's option forms, split so the path is a separate word
 const splitOptions = (command) => command.replace(/(^|\s)(-r|--requirement(?:=|\s+)|-c|--constraint(?:=|\s+))\s*/g, "$1$2 ");
-
-/** A glob word (`*`, `?`, `[...]`) -> RegExp over a whole path or base name, or null if it has no glob characters. */
-function globWordToRegExp(word) {
-  if (!/[*?[]/.test(word)) return null;
-  let re = "";
-  for (let i = 0; i < word.length; i += 1) {
-    const c = word[i];
-    if (c === "*") re += "[^/]*";
-    else if (c === "?") re += "[^/]";
-    else if (c === "[") {
-      const end = word.indexOf("]", i + 2);
-      if (end < 0) return null;
-      re += word.slice(i, end + 1).replace(/\\/g, "");
-      i = end;
-    } else re += escapeRe(c);
-  }
-  try { return new RegExp(`^${re}$`, "i"); } catch { return null; }
-}
 
 /** Does `command` depend on `path` (a repository-relative file path)? Conservative: see the header. */
 export function referencesPath(command, path) {
@@ -65,10 +51,11 @@ export function referencesPath(command, path) {
   // literal occurrence of the path (or its tail), bounded so that a longer file name does not match
   const literal = new RegExp(`(^|[^A-Za-z0-9_.-])${escapeRe(path)}(?![A-Za-z0-9_-]|\\.[A-Za-z0-9])`, "i");
   if (literal.test(text)) return true;
-  const base = path.split("/").at(-1);
-  for (const word of text.split(/[\s"'`;&|()<>=,]+/)) {
-    const g = globWordToRegExp(word.replace(/^\.\//, ""));
-    if (g && (g.test(path) || g.test(base))) return true;
+  // a directory argument that contains the file (`pytest tests` -> tests/test_x.py); `.` alone is the project root, not a reference
+  const lower = path.toLowerCase();
+  for (const raw of text.split(/[\s"'`;&|()<>=,]+/)) {
+    const dir = raw.replace(/^(\.\/)+/, "").replace(/\/+$/, "").toLowerCase();
+    if (dir && dir !== "." && lower.startsWith(`${dir}/`)) return true;
   }
   return false;
 }
