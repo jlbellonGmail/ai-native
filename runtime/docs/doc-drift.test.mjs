@@ -54,8 +54,8 @@ test("extensionless module reference resolves to .mjs; globs and placeholders ar
   } finally { rmSync(root, { recursive: true, force: true }); }
 });
 
-test("legacy/ and non-listed docs are not checked", () => {
-  const root = fixture({ "legacy/old.md": "core/gone.md", "docs/x.md": "core/gone.md" });
+test("non-listed docs are not checked", () => {
+  const root = fixture({ "docs/x.md": "core/gone.md" });
   try {
     assert.deepEqual(checkDocDrift(root).errors, []);
   } finally { rmSync(root, { recursive: true, force: true }); }
@@ -75,12 +75,11 @@ test("registry/dir/frontmatter mismatches are flagged", () => {
   } finally { rmSync(root, { recursive: true, force: true }); }
 });
 
-test("a project-*/factory-* copy of a canonical skill is flagged as duplicate; legacy/ is exempt", () => {
+test("a project-*/factory-* copy of a canonical skill is flagged as duplicate", () => {
   const root = fixture({
     ".agents/skills/registry.json": JSON.stringify({ schemaVersion: 1, skills: [{ id: "recovery" }] }),
     ".agents/skills/recovery/SKILL.md": skill("recovery"),
     "template/p/.agents/skills/project-recovery/SKILL.md": skill("project-recovery"),
-    "legacy/t/.agents/skills/factory-recovery/SKILL.md": skill("factory-recovery"),
   });
   try {
     const errors = checkCanonicalSource(root).errors;

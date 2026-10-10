@@ -29,6 +29,7 @@ import { buildReport, renderOutput, exitCodeForReport } from "../lib/json.mjs";
 import { statusFromCounts } from "../lib/result.mjs";
 import { validate } from "../lib/schema-lite.mjs";
 import { planBump, applyBump } from "./bump.mjs";
+import { referencesPath, commandIsOpaque } from "./command-refs.mjs";
 import { checkRulesetImpact, fetchRequiredChecks, fetchBranchProtected, protectsBranchFromRulesets, requiredChecksFrom, CODES as RULESET_CODES } from "./ruleset-guard.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -119,7 +120,7 @@ export function planMigration({ target, release, profile = "factory", tools = ["
     if (!need && !unprotected) continue;
     retire.splice(retire.indexOf(r), 1);
     keptIdentical.push(r);
-    if (need) keptByProfile.push({ path: r.path, reason: `profile '${profile}' ${need.field} references it` });
+    if (need) keptByProfile.push({ path: r.path, reason: need.command !== undefined && commandIsOpaque(need.command) ? `profile '${profile}' ${need.field} cannot be analysed (variable expansion / eval / sh -c / brace list): every platform-owned file is kept` : `profile '${profile}' ${need.field} references it` });
     // gap 7: the reactive v2 guard is the ONLY protection of `develop` until a ruleset is verified; keep it by default (fail-safe)
     else keptNoGuard.push({ path: r.path, reason: "no verified ruleset protects the branch this guard covers (NO PROTECTION GAP)" });
   }
@@ -152,11 +153,7 @@ function profileCommands(releaseRoot, profile) {
   const declared = (Array.isArray(p.requiredFiles) ? p.requiredFiles : []).filter((f) => typeof f === "string").map((file) => ({ field: "requiredFiles", file }));
   return [...fromCommands, ...declared];
 }
-const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-// `-r ./f`, `-rf` and `--requirement=f` are all ways pip names a file: normalise them to " f" before matching the path as a token
-const normalizeCommand = (command) => command.replace(/(^|\s)(-r|--requirement(?:=|\s+)|-c|--constraint(?:=|\s+))\s*/g, "$1$2 ").replace(/(^|[\s"'=])\.\//g, "$1");
-export const referencesPath = (command, path) => referencesNormalized(normalizeCommand(command), path);
-const referencesNormalized = (command, path) => new RegExp(`(^|[\\s"'=(\`])${escapeRe(path)}($|[\\s"';&|)\`])`).test(command);
+export { referencesPath, commandIsOpaque };
 
 const WORKFLOW = /^\.github\/workflows\/[^/]+\.ya?ml$/;
 
@@ -360,14 +357,22 @@ export function resolveRequiredChecks({ target, baseBranch, rulesetFile, consume
   return r.error ? { error: `${RULESET_CODES.UNREADABLE}: ${r.error}` } : { requiredChecks: r.required };
 }
 
-/** gap 7: true ONLY when a ruleset/branch protection on the develop branch is verified; anything unreadable is false (fail-safe). */
-export function resolveDevelopProtected({ target, developBranch, file, consumerRepo, skip }) {
+/**
+ * gap 7: {protected, reason}. `protected` is true ONLY when the PROTECTION CONTRACT (ruleset-guard.mjs) is demonstrated for the
+ * develop branch; every unreadable, partial or unknown answer (including a missing `bypass_actors`) is false (fail closed).
+ */
+export function resolveDevelopProtection({ target, developBranch, file, consumerRepo, skip }) {
   if (file) {
-    try { return protectsBranchFromRulesets(JSON.parse(readFileSync(resolve(file), "utf8")), developBranch); } catch { return false; }
+    try {
+      const ok = protectsBranchFromRulesets(JSON.parse(readFileSync(resolve(file), "utf8")), developBranch);
+      return { protected: ok, reason: ok ? "the saved ruleset satisfies the contract" : "the saved ruleset does not satisfy the contract for this branch" };
+    } catch { return { protected: false, reason: `could not read the ruleset file ${file}` }; }
   }
-  if (skip) return false;
+  if (skip) return { protected: false, reason: "--skip-ruleset-check: not verified" };
   const repo = consumerRepo ?? originRepo(target);
-  return repo ? fetchBranchProtected({ repo, branch: developBranch }).protected === true : false;
+  if (!repo) return { protected: false, reason: "no GitHub origin and no --consumer-repo / --develop-ruleset-file" };
+  const r = fetchBranchProtected({ repo, branch: developBranch });
+  return r.error ? { protected: false, reason: r.error } : { protected: r.protected === true, reason: r.reason };
 }
 
 function main() {
@@ -389,14 +394,14 @@ function main() {
       const src = resolveRequiredChecks({ target, baseBranch: common.baseBranch, rulesetFile: value("--ruleset-file"), consumerRepo: value("--consumer-repo"), skip: argv.includes("--skip-ruleset-check") });
       if (src.error) throw new MigrateError(src.error);
       if (src.notChecked) rulesetNote = `${RULESET_CODES.NOT_CHECKED}: --skip-ruleset-check; required checks that a retired workflow produced will NOT be reported`;
-      const developProtected = resolveDevelopProtected({ target, developBranch: value("--develop-branch") ?? "develop", file: value("--develop-ruleset-file"), consumerRepo: value("--consumer-repo"), skip: argv.includes("--skip-ruleset-check") });
-      common.developProtected = developProtected;
+      const developProtection = resolveDevelopProtection({ target, developBranch: value("--develop-branch") ?? "develop", file: value("--develop-ruleset-file"), consumerRepo: value("--consumer-repo"), skip: argv.includes("--skip-ruleset-check") });
+      common.developProtected = developProtection.protected;
       const r = cmd === "plan" ? planMigration({ ...common, requiredChecks: src.requiredChecks }) : applyMigration({ ...common, requiredChecks: src.requiredChecks, acceptRulesetChange: argv.includes("--accept-ruleset-change") });
       const p = r.plan ?? r;
       data = { mode: cmd, ...(r.status ? { result: r.status } : {}), counts: p.counts, keptByProfile: p.keptByProfile, keptNoGuard: p.keptNoGuard, retire: p.retire.length, replace: p.replace, create: p.create, keptIdentical: p.keptIdentical.length, keptLocal: p.keptLocal.length, collisions: p.collisions, unresolved: p.unresolved.map((c) => c.path) };
       data.rulesetCheck = p.rulesetCheck;
       if (rulesetNote) warnings.push(rulesetNote);
-      if (p.keptNoGuard?.length) warnings.push("NO_PROTECTION_GAP: a verified ruleset on the develop branch was not found, so the v2 guard-develop-branch.yml is KEPT (pass --develop-ruleset-file or --consumer-repo once the ruleset exists)");
+      if (p.keptNoGuard?.length) warnings.push(`NO_PROTECTION_GAP: protection of the develop branch was not demonstrated (${developProtection.reason}), so the v2 guard-develop-branch.yml is KEPT (pass --develop-ruleset-file or --consumer-repo once the ruleset exists)`);
       const accepted = cmd === "apply" && r.status !== "BLOCKED" && argv.includes("--accept-ruleset-change");
       for (const f of p.rulesetCheck?.findings ?? []) {
         const line = `${f.code}: ${f.detail}. Action: ${f.action}`;

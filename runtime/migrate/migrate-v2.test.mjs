@@ -1,6 +1,6 @@
 // `migrate` v2 -> v3, on a REAL v2 consumer (template-starter v2.0.4, pinned by SHA; needs github.com: SKIPs locally,
 // FAILS with AI_NATIVE_REQUIRE_NETWORK=1) plus synthetic edge cases that do not need the network.
-import test, { after } from "node:test";
+import test, { after, afterEach, beforeEach } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, existsSync } from "node:fs";
@@ -18,16 +18,32 @@ const git = (cwd, ...a) => execFileSync("git", a, { cwd, encoding: "utf8", maxBu
 const base = mkdtempSync(join(tmpdir(), "ai-native-migv2-"));
 after(() => rmSync(base, { recursive: true, force: true, maxRetries: 3 }));
 
-let starter = null;
+// ONE read-only clone of the real v2 consumer (the only network access) ...
+let starterBase = null;
 try {
-  starter = join(base, "starter");
-  execFileSync("git", ["clone", "-q", "--no-checkout", STARTER, starter], { stdio: "pipe" });
-  git(starter, "checkout", "-q", "--detach", STARTER_V204);
+  starterBase = join(base, "starter-base");
+  execFileSync("git", ["clone", "-q", "--no-checkout", STARTER, starterBase], { stdio: "pipe" });
+  git(starterBase, "checkout", "-q", "--detach", STARTER_V204);
 } catch (error) {
-  starter = null;
+  starterBase = null;
   if (process.env.AI_NATIVE_REQUIRE_NETWORK === "1") throw error;
 }
-const net = { skip: starter ? false : "github.com not reachable (set AI_NATIVE_REQUIRE_NETWORK=1 to make this a failure)", timeout: 280000 };
+// ... and a PRIVATE working copy per test (`starter`). The tests used to share and mutate a single clone: a test that failed
+// half-way (a commit, a journal or a retired file left behind) made every later real-starter test fail in a cascade, which
+// looked like "random" failures of different tests that passed in isolation.
+let starter = null;
+let copies = 0;
+beforeEach(() => {
+  starter = null;
+  if (!starterBase) return;
+  starter = join(base, `starter-${(copies += 1)}`);
+  execFileSync("git", ["clone", "-q", "--no-hardlinks", starterBase, starter], { stdio: "pipe" });
+  git(starter, "checkout", "-q", "--detach", STARTER_V204);
+});
+afterEach(() => {
+  if (starter) rmSync(starter, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
+});
+const net = { skip: starterBase ? false : "github.com not reachable (set AI_NATIVE_REQUIRE_NETWORK=1 to make this a failure)", timeout: 280000 };
 const status = (dir) => git(dir, "status", "--porcelain", "--untracked-files=all");
 
 test("real starter v2.0.4: plan is read-only, classifies everything, retires only platform-owned IDENTICAL files", net, () => {
@@ -173,7 +189,6 @@ test("a file edited and committed after the plan is MODIFIED at apply time: it i
   assert.equal(readFileSync(join(starter, victim), "utf8"), edited, "the user's edit survived apply");
   assert.equal(revertMigration({ target: starter }).status, "REVERTED");
   assert.equal(readFileSync(join(starter, victim), "utf8"), edited, "and revert");
-  git(starter, "reset", "-q", "--hard", STARTER_V204);
   assert.equal(status(starter), "");
 });
 
@@ -205,7 +220,6 @@ test("revert never overwrites a file the user created at a retired path after ap
   assert.equal(readFileSync(join(starter, retired), "utf8"), "the user created this after the migration\n", "not overwritten by the v2 content");
   rmSync(join(starter, retired));
   assert.equal(revertMigration({ target: starter }).status, "REVERTED");
-  git(starter, "reset", "-q", "--hard", STARTER_V204);
   assert.equal(status(starter), "");
 });
 
@@ -317,19 +331,6 @@ test("gap 7: apply without a verified ruleset keeps the guard and rollback resto
   assert.equal(status(dir), "");
 });
 
-test("gap 7: protectsBranch recognises pull_request / required checks (repo with ruleset, missing required checks, empty)", async () => {
-  const { protectsBranch, fetchBranchProtected } = await import("./ruleset-guard.mjs");
-  assert.equal(protectsBranch([{ type: "pull_request", parameters: {} }]), true);
-  assert.equal(protectsBranch([{ type: "required_status_checks", parameters: { required_status_checks: [{ context: "l3 / l3-consumer" }] } }]), true);
-  assert.equal(protectsBranch([{ type: "required_status_checks", parameters: { required_status_checks: [] } }]), false, "required checks missing");
-  assert.equal(protectsBranch([{ type: "deletion" }]), false);
-  assert.equal(protectsBranch([]), false, "repo without ruleset");
-  const run = (stdout, status = 0) => () => ({ status, stdout, stderr: "" });
-  assert.deepEqual(fetchBranchProtected({ repo: "o/r", branch: "develop", run: (a) => (a[1].includes("/rules/") ? { status: 0, stdout: "[]", stderr: "" } : { status: 1, stdout: "", stderr: "404 Not Found" }) }), { protected: false });
-  assert.deepEqual(fetchBranchProtected({ repo: "o/r", branch: "develop", run: run('[{"type":"pull_request"}]') }), { protected: true });
-  assert.ok(fetchBranchProtected({ repo: "o/r", branch: "develop", run: run("", 1) }).error, "unreadable is an error, never protected");
-});
-
 test("gap 6: the migration never creates or edits pyproject.toml / ruff config, so ruff's inferred target-version cannot change", () => {
   const withCfg = { "pyproject.toml": "[tool.ruff]\nline-length = 100\n", "ruff.toml": "target-version = \"py39\"\n", "src/a.py": "x = 1\n" };
   for (const files of [withCfg, { "src/a.py": "x = 1\n" }]) {
@@ -345,31 +346,11 @@ test("gap 6: the migration never creates or edits pyproject.toml / ruff config, 
   }
 });
 
-test("gap 7 (review): a saved ruleset counts only if active and aimed at the develop branch; classic payloads are understood", async () => {
-  const { protectsBranchFromRulesets, protectsBranch } = await import("./ruleset-guard.mjs");
-  const rules = [{ type: "pull_request", parameters: {} }];
-  const rs = (o) => ({ enforcement: "active", conditions: { ref_name: { include: ["refs/heads/develop"], exclude: [] } }, rules, ...o });
-  assert.equal(protectsBranchFromRulesets([rs()], "develop"), true);
-  assert.equal(protectsBranchFromRulesets([rs({ enforcement: "disabled" })], "develop"), false);
-  assert.equal(protectsBranchFromRulesets([rs({ enforcement: "evaluate" })], "develop"), false);
-  assert.equal(protectsBranchFromRulesets([rs({ conditions: { ref_name: { include: ["refs/heads/main"], exclude: [] } } })], "develop"), false, "ruleset for main only");
-  assert.equal(protectsBranchFromRulesets([rs({ conditions: { ref_name: { include: ["~ALL"], exclude: ["refs/heads/develop"] } } })], "develop"), false);
-  assert.equal(protectsBranchFromRulesets([rs({ rules: [{ type: "deletion" }] })], "develop"), false);
-  assert.equal(protectsBranch({ required_status_checks: { contexts: ["ci"], checks: [] } }), true, "classic branch protection");
-  assert.equal(protectsBranch({ required_status_checks: { contexts: [], checks: [] } }), false);
-});
-
-test("gap 1 (review MINOR): `-r ./f`, `-rf`, `--requirement=f` and `-c f` count as references; another file name does not", async () => {
-  const { referencesPath } = await import("./migrate.mjs");
-  const F = "requirements-dev.txt";
-  for (const cmd of ["pip install -r requirements-dev.txt", "pip install -r ./requirements-dev.txt", "pip install -rrequirements-dev.txt", "pip install --requirement=requirements-dev.txt", "pip install -c requirements-dev.txt x", "pip install . -r requirements-dev.txt && pytest", "(pip install -r requirements-dev.txt)", "x=$(pip install -r requirements-dev.txt)", "`pip install -r requirements-dev.txt`"]) assert.equal(referencesPath(cmd, F), true, cmd);
-  for (const cmd of ["pip install -r requirements-dev.txt.bak", "pip install -r my-requirements-dev.txt", "pip install ."]) assert.equal(referencesPath(cmd, F), false, cmd);
-});
 
 test("gap 7 (fail closed): ruleset include/exclude matrix decides whether develop is provably protected", async () => {
   const { protectsBranchFromRulesets: prot } = await import("./ruleset-guard.mjs");
-  const rules = [{ type: "pull_request", parameters: {} }];
-  const rs = (include, exclude = [], extra = {}) => [{ enforcement: "active", conditions: { ref_name: { include, exclude } }, rules, ...extra }];
+  const CONTRACT_RULES = [{ type: "deletion" }, { type: "non_fast_forward" }, { type: "pull_request", parameters: { required_approving_review_count: 0 } }];
+  const rs = (include, exclude = [], extra = {}) => [{ enforcement: "active", target: "branch", bypass_actors: [], conditions: { ref_name: { include, exclude } }, rules: CONTRACT_RULES, ...extra }];
   const D = "refs/heads/develop";
   const cases = [
     ["literal include, no exclude", rs([D]), true],
@@ -388,8 +369,13 @@ test("gap 7 (fail closed): ruleset include/exclude matrix decides whether develo
     ["include nothing", rs([]), false],
     ["disabled ruleset", rs([D], [], { enforcement: "disabled" }), false],
     ["evaluate-only ruleset", rs([D], [], { enforcement: "evaluate" }), false],
-    ["rules do not protect (deletion only)", rs([D], [], { rules: [{ type: "deletion" }] }), false],
-    ["no conditions", [{ enforcement: "active", rules }], false],
+    ["rules do not satisfy the contract (deletion only)", rs([D], [], { rules: [{ type: "deletion" }] }), false],
+    ["pull_request only (no deletion / non_fast_forward)", rs([D], [], { rules: [{ type: "pull_request" }] }), false],
+    ["required_status_checks only", rs([D], [], { rules: [{ type: "required_status_checks", parameters: { required_status_checks: [{ context: "ci" }] } }] }), false],
+    ["no conditions", [{ enforcement: "active", target: "branch", bypass_actors: [], rules: CONTRACT_RULES }], false],
+    ["bypass_actors missing (unknown, not empty)", [{ enforcement: "active", target: "branch", conditions: { ref_name: { include: [D], exclude: [] } }, rules: CONTRACT_RULES }], false],
+    ["bypass_actors null", rs([D], [], { bypass_actors: null }), false],
+    ["target missing (unknown)", rs([D], [], { target: undefined }), false],
     ["garbage payload", null, false],
     ["tag-target ruleset", rs([D], [], { target: "tag" }), false],
     ["branch-target ruleset", rs([D], [], { target: "branch" }), true],
@@ -417,7 +403,7 @@ test("gap 7 (CLI wiring): --develop-ruleset-file, --develop-branch and --skip-ru
   const cli = join(here, "migrate.mjs");
   const ruleset = (exclude) => {
     const f = join(mkdtempSync(join(tmpdir(), "ai-native-rs-")), "ruleset.json");
-    writeFileSync(f, JSON.stringify([{ enforcement: "active", conditions: { ref_name: { include: ["refs/heads/develop"], exclude } }, rules: [{ type: "pull_request" }] }]));
+    writeFileSync(f, JSON.stringify([{ enforcement: "active", conditions: { ref_name: { include: ["refs/heads/develop"], exclude } }, bypass_actors: [], target: "branch", rules: [{ type: "deletion" }, { type: "non_fast_forward" }, { type: "pull_request" }] }]));
     return f;
   };
   const run = (...extra) => {
@@ -450,8 +436,8 @@ test("gap 1 (implicit dependency): python profiles declare requiredFiles [pytest
 
 test("gap 7 (matcher): `**/` in an EXCLUDE covers zero or more directories; the glob matcher agrees with a reference regex on a deterministic fuzz and never fails open", async () => {
   const { patternToMatcher, protectsBranchFromRulesets: prot } = await import("./ruleset-guard.mjs");
-  const rules = [{ type: "pull_request" }];
-  const rs = (include, exclude) => [{ enforcement: "active", conditions: { ref_name: { include, exclude } }, rules }];
+  const CONTRACT_RULES = [{ type: "deletion" }, { type: "non_fast_forward" }, { type: "pull_request", parameters: { required_approving_review_count: 0 } }];
+  const rs = (include, exclude) => [{ enforcement: "active", target: "branch", bypass_actors: [], conditions: { ref_name: { include, exclude } }, rules: CONTRACT_RULES }];
   const D = "refs/heads/develop";
   for (const ex of ["refs/heads/**/develop", "refs/**/heads/develop", "refs/heads/**/dev*", "refs/heads/**/*", "**/develop", "refs/**/develop"]) assert.equal(prot(rs([D], [ex]), "develop"), false, `exclude ${ex} touches develop`);
   assert.equal(prot(rs([D], ["refs/heads/**/release"]), "develop"), true, "unrelated ** exclude");

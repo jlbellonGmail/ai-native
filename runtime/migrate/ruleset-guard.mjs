@@ -219,42 +219,78 @@ export function fetchRequiredChecks({ repo, branch, run = gh }) {
 }
 
 /**
- * Gap 7: does the payload (API response or saved file) contain a rule that really protects the branch? A pull-request rule
- * or required status checks count; an empty ruleset, or only `deletion`/`creation` rules, do not (the reactive v2 guard
- * would still be the only thing stopping a direct push).
+ * PROTECTION CONTRACT (gap 7). The v2 `guard-develop-branch.yml` reverted any direct push to `develop` and any force-push.
+ * It may be retired only when the same is PROVEN to be prevented, and "proven" is exactly the contract AI-Native already
+ * enforces on its own branches (`verifyRuleset` in runtime/gates/ruleset.mjs, `governance/rulesets/main.json`):
+ *   - the ruleset is `active` (not `evaluate`/`disabled`) and targets branches;
+ *   - `bypass_actors` is PRESENT and EMPTY (policy: none). A missing or unreadable list is "unknown", never "empty";
+ *   - the rules include `deletion`, `non_fast_forward` and `pull_request`.
+ * Deliberately NOT required: `required_approving_review_count > 0` (the contract itself sets 0 for the single-maintainer
+ * model, F2) or any particular status check (the old guard checked neither); nothing is added beyond the contract.
+ * Anything not demonstrably satisfying it keeps the guard (FAIL CLOSED).
  */
-export function protectsBranch(payload) {
-  let found = false;
-  const visit = (x) => {
-    if (Array.isArray(x)) x.forEach(visit);
-    else if (x && typeof x === "object") {
-      if (x.type === "pull_request" || (x.type === "required_status_checks" && (x.parameters?.required_status_checks ?? []).length > 0)) found = true;
-      else if (Array.isArray(x.rules)) x.rules.forEach(visit);
-      else if (Array.isArray(x.required_status_checks) && x.required_status_checks.length > 0) found = true;
-      else if (Array.isArray(x.contexts) && x.contexts.length > 0) found = true;
-      else if (x.required_pull_request_reviews) found = true;
-      else if (x.required_status_checks && !Array.isArray(x.required_status_checks) && ((x.required_status_checks.contexts ?? []).length > 0 || (x.required_status_checks.checks ?? []).length > 0)) found = true;
-    }
-  };
-  visit(payload);
-  return found;
+export const PROTECTION_RULES = ["deletion", "non_fast_forward", "pull_request"];
+
+/** True when `rules` (array of {type}) contains every rule type of the contract. */
+export function satisfiesProtectionContract(rules) {
+  if (!Array.isArray(rules)) return false;
+  const types = new Set(rules.map((r) => r?.type));
+  return PROTECTION_RULES.every((t) => types.has(t));
 }
 
-/** Live check that `branch` of `repo` is protected. Returns {protected} or {error}; an unreadable answer is never "protected". */
+/** True only for a ruleset object whose own flags satisfy the contract (the bypass list must be a real, empty array). */
+function rulesetFlagsOk(rs) {
+  return Boolean(rs) && typeof rs === "object" && rs.enforcement === "active" && rs.target === "branch" && Array.isArray(rs.bypass_actors) && rs.bypass_actors.length === 0;
+}
+
+/**
+ * Classic branch protection (GET /branches/:b/protection) equivalent to the contract: pull-request reviews required,
+ * force-pushes and deletions disallowed, and admins NOT exempt (the analogue of an empty bypass list).
+ */
+export function classicProtectionOk(p) {
+  return Boolean(p) && typeof p === "object" && Boolean(p.required_pull_request_reviews) && p.allow_force_pushes?.enabled === false && p.allow_deletions?.enabled === false && p.enforce_admins?.enabled === true;
+}
+
+/**
+ * Live check that `branch` of `repo` is protected per the contract. Returns {protected, reason} or {error}. Only a ruleset
+ * whose full definition (GET /rulesets/:id, the only call that exposes `bypass_actors`) satisfies the contract counts; a
+ * definition that cannot be read (permissions, organisation rulesets, errors) is UNKNOWN => not protected.
+ */
 export function fetchBranchProtected({ repo, branch, run = gh }) {
   if (!/^[A-Za-z0-9](?:[A-Za-z0-9-]*)\/(?!\.{1,2}$)[\w.-]+$/.test(repo ?? "")) return { error: `invalid consumer repo '${repo}' (expected owner/name)` };
   const rules = run(["api", `repos/${repo}/rules/branches/${encodeURIComponent(branch)}`]);
   if (rules.error || rules.status !== 0) return { error: `could not read the rules of ${repo}@${branch}: ${(rules.stderr || rules.error?.message || "gh failed").trim().split("\n")[0]}` };
+  let effective;
   try {
-    if (protectsBranch(JSON.parse(rules.stdout))) return { protected: true };
+    effective = JSON.parse(rules.stdout);
   } catch {
     return { error: `unreadable ruleset response for ${repo}@${branch}` };
   }
+  let why = "no ruleset applies to the branch";
+  if (Array.isArray(effective) && effective.length) {
+    why = null;
+    if (!satisfiesProtectionContract(effective)) why = "the effective rules lack deletion, non_fast_forward or pull_request";
+    // every ruleset that contributes a rule must itself be active with an EMPTY bypass list (only the full definition shows it)
+    for (const id of new Set(effective.map((r) => r?.ruleset_id))) {
+      if (why) break;
+      const source = effective.find((r) => r?.ruleset_id === id)?.ruleset_source_type;
+      if (!Number.isInteger(id) || source !== "Repository") { why = `bypass_actors UNKNOWN: ruleset ${id} is not a repository ruleset readable here (source ${source})`; break; }
+      const def = run(["api", `repos/${repo}/rulesets/${id}`]);
+      if (def.error || def.status !== 0) { why = `bypass_actors UNKNOWN: could not read ruleset ${id}`; break; }
+      let parsed = null;
+      try { parsed = JSON.parse(def.stdout); } catch { /* unreadable */ }
+      if (!parsed || !Array.isArray(parsed.bypass_actors)) why = `bypass_actors UNKNOWN: ruleset ${id} does not expose the list (insufficient permission?)`;
+      else if (!rulesetFlagsOk(parsed)) why = `ruleset ${id} is not active/branch-targeted or has bypass actors`;
+    }
+    if (!why) return { protected: true, reason: "an active ruleset with no bypass actors enforces deletion, non_fast_forward and pull_request" };
+  }
   const classic = run(["api", `repos/${repo}/branches/${encodeURIComponent(branch)}/protection`]);
   if (!classic.error && classic.status === 0) {
-    try { return { protected: protectsBranch(JSON.parse(classic.stdout)) }; } catch { return { error: `unreadable branch-protection response for ${repo}@${branch}` }; }
+    try {
+      return classicProtectionOk(JSON.parse(classic.stdout)) ? { protected: true, reason: "classic branch protection satisfies the contract" } : { protected: false, reason: why ?? "classic branch protection does not satisfy the contract" };
+    } catch { return { error: `unreadable branch-protection response for ${repo}@${branch}` }; }
   }
-  return { protected: false };
+  return { protected: false, reason: why ?? "no ruleset or branch protection could be shown to apply" };
 }
 
 /**
@@ -306,16 +342,14 @@ export function patternToMatcher(pattern, loose = false) {
  * branch (fail closed; any doubt keeps the v2 guard): `enforcement` is `active`; `conditions.ref_name.include` has the
  * exact ref, `~ALL`, or a pattern that provably matches it; and NO `exclude` entry can touch it: a literal or glob that
  * matches the ref (`refs/heads/dev*`, `refs/heads/*`), `~DEFAULT_BRANCH`/`~ALL` (cannot be resolved offline) or anything
- * not interpretable. Unrelated excludes (`refs/heads/release/*`) are fine. The rules must really protect (see `protectsBranch`).
+ * not interpretable. Unrelated excludes (`refs/heads/release/*`) are fine. The rules must satisfy the PROTECTION CONTRACT (see `satisfiesProtectionContract`).
  */
 export function protectsBranchFromRulesets(payload, branch) {
   const list = Array.isArray(payload) ? payload : [payload];
   if (typeof branch !== "string" || branch.length > 255 || !/^[A-Za-z0-9][A-Za-z0-9._\/-]*$/.test(branch)) return false; // not a plausible branch name: nothing is provable (also bounds the matching cost)
   const ref = `refs/heads/${branch}`;
   return list.some((rs) => {
-    if (!rs || typeof rs !== "object" || rs.enforcement !== "active") return false;
-    if (Array.isArray(rs.bypass_actors) ? rs.bypass_actors.length > 0 : rs.bypass_actors !== undefined) return false; // someone can push around it: the reactive guard is still needed (fail closed)
-    if (rs.target !== undefined && rs.target !== "branch") return false; // a tag/push ruleset says nothing about the branch
+    if (!rulesetFlagsOk(rs)) return false; // active, branch target, and a PRESENT empty bypass list (missing = unknown = not protected)
     const rn = rs.conditions?.ref_name;
     const inc = rn?.include ?? [];
     const exc = rn?.exclude ?? [];
@@ -327,6 +361,6 @@ export function protectsBranchFromRulesets(payload, branch) {
       const match = patternToMatcher(p, true);
       return match === null || match(ref);
     });
-    return !excluded && protectsBranch(rs.rules ?? []);
+    return !excluded && satisfiesProtectionContract(rs.rules);
   });
 }

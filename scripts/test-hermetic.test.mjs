@@ -61,8 +61,8 @@ test("hermeticEnv also isolates from the user's global/system git config", () =>
   assert.equal(env.GIT_TERMINAL_PROMPT, "0");
 });
 
-test("testFiles excludes legacy/ and lists only *.test.mjs", () => {
-  const files = testFiles(["a/b.test.mjs", "legacy/x/y.test.mjs", "README.md", "c.test.mjs"]);
+test("testFiles lists only *.test.mjs", () => {
+  const files = testFiles(["a/b.test.mjs", "README.md", "c.test.mjs"]);
   assert.deepEqual(files, ["a/b.test.mjs", "c.test.mjs"]);
 });
 

@@ -12,8 +12,7 @@
 // And the canonical-source rules (one source per fact):
 //   - every skill in .agents/skills/registry.json has a directory with a
 //     SKILL.md whose frontmatter `name` equals its id, and vice versa;
-//   - no other SKILL.md in the repo (outside legacy/, frozen by design)
-//     redeclares a canonical skill name (the former factory-*/project-*
+//   - no other SKILL.md in the repo redeclares a canonical skill name (the former factory-*/project-*
 //     duplicated pair).
 // Pure node: builtins only, read-only, never executes anything it reads.
 import { execFileSync } from "node:child_process";
@@ -21,7 +20,7 @@ import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 
 // Docs that state how the repo works today. Frozen/historical material
-// (legacy/, governance/ history, specs/, parity/ generated maps) is
+// (governance/ history, specs/, parity/ generated maps) is
 // deliberately not checked: it describes the past, not current behavior.
 const DOC_GLOBS = [
   "AGENTS.md",
@@ -55,7 +54,7 @@ function scriptExists(repoRoot, s) {
   // a bare name matches any tracked file with that basename (docs say `status-lib.ps1`, the file lives under scripts/)
   if (!trackedCache.has(repoRoot)) {
     const files = execFileSync("git", ["ls-files", "--cached", "--others", "--exclude-standard"], { cwd: repoRoot, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 }).split("\n").map((f) => f.trim());
-    trackedCache.set(repoRoot, files.filter((f) => !f.startsWith("legacy/"))); // the legacy v2 baseline still ships a bootstrap.ps1: it must not hide drift
+    trackedCache.set(repoRoot, files);
   }
   return trackedCache.get(repoRoot).some((f) => f === s || f.endsWith(`/${s}`));
 }
@@ -137,7 +136,7 @@ function frontmatterName(text) {
 
 function findSkillFiles(dir, repoRoot, out = []) {
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    if (["node_modules", ".git", "legacy"].includes(entry.name)) continue;
+    if (["node_modules", ".git"].includes(entry.name)) continue;
     const full = join(dir, entry.name);
     if (entry.isDirectory()) findSkillFiles(full, repoRoot, out);
     else if (entry.name === "SKILL.md") out.push(relative(repoRoot, full).split(sep).join("/"));

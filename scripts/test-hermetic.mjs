@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // F-05: hermetic local test runner.
 //   node scripts/test-hermetic.mjs [--concurrency <n>] (default 2) [--log <file>] [--] [<test files...>]
-// Runs `node --test` over every committed *.test.mjs outside legacy/ (CI's list), with the git environment isolated:
+// Runs `node --test` over every committed *.test.mjs (CI's list), with the git environment isolated:
 //   GIT_CEILING_DIRECTORIES includes the OS temp root, so a temp dir that was never `git init`ed does NOT resolve to an
 //   ancestor repository (e.g. a user HOME that is itself a git repo, as found in the platform audit). Repos the tests
 //   create inside the temp root are found normally. The user's repository is never read or modified by this runner.
@@ -31,7 +31,7 @@ export function hermeticEnv(env, tempRoot = tmpdir()) {
 }
 
 export function testFiles(tracked) {
-  return tracked.filter((f) => /\.test\.mjs$/.test(f) && !f.startsWith("legacy/"));
+  return tracked.filter((f) => /\.test\.mjs$/.test(f));
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
