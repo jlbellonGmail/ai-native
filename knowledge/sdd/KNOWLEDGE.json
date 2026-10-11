@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "package": "sdd",
+  "version": "1.0.0",
+  "description": "SDD methodology and long-form contracts shipped inside every ai-native release; resolved by `ai-native run -- knowledge <path>`.",
+  "requires": { "workflowContract": 1, "minPlatform": "3.1.0" },
+  "entry": "README.md"
+}

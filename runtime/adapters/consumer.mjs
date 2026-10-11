@@ -13,15 +13,17 @@
 //        [--revert]           undo a previous apply
 //        [--upgrade]          apply ONLY the delta between what the journal says was written and this release;
 //                             locally edited files are preserved and reported (combine with --plan to preview)
-//        [--drift]            read-only; fail if a generated projection was edited/deleted by hand vs the release (ai-native is canonical)
+//        [--drift]            read-only (--cache <dir> for the release cache); CLEAN | OUTDATED | DRIFT | MISSING_REFERENCE | INCOMPATIBLE_VERSION; fails on all but CLEAN/OUTDATED. Fails if a generated projection was edited/deleted by hand vs the release (ai-native is canonical)
 //        [--plan]             read-only; list files and collisions
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { ALL_TOOLS, buildToolFiles } from "./sync.mjs";
 import { loadSkillsRegistry, selectSkills, canonicalFilesFor, SKILL_TARGETS } from "./skills.mjs";
 import { planAdoption, applyAdoption, revertAdoption } from "../migrate/adopt.mjs";
 import { planUpgrade, applyUpgrade, detectDrift } from "../migrate/upgrade-delta.mjs";
+import { readLock } from "../bootstrap/install.mjs";
+import { checkReference } from "../consumer/knowledge.mjs";
 import { buildReport, renderOutput, exitCodeForReport } from "../lib/json.mjs";
 import { statusFromCounts } from "../lib/result.mjs";
 
@@ -67,8 +69,12 @@ function main() {
       if (argv.includes("--revert")) data = revertAdoption(projectRoot);
       else if (argv.includes("--drift") && argv.includes("--upgrade")) errors.push("--drift is read-only and cannot be combined with --upgrade");
       else if (argv.includes("--drift")) {
-        data = detectDrift(projectRoot, consumerFiles(releaseRoot, selection));
+        const lockState = readLock(projectRoot);
+        if (lockState.errors.length && existsSync(join(projectRoot, "ai-native.lock.json"))) throw new Error(`cannot check references: ${lockState.errors.join("; ")}`);
+        const located = lockState.lock ? checkReference({ projectRoot, cacheRoot: value("--cache") }) : undefined;
+        data = detectDrift(projectRoot, consumerFiles(releaseRoot, selection), located ? { reference: located } : {});
         if (data.status === "DRIFT") errors.push(`projections diverge from the release (ai-native is canonical; regenerate with --upgrade after reviewing): edited=[${data.edited.join(", ")}] missing=[${data.missing.join(", ")}]`);
+        else if (data.status === "MISSING_REFERENCE" || data.status === "INCOMPATIBLE_VERSION") errors.push(`${data.status}: ${data.reference}`);
       }
       else if (argv.includes("--upgrade")) {
         const incoming = consumerFiles(releaseRoot, selection);

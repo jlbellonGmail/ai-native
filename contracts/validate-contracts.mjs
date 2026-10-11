@@ -40,6 +40,7 @@ const DATA_FILES = [
   { data: "state-machine.json", schema: "state-machine.schema.json" },
   { data: "assess-rules.json", schema: "assess-rules.schema.json" },
   { data: "sdd-workflow.json", schema: "sdd-workflow.schema.json" },
+  { data: "../knowledge/sdd/KNOWLEDGE.json", schema: "knowledge-package.schema.json" },
 ];
 for (const { data, schema } of DATA_FILES) {
   if (!schemas[schema]) {

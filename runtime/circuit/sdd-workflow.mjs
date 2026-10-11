@@ -7,7 +7,7 @@
 //     by file count alone; Task/Feature/Milestone routing for /feature
 //   - parseTasks / validateSpecFolder / deriveSddStatus: tasks.md states,
 //     artifact consistency and the next command for guided mode
-import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -251,5 +251,8 @@ export function markTaskState(markdown, id, state) {
 
 /** Writes the new state of `id` into the tasks.md at `tasksPath` (atomic enough for a single writer: read, replace, write). */
 export function persistTaskState(tasksPath, id, state) {
-  writeFileSync(tasksPath, markTaskState(readFileSync(tasksPath, "utf8"), id, state));
+  // write-then-rename: an interrupted write never leaves a truncated tasks.md
+  const next = markTaskState(readFileSync(tasksPath, "utf8"), id, state);
+  writeFileSync(`${tasksPath}.tmp`, next);
+  renameSync(`${tasksPath}.tmp`, tasksPath);
 }

@@ -182,8 +182,8 @@ Update only when the agent repeats the same mistake, a stable factory rule chang
 Every executable factory task is one feature unless governance defines it as audit-only, documentation-only or governance-only. For feature-per-task, Git, GitHub, GitHub Actions, worktree, Engram, MCP, context-window, documentation, Security by Design, DevSecOps and monitoring rules, use:
 
 - .agents/skills/delivery-governance/SKILL.md
-- .specify/templates/documentation-template.md
-- .specify/templates/security-template.md
+- knowledge/sdd/feature-templates/documentation-template.md
+- knowledge/sdd/feature-templates/security-template.md
 
 Before closure, classify: branch / worktree, GitHub / push / PR, GitHub Actions / CI, Engram, MCP, technical documentation, user/generated-project documentation, Security by Design, DevSecOps, observability / monitoring.
 

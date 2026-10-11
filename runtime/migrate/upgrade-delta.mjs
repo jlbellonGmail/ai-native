@@ -79,7 +79,9 @@ export function applyUpgrade(targetRoot, incoming) {
   const journalPath = join(targetRoot, JOURNAL_PATH);
   writeFileSync(`${journalPath}.tmp`, `${JSON.stringify({ ...journal, created }, null, 2)}\n`);
   renameSync(`${journalPath}.tmp`, journalPath);
-  return { status: plan.summary.add + plan.summary.update + plan.summary.remove === 0 ? "UP_TO_DATE" : "UPGRADED", ...plan };
+  const changed = plan.summary.add + plan.summary.update + plan.summary.remove;
+  // a refresh only re-tracks hashes in the journal: no project file was written, and it must not read as "nothing happened"
+  return { status: changed ? "UPGRADED" : plan.refresh.length ? "REFRESHED" : "UP_TO_DATE", ...plan };
 }
 
 /**
@@ -87,13 +89,20 @@ export function applyUpgrade(targetRoot, incoming) {
  *   edited    a projection was changed by hand (the canonical source is ai-native, not the copy)
  *   missing   a projection the journal knows was deleted locally
  *   outdated  the release would add/update/remove files (regenerate with --upgrade)
+ * `reference` is the outcome of resolving the pinned release (runtime/consumer/knowledge.mjs checkReference):
+ * a release that cannot be resolved is MISSING_REFERENCE, one the resolver cannot read is INCOMPATIBLE_VERSION.
  * Foreign files (collisions) are not drift: they are the project's own.
+ * Precedence: INCOMPATIBLE_VERSION > MISSING_REFERENCE > DRIFT > OUTDATED > CLEAN.
  */
-export function detectDrift(targetRoot, incoming) {
+export function detectDrift(targetRoot, incoming, { reference = { status: "OK" } } = {}) {
   const plan = planUpgrade(targetRoot, incoming);
   // "edited locally" and "obsolete but edited locally" both mean a hand-modified projection
   const edited = plan.keepLocal.filter((k) => k.reason !== "deleted locally").map((k) => k.path);
   const missing = plan.keepLocal.filter((k) => k.reason === "deleted locally").map((k) => k.path);
   const outdated = [...plan.add, ...plan.update, ...plan.remove].sort();
-  return { status: edited.length || missing.length ? "DRIFT" : outdated.length ? "OUTDATED" : "CLEAN", edited, missing, outdated };
+  let status = "CLEAN";
+  if (outdated.length) status = "OUTDATED";
+  if (edited.length || missing.length) status = "DRIFT";
+  if (reference.status === "MISSING_REFERENCE" || reference.status === "INCOMPATIBLE_VERSION") status = reference.status;
+  return { status, edited, missing, outdated, ...(reference.status === "OK" ? {} : { reference: reference.detail }) };
 }

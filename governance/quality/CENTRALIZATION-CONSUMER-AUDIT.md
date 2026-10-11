@@ -2,6 +2,8 @@
 
 Baseline: `main` @ `697e927` (merge of PR #92), release `v3.0.2`, `VERSION` `3.0.0-dev` by policy. Evidence: repository inspection and the commands recorded in the PR; GI repositories inspected **read-only**.
 
+> Superseded in part by `KNOWLEDGE-DISTRIBUTION-AUDIT.md`: the detail file and the `.specify/templates` copies are no longer KEEP_LOCAL.
+
 ## 1. Capability inventory (ai-native)
 
 | Capability | Canonical path | Type | Local projection | Consumer copy | Generated | Versioned |

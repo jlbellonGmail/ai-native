@@ -5,7 +5,7 @@ description: Spec-Driven Development router. Use for /feature, any /sdd-* comman
 
 # SDD — router
 
-Procedure only. Rules live in `AGENTS.md`; state lives in governance and Git; methodology lives in `knowledge/sdd/methodology/` and is loaded on demand, one file per phase.
+Procedure only. Rules live in `AGENTS.md`; state lives in governance and Git; methodology lives in `knowledge/sdd/methodology/` (in a consumer: `ai-native run -- knowledge sdd/methodology/<phase>.md`, resolved from the pinned release) and is loaded on demand, one file per phase.
 
 ## Model
 

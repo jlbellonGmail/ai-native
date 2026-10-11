@@ -2,6 +2,8 @@
 
 Complete, unmodified text of the pre-router `AGENTS.md` (every section, verbatim). The router `AGENTS.md` summarizes it and keeps the non-negotiable rules inline; this file is the lossless reference loaded on demand. Factory-only on purpose: it is not under a skill, so it is never copied into consumers.
 
+> In a consumer project, repository-relative paths below (`knowledge/...`, `governance/...`, `.agents/skills/...`) refer to the ai-native release: read knowledge with `ai-native run -- knowledge <ref>`; project facts live in the project's own files.
+
 ---
 
 ## Purpose
@@ -868,8 +870,8 @@ Every executable factory task must be treated as one feature unless governance e
 For feature-per-task, Git, GitHub, GitHub Actions, worktree, Engram, MCP, context-window, documentation, Security by Design, DevSecOps and monitoring rules, use:
 
 - .agents/skills/delivery-governance/SKILL.md
-- .specify/templates/documentation-template.md
-- .specify/templates/security-template.md
+- knowledge/sdd/feature-templates/documentation-template.md (consumer: `ai-native run -- knowledge sdd/feature-templates/documentation-template.md`)
+- knowledge/sdd/feature-templates/security-template.md (consumer: `ai-native run -- knowledge sdd/feature-templates/security-template.md`)
 
 Before closure, the agent must classify:
 
