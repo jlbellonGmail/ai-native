@@ -29,3 +29,11 @@ One table: repo, PR, delta (add/update/remove/preserved), validations, CI, statu
 ## Hard limits
 
 Never merge, never force-push, never overwrite a locally edited file, never touch a repo whose tree is dirty, never change a ruleset, never copy the whole template. If the delta contains anything beyond generated adapter files, skills, commands and the lock, stop on that repo and report.
+
+## Additions for the release that follows the professional evolution
+
+* The 8 repositories are first generation: the first operation is ADOPT (`consumer.mjs --project . --plan`), never UPGRADE. Later runs are `--upgrade`.
+* Adopt per repo, in this order and without copying knowledge: pin the lock (`ai-native init`/`sync`), minimal router (`AGENTS.md`), generated projections (commands, `sdd` skill, Coordinator and role adapters), then SDD (`/feature`, `/sdd-*`).
+* Constitution: delete a repo's full constitution copy when it only repeats ai-native; keep only real local rules as `- [ADD] LOCAL-n: ...` lines in `.specify/memory/constitution.md` and run `node <release>/runtime/policy/constitution-extension.mjs --project .` (an override fails).
+* Architecture: where the repo has a domain, declare `architecture.json` (layers, modules, public contracts; `contracts/architecture.schema.json`) and run `node <release>/runtime/policy/architecture.mjs --project .`. gi-platform-*, gi-common-* and gi-vertical-* are separate modules that talk through contracts only; report any private import between them as a finding, do not refactor inside the adoption PR.
+* Human gate: default `final-only`; `human_gate: none` only for low-risk units (`methodology/autonomy.md`).

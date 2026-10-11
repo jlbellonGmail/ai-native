@@ -57,7 +57,7 @@ SDD, /feature, /sdd-*       the `sdd` skill if installed; spec templates central
 Full per-section checklists  ai-native run -- knowledge sdd/agents-contract-detail.md
 ```
 
-Locating ai-native: `ai-native.lock.json` pins the release (version + digest); `ai-native run -- knowledge <ref>` loads central methodology from it, verified against the cache (offline-capable). Generated projections (`.claude/`, `.opencode/`, `.codex/`) are never edited by hand: `consumer.mjs --drift` detects it, `--upgrade` regenerates by delta. Project files (specs, STATUS, constitution, `.specify/templates/` overrides) win over central defaults for project facts only.
+Locating ai-native: `ai-native.lock.json` pins the release (version + digest); `ai-native run -- knowledge <ref>` loads central methodology from it, verified against the cache (offline-capable). Generated projections (`.claude/`, `.opencode/`, `.codex/`) are never edited by hand: `consumer.mjs --drift` detects it, `--upgrade` regenerates by delta. Project files (specs, STATUS, `.specify/templates/` overrides) win over central defaults for project facts only. The ai-native constitution is the default and cannot be overridden; an optional local extension (.specify/memory/constitution.md, absent by default) holds additions only (`- [ADD] LOCAL-n: ...`).
 
 Reusable workflows live in `.agents/skills/<name>/SKILL.md`; do not restate a workflow in chat when a skill defines it. Bridge files (`CLAUDE.md`, `OPENCLAW.md`) are thin adapters that read this file. On conflict, this file wins unless the user explicitly says otherwise. Per-tool directories (`.claude/`, `.opencode/`, `.codex/`) are generated projections, never sources.
 
