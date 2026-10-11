@@ -7,6 +7,7 @@
 //   reviewer.validate(ctx) -> { verdict }
 import { classifyWorkUnit, loadWorkflow, parseTasks, validateWorkflow } from "./sdd-workflow.mjs";
 import { implementAll } from "./implement-all.mjs";
+import { deriveHumanGate } from "../policy/hitl.mjs";
 
 const HANDOFF_FIELDS = ["from", "to", "phase", "workUnit", "level", "artifacts"];
 
@@ -37,13 +38,19 @@ export function phasesFor(workUnit, level) {
   return phases;
 }
 
-export async function runCoordinator({ goal, signals = {}, agents, workflow = loadWorkflow() }) {
+// `policy` = { declared, environment, allowNone, controlPlanePatterns }: facts for the human gate. Risk is never taken
+// from it: it is derived from signals.changedPaths and, after the work, from agents.verify.changedPaths().
+export async function runCoordinator({ goal, signals = {}, agents, workflow = loadWorkflow(), policy = {} }) {
   const problems = validateWorkflow(workflow);
   if (problems.length) return { status: "BLOCKED", reason: `invalid workflow contract: ${problems[0]}`, log: [] };
 
   const classification = classifyWorkUnit(signals);
   const log = [{ phase: "classify", goal, ...classification }];
   const { workUnit, level } = classification;
+  const gateFor = (paths) => deriveHumanGate({ ...policy, changedPaths: paths });
+  let gate = gateFor(signals.changedPaths ?? []);
+  log.push({ phase: "human-gate", gate: gate.gate, risk: gate.risk, ok: gate.ok });
+  if (!gate.ok) return { status: "BLOCKED", reason: `human gate refused: ${gate.reasons.join("; ")}`, classification, log };
   const phases = phasesFor(workUnit, level);
   if (workUnit === "milestone") {
     const parts = await agents.planner.decompose({ goal, level });
@@ -65,15 +72,29 @@ export async function runCoordinator({ goal, signals = {}, agents, workflow = lo
       const produced = await agents.planner[phase === "specify" ? "spec" : phase]({ goal, level, artifacts: [...artifacts] });
       artifacts.push(produced.artifact);
     }
+    if (gate.gate === "required") return { status: "AWAITING_HUMAN_APPROVAL", reason: "human_gate required: a human approves the plan before implementation", gate, classification, log };
     hand("implementer", "implement");
     const tasks = phases[0] === "implement" ? [{ id: "T1", title: goal, state: "pending", requirements: [], doneWhen: "acceptance met" }] : parseTasks(await agents.planner.readTasks());
-    const run = await implementAll({ tasks, level, workflow, ...agents.implementer, ...agents.verify, review: agents.reviewer.review, fix: agents.implementer.fix });
+    const run = await implementAll({ tasks, level, workflow, humanGate: gate, ...agents.implementer, ...agents.verify, review: agents.reviewer.review, fix: agents.implementer.fix });
     log.push({ phase: "implement", status: run.status, completed: run.completed });
     if (run.status !== "DONE") return { status: run.status, classification, run, log };
+    // the gate is re-derived from what actually changed: a bigger change than announced cannot keep a lighter gate
+    const actual = await agents.verify?.changedPaths?.();
+    // `none` is the only gate that completes with no human step, so it needs this evidence: without it, refuse
+    if (gate.gate === "none" && !(Array.isArray(actual) && actual.length)) {
+      return { status: "BLOCKED", reason: "human gate refused: human_gate none needs agents.verify.changedPaths() to confirm what actually changed", classification, run, log };
+    }
+    if (Array.isArray(actual) && actual.length) {
+      gate = gateFor(actual);
+      log.push({ phase: "human-gate", gate: gate.gate, risk: gate.risk, ok: gate.ok, derivedFrom: "actual changes" });
+      if (!gate.ok) return { status: "BLOCKED", reason: `human gate refused: ${gate.reasons.join("; ")}`, classification, run, log };
+    }
     hand("reviewer", "validate");
     const validation = await agents.reviewer.validate({ goal, level, artifacts: [...artifacts] });
     log.push({ phase: "validate", verdict: validation.verdict });
-    return { status: validation.verdict === "APPROVED" ? "READY_FOR_HITL" : "CHANGES_REQUESTED", classification, run, log };
+    const approved = validation.verdict === "APPROVED";
+    // merge and release stay protected by the repository whatever the gate says; `none` only means no work-unit step
+    return { status: approved ? (gate.gate === "none" ? "DONE" : "READY_FOR_HITL") : "CHANGES_REQUESTED", gate, classification, run, log };
   } catch (error) {
     return { status: "BLOCKED", reason: error.message, classification, log };
   }

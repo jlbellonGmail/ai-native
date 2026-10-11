@@ -241,3 +241,60 @@ test("a Task never gets spec phases, whatever the level", () => {
   assert.deepEqual(phasesFor("task", "normal"), ["implement", "validate"]);
   assert.deepEqual(phasesFor("task", "full"), ["implement", "validate"]);
 });
+
+const NONE = { humanGate: "none", autonomy: "full" };
+
+test("gate wiring: a low-risk Task with human_gate none, allowed by the repo, completes DONE with no human step", async () => {
+  const trace = [];
+  const agents = coordinatorAgents(trace);
+  agents.verify.changedPaths = async () => ["docs/guide.md"];
+  const out = await runCoordinator({ goal: "fix typo", signals: { scope: 1, changedPaths: ["docs/guide.md"] }, agents, policy: { declared: NONE, allowNone: true } });
+  assert.equal(out.status, "DONE");
+  assert.equal(out.gate.gate, "none");
+});
+
+test("gate wiring: the same declaration is refused when the repo does not allow none, before any work", async () => {
+  const trace = [];
+  const out = await runCoordinator({ goal: "fix typo", signals: { scope: 1, changedPaths: ["docs/guide.md"] }, agents: coordinatorAgents(trace), policy: { declared: NONE } });
+  assert.equal(out.status, "BLOCKED");
+  assert.match(out.reason, /human gate refused.*repository's policy/);
+  assert.deepEqual(trace, []);
+});
+
+test("gate wiring: high risk announced -> none refused; high risk only discovered after the work -> blocked, not DONE", async () => {
+  const early = await runCoordinator({ goal: "g", signals: { scope: 1, changedPaths: ["scripts/deploy.sh"] }, agents: coordinatorAgents([]), policy: { declared: NONE, allowNone: true } });
+  assert.equal(early.status, "BLOCKED");
+  const agents = coordinatorAgents([]);
+  agents.verify.changedPaths = async () => ["docs/a.md", "src/auth/login.js"];
+  const late = await runCoordinator({ goal: "g", signals: { scope: 1, changedPaths: ["docs/a.md"] }, agents, policy: { declared: NONE, allowNone: true } });
+  assert.equal(late.status, "BLOCKED");
+  assert.match(late.reason, /not allowed for high risk/);
+});
+
+test("gate wiring: required stops before implementation; default final-only ends READY_FOR_HITL", async () => {
+  const trace = [];
+  const req = await runCoordinator({ goal: "g", signals: { scope: 1, changedPaths: ["docs/a.md"] }, agents: coordinatorAgents(trace), policy: { declared: { humanGate: "required" } } });
+  assert.equal(req.status, "AWAITING_HUMAN_APPROVAL");
+  assert.ok(!trace.some((t) => t.startsWith("implement")));
+  const out = await runCoordinator({ goal: "g", signals: { scope: 1 }, agents: coordinatorAgents([]) });
+  assert.equal(out.status, "READY_FOR_HITL");
+});
+
+test("implementAll refuses to start with a refused gate", async () => {
+  const { calls, agents } = harness();
+  const run = await implementAll({ tasks: [task("T1")], level: "light", humanGate: { ok: false, gate: "required", reasons: ["no"] }, ...agents });
+  assert.equal(run.status, "BLOCKED");
+  assert.equal(run.escalation, "human_gate");
+  assert.deepEqual(calls, []);
+});
+
+test("review: human_gate none without the changedPaths evidence is refused; final-only does not need it", async () => {
+  const none = await runCoordinator({ goal: "g", signals: { scope: 1, changedPaths: ["docs/a.md"] }, agents: coordinatorAgents([]), policy: { declared: NONE, allowNone: true } });
+  assert.equal(none.status, "BLOCKED");
+  assert.match(none.reason, /changedPaths/);
+  const empty = coordinatorAgents([]);
+  empty.verify.changedPaths = async () => [];
+  assert.equal((await runCoordinator({ goal: "g", signals: { scope: 1, changedPaths: ["docs/a.md"] }, agents: empty, policy: { declared: NONE, allowNone: true } })).status, "BLOCKED");
+  const fo = await runCoordinator({ goal: "g", signals: { scope: 1, changedPaths: ["docs/a.md"] }, agents: coordinatorAgents([]) });
+  assert.equal(fo.status, "READY_FOR_HITL");
+});

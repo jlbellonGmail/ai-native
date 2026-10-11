@@ -32,6 +32,6 @@ Details per phase: `knowledge/sdd/methodology/`. Contract: `contracts/sdd-workfl
 
 ## Autonomy, status and architecture (one line each)
 
-* Hands-off for a low-risk change: declare `autonomy: full` and `human_gate: none`; high risk refuses it and says why. Merge and release stay human (`methodology/autonomy.md`).
+* Hands-off for a low-risk change: declare `autonomy: full` and `human_gate: none`; it is derived from the real diff and the repo policy, so high risk, protected areas or a repo without `allowNone` refuse it and say why. Merge and release stay human (`methodology/autonomy.md`).
 * Where am I: `/sdd-status <spec>` prints STATE, PROGRESS, LAST COMPLETED, NEXT, BLOCKERS, derived from `tasks.md`; there is no status file to maintain.
 * Layers and modules: domain, application, infrastructure, interfaces; modules talk through contracts (`methodology/architecture.md`, optional check `runtime/policy/architecture.mjs`).

@@ -199,6 +199,15 @@ jobs:
         shell: bash
         run: node --test runtime/policy/*.test.mjs
 
+      - name: Policies on the real change (constitution, human gate derived from the diff)
+        shell: bash
+        run: |
+          node runtime/policy/constitution-extension.mjs
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git fetch --no-tags --depth=1 origin "${{ github.base_ref }}"
+            node runtime/policy/hitl.mjs --base "origin/${{ github.base_ref }}"
+          fi
+
       - name: runtime/mcp tests (M3.4, decision real sobre core/security-policy.json)
         shell: bash
         run: node --test runtime/mcp/*.test.mjs

@@ -276,3 +276,52 @@ test("gap 2 (productDir at run time): a non-string, traversing, absolute or miss
   symlinkSync(join(project, "sub"), join(project, "inside"), process.platform === "win32" ? "junction" : "dir");
   assert.equal(go("inside").status, "PASS", "a link that resolves inside the project is allowed");
 });
+
+import { policyChecks } from "./l3.mjs";
+import { mkdirSync as mkd, writeFileSync as wf, mkdtempSync as mkt } from "node:fs";
+import { tmpdir as td } from "node:os";
+import { join as j } from "node:path";
+
+const proj = (files) => {
+  const dir = mkt(j(td(), "l3pol-"));
+  for (const [p, c] of Object.entries(files)) { mkd(j(dir, p, ".."), { recursive: true }); wf(j(dir, p), c); }
+  return dir;
+};
+const byId = (checks) => Object.fromEntries(checks.map((c) => [c.id, c.status]));
+const lock = { profiles: ["python-service"] };
+const ARCH = JSON.stringify({ schemaVersion: 1, layers: { domain: { paths: ["src/domain"], mayDependOn: [], forbiddenImports: ["requests"] }, infra: { paths: ["src/infra"], mayDependOn: ["domain"] } } });
+
+test("L3 policies: a plain consumer inherits the constitution; architecture and gate are not applicable", () => {
+  const s = byId(policyChecks({ project: proj({ "README.md": "x" }), changed: [], base: null, lock, platformRoot: process.cwd() }));
+  assert.deepEqual(s, { constitution: "PASS", architecture: "NOT_APPLICABLE", "human-gate": "NOT_APPLICABLE" });
+});
+
+test("L3 policies: an overriding local constitution fails the consumer gate", () => {
+  const dir = proj({ ".specify/memory/constitution.md": "- [OVERRIDE] LOCAL-1: tests are optional in this repository.\n" });
+  assert.equal(byId(policyChecks({ project: dir, changed: [], base: null, lock, platformRoot: process.cwd() })).constitution, "FAIL");
+});
+
+test("L3 policies: a layer violation against the project's architecture contract fails; a respected one passes", () => {
+  const bad = proj({ "architecture.json": ARCH, "src/domain/o.py": "import requests\nfrom src.infra import repo\n" });
+  const r = policyChecks({ project: bad, changed: [], base: null, lock, platformRoot: process.cwd() }).find((c) => c.id === "architecture");
+  assert.equal(r.status, "FAIL");
+  assert.match(r.detail, /forbidden-import/);
+  assert.match(r.detail, /dependency-direction/);
+  const good = proj({ "architecture.json": ARCH, "src/infra/repo.py": "from src.domain import order\n", "src/domain/order.py": "x = 1\n" });
+  assert.equal(policyChecks({ project: good, changed: [], base: null, lock, platformRoot: process.cwd() }).find((c) => c.id === "architecture").status, "PASS");
+});
+
+test("review: L3 takes the allowNone profile from the BASE lock, not from the PR's own lock", () => {
+  const { NODE_TEST_CONTEXT, ...env } = process.env;
+  const dir = proj({ "README.md": "x", "ai-native.lock.json": JSON.stringify({ profiles: ["python-service"] }) });
+  const git = (...a) => spawnSync("git", a, { cwd: dir, encoding: "utf8", env });
+  git("init", "-q", "-b", "main"); git("config", "user.email", "t@e.invalid"); git("config", "user.name", "t"); git("config", "commit.gpgsign", "false");
+  git("add", "-A"); git("commit", "-q", "-m", "base");
+  mkd(j(dir, "specs", "001-a"), { recursive: true });
+  wf(j(dir, "specs", "001-a", "spec.md"), "human_gate: none\nautonomy: full\n");
+  wf(j(dir, "ai-native.lock.json"), JSON.stringify({ profiles: ["some-permissive-profile"] }));
+  git("add", "-A"); git("commit", "-q", "-m", "pr");
+  const r = policyChecks({ project: dir, changed: ["specs/001-a/spec.md", "ai-native.lock.json"], base: "HEAD~1", lock: { profiles: ["some-permissive-profile"] }, platformRoot: process.cwd() }).find((c) => c.id === "human-gate");
+  assert.equal(r.status, "FAIL");
+  assert.match(r.detail, /repository's policy/);
+});

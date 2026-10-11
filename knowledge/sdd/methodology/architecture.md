@@ -42,7 +42,7 @@ A project declares its layers and modules in an `architecture.json` (schema `con
 
 Check: `node runtime/policy/architecture.mjs --project .` (PASS, or FAIL listing each violation; no contract means NOT_APPLICABLE). Without a contract, the same rules apply as review criteria.
 
-Limits (best effort, say so in review): it reads relative imports and Python imports resolved from the project root; aliases (`@/x`, tsconfig `paths`) and computed imports are not resolved; files outside every declared layer are not checked; `public` paths are matched by prefix, ignoring file extension.
+What the check reads (best effort, not a proof): static imports from code, never from comments, strings or regex literals; a source over 2 MB is reported as `unanalyzable` instead of being skipped. JS/TS: `import ... from` (also multi-line, `import type`, `export ... from`), `import "x"`, `require("x")`, `import("x")`. Python: `import a.b, c`, `from a import b`, `from a import (b, c)` (multi-line, continuations, `;`). What it does not resolve: computed imports (variables, template strings), aliases (`@/x`, tsconfig `paths`), `__import__`/`importlib`; files outside every declared layer are not checked; `public` paths are matched by prefix, ignoring file extension. Run in the consumer L3 gate (`architecture`, contract read from the base branch) or by hand.
 
 ## Changing stack
 

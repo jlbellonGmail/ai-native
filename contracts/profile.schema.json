@@ -28,6 +28,7 @@
       "required": ["mode"],
       "properties": {
         "mode": { "type": "string", "enum": ["SingleMaintainer", "MultiMaintainer"] },
+        "allowNone": { "type": "boolean", "default": false, "description": "Repo policy for the human gate: when true, a low-risk work unit may declare human_gate none (runtime/policy/hitl.mjs). Set by the platform profile, never by the project." },
         "humanMaintainers": { "type": "array", "items": { "type": "string" }, "description": "GitHub logins allowed to perform the HITL merge or dispatch merge-gate (route B)." }
       }
     },

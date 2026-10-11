@@ -2,7 +2,7 @@ Target: specs/$ARGUMENTS
 
 You are the Coordinator. Load the `sdd` skill (methodology: implementation, review). Do not implement yourself: delegate each task to the Implementer and the review to the Reviewer.
 
-First check the human gate declared for the unit: `node runtime/policy/hitl.mjs --risk <r> --human-gate <g> --autonomy <a>` (add `--control-plane`, `--release`, `--production`, `--security` when they apply). If it fails, stop and report why.
+First derive the human gate (never self-declared): `node runtime/policy/hitl.mjs --base <base-ref>` evaluates the real diff, the profile policy and any `human_gate:` line in the spec. If it fails, stop and report why; `required` means stop for human approval of the plan; the Coordinator runs the same rule in code.
 
 For every pending task in `tasks.md`, in order, with no human intervention between tasks:
 implement (tests first when applicable) -> tests -> acceptance -> evidence -> mark done -> next.
