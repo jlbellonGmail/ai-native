@@ -8,7 +8,7 @@
 //   node runtime/consumer/knowledge.mjs --project <dir> [--cache <dir>] <ref>   resolve through the lock
 // Outcomes are explicit, never a silent best effort:
 //   OK | NOT_ADOPTED | MISSING_REFERENCE | INCOMPATIBLE_VERSION
-import { existsSync, readFileSync, realpathSync } from "node:fs";
+import { existsSync, readFileSync, realpathSync, statSync } from "node:fs";
 import { dirname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { readLock } from "../bootstrap/install.mjs";
@@ -18,10 +18,11 @@ export const KNOWLEDGE_STATUS = Object.freeze(["OK", "NOT_ADOPTED", "MISSING_REF
 export const SUPPORTED_SCHEMA = 1;
 const REF_RE = /^[a-z][a-z0-9-]*\/[A-Za-z0-9_][A-Za-z0-9_./-]*$/;
 const semver = (v) => v.split(".").map(Number);
+// a prerelease (3.1.0-rc.1) sorts below its final release (3.1.0)
 const atLeast = (have, want) => {
-  const [a, b] = [semver(have), semver(want)];
+  const [a, b] = [semver(have.replace(/-.*$/, "")), semver(want)];
   for (let i = 0; i < 3; i += 1) if (a[i] !== b[i]) return a[i] > b[i];
-  return true;
+  return !have.includes("-");
 };
 const result = (status, detail, extra = {}) => ({ status, detail, ...extra });
 
@@ -30,7 +31,7 @@ export function locateRelease({ projectRoot, cacheRoot = defaultCacheRoot() }) {
   const { lock, errors } = readLock(projectRoot);
   if (errors.length) return result("NOT_ADOPTED", errors.join("; "));
   try {
-    return result("OK", lock.platform.version, { dir: verifyRelease(cacheRoot, lock.platform.digest), platformVersion: lock.platform.version.replace(/^v/, "").replace(/-.*$/, "") });
+    return result("OK", lock.platform.version, { dir: verifyRelease(cacheRoot, lock.platform.digest), platformVersion: lock.platform.version.replace(/^v/, "") });
   } catch (error) {
     if (error instanceof CacheMissError || error instanceof CacheCorruptError) return result("MISSING_REFERENCE", `${error.message}; run \`ai-native sync\` (needs the network once, then works offline)`);
     throw error;
@@ -57,7 +58,7 @@ export function checkPackage(releaseRoot, pkg = "sdd", { platformVersion } = {})
 
 /** Resolves the pinned release and checks every knowledge package it ships against the resolver and the pinned platform version. */
 export function checkReference({ projectRoot, cacheRoot = defaultCacheRoot(), packages = ["sdd"] }) {
-  const located = locateRelease({ projectRoot, cacheRoot: cacheRoot ?? defaultCacheRoot() });
+  const located = locateRelease({ projectRoot, cacheRoot });
   if (located.status !== "OK") return located;
   for (const pkg of packages) {
     const checked = checkPackage(located.dir, pkg, { platformVersion: located.platformVersion });
@@ -74,7 +75,7 @@ export function resolveKnowledge({ releaseRoot, ref, platformVersion }) {
   if (compat.status !== "OK") return compat;
   const base = join(releaseRoot, "knowledge");
   const target = resolve(base, ref);
-  if (!existsSync(target)) return result("MISSING_REFERENCE", `knowledge/${ref} is not in this release`);
+  if (!existsSync(target) || !statSync(target).isFile()) return result("MISSING_REFERENCE", `knowledge/${ref} is not a file in this release`);
   // symlinks are never shipped, but the boundary is enforced on the real path anyway
   const real = realpathSync(target);
   const rel = relative(realpathSync(base), real);
@@ -96,7 +97,7 @@ function main() {
     ({ dir: releaseRoot, platformVersion } = located);
   } else {
     const { lock } = readLock(process.cwd());
-    if (lock) platformVersion = lock.platform.version.replace(/^v/, "").replace(/-.*$/, "");
+    if (lock) platformVersion = lock.platform.version.replace(/^v/, "");
   }
   return finish(resolveKnowledge({ releaseRoot, ref, platformVersion }));
 }

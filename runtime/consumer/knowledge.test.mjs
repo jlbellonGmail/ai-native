@@ -169,3 +169,16 @@ test("E2E upgrade: a consumer pinned to a release without knowledge/sdd is MISSI
   assert.equal(after.status, 0, after.stdout + after.stderr);
   assert.equal(JSON.parse(after.stdout).adoption.status, "CLEAN");
 });
+
+test("a directory reference and a prerelease pin are explicit, and an invalid lock is surfaced by --drift", () => {
+  const { cache, project } = consumerWithCache();
+  const { dir } = locateRelease({ projectRoot: project, cacheRoot: cache });
+  assert.equal(resolveKnowledge({ releaseRoot: dir, ref: "sdd/methodology" }).status, "MISSING_REFERENCE");
+  const rc = consumerWithCache({ version: "v3.1.0-rc.1" });
+  assert.equal(checkReference({ projectRoot: rc.project, cacheRoot: rc.cache }).status, "INCOMPATIBLE_VERSION");
+  applyConsumer({ releaseRoot: REPO, projectRoot: project, tools: ["claude"] });
+  writeFileSync(join(project, "ai-native.lock.json"), "{ not json");
+  const drift = spawnSync(process.execPath, [join(REPO, "runtime/adapters/consumer.mjs"), "--project", project, "--cache", cache, "--tool", "claude", "--drift"], { encoding: "utf8" });
+  assert.notEqual(drift.status, 0);
+  assert.match(drift.stdout + drift.stderr, /cannot check references/);
+});

@@ -10,12 +10,12 @@ Mechanism: `runtime/release/bundle.mjs` (`INCLUDE_PREFIXES` / `EXCLUDE_PATTERNS`
 |---|---|---|---|---|---|
 | `runtime/ contracts/ core/ mcp/ profiles/ audit/` | yes | yes | executable platform | `ai-native run`, adapters, gates | n/a (never copied) |
 | `.agents/skills/` | yes | yes | skill sources projected per tool | `consumer.mjs`, `skills.mjs` | n/a (generated) |
-| `knowledge/sdd/` | **no** | **yes** (32 files, 65,258 B; `goals/` excluded) | the sdd skill and the AGENTS routers point into it; a pointer a consumer cannot resolve is dangling | `ai-native run -- knowledge <ref>` | yes: `docs/agents-contract-detail.md` and the 7 `.specify/templates/*` |
+| `knowledge/sdd/` | **no** | **yes** (32 files, 67,753 B; `goals/` excluded) | the sdd skill and the AGENTS routers point into it; a pointer a consumer cannot resolve is dangling | `ai-native run -- knowledge <ref>` | yes: `docs/agents-contract-detail.md` and the 7 `.specify/templates/*` |
 | rest of `knowledge/` (benchmarks, datasets, evaluation, registries…) | no | no | factory/evaluation material, not consumer-facing | factory CI | n/a |
 | `foundation/` | no | no | factory-side validators and reference config; the runnable parts already live in `runtime/` and `core/` | factory CI | n/a |
 | `template/` | no | no | scaffold/generator source, not a runtime dependency | `create-ai-native-app`, CI validators | n/a |
 
-Release surface: 167 files / 754,669 B -> 201 files / 830,698 B (+10 %, all of it `knowledge/sdd` and the new resolver/contract). The digest changes by construction; `platform.json` and the lock schema are untouched.
+Release surface: 167 files / 754,669 B -> 201 files / 833,487 B (+10 %, all of it `knowledge/sdd` and the new resolver/contract). The digest changes by construction; `platform.json` and the lock schema are untouched.
 
 ## 2. Resolution, versioning, offline
 
@@ -61,7 +61,7 @@ Finding worth recording: nothing in `runtime/` materializes `templates/project`;
 | factory `AGENTS.md` | 190 lines / 14,035 B | 190 lines / 14,061 B |
 | consumer managed files | 5 | 5 |
 | generated projections (3 tools) | 46 files / 78,657 B | unchanged (required by the runtimes) |
-| release bundle (cache) | 167 files / 754,669 B | 201 files / 830,698 B |
+| release bundle (cache) | 167 files / 754,669 B | 201 files / 833,487 B |
 
 `AGENTS.md` of the project template grew by 961 B: it now names the central references and says how to locate ai-native (a four-line block). That is the intended trade: the always-on file gained a pointer, the repo lost 17.6 KB + 8.6 KB of copies. The router was not cut further because the previous review found rule loss at the margin and the reusable detail is already central.
 
