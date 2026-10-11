@@ -16,9 +16,9 @@ import { dirname, join, resolve, relative, isAbsolute } from "node:path";
 export const JOURNAL_PATH = ".ai-native/adoption-journal.json";
 export class AdoptError extends Error {}
 
-const sha = (buf) => `sha256:${createHash("sha256").update(buf).digest("hex")}`;
+export const sha = (buf) => `sha256:${createHash("sha256").update(buf).digest("hex")}`;
 
-function safeJoin(root, rel) {
+export function safeJoin(root, rel) {
   if (isAbsolute(rel) || rel.split(/[\\/]/).includes("..")) throw new AdoptError(`unsafe path '${rel}'`);
   const full = resolve(root, rel);
   if (relative(root, full).startsWith("..")) throw new AdoptError(`path escapes target: '${rel}'`);
@@ -61,7 +61,7 @@ export function applyAdoption(targetRoot, incoming, { resolve: resolutions = {} 
   return { status: "APPLIED", written: Object.keys(created), skipped, collisions: [] };
 }
 
-function pruneEmptyDirs(root, rel) {
+export function pruneEmptyDirs(root, rel) {
   let dir = dirname(join(root, rel));
   while (relative(root, dir) && !relative(root, dir).startsWith("..")) {
     if (readdirSync(dir).length) break;

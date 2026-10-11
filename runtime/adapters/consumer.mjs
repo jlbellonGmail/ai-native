@@ -11,6 +11,8 @@
 //        [--mcp-profile <id>] MCP profile the gateway exposes (default none = no MCP)
 //        [--skip <path>]...   leave a colliding file untouched
 //        [--revert]           undo a previous apply
+//        [--upgrade]          apply ONLY the delta between what the journal says was written and this release;
+//                             locally edited files are preserved and reported (combine with --plan to preview)
 //        [--plan]             read-only; list files and collisions
 import { readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
@@ -18,6 +20,7 @@ import { fileURLToPath } from "node:url";
 import { ALL_TOOLS, buildToolFiles } from "./sync.mjs";
 import { loadSkillsRegistry, selectSkills, canonicalFilesFor, SKILL_TARGETS } from "./skills.mjs";
 import { planAdoption, applyAdoption, revertAdoption } from "../migrate/adopt.mjs";
+import { planUpgrade, applyUpgrade } from "../migrate/upgrade-delta.mjs";
 import { buildReport, renderOutput, exitCodeForReport } from "../lib/json.mjs";
 import { statusFromCounts } from "../lib/result.mjs";
 
@@ -61,6 +64,10 @@ function main() {
     const selection = { tools, profile: value("--profile"), role: value("--role"), level: value("--level"), mcpProfile: value("--mcp-profile") ?? "none" };
     try {
       if (argv.includes("--revert")) data = revertAdoption(projectRoot);
+      else if (argv.includes("--upgrade")) {
+        const incoming = consumerFiles(releaseRoot, selection);
+        data = argv.includes("--plan") ? planUpgrade(projectRoot, incoming) : applyUpgrade(projectRoot, incoming);
+      }
       else if (argv.includes("--plan")) data = planConsumer({ releaseRoot, projectRoot, ...selection });
       else {
         data = applyConsumer({ releaseRoot, projectRoot, skip: values("--skip"), ...selection });
