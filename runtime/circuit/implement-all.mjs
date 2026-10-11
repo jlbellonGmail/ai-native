@@ -6,6 +6,7 @@
 //   fullSuite()     -> { passed, output }                 (official regression suite)
 //   review(iteration) -> { verdict, findings }            (independent Reviewer, read-only)
 //   fix(findings)   -> void                               (Implementer, via the Coordinator)
+//   humanGate: optional { ok, gate, reasons } from deriveHumanGate; ok:false blocks before any task
 //   persist(taskId, state) -> void   optional: writes the task state (e.g. tasks.md) as it changes;
 //                                    without it the returned `states` is the only record
 // An agent that throws counts as a failed attempt with that error as the diagnosis.
@@ -22,7 +23,7 @@ const circuitLevelOf = (workflow, level) => {
   return found.circuitLevel;
 };
 
-export async function implementAll({ tasks, level = "normal", implement, test, accept, fullSuite, review, fix, persist = async () => {}, workflow = loadWorkflow() }) {
+export async function implementAll({ tasks, level = "normal", implement, test, accept, fullSuite, review, fix, persist = async () => {}, workflow = loadWorkflow(), humanGate = null }) {
   const depth = circuitLevelOf(workflow, level);
   const budget = convergenceBudgetFor(depth);
   const evidence = [];
@@ -35,6 +36,9 @@ export async function implementAll({ tasks, level = "normal", implement, test, a
     evidence,
     ...extra,
   });
+
+  // a gate derived by the Coordinator (see runtime/policy/hitl.mjs); a refused one never starts the loop
+  if (humanGate && humanGate.ok === false) return result("BLOCKED", { reason: `human gate refused: ${(humanGate.reasons ?? []).join("; ")}`, escalation: "human_gate" });
 
   for (const task of tasks) {
     if (task.state === "done") continue;

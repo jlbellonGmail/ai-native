@@ -25,6 +25,9 @@ import { assess } from "../circuit/assess.mjs";
 import { changedFiles, readFromCommit } from "../gates/control-plane.mjs";
 import { checkReviewIndependence } from "../gates/reviewer-independence.mjs";
 import { JOURNAL_PATH } from "../migrate/adopt.mjs";
+import { validateProject as validateConstitution } from "../policy/constitution-extension.mjs";
+import { checkProject as checkArchitecture } from "../policy/architecture.mjs";
+import { checkHumanGate, allowNoneFor } from "../policy/hitl.mjs";
 import { statusFromCounts, exitCodeFor, formatLine } from "../lib/result.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -81,6 +84,8 @@ export function runL3({ project, cache, base = null, requireBase = false, platfo
     checks.push(requireBase ? check("p45", "FAIL", "a base ref is required (PR gate): events.jsonl cannot be checked against base") : check("p45", "NOT_APPLICABLE", "no --base given"));
   }
 
+  checks.push(...policyChecks({ project, changed, base, lock, platformRoot }));
+
   const journalPath = join(project, JOURNAL_PATH);
   if (existsSync(journalPath)) {
     const journal = JSON.parse(readFileSync(journalPath, "utf8"));
@@ -103,6 +108,38 @@ export function runL3({ project, cache, base = null, requireBase = false, platfo
   }
   if (!checks.some((c) => c.id === "product")) checks.push(productTests({ project, lock: profileLock, platformRoot, run }));
   return finish(checks, { depth, changed: changed.length });
+}
+
+
+/**
+ * The three policies of runtime/policy/*, run from the pinned platform against the consumer (one implementation, no copy):
+ * constitution inheritance, architecture contract (optional) and the human gate derived from the real diff.
+ * The architecture contract is read from the BASE branch when it has one, so a PR cannot loosen the rules it is judged by.
+ */
+export function policyChecks({ project, changed, base, lock, platformRoot }) {
+  const out = [];
+  const ext = validateConstitution(project);
+  out.push(ext.length ? check("constitution", "FAIL", ext.join("; ")) : check("constitution", "PASS", existsSync(join(project, ".specify", "memory", "constitution.md")) ? "local extension is additions-only" : "inherits the ai-native constitution"));
+
+  const baseContract = base ? readFromCommit(project, base, "architecture.json") : null;
+  const headPath = join(project, "architecture.json");
+  const contractText = baseContract ?? (existsSync(headPath) ? readFileSync(headPath, "utf8") : null);
+  if (contractText === null) out.push(check("architecture", "NOT_APPLICABLE", "no architecture.json (optional)"));
+  else {
+    try {
+      const violations = checkArchitecture(project, JSON.parse(contractText));
+      const edited = changed.includes("architecture.json") && baseContract !== null;
+      out.push(violations.length ? check("architecture", "FAIL", violations.slice(0, 5).map((v) => `[${v.rule}] ${v.file}: ${v.message}`).join("; ")) : edited ? check("architecture", "WARN", "architecture.json changed in this PR: judged by the base contract, needs human review") : check("architecture", "PASS", "layer, module and dependency rules respected"));
+    } catch (error) {
+      out.push(check("architecture", "FAIL", `architecture.json is not valid JSON: ${error.message}`));
+    }
+  }
+
+  if (base && changed.length) {
+    const gate = checkHumanGate({ project, base, changedPaths: changed, allowNone: allowNoneFor(lock.profiles?.[0], platformRoot) });
+    out.push(check("human-gate", gate.ok ? "PASS" : "FAIL", gate.units.map((u) => `${u.unit}: risk ${u.risk}, ${u.gate}${u.reasons.length ? ` (${u.reasons.join("; ")})` : ""}`).join("; ")));
+  } else out.push(check("human-gate", "NOT_APPLICABLE", "no base diff to derive the gate from"));
+  return out;
 }
 
 export function productTests({ project, lock, platformRoot, run }) {
