@@ -81,3 +81,19 @@ export function applyUpgrade(targetRoot, incoming) {
   renameSync(`${journalPath}.tmp`, journalPath);
   return { status: plan.summary.add + plan.summary.update + plan.summary.remove === 0 ? "UP_TO_DATE" : "UPGRADED", ...plan };
 }
+
+/**
+ * Drift of the generated projections against the canonical release (read-only).
+ *   edited    a projection was changed by hand (the canonical source is ai-native, not the copy)
+ *   missing   a projection the journal knows was deleted locally
+ *   outdated  the release would add/update/remove files (regenerate with --upgrade)
+ * Foreign files (collisions) are not drift: they are the project's own.
+ */
+export function detectDrift(targetRoot, incoming) {
+  const plan = planUpgrade(targetRoot, incoming);
+  // "edited locally" and "obsolete but edited locally" both mean a hand-modified projection
+  const edited = plan.keepLocal.filter((k) => k.reason !== "deleted locally").map((k) => k.path);
+  const missing = plan.keepLocal.filter((k) => k.reason === "deleted locally").map((k) => k.path);
+  const outdated = [...plan.add, ...plan.update, ...plan.remove].sort();
+  return { status: edited.length || missing.length ? "DRIFT" : outdated.length ? "OUTDATED" : "CLEAN", edited, missing, outdated };
+}
