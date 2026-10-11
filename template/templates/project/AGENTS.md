@@ -1,6 +1,6 @@
 # Project Agent Operating Contract
 
-Entrypoint and router for this generated project. Stable and agent-neutral (Codex, Claude Code, OpenClaw, OpenCode, Cursor, Aider, Gemini-based and future agents). It holds identity, essential rules, source of truth, routing and non-negotiables; detail is loaded on demand. Full per-section checklists: `docs/agents-contract-detail.md`.
+Entrypoint and router for this generated project. Stable and agent-neutral (Codex, Claude Code, OpenClaw, OpenCode, Cursor, Aider, Gemini-based and future agents). It holds identity, essential rules, source of truth, routing and non-negotiables; detail is loaded on demand. Full per-section checklists are central, not copied here: `ai-native run -- knowledge sdd/agents-contract-detail.md` (resolved from the release pinned in `ai-native.lock.json`; works offline from the cache).
 
 This project was created from the AI-NATIVE template and follows: governance as source of truth, SDD, one task per execution, Builder + Inspector, real validations, auditable commits, controlled recovery, human approval when required, low token usage.
 
@@ -53,9 +53,11 @@ Governance decides task state; Git decides repository state; validators decide v
 ```text
 Start of any task           governance discovery (below), then this file only
 Execute / recover / close   .agents/skills/ (task execution, recovery, delivery-governance)
-SDD, /feature, /sdd-*       the `sdd` skill if installed; spec templates in .specify/templates/
-Full per-section checklists docs/agents-contract-detail.md
+SDD, /feature, /sdd-*       the `sdd` skill if installed; spec templates central: ai-native run -- knowledge sdd/feature-templates/spec-template.md (override: .specify/templates/)
+Full per-section checklists  ai-native run -- knowledge sdd/agents-contract-detail.md
 ```
+
+Locating ai-native: `ai-native.lock.json` pins the release (version + digest); `ai-native run -- knowledge <ref>` loads central methodology from it, verified against the cache (offline-capable). Generated projections (`.claude/`, `.opencode/`, `.codex/`) are never edited by hand: `consumer.mjs --drift` detects it, `--upgrade` regenerates by delta. Project files (specs, STATUS, constitution, `.specify/templates/` overrides) win over central defaults for project facts only.
 
 Reusable workflows live in `.agents/skills/<name>/SKILL.md`; do not restate a workflow in chat when a skill defines it. Bridge files (`CLAUDE.md`, `OPENCLAW.md`) are thin adapters that read this file. On conflict, this file wins unless the user explicitly says otherwise. Per-tool directories (`.claude/`, `.opencode/`, `.codex/`) are generated projections, never sources.
 
@@ -137,8 +139,8 @@ Update only when the agent repeats the same mistake, a stable rule changes, a re
 Every executable project task is one feature unless project governance defines it as audit-only, documentation-only or governance-only. For feature-per-task, Git, GitHub, GitHub Actions, worktree, Engram, MCP, context-window, documentation, Security by Design, DevSecOps and monitoring rules, use:
 
 - .agents/skills/delivery-governance/SKILL.md
-- .specify/templates/documentation-template.md
-- .specify/templates/security-template.md
+- ai-native run -- knowledge sdd/feature-templates/documentation-template.md (a project may override it with its own .specify/templates/documentation-template.md)
+- ai-native run -- knowledge sdd/feature-templates/security-template.md (a project may override it with its own .specify/templates/security-template.md)
 
 Before closure, classify: branch / worktree, GitHub / push / PR, GitHub Actions / CI, Engram, MCP, technical documentation, user/project documentation, Security by Design, DevSecOps, observability / monitoring.
 

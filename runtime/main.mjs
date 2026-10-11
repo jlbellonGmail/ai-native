@@ -16,6 +16,7 @@ const COMMANDS = {
   rollback: "bootstrap/cli.mjs",
   adapters: "adapters/consumer.mjs",
   l3: "consumer/l3.mjs",
+  knowledge: "consumer/knowledge.mjs",
   audit: "audit/cli.mjs",
   evals: "evals/cli.mjs",
 };

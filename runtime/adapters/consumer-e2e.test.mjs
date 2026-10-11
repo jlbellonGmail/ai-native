@@ -64,12 +64,16 @@ test("a newer release is OUTDATED (not DRIFT) and a delta upgrade regenerates on
   assert.equal(detectDrift(root, next).status, "CLEAN");
 });
 
-test("every central file the project template points to is either local in the template or shipped in the release bundle", async () => {
-  const { INCLUDE_PREFIXES } = await import("../release/bundle.mjs");
+test("every pointer in the project template AGENTS.md resolves: local path, or `ai-native run -- knowledge <ref>` shipped in the release", async () => {
+  const { resolveKnowledge } = await import("../consumer/knowledge.mjs");
   const agents = readFileSync(join(RELEASE, "template/templates/project/AGENTS.md"), "utf8");
-  const refs = [...agents.matchAll(/`((?:docs|knowledge)\/[A-Za-z0-9_./-]+\.md)`|((?:docs|knowledge)\/[A-Za-z0-9_-]+\/?[A-Za-z0-9_./-]*\.md)/g)].map((m) => m[1] ?? m[2]);
-  const missing = refs.filter((r) => !existsSync(join(RELEASE, "template/templates/project", r)) && !INCLUDE_PREFIXES.some((p) => r.startsWith(p)));
-  assert.deepEqual(missing, []);
+  const centralRefs = [...agents.matchAll(/ai-native run -- knowledge ([A-Za-z0-9_./-]+)/g)].map((m) => m[1]);
+  assert.ok(centralRefs.length > 0, "the router points at central knowledge");
+  for (const ref of centralRefs) assert.equal(resolveKnowledge({ releaseRoot: RELEASE, ref }).status, "OK", ref);
+  // any other repo-relative file the router names must exist in the template itself (no dangling local pointer)
+  const local = [...agents.matchAll(/`((?:docs|specs|\.specify|\.agents|scripts|testing)\/[A-Za-z0-9_./-]+\.[a-z]+)`/g)].map((m) => m[1]);
+  const dangling = local.filter((r) => !existsSync(join(RELEASE, "template/templates/project", r)));
+  assert.deepEqual(dangling, []);
 });
 
 test("--drift is read-only and refuses to be combined with --upgrade", async () => {

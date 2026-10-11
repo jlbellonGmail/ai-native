@@ -10,7 +10,7 @@
 //            a file edited since adoption is kept and reported. Reverting is
 //            idempotent and a missing journal is an error, not a no-op.
 import { createHash } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync, readdirSync, rmdirSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync, readdirSync, rmdirSync, realpathSync } from "node:fs";
 import { dirname, join, resolve, relative, isAbsolute } from "node:path";
 
 export const JOURNAL_PATH = ".ai-native/adoption-journal.json";
@@ -22,6 +22,13 @@ export function safeJoin(root, rel) {
   if (isAbsolute(rel) || rel.split(/[\\/]/).includes("..")) throw new AdoptError(`unsafe path '${rel}'`);
   const full = resolve(root, rel);
   if (relative(root, full).startsWith("..")) throw new AdoptError(`path escapes target: '${rel}'`);
+  // a symlinked ancestor inside the project must not redirect a write outside it: check the deepest existing ancestor's real path
+  let probe = full;
+  while (!existsSync(probe) && dirname(probe) !== probe) probe = dirname(probe);
+  if (existsSync(probe)) {
+    const out = relative(realpathSync(root), realpathSync(probe));
+    if (out.startsWith("..") || isAbsolute(out)) throw new AdoptError(`path escapes target through a symlink: '${rel}'`);
+  }
   return full;
 }
 

@@ -29,8 +29,10 @@ the specification and plan gates are both passed.
 | `methodology/` | Per-phase methodology (levels, EARS, clarify, plan, tasks, implementation/TDD, validation, review, change, modes), loaded on demand. |
 | `QUICKSTART.md` | The whole workflow in five minutes (`/feature`, `/sdd-*`). |
 | `ARCHITECTURE.md` | Where each capability lives (foundation / knowledge / template / consumer) and why. |
-| `agents-contract-detail.md` | Verbatim detailed checklists behind the `AGENTS.md` router (factory-only). |
-| `goals/GI-BATCH-UPGRADE.goal.md` | Ready-to-run goal template for a delta-only batch upgrade of consumer repositories. |
+| `agents-contract-detail.md` | Verbatim detailed checklists behind the `AGENTS.md` routers (factory and generated projects; shipped in the release). |
+| `feature-templates/` | Seven feature-artifact templates (spec, plan, tasks, documentation, security, inspector, verification). A project overrides one by placing its own in `.specify/templates/`. |
+| `KNOWLEDGE.json` | Package version descriptor (`contracts/knowledge-package.schema.json`): schema, version, required workflow contract, minimum platform. |
+| `goals/GI-BATCH-UPGRADE.goal.md` | Ready-to-run goal template for adopting, then upgrading, consumer repositories (factory-only, not shipped). |
 
 ## Use In A Real Project
 

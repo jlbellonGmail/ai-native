@@ -106,3 +106,13 @@ test("a file the user made equal to the target is tracked again, so the next rel
   assert.deepEqual(planUpgrade(root, V3).update, [".claude/commands/a.md"]);
   assert.ok(!existsSync(join(root, ".ai-native/adoption-journal.json.tmp")), "no temp journal is left behind");
 });
+
+test("a refresh-only run reports REFRESHED (journal rewritten, no project file written), then UP_TO_DATE", () => {
+  const root = adopted(V2);
+  const V3 = { ...V2, ".claude/commands/a.md": "A v3\n" };
+  writeFileSync(join(root, ".claude/commands/a.md"), "A v3\n"); // the user already converged on the next release
+  const first = applyUpgrade(root, V3);
+  assert.equal(first.status, "REFRESHED");
+  assert.equal(first.summary.bytesWritten, 0);
+  assert.equal(applyUpgrade(root, V3).status, "UP_TO_DATE");
+});

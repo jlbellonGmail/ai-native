@@ -162,6 +162,7 @@ test("persistTaskState writes the new state to disk", () => {
   const dir = folder({ "tasks.md": TASKS });
   persistTaskState(join(dir, "tasks.md"), "T1", "blocked");
   assert.equal(parseTasks(readFileSync(join(dir, "tasks.md"), "utf8"))[0].state, "blocked");
+  assert.ok(!readdirSync(dir).some((f) => f.endsWith(".tmp")), "write-then-rename leaves no temp file");
 });
 
 test("a state-only role may mutate code only through an explicit orchestrates flag", () => {
