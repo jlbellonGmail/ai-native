@@ -49,7 +49,7 @@ export function listFilesAtCommit(cwd, sha, dir) {
 }
 
 export function changedFiles(cwd, baseSha, headSha) {
-  const r = git(cwd, ["diff", "--name-only", `${baseSha}...${headSha}`]);
+  const r = git(cwd, ["diff", "--name-only", "--no-renames", `${baseSha}...${headSha}`]);
   if (r.status !== 0) throw new ControlPlaneError(`cannot diff ${baseSha}...${headSha}: ${r.stderr.trim()}`);
   return r.stdout.split(/\r?\n/).filter(Boolean);
 }

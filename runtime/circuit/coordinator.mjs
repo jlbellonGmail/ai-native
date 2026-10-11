@@ -80,6 +80,10 @@ export async function runCoordinator({ goal, signals = {}, agents, workflow = lo
     if (run.status !== "DONE") return { status: run.status, classification, run, log };
     // the gate is re-derived from what actually changed: a bigger change than announced cannot keep a lighter gate
     const actual = await agents.verify?.changedPaths?.();
+    // `none` is the only gate that completes with no human step, so it needs this evidence: without it, refuse
+    if (gate.gate === "none" && !(Array.isArray(actual) && actual.length)) {
+      return { status: "BLOCKED", reason: "human gate refused: human_gate none needs agents.verify.changedPaths() to confirm what actually changed", classification, run, log };
+    }
     if (Array.isArray(actual) && actual.length) {
       gate = gateFor(actual);
       log.push({ phase: "human-gate", gate: gate.gate, risk: gate.risk, ok: gate.ok, derivedFrom: "actual changes" });

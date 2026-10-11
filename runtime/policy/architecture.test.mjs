@@ -164,3 +164,38 @@ test("F-13 scanner stays linear on hostile input", () => {
   importsOf("big.ts", big);
   assert.ok(Date.now() - t < 3000, "import scanning must not backtrack");
 });
+
+test("review: a regex literal or nested template before an import does not hide it", () => {
+  assert.deepEqual(specs("a.js", `const r = /"/; import x from "./a";\n`), ["./a"]);
+  assert.deepEqual(specs("a.js", `const r = /[/]"/g;\nimport y from './b';\n`), ["./b"]);
+  assert.deepEqual(specs("a.js", `const r = /'/g; const z = require('./c');\n`), ["./c"]);
+  assert.deepEqual(specs("a.js", "const t = `${\"`\"} x`;\nimport d from './d';\n"), ["./d"]);
+  assert.deepEqual(specs("a.js", "const t = `${require('./e')}`;\n"), ["./e"]);
+  assert.deepEqual(specs("a.js", "const m = await import(`./g`);\n"), ["./g"]);
+  assert.deepEqual(specs("a.js", "const x = a / b; const y = c / d;\nimport k from './k';\n"), ["./k"]);
+  assert.deepEqual(specs("a.js", "return /x/.test(s); import q from './q';\n"), ["./q"]);
+  assert.deepEqual(specs("a.js", "const m = await import(`./${name}`);\n"), []);
+});
+
+test("review: an unterminated template or block comment falls back to over-reporting, never to hiding", () => {
+  assert.deepEqual(specs("a.js", "import a from './a';\nconst t = `never closed\n"), ["./a"]);
+  assert.deepEqual(specs("a.js", "/* never closed\nimport b from './b';\n"), ["./b"]);
+});
+
+test("review: Python imports after a same-line colon, CRLF input", () => {
+  assert.deepEqual(specs("a.py", "try:\n    import fast\nexcept ImportError:\n    import slow\nif x: import lazy\nelse: from a import b\n"), ["fast", "slow", "lazy", "a.b"]);
+  assert.deepEqual(specs("a.py", "from x import (\r\n    a,\r\n    b,\r\n)\r\n"), ["x.a", "x.b"]);
+  assert.deepEqual(specs("a.py", "d = {'k': 1}\nx = y if z else w\n"), []);
+});
+
+test("review: scanning is near-linear (20000 imports, hostile repeats) and huge sources fail closed", () => {
+  const many = Array.from({ length: 20000 }, (_, i) => `import m${i} from './m${i}.js';`).join("\n");
+  let t = Date.now();
+  assert.equal(importsOf("big.js", many).length, 20000);
+  assert.ok(Date.now() - t < 1500, `20000 imports took ${Date.now() - t} ms`);
+  t = Date.now();
+  importsOf("hostile.js", "import ".repeat(300000));
+  assert.ok(Date.now() - t < 3000, `hostile repeat took ${Date.now() - t} ms`);
+  const v = checkSources(HEX, { "src/domain/big.js": "x".repeat(2 * 1024 * 1024 + 1) });
+  assert.deepEqual(rules(v), ["unanalyzable"]);
+});

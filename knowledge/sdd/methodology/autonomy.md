@@ -14,15 +14,15 @@ The agent does not choose its own level. The effective gate is **derived**:
 
 * **risk** comes from the changed paths (ASSESS, `contracts/assess-rules.json`), recomputed from what actually changed; a change that grows into scripts, workflows, auth, data or schema becomes high and `none` is refused. No paths to assess means `medium`, never low.
 * **protected areas** keep the gate `required` whatever is declared: control-plane paths (read from the base commit's `governance/gates/gates.json`), security-sensitive paths, and the `release` and `production` environments.
-* **repo policy**: `none` is only possible where the pinned profile says `governance.allowNone: true` (default false; a project cannot grant it to itself).
+* **repo policy**: `none` is only possible where the pinned profile (taken from the base branch's lock) says `governance.allowNone: true` (default false; a project cannot grant it to itself).
 * **the declaration** is the work unit's own explicit statement: `human_gate: none` and `autonomy: full` lines in its `specs/<slug>/spec.md` (reviewed in the PR). A Task without spec has no declaration, so it gets the default.
 
 Where it is enforced (one implementation, `runtime/policy/hitl.mjs`):
 
 | Point | How |
 |---|---|
-| Coordinator / `/sdd-implement-all` | derives the gate before starting and again from the real changes before validation; refusal = `BLOCKED` before any task |
-| factory CI | `node runtime/policy/hitl.mjs --base origin/<base>` on every PR |
+| Coordinator / `/sdd-implement-all` | derives the gate before starting and again from the real changes (`verify.changedPaths()`, mandatory for `none`) before validation; refusal = `BLOCKED`. Environment, `allowNone` and control-plane globs come from the runner; with none supplied the safest defaults apply (`final-only`, no `none`) |
+| factory CI | `node runtime/policy/hitl.mjs --base origin/<base>` on every PR (diff without rename detection; an unreadable base gate config fails) |
 | consumer CI (L3) | `human-gate` check, from the pinned platform, against the PR diff |
 | merge and release | unchanged: branch protection, `merge-gate` and human merge always apply; `none` never lifts them |
 

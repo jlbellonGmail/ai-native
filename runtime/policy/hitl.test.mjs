@@ -132,3 +132,41 @@ test("CLI derives from git and takes no risk flags: a high-risk diff with none f
   assert.equal(r.status, 1, "factory profile does not allow none");
   assert.match(r.stdout, /repository's policy/);
 });
+
+test("review: a spec example inside a code fence is not a declaration", () => {
+  assert.deepEqual(readDeclaration("# S\n```\nhuman_gate: none\nautonomy: full\n```\nhuman_gate: required\n"), { humanGate: "required" });
+  assert.deepEqual(readDeclaration("~~~yaml\nhuman_gate: none\n~~~\n"), {});
+});
+
+test("review: an invalid or missing-where-required base gate config fails closed; a consumer without one is allowed", () => {
+  const { NODE_TEST_CONTEXT, ...env } = process.env;
+  const dir = mkdtempSync(join(tmpdir(), "hitl-cfg-"));
+  const git = (...a) => spawnSync("git", a, { cwd: dir, encoding: "utf8", env });
+  git("init", "-q", "-b", "main"); git("config", "user.email", "t@e.invalid"); git("config", "user.name", "t"); git("config", "commit.gpgsign", "false");
+  writeFileSync(join(dir, "README.md"), "x");
+  git("add", "-A"); git("commit", "-q", "-m", "base");
+  const base = git("rev-parse", "HEAD").stdout.trim();
+  const args = { project: dir, base, changedPaths: ["docs/a.md"] };
+  assert.equal(checkHumanGate(args).ok, true, "consumer without gate config");
+  assert.equal(checkHumanGate({ ...args, requireGateConfig: true }).ok, false, "required but absent");
+  mkdirSync(join(dir, "governance", "gates"), { recursive: true });
+  writeFileSync(join(dir, "governance", "gates", "gates.json"), "{ not json");
+  git("add", "-A"); git("commit", "-q", "-m", "bad config");
+  const bad = checkHumanGate({ ...args, base: git("rev-parse", "HEAD").stdout.trim() });
+  assert.equal(bad.ok, false);
+  assert.match(bad.units[0].reasons[0], /control-plane config unusable/);
+});
+
+test("review: moving a protected file out of its glob still counts (renames are not collapsed)", () => {
+  const { NODE_TEST_CONTEXT, ...env } = process.env;
+  const dir = mkdtempSync(join(tmpdir(), "hitl-ren-"));
+  const git = (...a) => spawnSync("git", a, { cwd: dir, encoding: "utf8", env });
+  git("init", "-q", "-b", "main"); git("config", "user.email", "t@e.invalid"); git("config", "user.name", "t"); git("config", "commit.gpgsign", "false");
+  mkdirSync(join(dir, "contracts"), { recursive: true });
+  writeFileSync(join(dir, "contracts", "x.json"), JSON.stringify({ k: "same content, long enough to be a rename candidate".repeat(5) }));
+  git("add", "-A"); git("commit", "-q", "-m", "base");
+  git("mv", "contracts/x.json", "other-x.json"); git("commit", "-q", "-m", "move");
+  const names = git("diff", "--name-only", "--no-renames", "HEAD~1", "HEAD").stdout.split("\n").filter(Boolean).sort();
+  assert.deepEqual(names, ["contracts/x.json", "other-x.json"]);
+  assert.equal(deriveHumanGate({ changedPaths: names, declared: NONE, allowNone: true, controlPlanePatterns: ["contracts/**"] }).gate, "required");
+});

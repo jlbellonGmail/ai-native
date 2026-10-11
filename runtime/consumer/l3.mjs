@@ -136,7 +136,14 @@ export function policyChecks({ project, changed, base, lock, platformRoot }) {
   }
 
   if (base && changed.length) {
-    const gate = checkHumanGate({ project, base, changedPaths: changed, allowNone: allowNoneFor(lock.profiles?.[0], platformRoot) });
+    // the profile is the BASE lock's: a PR cannot repoint itself to a profile that allows `none`
+    let baseLock = lock;
+    try {
+      baseLock = JSON.parse(readFromCommit(project, base, "ai-native.lock.json") ?? "null") ?? lock;
+    } catch {
+      return [...out, check("human-gate", "FAIL", "the lock on the base branch is not valid JSON")];
+    }
+    const gate = checkHumanGate({ project, base, changedPaths: changed, allowNone: allowNoneFor(baseLock.profiles?.[0], platformRoot) });
     out.push(check("human-gate", gate.ok ? "PASS" : "FAIL", gate.units.map((u) => `${u.unit}: risk ${u.risk}, ${u.gate}${u.reasons.length ? ` (${u.reasons.join("; ")})` : ""}`).join("; ")));
   } else out.push(check("human-gate", "NOT_APPLICABLE", "no base diff to derive the gate from"));
   return out;

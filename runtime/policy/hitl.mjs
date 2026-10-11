@@ -77,6 +77,8 @@ const DECLARATION = (key) => new RegExp(`^[ \\t>*-]*${key}:[ \\t]*([A-Za-z-]+)`,
 
 /** `human_gate:` / `autonomy:` lines of a spec.md (the work unit's explicit declaration, reviewed in the PR). */
 export function readDeclaration(specText) {
+  // fenced code blocks are examples, not declarations
+  specText = specText.replace(/^[ \t]*(```|~~~)[\s\S]*?^[ \t]*\1[^\n]*$/gm, "");
   const gate = DECLARATION("human_gate").exec(specText);
   const autonomy = DECLARATION("autonomy").exec(specText);
   return { ...(gate && { humanGate: gate[1].toLowerCase() }), ...(autonomy && { autonomy: autonomy[1].toLowerCase() }) };
@@ -92,13 +94,17 @@ function git(cwd, args) {
  * (or the default) is evaluated against facts derived from the whole change. No spec = one anonymous unit, defaults only.
  * @returns {{ok:boolean, units:{unit:string, ok:boolean, gate:string, risk:string, reasons:string[]}[]}}
  */
-export function checkHumanGate({ project, changedPaths, base = null, allowNone = false, environment = "development", controlPlanePatterns = null, policy = loadHitlPolicy() }) {
+export function checkHumanGate({ project, changedPaths, base = null, allowNone = false, environment = "development", controlPlanePatterns = null, requireGateConfig = false, policy = loadHitlPolicy() }) {
   let patterns = controlPlanePatterns;
   if (patterns === null) {
     try {
       patterns = base ? loadGateConfig(project, base).controlPlane : [];
-    } catch {
-      patterns = []; // a consumer without gate config has no control-plane globs of its own
+    } catch (error) {
+      // only a consumer that never had a gate config ("not found") has no control-plane globs of its own;
+      // an invalid config, or a missing one where it is required, fails closed
+      const absent = /not found at base/.test(error.message);
+      if (!absent || requireGateConfig) return { ok: false, units: [{ unit: "(gate config)", ok: false, gate: "required", risk: "high", reasons: [`control-plane config unusable: ${error.message}`] }] };
+      patterns = [];
     }
   }
   const specs = changedPaths.filter((p) => /^specs\/[^/]+\/spec\.md$/.test(p));
@@ -126,7 +132,7 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1
     console.error("FAIL: --base <ref> is required: the change must be assessed from git");
     process.exit(1);
   }
-  const out = git(project, ["diff", "--name-only", base, "HEAD"]);
+  const out = git(project, ["diff", "--name-only", "--no-renames", base, "HEAD"]);
   if (out === null) {
     console.error(`FAIL: cannot diff ${base}..HEAD`);
     process.exit(1);
@@ -137,6 +143,7 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1
     changedPaths: out.split(/\r?\n/).filter(Boolean),
     environment: val("--environment") ?? "development",
     allowNone: allowNoneFor(val("--profile") ?? "factory"),
+    requireGateConfig: existsSync(join(project, "governance", "gates", "gates.json")),
   });
   for (const u of result.units) console.log(`${u.ok ? "PASS" : "FAIL"} ${u.unit}: risk ${u.risk}, human_gate ${u.gate}${u.reasons.length ? ` (${u.reasons.join("; ")})` : ""}`);
   process.exit(result.ok ? 0 : 1);

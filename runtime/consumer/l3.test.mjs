@@ -310,3 +310,18 @@ test("L3 policies: a layer violation against the project's architecture contract
   const good = proj({ "architecture.json": ARCH, "src/infra/repo.py": "from src.domain import order\n", "src/domain/order.py": "x = 1\n" });
   assert.equal(policyChecks({ project: good, changed: [], base: null, lock, platformRoot: process.cwd() }).find((c) => c.id === "architecture").status, "PASS");
 });
+
+test("review: L3 takes the allowNone profile from the BASE lock, not from the PR's own lock", () => {
+  const { NODE_TEST_CONTEXT, ...env } = process.env;
+  const dir = proj({ "README.md": "x", "ai-native.lock.json": JSON.stringify({ profiles: ["python-service"] }) });
+  const git = (...a) => spawnSync("git", a, { cwd: dir, encoding: "utf8", env });
+  git("init", "-q", "-b", "main"); git("config", "user.email", "t@e.invalid"); git("config", "user.name", "t"); git("config", "commit.gpgsign", "false");
+  git("add", "-A"); git("commit", "-q", "-m", "base");
+  mkd(j(dir, "specs", "001-a"), { recursive: true });
+  wf(j(dir, "specs", "001-a", "spec.md"), "human_gate: none\nautonomy: full\n");
+  wf(j(dir, "ai-native.lock.json"), JSON.stringify({ profiles: ["some-permissive-profile"] }));
+  git("add", "-A"); git("commit", "-q", "-m", "pr");
+  const r = policyChecks({ project: dir, changed: ["specs/001-a/spec.md", "ai-native.lock.json"], base: "HEAD~1", lock: { profiles: ["some-permissive-profile"] }, platformRoot: process.cwd() }).find((c) => c.id === "human-gate");
+  assert.equal(r.status, "FAIL");
+  assert.match(r.detail, /repository's policy/);
+});

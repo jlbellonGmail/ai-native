@@ -287,3 +287,14 @@ test("implementAll refuses to start with a refused gate", async () => {
   assert.equal(run.escalation, "human_gate");
   assert.deepEqual(calls, []);
 });
+
+test("review: human_gate none without the changedPaths evidence is refused; final-only does not need it", async () => {
+  const none = await runCoordinator({ goal: "g", signals: { scope: 1, changedPaths: ["docs/a.md"] }, agents: coordinatorAgents([]), policy: { declared: NONE, allowNone: true } });
+  assert.equal(none.status, "BLOCKED");
+  assert.match(none.reason, /changedPaths/);
+  const empty = coordinatorAgents([]);
+  empty.verify.changedPaths = async () => [];
+  assert.equal((await runCoordinator({ goal: "g", signals: { scope: 1, changedPaths: ["docs/a.md"] }, agents: empty, policy: { declared: NONE, allowNone: true } })).status, "BLOCKED");
+  const fo = await runCoordinator({ goal: "g", signals: { scope: 1, changedPaths: ["docs/a.md"] }, agents: coordinatorAgents([]) });
+  assert.equal(fo.status, "READY_FOR_HITL");
+});
