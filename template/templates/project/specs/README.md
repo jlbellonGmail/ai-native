@@ -19,7 +19,7 @@ specs/<task-or-feature-id>/
 
 Use templates from:
 
-.specify/templates/
+`ai-native run -- knowledge sdd/feature-templates/<name>-template.md` (a copy in `.specify/templates/` overrides it)
 
 Use constitution from:
 
