@@ -43,7 +43,8 @@ test("permissions are never widened: read-only commands get a read-only allowlis
 test("projected commands use $ARGUMENTS and the canonical names only", () => {
   const files = buildCommandFiles(platform, { tools: ["claude"] });
   assert.match(files[".claude/commands/sdd-implement.md"], /\$ARGUMENTS/);
-  assert.match(files[".claude/commands/sdd-implement-all.md"], /runtime\/circuit\/implement-all\.mjs/);
+  assert.match(files[".claude/commands/sdd-implement-all.md"], /node \.ai-native\/ai-native\.mjs sdd next/);
+  assert.doesNotMatch(files[".claude/commands/sdd-implement-all.md"].replace(/<!--[\s\S]*?-->/g, ""), /runtime\/|contracts\//);
 });
 
 test("a root without a catalog projects nothing (older release / minimal fixture)", () => {

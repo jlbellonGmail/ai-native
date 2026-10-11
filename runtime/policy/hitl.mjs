@@ -121,8 +121,18 @@ export function allowNoneFor(profileId, platformRoot = PLATFORM_ROOT) {
   return JSON.parse(readFileSync(file, "utf8")).governance?.allowNone === true;
 }
 
+/**
+ * Published opt-in: `none` is allowed when the lock of the BASE branch says `"governance": { "allowNone": true }`
+ * (a reviewed, merged change; the PR under evaluation cannot grant it to itself) or the pinned profile does.
+ * Absent means off: the safe default never changes.
+ */
+export function allowNoneFromLock(lock, platformRoot = PLATFORM_ROOT) {
+  return lock?.governance?.allowNone === true || allowNoneFor(lock?.profiles?.[0], platformRoot);
+}
+
 if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1])) {
   // node hitl.mjs --base <ref> [--project .] [--environment development|release|production] [--profile <id>]
+  // (in a consumer: `ai-native run -- hitl --base <ref>`; the policy is read from the lock on <ref>)
   // The diff and the base gate config are read from git; risk and protected areas are never taken from flags.
   const a = process.argv.slice(2);
   const val = (n) => { const i = a.indexOf(n); return i >= 0 ? a[i + 1] : undefined; };
@@ -137,12 +147,23 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1
     console.error(`FAIL: cannot diff ${base}..HEAD`);
     process.exit(1);
   }
+  // policy comes from the lock on the BASE ref (never from the working tree or a flag); --profile only applies without a base lock (factory)
+  let baseLock = null;
+  const lockText = git(project, ["show", `${base}:ai-native.lock.json`]);
+  if (lockText !== null) {
+    try {
+      baseLock = JSON.parse(lockText);
+    } catch {
+      console.error("FAIL: the lock on the base ref is not valid JSON");
+      process.exit(1);
+    }
+  }
   const result = checkHumanGate({
     project,
     base,
     changedPaths: out.split(/\r?\n/).filter(Boolean),
     environment: val("--environment") ?? "development",
-    allowNone: allowNoneFor(val("--profile") ?? "factory"),
+    allowNone: allowNoneFromLock(baseLock, undefined) || (baseLock === null && allowNoneFor(val("--profile") ?? "factory")),
     requireGateConfig: existsSync(join(project, "governance", "gates", "gates.json")),
   });
   for (const u of result.units) console.log(`${u.ok ? "PASS" : "FAIL"} ${u.unit}: risk ${u.risk}, human_gate ${u.gate}${u.reasons.length ? ` (${u.reasons.join("; ")})` : ""}`);

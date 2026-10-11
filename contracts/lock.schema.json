@@ -30,6 +30,12 @@
       "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.-]*(/[A-Za-z0-9_][A-Za-z0-9_.-]*)*$",
       "description": "Monorepo/subdir: relative directory (no absolute path, no `..`) where the profile's productSetupCommand/productTestCommand run. Read from the lock on the BASE branch, so a PR cannot redirect it. Default: the repository root."
     },
+    "governance": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Optional repository policy. allowNone: true lets a work unit declare human_gate none (autonomy full) when its derived risk is low; high risk, control-plane, release and production still force required. Read from the lock on the BASE branch, so a PR cannot grant it to itself. Absent = off.",
+      "properties": { "allowNone": { "type": "boolean" } }
+    },
     "mcpProfiles": {
       "type": "array",
       "default": [],

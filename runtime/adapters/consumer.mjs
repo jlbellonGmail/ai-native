@@ -27,6 +27,9 @@ import { checkReference } from "../consumer/knowledge.mjs";
 import { buildReport, renderOutput, exitCodeForReport } from "../lib/json.mjs";
 import { statusFromCounts } from "../lib/result.mjs";
 
+/** Where the launcher is projected in a consumer; commands and skills call `node .ai-native/ai-native.mjs <command>`. */
+export const LAUNCHER_PATH = ".ai-native/ai-native.mjs";
+
 const SKILL_TARGET_TOOL = { ".claude/skills": "claude", ".opencode/skills": "opencode" };
 
 /** { relPath: content } the release would write into a consumer for `tools`. */
@@ -41,6 +44,8 @@ export function consumerFiles(releaseRoot, { tools = ALL_TOOLS, profile, role, l
       if (tools.includes(SKILL_TARGET_TOOL[target])) files[`${target}/${rel}`] = content;
     }
   }
+  // the single entry point every projected command and skill calls (the release is resolved from the lock, never by a path)
+  files[LAUNCHER_PATH] = readFileSync(join(releaseRoot, "runtime", "adapters", "launcher.mjs"));
   return files;
 }
 

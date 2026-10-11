@@ -11,6 +11,7 @@ You are the Coordinator. Load the `sdd` skill, then route this goal. Do not impl
    - manual: print the classification and the exact first command, then stop.
    - guided: print the classification, run the first phase, then show `/sdd-status`.
    - automatic: run the whole flow, delegating to Planner, Implementer and Reviewer, with bounded convergence.
-4. Task + light: state objective, scope and acceptance in 3 lines, implement with a sufficient test, record evidence, finish.
+4. Feature artifacts: write each one exactly as its command defines (`/sdd-spec`, `/sdd-plan`, `/sdd-tasks`: read that command first, the format of `tasks.md` is strict), then run `node .ai-native/ai-native.mjs sdd validate <NNN-slug> --level <level>` and fix every reported error yourself (at most 3 rounds) before reporting.
+5. Task + light: state objective, scope and acceptance in 3 lines, implement with a sufficient test, record evidence, finish.
 
 Stop only for a real block or a required human decision. Never merge; the final merge decision is human.

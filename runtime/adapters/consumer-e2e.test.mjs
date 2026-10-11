@@ -36,7 +36,7 @@ test("a fresh consumer resolves every SDD command, the sdd skill and the roles f
 
 test("Codex has no per-project command surface: it is reached through AGENTS.md routing, nothing is projected for it", () => {
   const files = Object.keys(consumerFiles(RELEASE, { tools: ["codex"] }));
-  assert.ok(files.every((p) => p.startsWith(".codex/")), files.join(", "));
+  assert.ok(files.every((p) => p.startsWith(".codex/") || p === ".ai-native/ai-native.mjs"), files.join(", "));
   assert.ok(!files.some((p) => /commands\//.test(p)));
 });
 

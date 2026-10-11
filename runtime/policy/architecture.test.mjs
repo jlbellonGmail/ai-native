@@ -242,3 +242,29 @@ test("F-13 residual: names are never lost in a mixed file (comments, strings, co
   ].join("\n") + "\n";
   assert.deepEqual(specs("m.py", code).sort(), ["a.b.c", "a.b.d", "e", "f", "g"]);
 });
+
+test("F-18 forbiddenImports is normalised symmetrically: fs and node:fs are the same rule in either spelling, without false positives", () => {
+  const domain = (forbiddenImports) => ({ schemaVersion: 1, layers: { domain: { paths: ["src/domain"], mayDependOn: [], forbiddenImports } } });
+  const imports = {
+    bareFs: "import { readFileSync } from 'fs';\n",
+    nodeFs: "import { readFileSync } from 'node:fs';\n",
+    fsPromises: "import { readFile } from 'node:fs/promises';\n",
+    fsExtra: "import x from 'fs-extra';\n",
+    path: "import { join } from 'node:path';\n",
+  };
+  const hits = (rule, key) => rules(checkSources(domain(rule), { "src/domain/a.js": imports[key] }));
+  for (const rule of [["fs"], ["node:fs"]]) {
+    assert.deepEqual(hits(rule, "bareFs"), ["forbidden-import"], `${rule} vs fs`);
+    assert.deepEqual(hits(rule, "nodeFs"), ["forbidden-import"], `${rule} vs node:fs`);
+    assert.deepEqual(hits(rule, "fsPromises"), ["forbidden-import"], `${rule} vs node:fs/promises`);
+    assert.deepEqual(hits(rule, "fsExtra"), [], `${rule} must not flag fs-extra`);
+    assert.deepEqual(hits(rule, "path"), [], `${rule} must not flag node:path`);
+  }
+  // a more specific rule does not flag the parent module
+  assert.deepEqual(hits(["node:fs/promises"], "bareFs"), []);
+  assert.deepEqual(hits(["node:fs/promises"], "fsPromises"), ["forbidden-import"]);
+  // Python dotted names are equivalent on both sides
+  const py = { schemaVersion: 1, layers: { domain: { paths: ["app/domain"], mayDependOn: [], forbiddenImports: ["sqlalchemy.orm"] } } };
+  assert.deepEqual(rules(checkSources(py, { "app/domain/a.py": "from sqlalchemy.orm import Session\n" })), ["forbidden-import"]);
+  assert.deepEqual(rules(checkSources(py, { "app/domain/a.py": "import sqlalchemy\n" })), []);
+});

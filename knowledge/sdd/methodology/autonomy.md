@@ -14,7 +14,7 @@ The agent does not choose its own level. The effective gate is **derived**:
 
 * **risk** comes from the changed paths (ASSESS, `contracts/assess-rules.json`), recomputed from what actually changed; a change that grows into scripts, workflows, auth, data or schema becomes high and `none` is refused. No paths to assess means `medium`, never low.
 * **protected areas** keep the gate `required` whatever is declared: control-plane paths (read from the base commit's `governance/gates/gates.json`), security-sensitive paths, and the `release` and `production` environments.
-* **repo policy**: `none` is only possible where the pinned profile (taken from the base branch's lock) says `governance.allowNone: true` (default false; a project cannot grant it to itself).
+* **repo policy**: `none` is only possible where the base branch's lock says `"governance": { "allowNone": true }` (published opt-in, default off) or the pinned profile does. It is read from the lock on the base ref, so a PR cannot grant it to itself. Even then high risk, control plane, release and production force `required`.
 * **the declaration** is the work unit's own explicit statement: `human_gate: none` and `autonomy: full` lines in its `specs/<slug>/spec.md` (reviewed in the PR). A Task without spec has no declaration, so it gets the default.
 
 Where it is enforced (one implementation, `runtime/policy/hitl.mjs`):
