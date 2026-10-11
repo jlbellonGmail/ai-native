@@ -7,7 +7,8 @@
 // Permissions are never widened. Read-only commands pre-approve only read tools on
 // Claude Code (`allowed-tools` pre-approves, it is NOT a sandbox: any other tool, e.g.
 // running the test suite, still goes through the normal permission prompt) and use the
-// `plan` built-in agent on OpenCode. Nothing is ever pre-approved beyond Read/Grep/Glob.
+// `plan` built-in agent on OpenCode (whose bash policy may deny or prompt for the test run in
+// sdd-validate; that is the safe direction). Nothing is ever pre-approved beyond Read/Grep/Glob.
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 

@@ -56,9 +56,9 @@ export async function implementAll({ tasks, level = "normal", implement, test, a
         diagnosis = `agent error: ${String(error?.message ?? error).slice(0, 500)}`;
         continue;
       }
-      evidence.push({ task: task.id, attempt, step: "test", passed: Boolean(tested.passed), output: tested.output ?? "" });
-      if (!tested.passed) {
-        diagnosis = `tests failed: ${String(tested.output ?? "").slice(0, 500)}`;
+      evidence.push({ task: task.id, attempt, step: "test", passed: Boolean(tested?.passed), output: tested?.output ?? "" });
+      if (!tested?.passed) {
+        diagnosis = `tests failed: ${String(tested?.output ?? "").slice(0, 500)}`;
         continue;
       }
       let accepted;
@@ -69,9 +69,9 @@ export async function implementAll({ tasks, level = "normal", implement, test, a
         diagnosis = `agent error: ${String(error?.message ?? error).slice(0, 500)}`;
         continue;
       }
-      evidence.push({ task: task.id, attempt, step: "acceptance", passed: Boolean(accepted.accepted), output: accepted.reason ?? "" });
-      if (!accepted.accepted) {
-        diagnosis = `acceptance failed: ${accepted.reason ?? "done-when not met"}`;
+      evidence.push({ task: task.id, attempt, step: "acceptance", passed: Boolean(accepted?.accepted), output: accepted?.reason ?? "" });
+      if (!accepted?.accepted) {
+        diagnosis = `acceptance failed: ${accepted?.reason ?? "done-when not met"}`;
         continue;
       }
       converged = true;
