@@ -1,13 +1,21 @@
 Target: specs/$ARGUMENTS
 
-You are the Coordinator. Load the `sdd` skill (methodology: implementation, review). Do not implement yourself: delegate each task to the Implementer and the review to the Reviewer.
+You are the Coordinator. Load the `sdd` skill (methodology: implementation, review). Do not implement yourself: delegate each task to the Implementer (subagent `builder`) and the review to the Reviewer (subagent `reviewer`). If your tool has no subagent facility, say so in the report and do the work yourself in that order; never claim an independent review that did not happen. Call every subagent in the foreground and wait for its result: never run one in the background and never end your turn while one is still working, because the run stops when you stop.
 
-First derive the human gate (never self-declared): `node runtime/policy/hitl.mjs --base <base-ref>` evaluates the real diff, the profile policy and any `human_gate:` line in the spec. If it fails, stop and report why; `required` means stop for human approval of the plan; the Coordinator runs the same rule in code.
+First derive the human gate (never self-declared): `node .ai-native/ai-native.mjs hitl --base <base-ref>`, where `<base-ref>` is the branch this work will be merged into (normally `main`; never `HEAD`), evaluates the real change (commits, working tree and new files), the repository policy (the lock on the base ref) and any `human_gate:` line in the spec. Run it again after the last task, on the actual change: the second result governs. If it fails, stop and report why; `required` means stop for human approval of the plan; the Coordinator runs the same rule in code.
 
-For every pending task in `tasks.md`, in order, with no human intervention between tasks:
-implement (tests first when applicable) -> tests -> acceptance -> evidence -> mark done -> next.
+For every pending task, one at a time and in order, with no human intervention between tasks:
 
-Convergence on failure, bounded by the level budget in `contracts/sdd-levels.json`: detect -> diagnose -> fix -> retest. If a task does not converge, BLOCK the work unit: mark that task `[!]`, leave later tasks pending, report full evidence. Never mark a task done without a passing check; never fake success.
+1. `node .ai-native/ai-native.mjs sdd next <NNN-slug>` gives the task and its "Done when".
+2. RED: write the task's test first, run the project's test command and SEE it fail for the right reason (record the failing output). Where TDD has no technical sense (docs, config), say so and use the sufficient check.
+3. GREEN: implement the minimum, run the tests again until they pass, then run the regression suite.
+4. Check the "Done when", then mark only this task: `node .ai-native/ai-native.mjs sdd mark <NNN-slug> <Tn> done`. Never mark several tasks in one step and never before its check passed.
 
-After the last task: full regression suite -> independent Reviewer (read-only, fresh context) -> fix findings through you and the Implementer until 0 CRITICAL and 0 HIGH -> `/sdd-validate` -> CI -> human final gate. Never merge.
-The executable reference of this loop is `runtime/circuit/implement-all.mjs`.
+Convergence on failure, bounded by the level budget (`node .ai-native/ai-native.mjs sdd budget --level <level>`): detect -> diagnose -> fix -> retest. If a task does not converge, mark it `blocked`, leave later tasks pending and report the full evidence. Never fake success.
+
+After the last task:
+
+1. Full regression suite.
+2. Independent review: call the `reviewer` subagent (read-only, fresh context) with the spec, plan, tasks and diff. Its first line is `VERDICT: APPROVED` or `VERDICT: CHANGES_REQUESTED`. Fix every CRITICAL and HIGH finding through the Implementer and review again (at most 3 rounds).
+3. `node .ai-native/ai-native.mjs sdd validate <NNN-slug>` must print PASS.
+4. Report the reviewer verdict, the RED evidence per task and the pending human final gate. Never merge.

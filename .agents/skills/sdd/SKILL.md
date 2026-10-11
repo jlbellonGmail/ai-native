@@ -17,6 +17,7 @@ Roles     : Coordinator  Planner  Implementer  Reviewer     (runtime ids: -, pla
 ```
 
 Canonical contract: `contracts/sdd-workflow.json`. Executable layer: `runtime/circuit/sdd-workflow.mjs`, `implement-all.mjs`, `coordinator.mjs`.
+In a consumer the release is reached only through the launcher `.ai-native/ai-native.mjs` (run it with node; it is `ai-native run -- <command>`): `sdd validate|status|next|mark|budget`, `hitl --base <ref>`, `knowledge <ref>`, `l3`. Never call `runtime/...` or `contracts/...` paths directly.
 
 ## Route (load only what the phase needs)
 

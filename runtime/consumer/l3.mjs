@@ -27,7 +27,7 @@ import { checkReviewIndependence } from "../gates/reviewer-independence.mjs";
 import { JOURNAL_PATH } from "../migrate/adopt.mjs";
 import { validateProject as validateConstitution } from "../policy/constitution-extension.mjs";
 import { checkProject as checkArchitecture } from "../policy/architecture.mjs";
-import { checkHumanGate, allowNoneFor } from "../policy/hitl.mjs";
+import { checkHumanGate, allowNoneFromLock } from "../policy/hitl.mjs";
 import { statusFromCounts, exitCodeFor, formatLine } from "../lib/result.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -143,7 +143,7 @@ export function policyChecks({ project, changed, base, lock, platformRoot }) {
     } catch {
       return [...out, check("human-gate", "FAIL", "the lock on the base branch is not valid JSON")];
     }
-    const gate = checkHumanGate({ project, base, changedPaths: changed, allowNone: allowNoneFor(baseLock.profiles?.[0], platformRoot) });
+    const gate = checkHumanGate({ project, base, changedPaths: changed, allowNone: allowNoneFromLock(baseLock, platformRoot) });
     out.push(check("human-gate", gate.ok ? "PASS" : "FAIL", gate.units.map((u) => `${u.unit}: risk ${u.risk}, ${u.gate}${u.reasons.length ? ` (${u.reasons.join("; ")})` : ""}`).join("; ")));
   } else out.push(check("human-gate", "NOT_APPLICABLE", "no base diff to derive the gate from"));
   return out;

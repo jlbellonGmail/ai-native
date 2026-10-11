@@ -7,7 +7,8 @@
 //     by file count alone; Task/Feature/Milestone routing for /feature
 //   - parseTasks / validateSpecFolder / deriveSddStatus: tasks.md states,
 //     artifact consistency and the next command for guided mode
-import { existsSync, readFileSync, readdirSync, renameSync, writeFileSync } from "node:fs";
+import { randomBytes } from "node:crypto";
+import { existsSync, readFileSync, readdirSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -169,6 +170,7 @@ export function parseTasks(markdown) {
 const REQUIREMENT_DEF = /^\s*[-*]?\s*\**([A-Z]+-\d+)\**[.:]/gm;
 export const requirementIds = (specMarkdown) => [...specMarkdown.matchAll(REQUIREMENT_DEF)].map((m) => m[1]);
 
+const TASK_FORMAT = 'expected "- [ ] **T1. Title.** RF-1" followed by an indented line "  - Done when: <verifiable check>."';
 const read = (dir, file) => (existsSync(join(dir, file)) ? readFileSync(join(dir, file), "utf8") : null);
 
 /** Errors for one specs/NNN-slug folder at a level (`light` needs nothing). */
@@ -188,7 +190,7 @@ export function validateSpecFolder(dir, { level = "normal" } = {}) {
     const seen = new Set();
     for (const task of parsed) {
       if (task.invalid) {
-        errors.push(`tasks.md:${task.line}: invalid task line (states are [ ], [x], [!])`);
+        errors.push(`tasks.md:${task.line}: invalid task line (states are [ ], [x], [!]; ${TASK_FORMAT})`);
         continue;
       }
       if (seen.has(task.id)) errors.push(`tasks.md:${task.line}: duplicate task id ${task.id}`);
@@ -200,7 +202,7 @@ export function validateSpecFolder(dir, { level = "normal" } = {}) {
         }
       }
     }
-    if (parsed.filter((t) => !t.invalid).length === 0) errors.push("tasks.md has no tasks");
+    if (parsed.filter((t) => !t.invalid).length === 0) errors.push(`tasks.md has no tasks: write one block per task, ${TASK_FORMAT} (ids T1, T2, ... unique)`);
   }
   return errors;
 }
@@ -255,10 +257,17 @@ export function markTaskState(markdown, id, state) {
 
 /** Writes the new state of `id` into the tasks.md at `tasksPath` (atomic enough for a single writer: read, replace, write). */
 export function persistTaskState(tasksPath, id, state) {
-  // write-then-rename: an interrupted write never leaves a truncated tasks.md
+  // write-then-rename: an interrupted write never leaves a truncated tasks.md. The temp file is created exclusively
+  // (O_EXCL, unpredictable name), so a symlink planted at the temp path is never followed outside the folder.
   const next = markTaskState(readFileSync(tasksPath, "utf8"), id, state);
-  writeFileSync(`${tasksPath}.tmp`, next);
-  renameSync(`${tasksPath}.tmp`, tasksPath);
+  const tmp = `${tasksPath}.${process.pid}.${randomBytes(6).toString("hex")}.tmp`;
+  try {
+    writeFileSync(tmp, next, { flag: "wx" });
+    renameSync(tmp, tasksPath);
+  } catch (error) {
+    rmSync(tmp, { force: true });
+    throw error;
+  }
 }
 
 /**

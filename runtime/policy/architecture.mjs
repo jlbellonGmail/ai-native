@@ -245,8 +245,11 @@ export function checkSources(contract, sources) {
       const dest = target(file, imp);
       const where = `${file}:${imp.line}`;
       if (from) {
-        for (const banned of contract.layers[from].forbiddenImports ?? []) {
-          const bare = (imp.py ? imp.spec.replaceAll(".", "/") : imp.spec).replace(/^node:/, "");
+        for (let banned of contract.layers[from].forbiddenImports ?? []) {
+          // same normalisation on both sides, so "fs" and "node:fs" (and "sqlalchemy.orm" / "sqlalchemy/orm" in Python) are equivalent
+          const canon = (s) => (imp.py ? s.replaceAll(".", "/") : s).replace(/^node:/, "");
+          const bare = canon(imp.spec);
+          banned = canon(banned);
           const internal = dest !== null && (longest(dest, layers) || longest(dest, modules));
           if (!internal && (bare === banned || bare.startsWith(`${banned}/`))) {
             violations.push({ rule: "forbidden-import", file: where, message: `layer ${from} must not import ${imp.spec}` });
