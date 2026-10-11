@@ -4,8 +4,10 @@
 // Codex has no stable per-project command surface; it reaches the same
 // procedures through AGENTS.md routing and the `sdd` skill, so nothing is
 // generated for it (documented, not silently skipped).
-// Permissions are never widened: read-only commands also get a read-only tool
-// allowlist on Claude Code and the read-only built-in agent on OpenCode.
+// Permissions are never widened. Read-only commands pre-approve only read tools on
+// Claude Code (`allowed-tools` pre-approves, it is NOT a sandbox: any other tool, e.g.
+// running the test suite, still goes through the normal permission prompt) and use the
+// `plan` built-in agent on OpenCode. Nothing is ever pre-approved beyond Read/Grep/Glob.
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
@@ -18,10 +20,11 @@ const loadWorkflow = (root) => {
   return existsSync(path) ? JSON.parse(readFileSync(path, "utf8")) : { commands: [] };
 };
 const bodyOf = (root, command) => readFileSync(join(root, command.body), "utf8").trimEnd();
-const oneLine = (text) => text.replace(/\s+/g, " ").replace(/"/g, "'").trim();
+// JSON strings are valid YAML double-quoted scalars: quotes, backslashes and control characters stay correct
+const yamlString = (text) => JSON.stringify(text.replace(/\s+/g, " ").trim());
 
 export function buildClaudeCommand(command, body) {
-  const lines = ["---", `description: "${oneLine(command.summary)}"`, `argument-hint: "${oneLine(command.usage.replace(`/${command.name}`, ""))}"`];
+  const lines = ["---", `description: ${yamlString(command.summary)}`, `argument-hint: ${yamlString(command.usage.replace(`/${command.name}`, ""))}`];
   if (command.readOnly) lines.push(`allowed-tools: ${CLAUDE_READ_ONLY_TOOLS}`);
   lines.push("---", "", `<!-- ${GENERATED_MARKER} -->`, "", body, "");
   return lines.join("\n");
@@ -30,7 +33,7 @@ export function buildClaudeCommand(command, body) {
 export function buildOpenCodeCommand(command, body) {
   // OpenCode built-in agents: `plan` is read-only, `build` can edit (spec-writing commands need edit)
   const agent = command.readOnly ? "plan" : "build";
-  return ["---", `description: "${oneLine(command.summary)}"`, `agent: ${agent}`, "---", "", `<!-- ${GENERATED_MARKER} -->`, "", body, ""].join("\n");
+  return ["---", `description: ${yamlString(command.summary)}`, `agent: ${agent}`, "---", "", `<!-- ${GENERATED_MARKER} -->`, "", body, ""].join("\n");
 }
 
 /** { relPath: content } for the selected tools. */

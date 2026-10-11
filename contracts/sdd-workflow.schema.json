@@ -86,6 +86,7 @@
           "body": { "type": "string", "pattern": "^core/commands/[a-z-]+\\.md$" },
           "mutatesCode": { "type": "boolean" },
           "readOnly": { "type": "boolean" },
+          "orchestrates": { "type": "boolean", "description": "true when a state-only role (Coordinator) drives code changes by delegating to the Implementer; the only way a non-Implementer command may have mutatesCode." },
           "levels": { "type": "array", "items": { "type": "string", "enum": ["light", "normal", "full"] } }
         }
       }

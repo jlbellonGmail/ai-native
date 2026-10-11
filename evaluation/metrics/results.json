@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-10T23:36:53.249Z",
-  "platformCommit": "ed364a960867673815176ebd5ecb14312d414fb2",
+  "generatedAt": "2026-10-10T23:55:31.569Z",
+  "platformCommit": "9247b06b7a71f1d40856576450f82fd93bcfc0b5",
   "machine": {
     "platform": "win32",
     "node": "v26.10.0",
@@ -25,7 +25,7 @@
       "disclosure": {
         "derivedAdapterFiles": 42,
         "totalGeneratedWithDerived": 47,
-        "note": "agents, role profiles and lazy skill mirrors are regenerable from the lock by `adapters`; counted this way the figure is 20, ABOVE the target. Whether they are committed or gitignored is a consumer policy that is not enforced yet."
+        "note": "agents, role profiles, lazy skill mirrors and projected commands are regenerable from the lock by `adapters`; counted this way the figure is 47, ABOVE the target. Whether they are committed or gitignored is a consumer policy that is not enforced yet."
       }
     },
     "bytesCopiedPerConsumer": {
@@ -37,42 +37,42 @@
       "met": true,
       "method": "bytes of the committed managed set above vs the sum of tracked bytes of template-starter v2.0.4",
       "disclosure": {
-        "withDerivedBytes": 78788,
-        "withDerivedReduction": 0.9135
+        "withDerivedBytes": 79024,
+        "withDerivedReduction": 0.9133
       }
     },
     "bootstrapTimeWithCache": {
-      "value": 147,
+      "value": 143,
       "unit": "ms (median of 9)",
       "target": "<= 300",
       "met": true,
       "samples": [
+        168,
         147,
-        164,
-        156,
-        161,
+        148,
         142,
+        143,
+        144,
         142,
-        132,
-        189,
-        130
+        137,
+        132
       ],
       "method": "wall clock of `node runtime/bootstrap/cli.mjs sync --offline` (process start included) with a warm content-addressed cache",
       "disclosure": {
-        "statusMedianMs": 137,
-        "bareNodeStartupMedianMs": 67,
+        "statusMedianMs": 135,
+        "bareNodeStartupMedianMs": 63,
         "note": "includes a full verification of the cached release before use (PAR-CACHE-VERIFY-BEFORE-EXEC)"
       }
     },
     "bootstrapTimeWithoutCache": {
-      "value": 229,
+      "value": 257,
       "unit": "ms (median of 3, --from-file, no network)",
       "target": "<= 30000",
       "met": true,
       "samples": [
-        246,
-        204,
-        229
+        285,
+        255,
+        257
       ],
       "method": "wall clock of `sync --from-file <bundle> --offline` against an EMPTY cache: extract, hash every file, publish atomically",
       "disclosure": {

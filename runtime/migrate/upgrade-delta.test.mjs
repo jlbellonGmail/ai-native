@@ -96,3 +96,13 @@ test("real release: a consumer adopted before the SDD surface gets only additive
   assert.equal(applyUpgrade(root, full).status, "UPGRADED");
   assert.equal(applyUpgrade(root, full).status, "UP_TO_DATE");
 });
+
+test("a file the user made equal to the target is tracked again, so the next release can update it", () => {
+  const root = adopted();
+  writeFileSync(join(root, ".claude/commands/a.md"), "A v2\n");
+  assert.deepEqual(planUpgrade(root, V2).refresh, [".claude/commands/a.md"]);
+  applyUpgrade(root, V2);
+  const V3 = { ...V2, ".claude/commands/a.md": "A v3\n" };
+  assert.deepEqual(planUpgrade(root, V3).update, [".claude/commands/a.md"]);
+  assert.ok(!existsSync(join(root, ".ai-native/adoption-journal.json.tmp")), "no temp journal is left behind");
+});

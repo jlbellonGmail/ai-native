@@ -202,3 +202,42 @@ test("E2E coordinator refuses to run on an invalid workflow contract", async () 
   assert.equal(out.status, "BLOCKED");
   assert.match(out.reason, /invalid workflow contract/);
 });
+
+test("implement-all persists every state change, including the block", async () => {
+  const writes = [];
+  const { agents } = harness({ test: async (t) => (t.id === "T2" ? { passed: false, output: "red" } : pass()) });
+  const run = await implementAll({ tasks: [task("T1"), task("T2"), task("T3")], level: "light", persist: async (id, state) => { writes.push([id, state]); }, ...agents });
+  assert.equal(run.status, "BLOCKED");
+  assert.deepEqual(writes, [["T1", "done"], ["T2", "blocked"]]);
+});
+
+test("implement-all: an agent that throws is a failed attempt with the error as diagnosis, then converges or blocks", async () => {
+  let boom = 1;
+  const { calls, agents } = harness({ test: async (t) => { if (t.id === "T1" && boom-- > 0) throw new Error("runner crashed"); return pass(); } });
+  const ok = await implementAll({ tasks: [task("T1")], level: "normal", ...agents });
+  assert.equal(ok.status, "DONE");
+  assert.match(calls.find((c) => c[0] === "implement" && c[2] === 2)[3], /agent error: runner crashed/);
+  const never = harness({ implement: async () => { throw new Error("always"); } });
+  const blocked = await implementAll({ tasks: [task("T1")], level: "light", ...never.agents });
+  assert.equal(blocked.status, "BLOCKED");
+  assert.equal(blocked.states.T1, "blocked");
+});
+
+test("implement-all: a red suite approved by the Reviewer becomes an actionable finding, not an empty fix", async () => {
+  let suiteRuns = 0;
+  const fixed = [];
+  const { agents } = harness({
+    fullSuite: async () => (++suiteRuns === 1 ? { passed: false, output: "2 failed" } : pass()),
+    fix: async (findings) => { fixed.push(findings); },
+  });
+  const run = await implementAll({ tasks: [task("T1")], level: "normal", ...agents });
+  assert.equal(run.status, "DONE");
+  assert.equal(fixed.length, 1);
+  assert.equal(fixed[0][0].id, "SUITE");
+  assert.match(fixed[0][0].description, /2 failed/);
+});
+
+test("a Task never gets spec phases, whatever the level", () => {
+  assert.deepEqual(phasesFor("task", "normal"), ["implement", "validate"]);
+  assert.deepEqual(phasesFor("task", "full"), ["implement", "validate"]);
+});

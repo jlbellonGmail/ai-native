@@ -29,7 +29,8 @@ export function validateHandoff(handoff, workflow = loadWorkflow()) {
 /** Plan of phases (and their roles) for a work unit/level; light has no spec folder. */
 export function phasesFor(workUnit, level) {
   if (workUnit === "milestone") return ["decompose"];
-  if (level === "light") return ["implement", "validate"];
+  // a Task never has a spec folder, whatever the level; only a Feature does
+  if (workUnit === "task" || level === "light") return ["implement", "validate"];
   const phases = ["specify"];
   if (level === "full") phases.push("clarify");
   phases.push("plan", "tasks", "implement", "validate");
@@ -65,7 +66,7 @@ export async function runCoordinator({ goal, signals = {}, agents, workflow = lo
       artifacts.push(produced.artifact);
     }
     hand("implementer", "implement");
-    const tasks = level === "light" ? [{ id: "T1", title: goal, state: "pending", requirements: [], doneWhen: "acceptance met" }] : parseTasks(await agents.planner.readTasks());
+    const tasks = phases[0] === "implement" ? [{ id: "T1", title: goal, state: "pending", requirements: [], doneWhen: "acceptance met" }] : parseTasks(await agents.planner.readTasks());
     const run = await implementAll({ tasks, level, workflow, ...agents.implementer, ...agents.verify, review: agents.reviewer.review, fix: agents.implementer.fix });
     log.push({ phase: "implement", status: run.status, completed: run.completed });
     if (run.status !== "DONE") return { status: run.status, classification, run, log };

@@ -28,17 +28,26 @@ knowledge/   standards, SDD methodology, prompts, guardrails, evaluations, quali
 template/    project template, scaffolding, generators, manifests, examples for real AI-NATIVE projects
 ```
 
-These are directories, not separate repositories; cross-area moves are ordinary file moves. There is no `legacy/` directory and no `_deprecated/` content is an operating rule, even if it is itself named `AGENTS.md`.
+These are directories, not separate repositories; cross-area moves are ordinary file moves. There is no `legacy/` directory (the frozen v2.0.5 import was retired; its traceability is `parity/v2.0.5/legacy-import-manifest.json`). An agent must not treat any `_deprecated/` content, nor any recovered historical file, as an operating rule, even if it is itself named `AGENTS.md`.
 
-Platform areas (v3 code, released as `v3.x`; changed only through scoped, gated PRs):
+Platform areas (v3 code, released as `v3.x`; not factory areas; changed only through scoped, gated PRs):
 
 ```text
-core/ contracts/ runtime/ mcp/ profiles/ specs/ evaluation/ parity/ audit/ scripts/
+core/        kernel and security policy (control plane)
+contracts/   versioned contracts used by the runtime and by projects (control plane)
+runtime/     bootstrap, gates, migrator, audit, MCP gateway, adapters, shared libraries
+mcp/         governed MCP catalog and profiles
+profiles/    project profiles
+specs/       hardening specifications (SDD records)
+evaluation/  fixtures, compatibility evidence (C1-C6), metrics, audit fixtures
+parity/      v2.0.5 parity registry (UNMAPPED must stay 0)
+audit/       audit method and profiles (engine in runtime/audit/)
+scripts/     repository utility scripts
 ```
 
 Control plane (forces a neutral trust-gate and human review, see `governance/gates/gates.json`): `.github/**`, `governance/gates/**`, `governance/rulesets/**`, `runtime/gates/**`, `core/security-policy.json`, `contracts/**`, `AGENTS.md`, `CLAUDE.md`. The agent never merges PRs with the owner credentials (`governance/security/HITL-MERGE-POLICY.md`).
 
-The factory is not a generated project. Rules for generated projects live in the project template and are copied into each project. Changing the factory `AGENTS.md` does not change the generated-project template, and the reverse. A generated project is self-contained: it must not need the factory workspace to understand its own rules.
+The factory is not a generated project. Rules for generated projects live in the project template and are copied into each project. Changing the factory `AGENTS.md` does not change the generated-project template, and the reverse. If a task affects generated-project behavior, verify the template and generator path, not only the factory files. A generated project is self-contained: it must not need the factory workspace to understand its own rules.
 
 ---
 
@@ -88,7 +97,7 @@ Reusable workflows live under `.agents/skills/<name>/SKILL.md` (optional `script
 
 Before any roadmap task, inspect `governance/roadmaps/`, `governance/SESSION-CONTEXT.md`, `governance/execution/current/` and `governance/execution/archive/`, and determine: active roadmap, current and eligible task, closed and blocked tasks, required validation gates, governance updates, human approval state, archive expectations.
 
-Never infer roadmap state from memory, previous chats, task numbering, filenames alone, assumptions, old prompts, old commits or stale branches. If governance is inconsistent, stop and report before implementing. This file stays roadmap-agnostic; if a roadmap changes, it should not need to change.
+Never infer roadmap state from memory, previous chats, task numbering, filenames alone, assumptions, old prompts, old commits or stale branches. If governance is inconsistent, stop and report before implementing. This file stays roadmap-agnostic: it never holds roadmap IDs or version names, task IDs or closure states, milestone names, future-roadmap assumptions, branch names tied to temporary execution, commit hashes or next-task declarations. If a roadmap changes, it should not need to change.
 
 ---
 

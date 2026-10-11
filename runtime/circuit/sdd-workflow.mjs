@@ -7,7 +7,7 @@
 //     by file count alone; Task/Feature/Milestone routing for /feature
 //   - parseTasks / validateSpecFolder / deriveSddStatus: tasks.md states,
 //     artifact consistency and the next command for guided mode
-import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -66,13 +66,13 @@ export function validateWorkflow(workflow = loadWorkflow(), root = PLATFORM_ROOT
     if (command.mutatesCode && writer && writer.writes !== "code-and-tests" && writer.writes !== "state-only") {
       errors.push(`command ${command.name}: role '${command.role}' is not allowed to write code`);
     }
-    if (command.mutatesCode && writer?.writes === "state-only" && !command.name.endsWith("-all")) {
+    if (command.mutatesCode && writer?.writes === "state-only" && !command.orchestrates) {
       errors.push(`command ${command.name}: only an orchestrating command may mutate code through a coordinator`);
     }
     if (!existsSync(join(root, command.body))) errors.push(`command ${command.name}: body ${command.body} does not exist`);
     else {
       const body = readFileSync(join(root, command.body), "utf8");
-      if (!body.includes("$ARGUMENTS") && command.name !== "sdd-status") errors.push(`command ${command.name}: body does not use $ARGUMENTS`);
+      if (!body.includes("$ARGUMENTS")) errors.push(`command ${command.name}: body does not use $ARGUMENTS`);
       for (const name of retired) {
         if (new RegExp(`(^|[^a-z-])/?${name}([^a-z-]|$)`).test(body)) errors.push(`command ${command.name}: body mentions retired name ${name}`);
       }
@@ -216,6 +216,8 @@ export function deriveSddStatus(dir, slug = "NNN-slug", { level = "normal" } = {
   const tasksMd = read(dir, "tasks.md");
   const counts = { done: 0, pending: 0, blocked: 0, total: 0 };
   const result = (phase, next) => ({ phase, next, tasks: counts, errors });
+  // a light Task has no spec folder: the answer is the Task flow, never /sdd-spec
+  if (level === "light") return result("implement", "Task flow: state objective, scope and acceptance, implement with a sufficient test, record evidence");
   if (spec === null) return result("specify", `/sdd-spec ${slug} "<idea>"`);
   if (/\[NEEDS CLARIFICATION\]/.test(spec)) return result("clarify", `/sdd-clarify ${slug}`);
   if (plan === null) return result("plan", `/sdd-plan ${slug}`);
@@ -245,4 +247,9 @@ export function markTaskState(markdown, id, state) {
   });
   if (!found) throw new Error(`task not found: ${id}`);
   return out.join("");
+}
+
+/** Writes the new state of `id` into the tasks.md at `tasksPath` (atomic enough for a single writer: read, replace, write). */
+export function persistTaskState(tasksPath, id, state) {
+  writeFileSync(tasksPath, markTaskState(readFileSync(tasksPath, "utf8"), id, state));
 }

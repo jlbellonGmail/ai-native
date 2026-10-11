@@ -7,7 +7,7 @@
 // says this tool wrote (pristine). A locally edited file, or a file the journal
 // does not know, is never touched: it is reported so the maintainer decides.
 // Re-running an upgrade on an up-to-date project yields an empty delta.
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { AdoptError, JOURNAL_PATH, pruneEmptyDirs, safeJoin, sha } from "./adopt.mjs";
 
@@ -23,7 +23,7 @@ export function planUpgrade(targetRoot, incoming) {
   const journal = readJournal(targetRoot);
   const created = journal.created ?? {};
   const skipped = new Set(journal.skipped ?? []);
-  const plan = { add: [], update: [], remove: [], unchanged: [], keepLocal: [], collisions: [], keepSkipped: [] };
+  const plan = { add: [], update: [], remove: [], unchanged: [], keepLocal: [], collisions: [], keepSkipped: [], refresh: [] };
 
   for (const rel of Object.keys(incoming).sort()) {
     const full = safeJoin(targetRoot, rel);
@@ -39,7 +39,11 @@ export function planUpgrade(targetRoot, incoming) {
       continue;
     }
     const have = hashOf(full);
-    if (have === want) plan.unchanged.push(rel);
+    if (have === want) {
+      plan.unchanged.push(rel);
+      // the journal knew this file at another hash (the user made it equal to the target): track the current bytes so the next release can update it
+      if (created[rel] && created[rel] !== want) plan.refresh.push(rel);
+    }
     else if (created[rel] && have === created[rel]) plan.update.push(rel);
     else if (created[rel]) plan.keepLocal.push({ path: rel, reason: "edited locally" });
     else plan.collisions.push(rel);
@@ -59,6 +63,7 @@ export function applyUpgrade(targetRoot, incoming) {
   const plan = planUpgrade(targetRoot, incoming);
   const journal = readJournal(targetRoot);
   const created = { ...journal.created };
+  for (const rel of plan.refresh) created[rel] = sha(Buffer.from(incoming[rel]));
   for (const rel of [...plan.add, ...plan.update]) {
     const full = safeJoin(targetRoot, rel);
     mkdirSync(dirname(full), { recursive: true });
@@ -70,6 +75,9 @@ export function applyUpgrade(targetRoot, incoming) {
     delete created[rel];
     pruneEmptyDirs(targetRoot, rel);
   }
-  writeFileSync(join(targetRoot, JOURNAL_PATH), `${JSON.stringify({ ...journal, created }, null, 2)}\n`);
+  // write-then-rename: an interrupted upgrade never leaves a half-written journal
+  const journalPath = join(targetRoot, JOURNAL_PATH);
+  writeFileSync(`${journalPath}.tmp`, `${JSON.stringify({ ...journal, created }, null, 2)}\n`);
+  renameSync(`${journalPath}.tmp`, journalPath);
   return { status: plan.summary.add + plan.summary.update + plan.summary.remove === 0 ? "UP_TO_DATE" : "UPGRADED", ...plan };
 }

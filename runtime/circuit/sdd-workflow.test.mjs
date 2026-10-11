@@ -1,11 +1,11 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { mkdtempSync, writeFileSync, readFileSync, readdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
   PLATFORM_ROOT, loadWorkflow, validateWorkflow, selectLevel, classifyWorkUnit, parseTasks,
-  validateSpecFolder, deriveSddStatus, markTaskState, requirementIds,
+  validateSpecFolder, deriveSddStatus, markTaskState, requirementIds, persistTaskState,
 } from "./sdd-workflow.mjs";
 
 const SPEC = "# Spec 001\n- RF-1. WHEN x, THE SYSTEM y.\n- RF-2. THE SYSTEM z.\n";
@@ -32,15 +32,17 @@ test("Implementer is the role and implement the action: retired names are absent
   const roots = ["core", "contracts", "runtime", ".agents", "knowledge/sdd"];
   const own = new Set(["contracts/sdd-workflow.json", "contracts/sdd-workflow.schema.json", "runtime/circuit/sdd-workflow.test.mjs", "knowledge/sdd/methodology/migration.md"]);
   const hits = [];
+  // Dirent-based walk: no stat-then-read gap between checking a path and opening it
   const walk = (rel) => {
-    const full = join(PLATFORM_ROOT, rel);
-    if (statSync(full).isDirectory()) {
-      if (rel.endsWith("node_modules")) return;
-      for (const entry of readdirSync(full)) walk(`${rel}/${entry}`);
-    } else if (/\.(md|json|mjs)$/.test(rel) && !own.has(rel)) {
-      const text = readFileSync(full, "utf8");
-      for (const name of workflow.retiredNames) {
-        if (new RegExp(`(^|[^a-z-])${name}([^a-z-]|$)`).test(text)) hits.push(`${rel}: ${name}`);
+    for (const entry of readdirSync(join(PLATFORM_ROOT, rel), { withFileTypes: true })) {
+      const child = `${rel}/${entry.name}`;
+      if (entry.isDirectory()) {
+        if (entry.name !== "node_modules") walk(child);
+      } else if (entry.isFile() && /\.(md|json|mjs)$/.test(entry.name) && !own.has(child)) {
+        const text = readFileSync(join(PLATFORM_ROOT, child), "utf8");
+        for (const name of workflow.retiredNames) {
+          if (new RegExp(`(^|[^a-z-])${name}([^a-z-]|$)`).test(text)) hits.push(`${child}: ${name}`);
+        }
       }
     }
   };
@@ -141,8 +143,35 @@ test("status derives phase and exact next command from the artifacts only", () =
   assert.match(stuck.next, /unblock T1/);
 });
 
-test("cleanup of temp folders is not required for assertions (sanity)", () => {
-  const dir = folder({ "spec.md": SPEC });
-  mkdirSync(join(dir, "x"));
-  rmSync(dir, { recursive: true, force: true });
+
+test("light status never asks for a spec folder; a heavy-level Task is not given spec phases", () => {
+  const status = deriveSddStatus(folder({}), "001-x", { level: "light" });
+  assert.equal(status.phase, "implement");
+  assert.match(status.next, /^Task flow/);
+});
+
+test("tasks.md with CRLF line endings parses and updates without corruption", () => {
+  const crlf = TASKS.split("\n").join("\r\n");
+  assert.deepEqual(parseTasks(crlf).map((t) => t.id), ["T1", "T2"]);
+  assert.equal(parseTasks(crlf)[0].doneWhen, "test passes.");
+  const next = markTaskState(crlf, "T1", "done");
+  assert.equal(next, crlf.replace("- [ ] **T1.", "- [x] **T1."));
+});
+
+test("persistTaskState writes the new state to disk", () => {
+  const dir = folder({ "tasks.md": TASKS });
+  persistTaskState(join(dir, "tasks.md"), "T1", "blocked");
+  assert.equal(parseTasks(readFileSync(join(dir, "tasks.md"), "utf8"))[0].state, "blocked");
+});
+
+test("a state-only role may mutate code only through an explicit orchestrates flag", () => {
+  const workflow = structuredClone(loadWorkflow());
+  delete workflow.commands.find((c) => c.name === "sdd-implement-all").orchestrates;
+  assert.ok(validateWorkflow(workflow).some((e) => e.includes("only an orchestrating command")));
+});
+
+test("level budgets come from contracts/sdd-levels.json for every user-facing level", async () => {
+  const { convergenceBudgetFor } = await import("./converge.mjs");
+  const budgets = Object.fromEntries(loadWorkflow().levels.map((l) => [l.id, convergenceBudgetFor(l.circuitLevel)]));
+  assert.deepEqual(budgets, { light: 2, normal: 4, full: 6 });
 });

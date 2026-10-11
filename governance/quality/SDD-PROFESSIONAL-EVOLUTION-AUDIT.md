@@ -82,7 +82,7 @@ Work units Feature/Maintenance/Milestone and a circuit with deterministic ASSESS
 | Constitution | `docs/constitution.md` | `core/` + `.specify/` | KEEP | — | no third constitution |
 | Memory | `MEMORY.md` authoritative-ish | Git/governance/STATUS | REJECT as authority | none | memory is auxiliary only |
 | Runtime-specific files | `.opencode/*` canonical | generated adapters | KEEP | adapter | `.claude/commands`, `.opencode/commands` are projections |
-| AGENTS.md | 45 lines | 883 lines | REPLACE | router | detail to a factory-only reference |
+| AGENTS.md | 45 lines | 883 lines | REPLACE | router | lossless: the full previous text is kept verbatim in `knowledge/sdd/agents-contract-detail.md` (factory-only) |
 | Template upgrade | none | adopt (create-only) | IMPROVE | foundation | delta-only upgrade preserving local edits |
 
 ## 4. Consumption reality (documented, not assumed)
@@ -112,17 +112,17 @@ Nothing was deleted from `template/`: removing the `.specify` duplicates breaks 
 
 | Subject | Files | Lines | Bytes | ≈ Tokens |
 |---|---|---|---|---|
-| Factory `AGENTS.md` | 1 → 1 | 883 → 181 | 20,185 → 13,021 | 5,046 → 3,255 (−35%) |
+| Factory `AGENTS.md` | 1 → 1 | 883 → 190 | 20,185 → 14,035 | 5,046 → 3,508 (−30%) |
 | `template/templates/project/AGENTS.md` | 1 → 1 | 822 → 145 | 17,098 → 10,350 | 4,275 → 2,588 (−39%) |
-| `template/` (whole area) | 179 → 180 | 15,238 → 14,958 | 460,762 → 462,577 | 115,190 → 115,644 (+0.4%) |
+| `template/` (whole area) | 179 → 180 | 15,238 → 15,387 | 460,762 → 471,602 | 115,190 → 117,900 (+2.4%) |
 | Consumer managed files (lock + entry points) | 5 → 5 | — | 2,167 → 2,182 | — |
 | Consumer derived files (generated adapters/skills/commands) | 15 → 42 | — | 49,310 → 78,788 | — |
 | Skill frontmatter always-on (kernel + skills) | — | — | — | 702 → 753 (+51, limit 2,500) |
 
-Reading: always-on context fell by roughly 1,700 tokens in the factory and 1,700 in the generated-project template; the new skill adds 51. Consumer-owned tracked files do not change; the derived set grows because the 11 commands are projected per tool (22 files) plus the `sdd` skill mirrors. Byte reduction versus the v2 baseline stays above the 0.90 target (0.9135 with derived files). The `template/` area itself did not shrink; the reduction goal there was met only for always-on context.
+Reading: always-on context fell by roughly 1,500 tokens in the factory and 1,700 in the generated-project template; the new skill adds 51. The project template pays for it with one on-demand file (`docs/agents-contract-detail.md`, a lossless copy of the old contract, ~17 KB) in every newly generated project: a generated project must stay self-contained, so the detail cannot live only in the platform. This is an explicit trade-off of always-on tokens against on-disk bytes; it is why `template/` grew 2.4% instead of shrinking. Consumer-owned tracked files do not change; the derived set grows because the 11 commands are projected per tool (22 files) plus the `sdd` skill mirrors. Byte reduction versus the v2 baseline stays above the 0.90 target (0.9135 with derived files). The `template/` area itself did not shrink; the reduction goal there was met only for always-on context. Derived consumer files grow +60% in bytes (49,310 → 78,788) and 2.8× in count because 11 commands are projected for two tools; they are regenerable and not part of the managed set.
 
 ## 7. Anti-duplication, orphans, security
 
 * Duplicates found: two constitutions with different scope (kept, hierarchy documented); `.specify/templates` vs `knowledge/sdd/templates` vs `templates/project/.specify` (kept, noted above); task-execution procedure vs old AGENTS phases (resolved: AGENTS routes, detail in one reference). No duplicate roles introduced (`builder` is the Implementer).
 * Orphans: tests prove every command body is declared and every declared body exists; no retired command name appears in the repo outside migration notes.
-* Security: commands add no permissions; read-only commands get `allowed-tools: Read, Grep, Glob` (Claude) and the `plan` agent (OpenCode); no shell in command bodies; no secrets; `implement-all` never merges; the upgrade never overwrites a locally edited file.
+* Security: commands add no permissions. Read-only commands pre-approve only `Read, Grep, Glob` (Claude Code `allowed-tools` pre-approves; it is not a sandbox, so running the test suite in `sdd-validate` still goes through the normal permission prompt) and use the `plan` agent on OpenCode. No command body asks for network, installs or secrets; `implement-all` never merges; the upgrade never overwrites a locally edited file and writes its journal atomically. Not covered: symlink resolution in `safeJoin` (inherited from `adopt.mjs`).

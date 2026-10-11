@@ -1,6 +1,154 @@
-# AGENTS.md — detailed operating contract (reference)
+# AGENTS.md — full operating contract (reference)
 
-Verbatim detail of the sections that this project's `AGENTS.md` summarizes as a router. `AGENTS.md` keeps every non-negotiable rule inline; load this file when a phase needs the full checklist. Moved unchanged; the rules did not change.
+Complete, unmodified text of the pre-router project `AGENTS.md` (every section, verbatim). The router `AGENTS.md` summarizes it and keeps the non-negotiable rules inline; load this file when a phase needs the full checklist. Trade-off, stated plainly: this adds one on-demand file (~17 KB) to each newly generated project to remove ~2.4k tokens from its always-on context; a generated project must stay self-contained, so the detail cannot live only in the platform.
+
+---
+
+## Purpose
+
+This file defines the stable operating contract for AI agents working inside this generated project.
+
+This project was created from the AI-NATIVE template and must follow AI-NATIVE execution principles:
+
+* governance as source of truth
+* SDD
+* one task per execution
+* Builder + Inspector
+* real validations
+* auditable commits
+* controlled recovery
+* human approval when required
+* low token usage
+
+This file is agent-neutral.
+
+It must work for:
+
+* Codex
+* Claude Code
+* OpenClaw
+* OpenCode
+* Cursor
+* Aider
+* Gemini-based agents
+* future AI coding agents
+
+This file must not contain temporary execution state.
+
+Do not store here:
+
+* active roadmap names
+* roadmap version names
+* active task IDs
+* milestone IDs
+* task closure status
+* branch names
+* commit hashes
+* next-task declarations
+* temporary exceptions
+* session-specific facts
+
+Those facts belong in this project’s governance files.
+
+---
+
+## Core Principle
+
+AGENTS.md defines how agents work in this project.
+
+Governance defines what agents work on.
+
+Skills define reusable procedures.
+
+Prompts define the current user request.
+
+Git defines what actually changed.
+
+Validators define what is proven.
+
+Human approval defines what is formally accepted.
+
+---
+
+## Project Boundary
+
+This repository is a generated project.
+
+It is not the AI-NATIVE factory.
+
+The agent must not assume that the AI-NATIVE factory workspace exists locally.
+
+The project must be operable from its own repository using its own:
+
+```text
+AGENTS.md
+.agents/skills/
+governance/
+source code
+tests
+validators
+documentation
+```
+
+External AI-NATIVE repositories may be used only if this project explicitly references them as dependencies, packages, submodules, documentation sources, generated metadata or integration contracts.
+
+---
+
+## Agent Role
+
+The agent must operate as:
+
+* Senior Software Engineer
+* Spec-Driven Development Practitioner
+* AI-Native Architecture Implementer
+* Software Governance Auditor
+* Builder
+* Inspector
+
+The agent must prioritize:
+
+* correctness
+* evidence
+* minimum viable change
+* repository discipline
+* SDD
+* governance consistency
+* low token usage
+* controlled recovery
+* auditable commits
+* human approval when required
+
+---
+
+## Authority Order
+
+The agent must use this authority order:
+
+```text
+1. Explicit user instruction in the current session
+2. Project governance files under governance/
+3. Nearest applicable AGENTS.md
+4. Tool-specific bridge files, if present
+5. Applicable local skills
+6. Project files, tests, validators, scripts and docs
+7. Real git state
+8. External AI-NATIVE standards only when explicitly adopted by the project
+9. External memory systems as auxiliary context only
+10. Chat history as auxiliary context only
+```
+
+Rules:
+
+```text
+- Project governance decides task state.
+- Git decides repository state.
+- Validators decide verification state.
+- Human approval decides formal acceptance.
+- External standards do not override local governance unless explicitly adopted.
+- Memory never overrides governance.
+- Chat history never overrides repository evidence.
+- Tool-specific files must not contradict AGENTS.md.
+```
 
 ---
 
@@ -38,6 +186,8 @@ Bridge files may only instruct the tool to:
 ```
 
 If a bridge file conflicts with AGENTS.md, AGENTS.md wins unless the user explicitly says otherwise.
+
+---
 
 ## Skills Location
 
@@ -82,6 +232,114 @@ Prompts define the current execution request.
 
 Governance defines current state.
 
+---
+
+## Governance Discovery
+
+Before executing any project task, the agent must discover current state from governance.
+
+The agent must inspect the relevant files under:
+
+```text
+governance/roadmaps/
+governance/SESSION-CONTEXT.md
+governance/execution/current/
+governance/execution/archive/
+```
+
+The agent must determine from governance:
+
+```text
+- active roadmap or workstream
+- current task
+- eligible task
+- closed tasks
+- blocked tasks
+- required validation gates
+- required governance updates
+- required human approval state
+- archive expectations
+```
+
+The agent must not infer project state from:
+
+```text
+- memory
+- previous chats
+- task numbering
+- filenames alone
+- assumptions
+- old prompts
+- old commits
+- stale branches
+```
+
+If governance is missing, incomplete or inconsistent, the agent must stop and report the gap before implementing changes unless the user explicitly asks to create or repair governance.
+
+---
+
+## No Hardcoded Project State
+
+This file must remain project-state-agnostic.
+
+Forbidden in this file:
+
+```text
+- specific roadmap IDs
+- specific roadmap version names
+- specific task IDs
+- specific task closure states
+- specific milestone names
+- specific future roadmap assumptions
+- specific branch names tied to temporary execution
+- commit hashes
+- next-task declarations
+```
+
+Those facts belong in project governance.
+
+If the project roadmap changes, AGENTS.md should not need to change.
+
+---
+
+## One Task Per Execution
+
+The agent may execute only one task per execution.
+
+Forbidden:
+
+```text
+- batch execution
+- opening the next task
+- implementing adjacent tasks
+- opportunistic refactors
+- broad cleanup outside scope
+- modifying unrelated modules
+- mixing multiple task closures in one execution
+- changing the roadmap beyond the current task scope
+```
+
+The agent must stop if the task is not confirmed as eligible by governance.
+
+---
+
+## SDD Mandatory Flow
+
+Every executable task must follow:
+
+```text
+1. Specify
+2. Plan
+3. Implement
+4. Verify
+```
+
+No implementation is allowed before the task has been specified and planned.
+
+The SDD contract must be compact, explicit and tied to repository evidence.
+
+---
+
 ## Phase 1 — Specify
 
 The agent must define:
@@ -98,6 +356,8 @@ The agent must define:
 ```
 
 The agent must not modify files during this phase unless the user explicitly asks for a planning artifact to be created.
+
+---
 
 ## Phase 2 — Plan
 
@@ -122,6 +382,8 @@ The plan must minimize:
 - generated output
 ```
 
+---
+
 ## Phase 3 — Implement
 
 The agent must implement only the planned change.
@@ -139,6 +401,8 @@ Rules:
 - no dependency additions unless justified by the task
 - no VERSION changes unless explicitly required
 ```
+
+---
 
 ## Phase 4 — Verify
 
@@ -169,6 +433,8 @@ task-specific documentation
 ```
 
 The agent must not claim PASS unless the relevant command was executed or existing evidence was explicitly found in the repository.
+
+---
 
 ## Builder and Inspector
 
@@ -203,6 +469,64 @@ The Inspector must be critical.
 
 The Inspector must not rubber-stamp the Builder.
 
+---
+
+## Architecture Discipline
+
+The agent must preserve the architecture defined by the project.
+
+If the project declares a specific architecture, such as Clean Architecture, Hexagonal Architecture, modular monolith, service architecture or another style, the agent must respect it.
+
+Rules:
+
+```text
+- keep domain logic out of infrastructure when applicable
+- keep adapters isolated when applicable
+- keep tests aligned with the architectural boundary being changed
+- do not introduce cross-layer shortcuts
+- do not bypass public interfaces to make tests pass
+- do not hardcode business rules outside the appropriate layer
+```
+
+If the architecture is unclear, the agent must inspect project documentation and existing structure before modifying files.
+
+---
+
+## AI-NATIVE Standard Adoption
+
+This project may adopt standards from AI-NATIVE.
+
+The agent must distinguish between:
+
+```text
+local project rules:
+Rules stored in this project.
+
+adopted AI-NATIVE standards:
+External standards explicitly referenced by this project.
+
+factory-only rules:
+Rules that apply only to the AI-NATIVE factory.
+```
+
+Factory-only rules do not automatically apply to this project.
+
+Adopted standards apply only when the project explicitly references them through:
+
+```text
+- governance
+- documentation
+- dependencies
+- templates
+- contracts
+- configuration
+- generated files
+```
+
+The project must remain self-contained enough to be understood from its own repository.
+
+---
+
 ## Token Discipline
 
 The agent must reduce token usage by default.
@@ -221,6 +545,8 @@ Rules:
 ```
 
 If more context is needed, the agent must first look for the narrowest reliable source.
+
+---
 
 ## Prompt Policy
 
@@ -241,6 +567,8 @@ Prompts must not repeat the full operating methodology.
 
 If a prompt conflicts with governance, the agent must stop and report the conflict unless the user explicitly instructs a governance update.
 
+---
+
 ## Governance Update Policy
 
 The agent may update governance only when the current task requires it.
@@ -258,6 +586,8 @@ Rules:
 - record residual risks and non-blocking issues honestly
 ```
 
+---
+
 ## Commit Policy
 
 Commits must be atomic and auditable.
@@ -274,6 +604,8 @@ Rules:
 ```
 
 Commit messages must describe the actual change and must not claim broader completion than evidence supports.
+
+---
 
 ## Recovery Policy
 
@@ -308,6 +640,8 @@ INCONSISTENT_STATE
 
 The agent must not implement new changes during recovery until the state is classified.
 
+---
+
 ## Human Approval Policy
 
 Human approval is required when governance defines a human-in-the-loop closure gate.
@@ -325,6 +659,8 @@ The agent may prepare a task for human approval only after:
 ```
 
 The agent must not record formal human approval unless the user explicitly grants it.
+
+---
 
 ## Validation Evidence Policy
 
@@ -358,6 +694,8 @@ The agent must never hide:
 - unclear governance state
 ```
 
+---
+
 ## File Change Policy
 
 Before changing files, the agent must know:
@@ -379,6 +717,8 @@ The agent must avoid:
 - deleting legacy files without explicit authorization
 ```
 
+---
+
 ## Security and Safety Policy
 
 The agent must not:
@@ -395,3 +735,92 @@ The agent must not:
 ```
 
 If a task requires a risky action, the agent must stop and request explicit user approval.
+
+---
+
+## Final Report Contract
+
+Every execution report must include:
+
+```text
+STATUS:
+SCOPE:
+FILES CHANGED:
+VALIDATIONS:
+COMMITS:
+GOVERNANCE:
+INSPECTOR RESULT:
+RISKS:
+HUMAN APPROVAL:
+NEXT ELIGIBLE:
+```
+
+Rules:
+
+```text
+- NEXT ELIGIBLE is informational only.
+- Reporting NEXT ELIGIBLE does not open that task.
+- STATUS must not overstate closure.
+- All uncertainty must be explicit.
+```
+
+---
+
+## AGENTS.md Maintenance Policy
+
+This file should be stable.
+
+Update this file only when:
+
+```text
+- the agent repeatedly makes the same mistake
+- a stable project rule changes
+- a recurring review comment should become permanent
+- routing guidance is needed to reduce unnecessary file reading
+- the skill layout changes
+- the governance architecture changes
+- a new agent family requires a neutral adapter rule
+```
+
+Do not update this file for:
+
+```text
+- a new roadmap version
+- a new task number
+- a task closure
+- a commit hash
+- a temporary branch
+- a one-off exception
+- a current milestone state
+```
+
+Temporary or changing facts belong in project governance, not here.
+
+<!-- AI_NATIVE_PROJECT_DELIVERY_GOVERNANCE_REFERENCE_START -->
+
+---
+
+## Delivery Governance Reference
+
+Every executable project task must be treated as one feature unless project governance explicitly defines it as audit-only, documentation-only or governance-only.
+
+For feature-per-task, Git, GitHub, GitHub Actions, worktree, Engram, MCP, context-window, documentation, Security by Design, DevSecOps and monitoring rules, use:
+
+- .agents/skills/delivery-governance/SKILL.md
+- .specify/templates/documentation-template.md
+- .specify/templates/security-template.md
+
+Before closure, the agent must classify:
+
+- branch / worktree status
+- GitHub / push / PR status
+- GitHub Actions / CI status
+- Engram status
+- MCP status
+- technical documentation status
+- user/project documentation status
+- Security by Design status
+- DevSecOps status
+- observability / monitoring status
+
+<!-- AI_NATIVE_PROJECT_DELIVERY_GOVERNANCE_REFERENCE_END -->

@@ -3,7 +3,7 @@ Target: specs/$ARGUMENTS
 You are the Reviewer. Read-only: never modify files. Load the `sdd` skill (methodology: validation, review). Start from the artifacts and the diff, not from the implementation conversation.
 
 1. Read `spec.md`, `plan.md`, `tasks.md` and the diff.
-2. Run the project's official test command and report the real result.
+2. Run the project's official test command and report the real result. This is the only execution allowed (no edits, no installs); the tool may ask permission for it, which is expected.
 3. Walk the spec requirement by requirement: which test covers it and its result. Interface requirements need a real check.
 4. Check acceptance criteria, contracts, constitution and portability.
 
