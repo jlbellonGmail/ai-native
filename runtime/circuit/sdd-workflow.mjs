@@ -215,7 +215,8 @@ export function deriveSddStatus(dir, slug = "NNN-slug", { level = "normal" } = {
   const plan = read(dir, "plan.md");
   const tasksMd = read(dir, "tasks.md");
   const counts = { done: 0, pending: 0, blocked: 0, total: 0 };
-  const result = (phase, next) => ({ phase, next, tasks: counts, errors });
+  const extra = { lastCompleted: null, blockers: [] };
+  const result = (phase, next) => ({ phase, next, tasks: counts, errors, ...extra });
   // a light Task has no spec folder: the answer is the Task flow, never /sdd-spec
   if (level === "light") return result("implement", "Task flow: state objective, scope and acceptance, implement with a sufficient test, record evidence");
   if (spec === null) return result("specify", `/sdd-spec ${slug} "<idea>"`);
@@ -227,6 +228,9 @@ export function deriveSddStatus(dir, slug = "NNN-slug", { level = "normal" } = {
     counts[task.state]++;
     counts.total++;
   }
+  const lastDone = tasks.filter((t) => t.state === "done").at(-1);
+  extra.lastCompleted = lastDone ? `${lastDone.id}. ${lastDone.title}` : null;
+  extra.blockers = tasks.filter((t) => t.state === "blocked").map((t) => `${t.id}. ${t.title}`);
   const blocked = tasks.find((t) => t.state === "blocked");
   if (blocked) return result("implement", `unblock ${blocked.id}, then /sdd-implement ${slug} ${blocked.id}`);
   const pending = tasks.find((t) => t.state === "pending");
@@ -255,4 +259,19 @@ export function persistTaskState(tasksPath, id, state) {
   const next = markTaskState(readFileSync(tasksPath, "utf8"), id, state);
   writeFileSync(`${tasksPath}.tmp`, next);
   renameSync(`${tasksPath}.tmp`, tasksPath);
+}
+
+/**
+ * The five lines a person needs (STATE, PROGRESS, LAST COMPLETED, NEXT, BLOCKERS), derived from
+ * the artifacts so it can never diverge from them. Project status stays in governance/.
+ */
+export function formatSddStatus(status) {
+  const { done, total } = status.tasks;
+  return [
+    `STATE: ${status.errors.length ? "invalid" : status.blockers.length ? "blocked" : status.phase}`,
+    `PROGRESS: ${total ? `${done}/${total} tasks` : "no tasks yet"}`,
+    `LAST COMPLETED: ${status.lastCompleted ?? "-"}`,
+    `NEXT: ${status.next}`,
+    `BLOCKERS: ${status.blockers.length ? status.blockers.join("; ") : "none"}`,
+  ].join("\n");
 }

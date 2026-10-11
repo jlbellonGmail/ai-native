@@ -85,3 +85,32 @@ test("--drift is read-only and refuses to be combined with --upgrade", async () 
   assert.notEqual(run("--drift", "--upgrade").status, 0);
   assert.ok(!existsSync(join(root, ".claude/commands/feature.md")), "a deleted projection is reported, not resurrected");
 });
+
+test("a fresh consumer inherits the central constitution and resolves the architecture, autonomy and quality guides centrally", async () => {
+  const { resolveKnowledge } = await import("../consumer/knowledge.mjs");
+  const { validateProject } = await import("../policy/constitution-extension.mjs");
+  const { checkProject } = await import("../policy/architecture.mjs");
+  const { resolveHumanGate } = await import("../policy/hitl.mjs");
+  const root = consumer();
+  for (const ref of ["sdd/methodology/architecture.md", "sdd/methodology/autonomy.md", "sdd/methodology/quality.md", "sdd/feature-templates/spec-template.md"]) {
+    assert.equal(resolveKnowledge({ releaseRoot: RELEASE, ref }).status, "OK", ref);
+    assert.ok(!existsSync(join(root, "knowledge")), "no knowledge is copied into the consumer");
+  }
+  assert.deepEqual(validateProject(root), [], "no local constitution = pure inheritance");
+  assert.deepEqual(checkProject(root, { schemaVersion: 1, layers: { all: { paths: ["src"], mayDependOn: ["all"] } } }), []);
+  assert.equal(resolveHumanGate({ risk: "low", humanGate: "none", autonomy: "full" }).gate, "none");
+  assert.equal(resolveHumanGate({ risk: "high", humanGate: "none", autonomy: "full" }).ok, false);
+});
+
+test("template minimalization regression: no duplicated constitution, templates, role/command copies or contract detail", () => {
+  const dir = join(RELEASE, "template", "templates", "project");
+  const files = [];
+  const walk = (d) => readdirSync(d, { withFileTypes: true }).forEach((e) => (e.isDirectory() ? (e.name !== "node_modules" && walk(join(d, e.name))) : files.push(join(d, e.name))));
+  walk(dir);
+  const rel = files.map((f) => f.slice(dir.length + 1).replaceAll("\\", "/"));
+  for (const banned of [/^\.specify\/memory\/constitution\.md$/, /^\.specify\/templates\//, /^docs\/agents-contract-detail\.md$/, /^\.claude\//, /^\.opencode\//, /^\.codex\//, /^\.agentic\/roles\//]) {
+    assert.deepEqual(rel.filter((f) => banned.test(f)), [], String(banned));
+  }
+  const bytes = files.reduce((n, f) => n + readFileSync(f).length, 0);
+  assert.ok(bytes <= 34000, `project template grew to ${bytes} bytes (budget 34000): centralize instead`);
+});

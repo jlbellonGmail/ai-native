@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-native.local/contracts/hitl-policy.schema.json",
+  "title": "HITL policy",
+  "description": "Which human gate (required | final-only | none) a work unit may declare for its risk. `none` is an explicit decision (human_gate: none + autonomy: full), never a default, and never overrides branch protection or the release policy (HITL-MERGE-POLICY).",
+  "type": "object",
+  "required": ["schemaVersion", "gates", "risks", "forceRequired", "noneRequires", "externalProtectionWins"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "gates": { "type": "array", "items": { "enum": ["required", "final-only", "none"] } },
+    "risks": {
+      "type": "object",
+      "required": ["low", "medium", "high"],
+      "properties": {
+        "low": { "$ref": "#/$defs/risk" },
+        "medium": { "$ref": "#/$defs/risk" },
+        "high": { "$ref": "#/$defs/risk" }
+      }
+    },
+    "forceRequired": { "type": "array", "items": { "enum": ["controlPlane", "release", "production", "security"] } },
+    "noneRequires": {
+      "type": "object",
+      "required": ["autonomy", "explicit"],
+      "properties": { "autonomy": { "const": "full" }, "explicit": { "const": true } }
+    },
+    "externalProtectionWins": { "const": true }
+  },
+  "$defs": {
+    "risk": {
+      "type": "object",
+      "required": ["allowed", "default"],
+      "properties": {
+        "allowed": { "type": "array", "minItems": 1, "items": { "enum": ["required", "final-only", "none"] } },
+        "default": { "enum": ["required", "final-only"] }
+      }
+    }
+  }
+}

@@ -1,0 +1,109 @@
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join, dirname } from "node:path";
+import { pathToFileURL } from "node:url";
+import { checkSources, checkProject, importsOf } from "./architecture.mjs";
+
+const HEX = {
+  schemaVersion: 1,
+  layers: {
+    domain: { paths: ["src/domain"], mayDependOn: [], forbiddenImports: ["fs", "pg", "express", "axios"] },
+    application: { paths: ["src/application"], mayDependOn: ["domain"] },
+    infrastructure: { paths: ["src/infrastructure"], mayDependOn: ["application", "domain"] },
+    interfaces: { paths: ["src/interfaces"], mayDependOn: ["application", "domain"] },
+  },
+};
+
+const rules = (v) => v.map((x) => x.rule);
+
+test("a hexagonal layout with dependencies pointing to the domain passes", () => {
+  const v = checkSources(HEX, {
+    "src/domain/order.js": "export const total = (items) => items.length;\n",
+    "src/application/place-order.js": "import { total } from '../domain/order.js';\n",
+    "src/infrastructure/sql-orders.js": "import { total } from '../domain/order.js';\nimport pg from 'pg';\n",
+    "src/interfaces/http.js": "import { placeOrder } from '../application/place-order.js';\n",
+  });
+  assert.deepEqual(v, []);
+});
+
+test("domain depending on infrastructure, or on a DB/web/fs package, is rejected", () => {
+  const v = checkSources(HEX, {
+    "src/domain/order.js": "import { save } from '../infrastructure/sql-orders.js';\nimport pg from 'pg';\nimport { readFileSync } from 'node:fs';\n",
+    "src/infrastructure/sql-orders.js": "export const save = () => {};\n",
+  });
+  assert.deepEqual(rules(v).sort(), ["dependency-direction", "forbidden-import", "forbidden-import"]);
+});
+
+test("interfaces must not reach infrastructure (no SQL in the UI), application must not reach interfaces", () => {
+  const v = checkSources(HEX, {
+    "src/interfaces/ui.js": "import { query } from '../infrastructure/db.js';\n",
+    "src/application/use.js": "import { render } from '../interfaces/ui.js';\n",
+    "src/infrastructure/db.js": "",
+  });
+  assert.deepEqual(v.map((x) => x.file), ["src/interfaces/ui.js:1", "src/application/use.js:1"]);
+});
+
+test("Python imports are mapped too (absolute and relative)", () => {
+  const py = { schemaVersion: 1, layers: { domain: { paths: ["app/domain"], mayDependOn: [], forbiddenImports: ["sqlalchemy"] }, infra: { paths: ["app/infra"], mayDependOn: ["domain"] } } };
+  const v = checkSources(py, {
+    "app/domain/order.py": "import sqlalchemy\nfrom app.infra import repo\nfrom ..infra import other\n",
+    "app/infra/repo.py": "from app.domain import order\n",
+  });
+  assert.deepEqual(rules(v).sort(), ["dependency-direction", "dependency-direction", "forbidden-import"]);
+});
+
+test("module B may consume module A only through its public contract", () => {
+  const mods = { schemaVersion: 1, layers: { all: { paths: ["modules"], mayDependOn: ["all"] } }, modules: { a: { path: "modules/a", public: ["modules/a/contract"] }, b: { path: "modules/b", public: ["modules/b/contract"] } } };
+  assert.deepEqual(checkSources(mods, { "modules/b/service.js": "import { port } from '../a/contract/index.js';\nimport { x } from './internal.js';\n" }), []);
+  const v = checkSources(mods, { "modules/b/service.js": "import { secret } from '../a/internal/table.js';\n" });
+  assert.deepEqual(rules(v), ["module-boundary"]);
+  assert.match(v[0].message, /only through its public contract/);
+});
+
+test("an invalid contract or an unknown layer reference fails closed", () => {
+  assert.equal(checkSources({ schemaVersion: 1 }, {})[0].rule, "contract");
+  const bad = { schemaVersion: 1, layers: { a: { paths: ["a"], mayDependOn: ["ghost"] } } };
+  assert.match(checkSources(bad, {})[0].message, /unknown layer ghost/);
+});
+
+test("import extraction covers import/require/dynamic import/export-from", () => {
+  const specs = importsOf("x.ts", "import a from 'a';\nconst b = require('b');\nconst c = await import('c');\nexport * from './d';\nimport './e';\n").map((i) => i.spec);
+  assert.deepEqual(specs, ["a", "b", "c", "./d", "./e"]);
+});
+
+function write(root, files) {
+  for (const [p, c] of Object.entries(files)) {
+    mkdirSync(dirname(join(root, p)), { recursive: true });
+    writeFileSync(join(root, p), c);
+  }
+}
+
+test("E2E stack change: swapping the storage adapter does not touch the domain and keeps domain tests green", async () => {
+  const root = mkdtempSync(join(tmpdir(), "hex-"));
+  write(root, {
+    "package.json": '{"type":"module"}',
+    "src/domain/ports.js": "export const assertStorage = (s) => { for (const m of ['save','load']) if (typeof s[m] !== 'function') throw new Error('storage port: ' + m); return s; };\n",
+    "src/application/notes.js": "import { assertStorage } from '../domain/ports.js';\nexport const makeNotes = (storage) => { assertStorage(storage); return { add: async (t) => storage.save(t.trim()), all: async () => storage.load() }; };\n",
+    "src/infrastructure/storage-a.js": "export const storageA = () => { const m = []; return { save: async (t) => { m.push(t); return t; }, load: async () => [...m] }; };\n",
+    "src/infrastructure/storage-b.js": "import { writeFileSync, readFileSync, existsSync } from 'node:fs';\nexport const storageB = (file) => ({ save: async (t) => { const a = existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : []; a.push(t); writeFileSync(file, JSON.stringify(a)); return t; }, load: async () => (existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : []) });\n",
+  });
+  assert.deepEqual(checkProject(root, HEX), []);
+  const domainBefore = readFileSync(join(root, "src/domain/ports.js"), "utf8");
+  const appBefore = readFileSync(join(root, "src/application/notes.js"), "utf8");
+  const load = (p) => import(pathToFileURL(join(root, p)).href);
+  const { makeNotes } = await load("src/application/notes.js");
+  const { storageA } = await load("src/infrastructure/storage-a.js");
+  const { storageB } = await load("src/infrastructure/storage-b.js");
+  for (const storage of [storageA(), storageB(join(root, "notes.json"))]) {
+    const notes = makeNotes(storage);
+    await notes.add("  hello ");
+    assert.deepEqual(await notes.all(), ["hello"]);
+  }
+  assert.equal(readFileSync(join(root, "src/domain/ports.js"), "utf8"), domainBefore);
+  assert.equal(readFileSync(join(root, "src/application/notes.js"), "utf8"), appBefore);
+  // and the rule still catches the shortcut a hurried change would take
+  write(root, { "src/domain/ports.js": domainBefore + "import { storageB } from '../infrastructure/storage-b.js';\n" });
+  assert.deepEqual(rules(checkProject(root, HEX)), ["dependency-direction"]);
+});

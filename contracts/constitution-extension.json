@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "central": "core/constitution.md",
+  "centralPrinciples": 18,
+  "extensionPath": ".specify/memory/constitution.md",
+  "mode": "additions-only",
+  "maxRules": 20,
+  "maxBytes": 4096,
+  "ruleLine": "^- \\[ADD\\] (LOCAL-\\d+): (.{10,300})$",
+  "precedence": "ai-native constitution wins on any conflict"
+}

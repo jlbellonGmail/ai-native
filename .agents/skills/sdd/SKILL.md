@@ -33,7 +33,7 @@ Canonical contract: `contracts/sdd-workflow.json`. Executable layer: `runtime/ci
 | Requirement changed | `/sdd-change` | `change-management.md` |
 | Where am I | `/sdd-status` | none (derive from artifacts) |
 
-Modes and handoffs: `modes.md`. Renamed or retired names: `migration.md`.
+Modes and handoffs: `modes.md`. Architecture, modules, contracts: `architecture.md`. Human gate, status, Constitution inheritance: `autonomy.md`. Tests vs review vs CodeQL, TDD: `quality.md`. Renamed or retired names: `migration.md`.
 
 ## Invariants
 
