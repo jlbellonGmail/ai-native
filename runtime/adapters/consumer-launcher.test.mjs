@@ -202,3 +202,19 @@ test("F-19 a PR cannot grant itself `none`: the policy is read from the lock on 
   assert.equal(r.status, 1);
   assert.match(r.stdout, /human_gate none is not allowed by this repository's policy/);
 });
+
+test("F-19 hitl judges the real change: uncommitted and new files count, so unfinished work cannot get a lighter gate", () => {
+  const dir = consumer({ allowNone: true });
+  unit(dir);
+  assert.match(gate(dir).stdout, /risk low, human_gate none/);
+  // same committed state, but an uncommitted migration and a new untracked secret file are in the working tree
+  mkdirSync(join(dir, "migrations"), { recursive: true });
+  writeFileSync(join(dir, "migrations", "009.sql"), "DROP TABLE users;\n");
+  writeFileSync(join(dir, ".env.production"), "KEY=1\n");
+  const r = gate(dir);
+  assert.equal(r.status, 1);
+  assert.match(r.stdout, /risk high, human_gate required \(human_gate none is not allowed for high risk/);
+  // an empty diff against HEAD cannot be assessed: never `none`
+  const empty = consumer({ allowNone: true });
+  assert.match(run(empty, "hitl", "--base", "HEAD").stdout, /human_gate final-only/);
+});

@@ -169,6 +169,7 @@ export function parseTasks(markdown) {
 const REQUIREMENT_DEF = /^\s*[-*]?\s*\**([A-Z]+-\d+)\**[.:]/gm;
 export const requirementIds = (specMarkdown) => [...specMarkdown.matchAll(REQUIREMENT_DEF)].map((m) => m[1]);
 
+const TASK_FORMAT = 'expected "- [ ] **T1. Title.** RF-1" followed by an indented line "  - Done when: <verifiable check>."';
 const read = (dir, file) => (existsSync(join(dir, file)) ? readFileSync(join(dir, file), "utf8") : null);
 
 /** Errors for one specs/NNN-slug folder at a level (`light` needs nothing). */
@@ -188,7 +189,7 @@ export function validateSpecFolder(dir, { level = "normal" } = {}) {
     const seen = new Set();
     for (const task of parsed) {
       if (task.invalid) {
-        errors.push(`tasks.md:${task.line}: invalid task line (states are [ ], [x], [!])`);
+        errors.push(`tasks.md:${task.line}: invalid task line (states are [ ], [x], [!]; ${TASK_FORMAT})`);
         continue;
       }
       if (seen.has(task.id)) errors.push(`tasks.md:${task.line}: duplicate task id ${task.id}`);
@@ -200,7 +201,7 @@ export function validateSpecFolder(dir, { level = "normal" } = {}) {
         }
       }
     }
-    if (parsed.filter((t) => !t.invalid).length === 0) errors.push("tasks.md has no tasks");
+    if (parsed.filter((t) => !t.invalid).length === 0) errors.push(`tasks.md has no tasks: write one block per task, ${TASK_FORMAT} (ids T1, T2, ... unique)`);
   }
   return errors;
 }

@@ -124,6 +124,10 @@ test("spec folder validation: missing spec, orphan artifacts, bad tasks, broken 
   assert.ok(errors.some((e) => e.includes("cites RF-9")));
   assert.ok(errors.some((e) => e.includes("duplicate task id T1")));
   assert.ok(errors.some((e) => e.includes("invalid task line")));
+  // self-correction needs the error to say how to fix it: free-form tasks get the expected format, not just "no tasks"
+  const freeForm = validateSpecFolder(folder({ "spec.md": SPEC, "plan.md": PLAN, "tasks.md": "## Task 1: do it\n**Done when:** ok\n" }));
+  assert.ok(freeForm.some((e) => /has no tasks.*- \[ \] \*\*T1\. Title\.\*\* RF-1.*Done when/.test(e)), freeForm.join("|"));
+  assert.ok(errors.some((e) => /invalid task line.*- \[ \] \*\*T1\. Title\.\*\*/.test(e)));
   const open = folder({ "spec.md": `${SPEC}[NEEDS CLARIFICATION] who?\n` });
   assert.ok(validateSpecFolder(open, { level: "full" }).some((e) => e.includes("NEEDS CLARIFICATION")));
 });

@@ -68,7 +68,7 @@ export function deriveHumanGate({ changedPaths = [], declared = {}, controlPlane
   if (declared.humanGate !== undefined) facts.humanGate = declared.humanGate;
   if (declared.autonomy !== undefined) facts.autonomy = declared.autonomy;
   if (facts.humanGate === "none" && !allowNone) {
-    return { ok: false, gate: "required", risk, reasons: ["human_gate none is not allowed by this repository's policy (profile governance.allowNone)"] };
+    return { ok: false, gate: "required", risk, reasons: ["human_gate none is not allowed by this repository's policy (opt in with governance.allowNone in ai-native.lock.json on the base branch)"] };
   }
   return { ...resolveHumanGate(facts, policy), risk };
 }
@@ -142,9 +142,12 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1
     console.error("FAIL: --base <ref> is required: the change must be assessed from git");
     process.exit(1);
   }
-  const out = git(project, ["diff", "--name-only", "--no-renames", base, "HEAD"]);
-  if (out === null) {
-    console.error(`FAIL: cannot diff ${base}..HEAD`);
+  // the real change = base..working tree (committed, staged and unstaged) plus untracked files: work in progress counts, so
+  // an agent that has not committed yet cannot get a lighter gate than the commit would
+  const out = git(project, ["diff", "--name-only", "--no-renames", base]);
+  const untracked = git(project, ["ls-files", "--others", "--exclude-standard"]);
+  if (out === null || untracked === null) {
+    console.error(`FAIL: cannot diff ${base} against the working tree`);
     process.exit(1);
   }
   // policy comes from the lock on the BASE ref (never from the working tree or a flag); --profile only applies without a base lock (factory)
@@ -161,7 +164,7 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1
   const result = checkHumanGate({
     project,
     base,
-    changedPaths: out.split(/\r?\n/).filter(Boolean),
+    changedPaths: [...new Set(`${out}\n${untracked}`.split(/\r?\n/).filter(Boolean))],
     environment: val("--environment") ?? "development",
     allowNone: allowNoneFromLock(baseLock, undefined) || (baseLock === null && allowNoneFor(val("--profile") ?? "factory")),
     requireGateConfig: existsSync(join(project, "governance", "gates", "gates.json")),
