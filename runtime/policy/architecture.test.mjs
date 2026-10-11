@@ -199,3 +199,46 @@ test("review: scanning is near-linear (20000 imports, hostile repeats) and huge 
   const v = checkSources(HEX, { "src/domain/big.js": "x".repeat(2 * 1024 * 1024 + 1) });
   assert.deepEqual(rules(v), ["unanalyzable"]);
 });
+
+const BS = String.fromCharCode(92);
+
+test("F-13 residual: a backslash continuation before `import` keeps the module prefix; every continuation form", () => {
+  assert.deepEqual(specs("a.py", `from x ${BS}\n    import a\n`), ["x.a"]);
+  assert.deepEqual(specs("a.py", `from x ${BS}\r\n    import a, b\r\n`), ["x.a", "x.b"]);
+  assert.deepEqual(specs("a.py", `import a ${BS}\n    , b\n`), ["a", "b"]);
+  assert.deepEqual(specs("a.py", `from x import a, ${BS}\n    b\n`), ["x.a", "x.b"]);
+  assert.deepEqual(specs("a.py", `from . import ${BS}\n   y\n`), [".y"]);
+  assert.deepEqual(importsOf("a.py", `x = 1\nfrom x ${BS}\n    import a\n`)[0].line, 2);
+});
+
+test("F-13 residual: a slash after ++, --, a closing tag or a block end is a division, not a regex", () => {
+  for (const code of [
+    `i++ / 2; import("x")\n`,
+    `i-- / 2; import("x")\n`,
+    `const a = <div></div>; const m = import("x")\n`,
+    `const q = (a + b) / 2; import("x")\n`,
+    `const q = arr[0] / 2; import("x")\n`,
+    `if (a) {} /re/.test(s); import("x")\n`,
+    `const n = x / y / z; import("x")\n`,
+  ]) assert.deepEqual(specs("a.tsx", code), ["x"], code);
+});
+
+test("F-13 residual: real regex literals are still recognised (arrow, binary +, after return/typeof)", () => {
+  for (const code of [
+    `const f = () => /"/.test(s); import("x")\n`,
+    `const g = a + /'/.test(s); import("x")\n`,
+    `const h = a - /"/.exec(s); import("x")\n`,
+    `function k() { return /"/.test(s); } import("x")\n`,
+    `const m = cond ? /"/ : /'/; import("x")\n`,
+    `const r = [/"/, /'/]; import("x")\n`,
+  ]) assert.deepEqual(specs("a.js", code), ["x"], code);
+});
+
+test("F-13 residual: names are never lost in a mixed file (comments, strings, continuation, multi-line, dynamic)", () => {
+  const code = [
+    "# import fake", `s = 'from fake import x'`,
+    `from a.b ${BS}`, "    import (c,", "                d)",
+    "if ok: import e", `import f, ${BS}`, "    g",
+  ].join("\n") + "\n";
+  assert.deepEqual(specs("m.py", code).sort(), ["a.b.c", "a.b.d", "e", "f", "g"]);
+});

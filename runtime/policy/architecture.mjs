@@ -18,7 +18,11 @@ const noExt = (p) => p.replace(/\.(?:mjs|cjs|js|jsx|ts|tsx|py)$/, "");
 const under = (file, dir) => ((file = noExt(file)), (dir = noExt(dir)), file === dir || file.startsWith(`${dir}/`));
 
 const BACKSLASH = "\x5c";
-const REGEX_AFTER = new Set(["", "(", ",", "=", ":", "[", "!", "&", "|", "?", "{", "}", ";", "+", "-", "*", "%", "<", ">", "~", "^"]);
+// After these a "/" starts a regex literal. Deliberately absent: ")" "]" "}" (division or end of block), "<" ">" (JSX closing
+// tags like </div>, comparisons) and "+" "-" (handled below: "i++ / 2" divides, "a + /x/.test(s)" is a regex).
+const REGEX_AFTER = new Set(["", "(", ",", "=", ":", "[", "!", "&", "|", "?", "{", ";", "*", "%", "~", "^"]);
+const regexAllowed = (prev, prev2, tail) =>
+  REGEX_AFTER.has(prev) || ((prev === "+" || prev === "-") && prev2 !== prev) || (prev === ">" && prev2 === "=") || REGEX_KEYWORDS.test(tail.trimEnd());
 const REGEX_KEYWORDS = /(?:^|[^\w$])(?:return|typeof|case|do|else|in|of|instanceof|new|delete|void|throw|yield|await)$/;
 
 /**
@@ -35,6 +39,7 @@ function blank(text, py) {
   const stack = []; // JS: open `${` expressions, each with its brace depth
   let clean = true;
   let prev = ""; // last significant character, decides regex vs division
+  let prev2 = ""; // the one before it ("++" and "=>" differ from "+" and ">")
   let tail = ""; // last word, for `return /x/`
   let i = 0;
   const template = (from) => {
@@ -63,7 +68,7 @@ function blank(text, py) {
       const stop = e < 0 ? n : e + 2;
       wipe(i, stop);
       i = stop;
-    } else if (!py && c === "/" && (REGEX_AFTER.has(prev) || REGEX_KEYWORDS.test(tail))) {
+    } else if (!py && c === "/" && regexAllowed(prev, prev2, tail)) {
       // regex literal: body up to the closing slash on the same line, `[...]` may contain slashes
       let j = i + 1;
       let inClass = false;
@@ -76,10 +81,12 @@ function blank(text, py) {
       }
       wipe(i + 1, Math.min(j, n));
       i = Math.min(j + 1, n);
+      prev2 = prev;
       prev = "/";
       tail = "";
     } else if (!py && c === "`") {
       i = template(i + 1);
+      prev2 = prev;
       prev = "`";
       tail = "";
     } else if (c === '"' || c === "'") {
@@ -94,17 +101,19 @@ function blank(text, py) {
       if (j >= n && triple) clean = false;
       wipe(i + q.length, Math.min(j, n));
       i = Math.min(j + q.length, n);
+      prev2 = prev;
       prev = c;
       tail = "";
     } else {
       if (!py && stack.length) {
         if (c === "{") stack[stack.length - 1]++;
         else if (c === "}") {
-          if (stack[stack.length - 1] === 0) { stack.pop(); i = template(i + 1); prev = "`"; tail = ""; continue; }
+          if (stack[stack.length - 1] === 0) { stack.pop(); i = template(i + 1); prev2 = prev; prev = "`"; tail = ""; continue; }
           stack[stack.length - 1]--;
         }
       }
       if (!/\s/.test(c)) {
+        prev2 = prev;
         prev = c;
         tail = /[\w$]/.test(c) ? tail + c : "";
         if (tail.length > 12) tail = tail.slice(-12);
@@ -173,12 +182,12 @@ export function importsOf(file, text) {
     take(/\b(?:require|import)\s*\(\s*["'`]/g);
     return out.sort((a, b) => a.line - b.line);
   }
-  const flat = code.replace(/;/g, "\n");
-  // a backslash is a line continuation inside a Python import list
-  const names = (list) => list.replace(/\x5c\r?\n/g, " ").replace(/[()]/g, " ").split(",").map((x) => x.trim().split(/\s+as\s+/)[0].trim()).filter((x) => /^[\w.]+$/.test(x));
+  // a backslash-newline is a line continuation: blank it (same length, so offsets and line numbers hold) and a statement is one logical line
+  const flat = code.replace(/;/g, "\n").replace(/\x5c\r?\n/g, (m) => " ".repeat(m.length));
+  const names = (list) => list.replace(/[()]/g, " ").split(",").map((x) => x.trim().split(/\s+as\s+/)[0].trim()).filter((x) => /^[\w.]+$/.test(x));
   const lead = String.raw`^[ \t]*(?:[^\n=()\[\]{}'"]*:[ \t]*)?`;
-  const fromRe = new RegExp(lead + String.raw`from[ \t]+(\.*[\w.]*)[ \t]*\x5c?[ \t]+import[ \t]*(\([^)]*\)|(?:[^\n\x5c]|\x5c\r?\n)*)`, "gm");
-  const importRe = new RegExp(lead + String.raw`import[ \t]+((?:[^\n\x5c]|\x5c\r?\n)+)`, "gm");
+  const fromRe = new RegExp(lead + String.raw`from[ \t]+(\.*[\w.]*)[ \t]+import[ \t]*(\([^)]*\)|[^\n]*)`, "gm");
+  const importRe = new RegExp(lead + String.raw`import[ \t]+([^\n]+)`, "gm");
   for (const m of flat.matchAll(fromRe)) {
     const line = lineAt(m.index);
     const base = m[1];
