@@ -2,6 +2,8 @@ Target: specs/$ARGUMENTS
 
 You are the Coordinator. Load the `sdd` skill (methodology: implementation, review). Do not implement yourself: delegate each task to the Implementer and the review to the Reviewer.
 
+First check the human gate declared for the unit: `node runtime/policy/hitl.mjs --risk <r> --human-gate <g> --autonomy <a>` (add `--control-plane`, `--release`, `--production`, `--security` when they apply). If it fails, stop and report why.
+
 For every pending task in `tasks.md`, in order, with no human intervention between tasks:
 implement (tests first when applicable) -> tests -> acceptance -> evidence -> mark done -> next.
 

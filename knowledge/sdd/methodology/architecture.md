@@ -42,6 +42,8 @@ A project declares its layers and modules in an `architecture.json` (schema `con
 
 Check: `node runtime/policy/architecture.mjs --project .` (PASS, or FAIL listing each violation; no contract means NOT_APPLICABLE). Without a contract, the same rules apply as review criteria.
 
+Limits (best effort, say so in review): it reads relative imports and Python imports resolved from the project root; aliases (`@/x`, tsconfig `paths`) and computed imports are not resolved; files outside every declared layer are not checked; `public` paths are matched by prefix, ignoring file extension.
+
 ## Changing stack
 
 Swap the adapter, keep the port: the domain and the use cases do not change, and the same tests run against both adapters. If a stack change forces a domain edit, the boundary was wrong; fix the boundary.

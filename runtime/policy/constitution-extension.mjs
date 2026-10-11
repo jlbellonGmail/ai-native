@@ -9,7 +9,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const PLATFORM_ROOT = join(here, "..", "..");
 export const loadExtensionPolicy = (root = PLATFORM_ROOT) => JSON.parse(readFileSync(join(root, "contracts", "constitution-extension.json"), "utf8"));
 
-const FORBIDDEN_VERB = /\[(?:OVERRIDE|RELAX|REPLACE|DISABLE|WAIVE|SUPERSEDE|REMOVE)\b|\b(?:overrides?|relaxes|replaces|disables?|waives|supersedes)\s*:/i;
+const FORBIDDEN_VERB = /\[(?:OVERRIDE|RELAX|REPLACE|DISABLE|WAIVE|SUPERSEDE|REMOVE)\b|\b(?:overrides?|relaxes|replaces|disables?|waives|waived|supersedes|supersede)\s*:/i;
 const CENTRAL_REF = /\b(?:P(?:1[0-8]|[1-9])|principle\s+(?:1[0-8]|[1-9]))\b/i;
 
 /** Errors for one extension text; [] means valid. An absent extension is valid (callers pass null). */
@@ -23,7 +23,11 @@ export function validateExtension(text, policy = loadExtensionPolicy()) {
   text.split(/\r?\n/).forEach((line, i) => {
     const where = `line ${i + 1}`;
     if (FORBIDDEN_VERB.test(line)) errors.push(`${where}: overrides are not allowed, the central constitution wins (${line.trim().slice(0, 60)})`);
-    if (!/^\s*-\s*\[/.test(line)) return;
+    if (/^\s*$/.test(line) || /^#{1,6}\s/.test(line) || /^\s*<!--.*-->\s*$/.test(line)) return;
+    if (!/^\s*-\s*\[/.test(line)) {
+      errors.push(`${where}: only headings, comments and "- [ADD] LOCAL-n: ..." rules are allowed (loose prose cannot be validated)`);
+      return;
+    }
     const m = rule.exec(line);
     if (!m) {
       errors.push(`${where}: a rule must match "- [ADD] LOCAL-n: <text>" (additions only)`);

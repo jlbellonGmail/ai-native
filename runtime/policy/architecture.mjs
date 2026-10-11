@@ -11,7 +11,8 @@ const SCHEMA = JSON.parse(readFileSync(join(here, "..", "..", "contracts", "arch
 const SOURCE = /\.(?:mjs|cjs|js|jsx|ts|tsx|py)$/;
 const SKIP_DIRS = new Set(["node_modules", ".git", "dist", "build", "__pycache__", ".venv"]);
 const norm = (p) => p.split(sep).join("/").replace(/^\.\//, "").replace(/\/+$/, "");
-const under = (file, dir) => file === dir || file.startsWith(`${dir}/`);
+const noExt = (p) => p.replace(/\.(?:mjs|cjs|js|jsx|ts|tsx|py)$/, "");
+const under = (file, dir) => ((file = noExt(file)), (dir = noExt(dir)), file === dir || file.startsWith(`${dir}/`));
 
 /** Import specifiers of one file: [{ spec, line }]. Comments are not stripped: a mention in a comment may over-report, never under-report. */
 export function importsOf(file, text) {
@@ -23,8 +24,9 @@ export function importsOf(file, text) {
     if (js) {
       for (const m of raw.matchAll(/\b(?:from|import|require|import\()\s*\(?\s*["']([^"']+)["']/g)) out.push({ spec: m[1], line });
     } else {
-      let m = /^\s*from\s+(\.*[\w.]*)\s+import\b/.exec(raw);
-      if (m) out.push({ spec: m[1], line, py: true });
+      let m = /^\s*from\s+(\.*[\w.]*)\s+import\s+([\w, ]+)/.exec(raw);
+      if (m && /^\.+$/.test(m[1])) for (const name of m[2].split(",")) out.push({ spec: m[1] + name.trim(), line, py: true });
+      else if (m) out.push({ spec: m[1], line, py: true });
       else if ((m = /^\s*import\s+([\w.]+(?:\s*,\s*[\w.]+)*)/.exec(raw))) for (const name of m[1].split(",")) out.push({ spec: name.trim(), line, py: true });
     }
   });
@@ -61,7 +63,8 @@ export function checkSources(contract, sources) {
     for (const dep of layer.mayDependOn) if (!contract.layers[dep]) violations.push({ rule: "contract", file: "(contract)", message: `layer ${name} depends on unknown layer ${dep}` });
   }
   if (violations.length) return violations;
-  for (const [file, text] of Object.entries(sources)) {
+  for (const [rawFile, text] of Object.entries(sources)) {
+    const file = norm(rawFile);
     const from = longest(file, layers);
     const fromModule = longest(file, modules);
     for (const imp of importsOf(file, text)) {

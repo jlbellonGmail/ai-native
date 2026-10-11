@@ -107,3 +107,11 @@ test("E2E stack change: swapping the storage adapter does not touch the domain a
   write(root, { "src/domain/ports.js": domainBefore + "import { storageB } from '../infrastructure/storage-b.js';\n" });
   assert.deepEqual(rules(checkProject(root, HEX)), ["dependency-direction"]);
 });
+
+test("review fixes: python `from .. import x`, public entry with extension, backslash keys", () => {
+  const py = { schemaVersion: 1, layers: { domain: { paths: ["app/domain"], mayDependOn: [] }, infra: { paths: ["app/infra"], mayDependOn: ["domain"] } } };
+  assert.deepEqual(rules(checkSources(py, { "app/domain/o.py": "from .. import infra\n" })), ["dependency-direction"]);
+  const mods = { schemaVersion: 1, layers: { all: { paths: ["src"], mayDependOn: ["all"] } }, modules: { billing: { path: "src/billing", public: ["src/billing/index.ts"] }, web: { path: "src/web", public: ["src/web/index.ts"] } } };
+  assert.deepEqual(checkSources(mods, { "src/web/page.ts": "import { x } from '../billing/index';\n" }), []);
+  assert.deepEqual(rules(checkSources(HEX, { [["src", "domain", "o.js"].join(String.fromCharCode(92))]: "import { s } from '../infrastructure/s.js';\n" })), ["dependency-direction"]);
+});

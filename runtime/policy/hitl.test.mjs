@@ -42,6 +42,11 @@ test("unknown risk or gate fails closed", () => {
   assert.equal(resolveHumanGate({ risk: "low", humanGate: "maybe" }).ok, false);
 });
 
+test("prototype keys and unknown unit keys fail closed instead of throwing", () => {
+  for (const risk of ["toString", "constructor", "__proto__"]) assert.equal(resolveHumanGate({ risk }).ok, false, risk);
+  assert.match(resolveHumanGate({ risk: "low", prodution: true }).reasons[0], /unknown work unit key/);
+});
+
 test("the shipped policy is internally consistent", () => {
   const p = loadHitlPolicy();
   for (const rule of Object.values(p.risks)) assert.ok(rule.allowed.includes(rule.default) && rule.default !== "none");

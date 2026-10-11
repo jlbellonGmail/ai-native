@@ -50,3 +50,11 @@ Not removed for aesthetics: the remaining files hold project facts or executable
 ## Not executed
 
 Codex CLI and Headroom end-to-end runs: NOT_RUN unless the environment provides them (see the PR report). GI repositories: not touched; the adoption goal was updated (`knowledge/sdd/goals/GI-BATCH-UPGRADE.goal.md`).
+
+## Note on older audits
+
+`KNOWLEDGE-DISTRIBUTION-AUDIT.md` and `CENTRALIZATION-CONSUMER-AUDIT.md` record the state at their date, when the project template still carried a full constitution. That file is now removed; the current model is in this document and `knowledge/sdd/methodology/autonomy.md`. The factory's own `AGENTS.md` / `knowledge/sdd/ARCHITECTURE.md` mention of `.specify/memory/constitution.md` refers to the factory SDD constitution, which stays.
+
+## Independent review (round 1) and resolution
+
+2 HIGH, 7 MEDIUM, 5 LOW. HIGH: the human gate was prose only → CLI check `runtime/policy/hitl.mjs` now called by `/sdd-implement-all`, docs say where enforcement is; extension bypass by loose prose → any non-heading, non-comment, non-rule line is rejected (+ `waived`). MEDIUM fixed: prototype-key and unknown-key fail closed; Python relative imports; extension-less `public` match; backslash keys. MEDIUM documented as limits: path aliases and files outside layers (`methodology/architecture.md`). LOW: dead config flags left in the policy (documented constants), redundant `lstat` kept (cheap, defensive).

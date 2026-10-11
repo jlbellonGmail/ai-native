@@ -12,7 +12,7 @@
 
 `none` is an explicit decision, never a default: it needs `human_gate: none` and `autonomy: full`. Control-plane changes, releases, production and security-sensitive work keep the gate `required` regardless; branch protection and the release policy always win (no hidden bypass). Trivial low-risk tasks are not slowed down by a gate nobody needs.
 
-Usage: `/sdd-implement-all <spec>` with `autonomy: full` and `human_gate: none` for a low-risk Feature; the Coordinator refuses `none` when the risk is high and says why.
+Usage: `/sdd-implement-all <spec>` with `autonomy: full` and `human_gate: none` for a low-risk Feature; before `/sdd-implement-all` the Coordinator runs `node runtime/policy/hitl.mjs --risk <low|medium|high> --human-gate <gate> --autonomy <mode> [--control-plane --release --production --security]`; exit 1 means refuse and say why. Enforcement is this check plus branch protection, not the prose.
 
 ## Status per feature
 
@@ -26,4 +26,4 @@ Do not keep a hand-written `status.md` (it diverges). Project status stays in `g
 
 ## Constitution
 
-The ai-native constitution is the default for every project. A project normally has no constitution file; one exists only for real local rules, as additions (`- [ADD] LOCAL-1: ...`) in `.specify/memory/constitution.md`, validated by `runtime/policy/constitution-extension.mjs`. It cannot override a central principle; on conflict, ai-native wins.
+The ai-native constitution is the default for every project. A project normally has no constitution file; one exists only for real local rules, as additions (`- [ADD] LOCAL-1: ...`) in `.specify/memory/constitution.md`, validated by `runtime/policy/constitution-extension.mjs`. Only headings, comments and rule lines are accepted, so an override cannot hide in prose; on any conflict, ai-native wins.
