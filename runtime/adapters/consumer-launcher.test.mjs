@@ -96,7 +96,7 @@ test("F-17 no projected command depends on a private release path, and every `no
   const commands = Object.entries(files).filter(([p]) => /\/commands\/.+\.md$/.test(p));
   assert.ok(commands.length >= 11);
   for (const [path, content] of commands) {
-    const text = content.toString().replace(/<!--[\s\S]*?-->/g, ""); // the GENERATED marker is a label, not an instruction
+    const text = content.toString().split("\n").filter((l) => !l.startsWith("<!-- GENERATED")).join("\n"); // the GENERATED marker is a label, not an instruction
     assert.doesNotMatch(text, /(?<![\w.-])(runtime|contracts|core|governance)\/[\w./-]+/, `${path} names a path that does not exist in a consumer`);
     for (const m of text.matchAll(/\bnode\s+(\S+)/g)) assert.equal(m[1], LAUNCHER_PATH, `${path}: node call outside the launcher (${m[0]})`);
   }
@@ -217,4 +217,31 @@ test("F-19 hitl judges the real change: uncommitted and new files count, so unfi
   // an empty diff against HEAD cannot be assessed: never `none`
   const empty = consumer({ allowNone: true });
   assert.match(run(empty, "hitl", "--base", "HEAD").stdout, /human_gate final-only/);
+});
+
+test("F-20 sdd mark never follows a symlink planted at the temp path, and leaves no temp files behind", async () => {
+  const { symlinkSync, existsSync, readdirSync: ls } = await import("node:fs");
+  const dir = consumer();
+  addFeature(dir);
+  const outside = join(tmp("outside"), "victim.txt");
+  writeFileSync(outside, "untouched\n");
+  const tasksPath = join(dir, "specs", "001-demo", "tasks.md");
+  // works without symlink permission: the old fixed temp name must not be used at all
+  const legacyTmp = join(dir, "specs", "001-demo", "tasks.md.tmp");
+  writeFileSync(legacyTmp, "preexisting\n");
+  assert.equal(run(dir, "sdd", "mark", "001-demo", "T1", "pending").status, 0);
+  assert.equal(readFileSync(legacyTmp, "utf8"), "preexisting\n");
+  rmSync(legacyTmp);
+  for (const name of ["tasks.md.tmp", `tasks.md.${process.pid}.tmp`]) {
+    try {
+      symlinkSync(outside, join(dir, "specs", "001-demo", name));
+    } catch {
+      return; // symlinks not permitted on this machine (Windows without developer mode): nothing to plant
+    }
+  }
+  assert.equal(run(dir, "sdd", "mark", "001-demo", "T1", "done").status, 0);
+  assert.equal(readFileSync(outside, "utf8"), "untouched\n");
+  assert.match(readFileSync(tasksPath, "utf8"), /^- \[x\] \*\*T1\./);
+  assert.deepEqual(ls(join(dir, "specs", "001-demo")).filter((n) => /\.tmp$/.test(n) && !/^tasks\.md\.(\d+\.)?tmp$/.test(n)), []);
+  assert.ok(existsSync(outside));
 });

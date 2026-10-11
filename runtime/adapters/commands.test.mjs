@@ -44,7 +44,7 @@ test("projected commands use $ARGUMENTS and the canonical names only", () => {
   const files = buildCommandFiles(platform, { tools: ["claude"] });
   assert.match(files[".claude/commands/sdd-implement.md"], /\$ARGUMENTS/);
   assert.match(files[".claude/commands/sdd-implement-all.md"], /node \.ai-native\/ai-native\.mjs sdd next/);
-  assert.doesNotMatch(files[".claude/commands/sdd-implement-all.md"].replace(/<!--[\s\S]*?-->/g, ""), /runtime\/|contracts\//);
+  assert.doesNotMatch(files[".claude/commands/sdd-implement-all.md"].split("\n").filter((l) => !l.startsWith("<!-- GENERATED")).join("\n"), /runtime\/|contracts\//);
 });
 
 test("a root without a catalog projects nothing (older release / minimal fixture)", () => {

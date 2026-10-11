@@ -7,7 +7,8 @@
 //     by file count alone; Task/Feature/Milestone routing for /feature
 //   - parseTasks / validateSpecFolder / deriveSddStatus: tasks.md states,
 //     artifact consistency and the next command for guided mode
-import { existsSync, readFileSync, readdirSync, renameSync, writeFileSync } from "node:fs";
+import { randomBytes } from "node:crypto";
+import { existsSync, readFileSync, readdirSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -256,10 +257,17 @@ export function markTaskState(markdown, id, state) {
 
 /** Writes the new state of `id` into the tasks.md at `tasksPath` (atomic enough for a single writer: read, replace, write). */
 export function persistTaskState(tasksPath, id, state) {
-  // write-then-rename: an interrupted write never leaves a truncated tasks.md
+  // write-then-rename: an interrupted write never leaves a truncated tasks.md. The temp file is created exclusively
+  // (O_EXCL, unpredictable name), so a symlink planted at the temp path is never followed outside the folder.
   const next = markTaskState(readFileSync(tasksPath, "utf8"), id, state);
-  writeFileSync(`${tasksPath}.tmp`, next);
-  renameSync(`${tasksPath}.tmp`, tasksPath);
+  const tmp = `${tasksPath}.${process.pid}.${randomBytes(6).toString("hex")}.tmp`;
+  try {
+    writeFileSync(tmp, next, { flag: "wx" });
+    renameSync(tmp, tasksPath);
+  } catch (error) {
+    rmSync(tmp, { force: true });
+    throw error;
+  }
 }
 
 /**
