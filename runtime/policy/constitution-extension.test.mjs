@@ -35,7 +35,7 @@ test("overrides of the central constitution are rejected", () => {
 test("loose prose cannot smuggle an override", () => {
   assert.match(validateExtension(`${OK}Principle 3 does not apply here.\n`).join(), /loose prose/);
   assert.ok(validateExtension(`${OK}this constitution is waived\n`).length >= 1);
-  assert.deepEqual(validateExtension(`${OK}<!-- note -->\n`), []);
+  assert.ok(validateExtension(`${OK}<!-- note -->\n`).length >= 1, "comments are prose too");
 });
 
 test("a rule that is not an addition, or that cites a central principle, is rejected", () => {

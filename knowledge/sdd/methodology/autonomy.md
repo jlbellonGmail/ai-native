@@ -26,4 +26,4 @@ Do not keep a hand-written `status.md` (it diverges). Project status stays in `g
 
 ## Constitution
 
-The ai-native constitution is the default for every project. A project normally has no constitution file; one exists only for real local rules, as additions (`- [ADD] LOCAL-1: ...`) in `.specify/memory/constitution.md`, validated by `runtime/policy/constitution-extension.mjs`. Only headings, comments and rule lines are accepted, so an override cannot hide in prose; on any conflict, ai-native wins.
+The ai-native constitution is the default for every project. A project normally has no constitution file; one exists only for real local rules, as additions (`- [ADD] LOCAL-1: ...`) in `.specify/memory/constitution.md`, validated by `runtime/policy/constitution-extension.mjs`. Only headings and rule lines are accepted, so an override cannot hide in prose; on any conflict, ai-native wins.

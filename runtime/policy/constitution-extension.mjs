@@ -23,9 +23,9 @@ export function validateExtension(text, policy = loadExtensionPolicy()) {
   text.split(/\r?\n/).forEach((line, i) => {
     const where = `line ${i + 1}`;
     if (FORBIDDEN_VERB.test(line)) errors.push(`${where}: overrides are not allowed, the central constitution wins (${line.trim().slice(0, 60)})`);
-    if (/^\s*$/.test(line) || /^#{1,6}\s/.test(line) || /^\s*<!--.*-->\s*$/.test(line)) return;
+    if (/^\s*$/.test(line) || /^#{1,6}\s/.test(line)) return;
     if (!/^\s*-\s*\[/.test(line)) {
-      errors.push(`${where}: only headings, comments and "- [ADD] LOCAL-n: ..." rules are allowed (loose prose cannot be validated)`);
+      errors.push(`${where}: only headings and "- [ADD] LOCAL-n: ..." rules are allowed (loose prose cannot be validated)`);
       return;
     }
     const m = rule.exec(line);

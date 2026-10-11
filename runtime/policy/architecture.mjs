@@ -1,8 +1,8 @@
 // Optional architecture contract check: layer dependency direction, module public
 // contracts and forbidden external imports. Technology-free: it only reads import
 // specifiers (JS/TS and Python) and maps them to the paths the project declares.
-import { readFileSync, readdirSync, existsSync, lstatSync } from "node:fs";
-import { join, dirname, relative, resolve, posix, sep } from "node:path";
+import { readFileSync, readdirSync, existsSync } from "node:fs";
+import { join, dirname, relative, resolve, posix } from "node:path";
 import { fileURLToPath } from "node:url";
 import { validate } from "../lib/schema-lite.mjs";
 
@@ -10,7 +10,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const SCHEMA = JSON.parse(readFileSync(join(here, "..", "..", "contracts", "architecture.schema.json"), "utf8"));
 const SOURCE = /\.(?:mjs|cjs|js|jsx|ts|tsx|py)$/;
 const SKIP_DIRS = new Set(["node_modules", ".git", "dist", "build", "__pycache__", ".venv"]);
-const norm = (p) => p.split(sep).join("/").replace(/^\.\//, "").replace(/\/+$/, "");
+const norm = (p) => p.replaceAll(String.fromCharCode(92), "/").replace(/^\.\//, "").replace(/\/+$/, "");
 const noExt = (p) => p.replace(/\.(?:mjs|cjs|js|jsx|ts|tsx|py)$/, "");
 const under = (file, dir) => ((file = noExt(file)), (dir = noExt(dir)), file === dir || file.startsWith(`${dir}/`));
 
@@ -102,7 +102,8 @@ export function checkProject(projectDir, contract) {
   const walk = (dir) => {
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
       const full = join(dir, entry.name);
-      if (entry.isSymbolicLink() || lstatSync(full).isSymbolicLink()) continue;
+      // the directory entry type already says symlink or not: no separate check that could race with the read
+      if (entry.isSymbolicLink()) continue;
       if (entry.isDirectory()) {
         if (!SKIP_DIRS.has(entry.name)) walk(full);
       } else if (SOURCE.test(entry.name)) sources[norm(relative(root, full))] = readFileSync(full, "utf8");
