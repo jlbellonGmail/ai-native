@@ -91,7 +91,8 @@ export function applyUpgrade(targetRoot, incoming) {
  */
 export function detectDrift(targetRoot, incoming) {
   const plan = planUpgrade(targetRoot, incoming);
-  const edited = plan.keepLocal.filter((k) => /edited locally/.test(k.reason)).map((k) => k.path);
+  // "edited locally" and "obsolete but edited locally" both mean a hand-modified projection
+  const edited = plan.keepLocal.filter((k) => k.reason !== "deleted locally").map((k) => k.path);
   const missing = plan.keepLocal.filter((k) => k.reason === "deleted locally").map((k) => k.path);
   const outdated = [...plan.add, ...plan.update, ...plan.remove].sort();
   return { status: edited.length || missing.length ? "DRIFT" : outdated.length ? "OUTDATED" : "CLEAN", edited, missing, outdated };

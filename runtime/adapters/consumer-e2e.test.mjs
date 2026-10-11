@@ -1,4 +1,4 @@
-import { test } from "node:test";
+import { test, after } from "node:test";
 import assert from "node:assert/strict";
 import { mkdtempSync, writeFileSync, readFileSync, rmSync, existsSync, readdirSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -11,8 +11,12 @@ import { loadWorkflow } from "../circuit/sdd-workflow.mjs";
 const RELEASE = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const TOOLS = ["claude", "opencode", "codex"];
 
+const made = [];
+after(() => made.forEach((d) => rmSync(d, { recursive: true, force: true })));
+
 function consumer() {
   const root = mkdtempSync(join(tmpdir(), "consumer-e2e-"));
+  made.push(root);
   assert.equal(applyConsumer({ releaseRoot: RELEASE, projectRoot: root, tools: TOOLS }).status, "APPLIED");
   return root;
 }
@@ -60,16 +64,20 @@ test("a newer release is OUTDATED (not DRIFT) and a delta upgrade regenerates on
   assert.equal(detectDrift(root, next).status, "CLEAN");
 });
 
-test("the consumer never carries a manually maintained copy of reusable methodology", () => {
+test("every central file the project template points to is either local in the template or shipped in the release bundle", async () => {
+  const { INCLUDE_PREFIXES } = await import("../release/bundle.mjs");
+  const agents = readFileSync(join(RELEASE, "template/templates/project/AGENTS.md"), "utf8");
+  const refs = [...agents.matchAll(/`((?:docs|knowledge)\/[A-Za-z0-9_./-]+\.md)`|((?:docs|knowledge)\/[A-Za-z0-9_-]+\/?[A-Za-z0-9_./-]*\.md)/g)].map((m) => m[1] ?? m[2]);
+  const missing = refs.filter((r) => !existsSync(join(RELEASE, "template/templates/project", r)) && !INCLUDE_PREFIXES.some((p) => r.startsWith(p)));
+  assert.deepEqual(missing, []);
+});
+
+test("--drift is read-only and refuses to be combined with --upgrade", async () => {
+  const { spawnSync } = await import("node:child_process");
   const root = consumer();
-  const bad = [];
-  const walk = (dir) => {
-    for (const e of readdirSync(dir, { withFileTypes: true })) {
-      const p = join(dir, e.name);
-      if (e.isDirectory()) walk(p);
-      else if (/\.md$/.test(e.name) && /methodology|agents-contract-detail|constitution/.test(p)) bad.push(p);
-    }
-  };
-  walk(root);
-  assert.deepEqual(bad, []);
+  rmSync(join(root, ".claude/commands/feature.md"));
+  const run = (...a) => spawnSync(process.execPath, [join(RELEASE, "runtime/adapters/consumer.mjs"), "--project", root, ...a], { encoding: "utf8" });
+  assert.notEqual(run("--drift").status, 0);
+  assert.notEqual(run("--drift", "--upgrade").status, 0);
+  assert.ok(!existsSync(join(root, ".claude/commands/feature.md")), "a deleted projection is reported, not resurrected");
 });

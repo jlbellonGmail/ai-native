@@ -65,6 +65,7 @@ function main() {
     const selection = { tools, profile: value("--profile"), role: value("--role"), level: value("--level"), mcpProfile: value("--mcp-profile") ?? "none" };
     try {
       if (argv.includes("--revert")) data = revertAdoption(projectRoot);
+      else if (argv.includes("--drift") && argv.includes("--upgrade")) errors.push("--drift is read-only and cannot be combined with --upgrade");
       else if (argv.includes("--drift")) {
         data = detectDrift(projectRoot, consumerFiles(releaseRoot, selection));
         if (data.status === "DRIFT") errors.push(`projections diverge from the release (ai-native is canonical; regenerate with --upgrade after reviewing): edited=[${data.edited.join(", ")}] missing=[${data.missing.join(", ")}]`);

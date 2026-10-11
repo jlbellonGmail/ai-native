@@ -36,7 +36,7 @@ No GI repository contains a copy of a canonical SDD command (none exist there ye
 | Path | Why local | Decision |
 |---|---|---|
 | `AGENTS.md`, `CLAUDE.md`, `OPENCLAW.md` | tool entrypoints must exist in the repo | KEEP_LOCAL (router, thin) |
-| `docs/agents-contract-detail.md` (17.6 KB) | no technical reason: reusable, identical for every project | REFERENCE — removed; `AGENTS.md` points to `knowledge/sdd/agents-contract-detail.md` of the pinned release (lock + content-addressed cache, offline-capable) |
+| `docs/agents-contract-detail.md` (17.6 KB) | reusable and identical for every project, **but** the release bundle (`runtime/release/bundle.mjs` `INCLUDE_PREFIXES`) ships only `runtime/ contracts/ core/ mcp/ profiles/ audit/ .agents/skills/`: `knowledge/` is not in the cache, so a consumer cannot resolve a reference to it | KEEP_LOCAL for now. Removal was implemented, rejected by the independent review (CRITICAL: dangling pointer) and reverted. Prerequisite for centralizing it: add `knowledge/sdd/` to the bundle (changes the release digest; separate MINOR decision) |
 | `.specify/memory/constitution.md` | project constitution, edited per repo | KEEP_LOCAL |
 | `.specify/templates/*` (7) | spec/plan/tasks/… templates a repo may tailor; byte-identical to the factory's | KEEP_LOCAL. Not centralized: commands read the local template path and no fallback resolution exists; adding one is a behaviour change for a later MINOR |
 | `.agents/prompts/*` (2) | project-level task/recovery prompts used by AGENTS routing | KEEP_LOCAL |
@@ -45,23 +45,22 @@ No GI repository contains a copy of a canonical SDD command (none exist there ye
 
 Outside `templates/project`, `template/` is the enterprise scaffold (generator, validators, reference app); 15 validators in CI reference it, so it is not shrunk without evidence of non-use.
 
-## 4. Results (blob sizes from git, same method before and after)
+## 4. Results
 
-| Metric | Before (`697e927`) | After |
-|---|---|---|
-| `template/` files | 180 | 179 |
-| `template/` bytes | 463,126 | 445,785 (−3.7 %) |
-| `templates/project` files / bytes | 20 / 62,203 | 19 / 44,862 (−27.9 %) |
-| project `AGENTS.md` | 145 lines / 10,350 B | 145 lines / 10,597 B (longer pointer; the 17.6 KB copy is gone) |
-| consumer managed files | 5 | 5 |
-| generated projections per consumer (3 tools) | 46 files / 78,657 B | unchanged (required by the runtimes) |
+`template/` is unchanged by this work: no file was removed, because the only candidate (the 17.6 KB detail file) cannot be referenced until `knowledge/sdd/` ships in the release bundle. The honest finding is the gap itself, not a reduction.
 
-The earlier figure of 471,602 B for `template/` came from a different counting method; only the table above is comparable.
+Same gap, pre-existing: `.agents/skills/sdd/SKILL.md` says the methodology lives in `knowledge/sdd/methodology/`, which a consumer's cache does not contain. Consumers get the router skill and the command bodies, not the long methodology. Closing it (bundle `knowledge/sdd/`) is the recommended next MINOR, and would also allow removing the template copy.
+
+| Metric | Value |
+|---|---|
+| `template/` | 180 files / 463,126 B (unchanged) |
+| consumer managed files | 5 |
+| generated projections per consumer (3 tools) | 46 files / 78,657 B (required by the runtimes) |
 
 ## 5. Drift, resolution, compatibility
 
 * Drift: `consumer.mjs --drift` (`detectDrift`) reports `CLEAN | OUTDATED | DRIFT`; `DRIFT` (edited or deleted projection) fails. The L3 gate already warns on adopted-file hash changes.
 * Resolution is deterministic: `ai-native.lock.json` → digest-pinned release in the cache (`runtime/bootstrap/install.mjs`) → `core/`, `contracts/`, `runtime/` → `knowledge/` → local overrides (`keepLocal`, project `AGENTS.md`). No absolute path is required.
 * Version compatibility: the lock pins `version` + `commit` + `digest`; a central change cannot reach a consumer without a lock bump, so it cannot break one silently. Contract versions are `schemaVersion` fields.
-* Offline: the cache makes a pinned release usable without network; that is not a reason to duplicate files in the repo.
+* Offline: the cache makes the bundled surface (runtime, contracts, core, skills) usable without network. `knowledge/` is not bundled, hence the local detail copy above.
 * Manifest: `ai-native.lock.json` already is the minimal manifest; no second file was created.

@@ -9,7 +9,7 @@ Goal: bring every repo to ai-native <TARGET> applying ONLY the delta, then tests
 
 ## Audited starting state (read-only, 8 repos)
 
-All GI repositories found are generation-1: no `ai-native.lock.json`, no SDD commands, no `sdd` skill. Each carries hand-maintained `.agentic/roles`, `.claude/agents`, `.codex`/`.opencode` role copies and (5 repos) `docs/*/sdd-adaptativo.md`. The first run is therefore an adoption (`consumer.mjs --project . --plan`, review collisions, `--skip` for the repo's own files), not a pure upgrade; later runs are `--upgrade`. Legacy role/skill copies are retired only through the journal or an explicit `keepLocal` review, never silently. Verify afterwards with `consumer.mjs --project . --drift`. Details: `governance/quality/CENTRALIZATION-CONSUMER-AUDIT.md`.
+All GI repositories found are generation-1: no `ai-native.lock.json`, no SDD commands, no `sdd` skill. Each carries hand-maintained `.agentic/roles`, `.claude/agents`, `.codex`/`.opencode` role copies and (5 repos) `docs/*/sdd-adaptativo.md`. The first run is therefore an adoption (`consumer.mjs --project . --plan`, review collisions, `--skip` for the repo's own files), not a pure upgrade; later runs are `--upgrade`. Legacy role/skill copies are retired only through the journal or an explicit `keepLocal` review, never silently. Verify afterwards with `consumer.mjs --project . --drift`. Starting-state details: `governance/quality/CENTRALIZATION-CONSUMER-AUDIT.md`.
 
 ## Per repository (autonomous, no questions)
 

@@ -1,6 +1,6 @@
 # Project Agent Operating Contract
 
-Entrypoint and router for this generated project. Stable and agent-neutral (Codex, Claude Code, OpenClaw, OpenCode, Cursor, Aider, Gemini-based and future agents). It holds identity, essential rules, source of truth, routing and non-negotiables; detail is loaded on demand. Full per-section checklists live centrally, not in this repo: `knowledge/sdd/agents-contract-detail.md` of the ai-native release pinned in `ai-native.lock.json` (resolved through the lock and the content-addressed cache of `runtime/bootstrap/install.mjs`, offline-capable).
+Entrypoint and router for this generated project. Stable and agent-neutral (Codex, Claude Code, OpenClaw, OpenCode, Cursor, Aider, Gemini-based and future agents). It holds identity, essential rules, source of truth, routing and non-negotiables; detail is loaded on demand. Full per-section checklists: `docs/agents-contract-detail.md`.
 
 This project was created from the AI-NATIVE template and follows: governance as source of truth, SDD, one task per execution, Builder + Inspector, real validations, auditable commits, controlled recovery, human approval when required, low token usage.
 
@@ -54,7 +54,7 @@ Governance decides task state; Git decides repository state; validators decide v
 Start of any task           governance discovery (below), then this file only
 Execute / recover / close   .agents/skills/ (task execution, recovery, delivery-governance)
 SDD, /feature, /sdd-*       the `sdd` skill if installed; spec templates in .specify/templates/
-Full per-section checklists knowledge/sdd/agents-contract-detail.md (pinned ai-native release)
+Full per-section checklists docs/agents-contract-detail.md
 ```
 
 Reusable workflows live in `.agents/skills/<name>/SKILL.md`; do not restate a workflow in chat when a skill defines it. Bridge files (`CLAUDE.md`, `OPENCLAW.md`) are thin adapters that read this file. On conflict, this file wins unless the user explicitly says otherwise. Per-tool directories (`.claude/`, `.opencode/`, `.codex/`) are generated projections, never sources.
