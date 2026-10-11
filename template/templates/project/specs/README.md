@@ -21,6 +21,4 @@ Use templates from:
 
 `ai-native run -- knowledge sdd/feature-templates/<name>-template.md` (a copy in `.specify/templates/` overrides it)
 
-Use constitution from:
-
-.specify/memory/constitution.md
+Constitution: the ai-native constitution applies as is (`ai-native run -- knowledge` resolves it); local additions, only if truly needed, go in `.specify/memory/constitution.md` as `- [ADD] LOCAL-n: ...` lines.

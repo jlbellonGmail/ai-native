@@ -1,153 +1,32 @@
-# Feature Specification
+# <NNN-slug> — <short title>
 
-## Metadata
+Status: draft | approved | implemented
 
-Feature ID:
-
-Feature Name:
-
-Owner:
-
-Status:
-
-Created:
-
-Updated:
-
-Related Governance Task:
-
-Related Roadmap:
-
----
-
-## Objective
-
-Describe what must be built or changed.
-
----
+## Goal
+One sentence: what changes for whom.
 
 ## Problem
-
-Describe the problem this feature solves.
-
----
+Why this is needed now, in plain words.
 
 ## Scope
+In: -
+Out: -
 
-In scope:
+## Requirements
+- RF-1. WHEN <event>, THE SYSTEM SHALL <response>.
+- RF-2. THE SYSTEM SHALL <permanent behavior>.
 
--
+## Acceptance
+- AC-1. <observable result that proves RF-1>.
 
-Out of scope:
+## Decisions
+Only the important ones, one line each. Long history goes to an ADR and is linked here.
 
--
+## Risks and dependencies
+- <risk or dependency, and what covers it>
 
----
+## Tests expected
+- <which behaviour is proven by which test>
 
-## Users / Consumers
-
-Define who or what consumes this feature.
-
-Examples:
-
-- human user
-- developer
-- generated project
-- agent
-- runtime component
-- governance process
-- external integration
-
----
-
-## Functional Requirements
-
-FR-001:
-
-FR-002:
-
-FR-003:
-
----
-
-## Non-Functional Requirements
-
-NFR-001:
-
-NFR-002:
-
-NFR-003:
-
----
-
-## Acceptance Criteria
-
-AC-001:
-
-AC-002:
-
-AC-003:
-
----
-
-## Constraints
-
-Technical constraints:
-
--
-
-Governance constraints:
-
--
-
-Security constraints:
-
--
-
-Compatibility constraints:
-
--
-
----
-
-## Dependencies
-
-Internal dependencies:
-
--
-
-External dependencies:
-
--
-
----
-
-## Risks
-
-Risk 1:
-
-Mitigation:
-
-Risk 2:
-
-Mitigation:
-
----
-
-## Open Questions
-
-Q1:
-
-Q2:
-
----
-
-## Validation Expectations
-
-Expected validations:
-
--
-
-Expected evidence:
-
--
+Open questions: mark each `[NEEDS CLARIFICATION] <question>`; remove when answered.
+Progress is not written here: `/sdd-status` derives it from `tasks.md`.

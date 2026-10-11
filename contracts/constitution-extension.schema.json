@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-native.local/contracts/constitution-extension.schema.json",
+  "title": "Project Constitution extension policy",
+  "description": "The ai-native constitution is the normative default for every consumer. A project may add a small set of local rules (additions only, never overrides); the central principles are non-overridable and win on any conflict. The extension file is absent by default.",
+  "type": "object",
+  "required": ["schemaVersion", "central", "centralPrinciples", "extensionPath", "mode", "maxRules", "maxBytes", "ruleLine", "precedence"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "central": { "type": "string" },
+    "centralPrinciples": { "type": "integer", "minimum": 1 },
+    "extensionPath": { "type": "string" },
+    "mode": { "const": "additions-only" },
+    "maxRules": { "type": "integer", "minimum": 1 },
+    "maxBytes": { "type": "integer", "minimum": 256 },
+    "ruleLine": { "type": "string" },
+    "precedence": { "type": "string" }
+  }
+}

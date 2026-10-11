@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
   PLATFORM_ROOT, loadWorkflow, validateWorkflow, selectLevel, classifyWorkUnit, parseTasks,
-  validateSpecFolder, deriveSddStatus, markTaskState, requirementIds, persistTaskState,
+  validateSpecFolder, deriveSddStatus, formatSddStatus, markTaskState, requirementIds, persistTaskState,
 } from "./sdd-workflow.mjs";
 
 const SPEC = "# Spec 001\n- RF-1. WHEN x, THE SYSTEM y.\n- RF-2. THE SYSTEM z.\n";
@@ -175,4 +175,24 @@ test("level budgets come from contracts/sdd-levels.json for every user-facing le
   const { convergenceBudgetFor } = await import("./converge.mjs");
   const budgets = Object.fromEntries(loadWorkflow().levels.map((l) => [l.id, convergenceBudgetFor(l.circuitLevel)]));
   assert.deepEqual(budgets, { light: 2, normal: 4, full: 6 });
+});
+
+test("feature status is derived from tasks.md: progress, last completed, blockers and next", () => {
+  const tasks = "- [x] **T1. First.** RF-1\n  - Done when: test passes.\n- [!] **T2. Second.** RF-2\n  - Done when: test passes.\n- [ ] **T3. Third.** RF-2\n  - Done when: test passes.\n";
+  const dir = folder({ "spec.md": SPEC, "plan.md": PLAN, "tasks.md": tasks });
+  assert.equal(formatSddStatus(deriveSddStatus(dir, "001-demo")), [
+    "STATE: blocked", "PROGRESS: 1/3 tasks", "LAST COMPLETED: T1. First", "NEXT: unblock T2, then /sdd-implement 001-demo T2", "BLOCKERS: T2. Second",
+  ].join("\n"));
+  // marking tasks done changes the status with no second file to update
+  persistTaskState(join(dir, "tasks.md"), "T2", "done");
+  persistTaskState(join(dir, "tasks.md"), "T3", "done");
+  assert.equal(formatSddStatus(deriveSddStatus(dir, "001-demo")), [
+    "STATE: validate", "PROGRESS: 3/3 tasks", "LAST COMPLETED: T3. Third", "NEXT: /sdd-validate 001-demo", "BLOCKERS: none",
+  ].join("\n"));
+});
+
+test("status before tasks exist says so and points to the next command", () => {
+  assert.equal(formatSddStatus(deriveSddStatus(folder({ "spec.md": SPEC, "plan.md": PLAN }), "001-demo")), [
+    "STATE: tasks", "PROGRESS: no tasks yet", "LAST COMPLETED: -", "NEXT: /sdd-tasks 001-demo", "BLOCKERS: none",
+  ].join("\n"));
 });

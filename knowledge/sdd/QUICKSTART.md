@@ -29,3 +29,9 @@ Coordinator routes and tracks state. Planner writes spec, plan, tasks. Implement
 If a task cannot be made to pass within its budget, the whole unit stops as blocked with the evidence; nothing is reported as done that is not.
 
 Details per phase: `knowledge/sdd/methodology/`. Contract: `contracts/sdd-workflow.json`.
+
+## Autonomy, status and architecture (one line each)
+
+* Hands-off for a low-risk change: declare `autonomy: full` and `human_gate: none`; high risk refuses it and says why. Merge and release stay human (`methodology/autonomy.md`).
+* Where am I: `/sdd-status <spec>` prints STATE, PROGRESS, LAST COMPLETED, NEXT, BLOCKERS, derived from `tasks.md`; there is no status file to maintain.
+* Layers and modules: domain, application, infrastructure, interfaces; modules talk through contracts (`methodology/architecture.md`, optional check `runtime/policy/architecture.mjs`).

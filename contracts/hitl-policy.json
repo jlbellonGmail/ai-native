@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "gates": ["required", "final-only", "none"],
+  "risks": {
+    "low": { "allowed": ["none", "final-only", "required"], "default": "final-only" },
+    "medium": { "allowed": ["final-only", "required"], "default": "final-only" },
+    "high": { "allowed": ["required"], "default": "required" }
+  },
+  "forceRequired": ["controlPlane", "release", "production", "security"],
+  "noneRequires": { "autonomy": "full", "explicit": true },
+  "externalProtectionWins": true
+}
