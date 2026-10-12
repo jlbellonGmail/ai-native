@@ -120,7 +120,7 @@ test("CASE 4: deleting both journals while the files remain FAILS closed", () =>
   assert.ok(s.lost.length > 20);
 });
 
-test("CASE 4b: the real reverts (journal and its files go together) do NOT fail, in either order", () => {
+test("CASE 4b: the real reverts (journal and its files go together) do not lose persisted state, in either order", () => {
   for (const order of ["adoption-first", "migration-first"]) {
     const { root, base } = both();
     if (order === "adoption-first") {
@@ -322,4 +322,46 @@ test("a path that leaves the project in the BASE journal is reported, never prob
   const s = state(root, evil);
   assert.ok(s.status === "PASS" || s.status === "FAIL");
   assert.ok(!s.lost.includes("../outside.txt"));
+});
+
+// audit N-05: `consumer.mjs --revert` keeps the `adopted` files (they were the project's) and removes the journal
+function adoptedRepo() {
+  const root = mkdtempSync(join(tmpdir(), "ai-native-journals-"));
+  made.push(root);
+  git(root, "init", "-q", "-b", "main");
+  git(root, "config", "user.email", "t@example.invalid");
+  git(root, "config", "user.name", "T");
+  put(root, "README.md", "consumer\n");
+  put(root, "CLAUDE.md", consumerFiles(RELEASE_ROOT, { tools: TOOLS })["CLAUDE.md"]); // pre-existing and identical -> `adopted`
+  commitAll(root, "base");
+  assert.equal(applyConsumer({ releaseRoot: RELEASE_ROOT, projectRoot: root, tools: TOOLS }).status, "APPLIED");
+  commitAll(root, "adopt");
+  assert.ok("CLAUDE.md" in readOwnership(root).adopted && Object.keys(readOwnership(root).created).length > 5);
+  return { root, base: git(root, "rev-parse", "HEAD") };
+}
+
+test("N-05: a real consumer --revert with an `adopted` file left behind is NOT a loss; deleting only the journal still is", () => {
+  const { root, base } = adoptedRepo();
+  assert.equal(revertAdoption(root).status, "REVERTED");
+  assert.ok(existsSync(join(root, "CLAUDE.md")), "revert keeps the file the project already had");
+  commitAll(root, "revert");
+  const s = state(root, base);
+  assert.equal(s.status, "PASS", JSON.stringify(s));
+  const other = adoptedRepo();
+  drop(other.root, ADOPTION_JOURNAL);
+  const d = state(other.root, other.base);
+  assert.equal(d.status, "FAIL", JSON.stringify(d));
+  assert.ok(d.lost.includes("CLAUDE.md"), "with the created files still there, the adopted file is owed too");
+});
+
+test("N-06: an unreadable base fails closed, and a journal that is a directory is a JournalError", () => {
+  const { root } = both();
+  for (const bad of ["0".repeat(40), "no-such-branch", "--help"]) {
+    const s = state(root, bad);
+    assert.equal(s.status, "FAIL", bad);
+    assert.match(s.detail, /cannot be read/);
+  }
+  rmSync(join(root, MIGRATION_JOURNAL));
+  mkdirSync(join(root, MIGRATION_JOURNAL));
+  assert.throws(() => readOwnership(root), JournalError);
 });

@@ -40,7 +40,16 @@ export function parseJournal(text, rel) {
   return j;
 }
 
-const readJson = (root, rel) => (existsSync(join(root, rel)) ? parseJournal(readFileSync(join(root, rel), "utf8"), rel) : null);
+const readJson = (root, rel) => {
+  if (!existsSync(join(root, rel))) return null;
+  let text;
+  try {
+    text = readFileSync(join(root, rel), "utf8");
+  } catch (error) {
+    throw new JournalError(`${rel} cannot be read (${error.code ?? error.message})`); // a directory, a permission error: corrupt, not "absent"
+  }
+  return parseJournal(text, rel);
+};
 
 /** { hasAdoption, hasMigration, created, adopted, skipped, migrationCreated } with legacy journals healed (see below). */
 export function readOwnership(root) {

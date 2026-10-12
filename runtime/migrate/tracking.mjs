@@ -161,8 +161,14 @@ export function checkPersistedState(root, { base = null } = {}) {
   const none = { lost: [], corrupt: [] };
   if (!base) return { status: "NOT_APPLICABLE", ...none, detail: "no base ref: there is no earlier state to compare with" };
   if (!isGitRepo(root)) return { status: "NOT_APPLICABLE", ...none, detail: "not a git repository" };
+  // a base that cannot be resolved is not "a base without journals": judging nothing would fail open
+  if (String(base).startsWith("-") || git(root, ["rev-parse", "--verify", "--quiet", `${base}^{commit}`]).status !== 0) {
+    return { status: "FAIL", ...none, detail: `the base ref '${base}' cannot be read in this checkout (shallow clone, unfetched ref): the persisted state cannot be compared and the gate fails closed` };
+  }
   const corrupt = [];
+  let adoptionBase = null;
   const owned = new Set();
+  const released = new Set(); // `adopted` files of an adoption journal that was reverted: pre-existing files the revert deliberately leaves to the project
   for (const rel of [ADOPTION_JOURNAL, MIGRATION_JOURNAL]) {
     const r = git(root, ["cat-file", "blob", `${base}:${rel}`]);
     if (r.status !== 0) continue; // the base never had this journal: nothing to preserve
@@ -171,6 +177,7 @@ export function checkPersistedState(root, { base = null } = {}) {
       const j = parseJournal(r.stdout.toString("utf8"), rel);
       const paths = rel === ADOPTION_JOURNAL ? [...Object.keys(j.created ?? {}), ...Object.keys(j.adopted ?? {})] : (j.created ?? []).map((c) => c.path);
       for (const p of paths) owned.add(p);
+      if (rel === ADOPTION_JOURNAL) adoptionBase = j;
     } catch (error) {
       corrupt.push(`base ${error.message}`);
     }
@@ -183,7 +190,13 @@ export function checkPersistedState(root, { base = null } = {}) {
     corrupt.push(`HEAD ${error.message}`);
   }
   const inTree = stateBlobs(root, "head");
-  const lost = [...owned].filter((p) => !(p in current) && p in inTree).filter((p) => { try { safeJoin(root, p); return true; } catch { return false; } }).sort();
+  // `consumer.mjs --revert` removes what the adoption created and the journal, and keeps the `adopted` files (they were the project's).
+  // So an adoption journal that is gone with NONE of its `created` files left is a revert, not a deletion; one that is gone while
+  // any created file remains is a deletion, and everything it owned is still owed.
+  if (adoptionBase && !(ADOPTION_JOURNAL in inTree) && !Object.keys(adoptionBase.created ?? {}).some((p) => p in inTree)) {
+    for (const p of Object.keys(adoptionBase.adopted ?? {})) released.add(p);
+  }
+  const lost = [...owned].filter((p) => !(p in current) && p in inTree && !released.has(p)).filter((p) => { try { safeJoin(root, p); return true; } catch { return false; } }).sort();
   if (!lost.length && !corrupt.length) return { status: "PASS", ...none, detail: `${owned.size} path(s) owned by the base branch are still owned` };
   const detail = [
     corrupt.length ? `corrupt journal: ${corrupt.join("; ")}` : "",

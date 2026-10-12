@@ -107,7 +107,12 @@ export function runL3({ project, cache, base = null, requireBase = false, platfo
     if (!(error instanceof JournalError)) throw error;
     corrupt = error.message;
   }
-  const persisted = checkPersistedState(project, { base });
+  let persisted;
+  try {
+    persisted = checkPersistedState(project, { base });
+  } catch (error) {
+    persisted = { status: "FAIL", detail: `the persisted state could not be judged (${error.message}); the gate fails closed` };
+  }
   if (corrupt) {
     checks.push(check("adoption", "FAIL", `corrupt journal: ${corrupt}`));
     checks.push(check("tracking", "FAIL", `corrupt journal: ${corrupt}. Restore it from the base branch or revert the adoption (consumer.mjs --revert)`));
