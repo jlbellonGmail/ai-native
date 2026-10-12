@@ -8,7 +8,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { runL3 } from "./l3.mjs";
 import { applyConsumer } from "../adapters/consumer.mjs";
-import { revertAdoption } from "../migrate/adopt.mjs";
+import { revertAdoption, sha } from "../migrate/adopt.mjs";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const cli = join(repoRoot, "runtime", "bootstrap", "cli.mjs");
@@ -370,10 +370,36 @@ test("audit N-02: a PR that deletes the adoption journal but keeps what it liste
   git(proj, "commit", "-q", "-m", "hide");
   const hidden = runL3({ project: proj, cache, base }).checks.find((c) => c.id === "tracking");
   assert.equal(hidden.status, "FAIL", JSON.stringify(hidden));
-  assert.match(hidden.detail, /journal of the base branch was removed/);
+  assert.match(hidden.detail, /no longer belong to any journal/);
   git(proj, "reset", "-q", "--hard", base);
   assert.equal(revertAdoption(proj).status, "REVERTED");
   git(proj, "add", "-A");
   git(proj, "commit", "-q", "-m", "revert adoption");
   assert.equal(runL3({ project: proj, cache, base }).checks.find((c) => c.id === "tracking").status, "NOT_APPLICABLE");
+});
+
+test("N02B_REPRODUCTION_TEST (L3): with BOTH journals, deleting only the adoption journal fails tracking; a corrupt journal fails closed; real revert passes", () => {
+  const proj = consumer();
+  applyConsumer({ releaseRoot: repoRoot, projectRoot: proj, tools: ["claude"] });
+  // the migration journal owns only what migrate apply wrote (here the lock): the .claude/** projections are the adoption's alone
+  put(proj, ".ai-native/migration-journal.json", JSON.stringify({ created: [{ path: "ai-native.lock.json", sha256: sha(readFileSync(join(proj, "ai-native.lock.json"))) }] }));
+  git(proj, "add", "-A");
+  git(proj, "commit", "-q", "-m", "adopt");
+  const base = git(proj, "rev-parse", "HEAD");
+  assert.equal(runL3({ project: proj, cache, base }).checks.find((c) => c.id === "tracking").status, "PASS");
+  git(proj, "rm", "-q", ".ai-native/adoption-journal.json");
+  git(proj, "commit", "-q", "-m", "hide");
+  const hidden = runL3({ project: proj, cache, base }).checks.find((c) => c.id === "tracking");
+  assert.equal(hidden.status, "FAIL", JSON.stringify(hidden));
+  assert.match(hidden.detail, /no longer belong to any journal/);
+  git(proj, "reset", "-q", "--hard", base);
+  put(proj, ".ai-native/adoption-journal.json", "{ corrupt");
+  const bad = runL3({ project: proj, cache, base }).checks;
+  assert.equal(bad.find((c) => c.id === "tracking").status, "FAIL");
+  assert.match(bad.find((c) => c.id === "tracking").detail, /corrupt journal/);
+  git(proj, "reset", "-q", "--hard", base);
+  assert.equal(revertAdoption(proj).status, "REVERTED");
+  git(proj, "add", "-A");
+  git(proj, "commit", "-q", "-m", "revert adoption");
+  assert.equal(runL3({ project: proj, cache, base }).checks.find((c) => c.id === "tracking").status, "PASS", "the migration journal's own files are still owned");
 });
