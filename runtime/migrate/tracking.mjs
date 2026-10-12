@@ -10,7 +10,7 @@
 // `source: "index"` (default) judges what `git add` has staged = what the next commit, and so a clean clone of the PR, has;
 // `source: "head"` judges the last commit. Line endings are not a difference (core.autocrlf).
 import { execFileSync, spawnSync } from "node:child_process";
-import { existsSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { normalizedSha } from "./adopt.mjs";
 import { ADOPTION_JOURNAL, MIGRATION_JOURNAL, readOwnership } from "./journals.mjs";
@@ -107,9 +107,10 @@ export function checkTracking(root, { source = "index", onlyIgnored = false } = 
   const present = paths.filter((p) => p in state);
   const blobs = readBlobs(root, [...new Set(present.map((p) => state[p]))]);
   for (const p of present) {
-    const full = join(root, p);
-    if (!existsSync(full) || !statSync(full).isFile()) result.divergent.push(p);
-    else if (normalizedSha(readFileSync(full)) !== normalizedSha(blobs[state[p]])) result.divergent.push(p);
+    // one read, no check-then-use: a missing file, a directory or an unreadable entry all read as "differs from the state"
+    let have = null;
+    try { have = readFileSync(join(root, p)); } catch { /* ENOENT, EISDIR, EACCES */ }
+    if (have === null || normalizedSha(have) !== normalizedSha(blobs[state[p]])) result.divergent.push(p);
   }
   if (onlyIgnored) {
     result.untracked = [];
