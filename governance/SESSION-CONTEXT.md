@@ -4,19 +4,20 @@
 > `governance/history/SESSION-CONTEXT-HISTORY-2026-10-04.md`. Fuente de verdad del estado: este archivo, `governance/roadmaps/AI-NATIVE-V3-ROADMAP.md` y Git/GitHub.
 > Política del merge humano: `governance/security/HITL-MERGE-POLICY.md`. Frontera de secretos: `governance/security/SECRETS-BOUNDARY.md`.
 
-Actualizado: 2026-10-10 (iniciativa de depuración y estabilización cerrada).
+Actualizado: 2026-10-12 (v3.1.2 publicada; plataforma cerrada para el parche de tracking).
 
 ```text
-STATUS: PLATFORM_CLEAN_AND_STABLE
+STATUS: V3.1.2_RELEASED_AND_PLATFORM_CLOSED
 INITIATIVE: CLOSED
-STABLE_BASELINE: v3.0.2
+STABLE_BASELINE: v3.1.2
+PREVIOUS_BASELINE: v3.1.1 (inmutable)
 ```
 
 Criterio de cierre y pendientes aceptados (`NOT_REQUIRED_FOR_COMPLETION`, que no reabren la iniciativa): `governance/versioning/V3.0.2-POST-RELEASE-VERIFICATION.md`, «Cierre formal de la iniciativa».
 
 ## Arquitectura (vigente)
 
-`ai-native` es **un único repositorio** (ADR-001, desde la PR #2): áreas de fábrica `governance/`, `foundation/`, `knowledge/`, `template/`; plataforma v3 en `core/ contracts/ runtime/ mcp/ profiles/ audit/ parity/ evaluation/`; `legacy/` es material congelado, no instrucciones. Versión de la plataforma = tag/release (`VERSION` de la raíz: `3.0.0-dev`, ver `governance/versioning/VERSIONING-POLICY.md`). Última release publicada: `v3.0.2` (2026-10-10; tag sobre `ca43c7b`; verificación en `governance/versioning/V3.0.2-POST-RELEASE-VERIFICATION.md`). `v3.0.1` (tag sobre `da84fb1`; `governance/versioning/V3.0.1-POST-RELEASE-VERIFICATION.md`) queda como release anterior. `v3.0.0` y las prereleases `alpha.1`, `rc.1`, `rc.2` se conservan como historia publicada.
+`ai-native` es **un único repositorio** (ADR-001, desde la PR #2): áreas de fábrica `governance/`, `foundation/`, `knowledge/`, `template/`; plataforma v3 en `core/ contracts/ runtime/ mcp/ profiles/ audit/ parity/ evaluation/`; `legacy/` es material congelado, no instrucciones. Versión de la plataforma = tag/release (`VERSION` de la raíz: `3.0.0-dev`, ver `governance/versioning/VERSIONING-POLICY.md`). Última release publicada: `v3.1.2` (2026-10-12; tag sobre `e36040f`; `governance/versioning/V3.1.2-POST-RELEASE-VERIFICATION.md`; parche en `V3.1.2-PATCH.md`). Anteriores: `v3.1.1`, `v3.1.0`. Referencia histórica `v3.0.2` (2026-10-10; tag sobre `ca43c7b`; verificación en `governance/versioning/V3.0.2-POST-RELEASE-VERIFICATION.md`). `v3.0.1` (tag sobre `da84fb1`; `governance/versioning/V3.0.1-POST-RELEASE-VERIFICATION.md`) queda como release anterior. `v3.0.0` y las prereleases `alpha.1`, `rc.1`, `rc.2` se conservan como historia publicada.
 
 ## Roadmap v3: dónde estamos
 
