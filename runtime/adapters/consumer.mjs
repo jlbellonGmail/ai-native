@@ -14,6 +14,7 @@
 //        [--upgrade]          apply ONLY the delta between what the journal says was written and this release;
 //                             locally edited files are preserved and reported (combine with --plan to preview)
 //        [--drift]            read-only (--cache <dir> for the release cache); CLEAN | OUTDATED | DRIFT | MISSING_REFERENCE | INCOMPATIBLE_VERSION; fails on all but CLEAN/OUTDATED. Fails if a generated projection was edited/deleted by hand vs the release (ai-native is canonical)
+//                             and if a managed file is not part of the staged state a clean clone gets (ignored by .gitignore, untracked, absent, edited since staging); --committed judges HEAD instead of the index
 //        [--plan]             read-only; list files and collisions
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
@@ -26,6 +27,7 @@ import { readLock } from "../bootstrap/install.mjs";
 import { checkReference } from "../consumer/knowledge.mjs";
 import { buildReport, renderOutput, exitCodeForReport } from "../lib/json.mjs";
 import { statusFromCounts } from "../lib/result.mjs";
+import { checkTracking, describe as describeTracking, remedy } from "../migrate/tracking.mjs";
 
 /** Where the launcher is projected in a consumer; commands and skills call `node .ai-native/ai-native.mjs <command>`. */
 export const LAUNCHER_PATH = ".ai-native/ai-native.mjs";
@@ -66,7 +68,13 @@ function main() {
   const tools = values("--tool").length ? values("--tool") : ALL_TOOLS;
   const bad = tools.filter((t) => !ALL_TOOLS.includes(t));
   const errors = [];
+  const warnings = [];
   let data = {};
+  // right after a write nothing is staged yet, so only what `git add` can NEVER take is an error here; --drift judges the rest
+  const failIfIgnored = () => {
+    const t = checkTracking(projectRoot, { onlyIgnored: true });
+    if (t.status === "FAIL") errors.push(`IGNORED_REQUIRED_FILE: written but hidden by a .gitignore rule, so it will not reach the PR or a clean clone: ${t.ignored.join(", ")}. ${remedy(t)}`);
+  };
   if (bad.length) errors.push(`unknown tool(s): ${bad.join(", ")}`);
   else {
     const selection = { tools, profile: value("--profile"), role: value("--role"), level: value("--level"), mcpProfile: value("--mcp-profile") ?? "none" };
@@ -80,21 +88,30 @@ function main() {
         data = detectDrift(projectRoot, consumerFiles(releaseRoot, selection), located ? { reference: located } : {});
         if (data.status === "DRIFT") errors.push(`projections diverge from the release (ai-native is canonical; regenerate with --upgrade after reviewing): edited=[${data.edited.join(", ")}] missing=[${data.missing.join(", ")}]`);
         else if (data.status === "MISSING_REFERENCE" || data.status === "INCOMPATIBLE_VERSION") errors.push(`${data.status}: ${data.reference}`);
+        // the tree being judged must be what a clean clone gets, not just what is on this disk (v3.1.2)
+        const tracking = checkTracking(projectRoot, { source: argv.includes("--committed") ? "head" : "index" });
+        data.tracking = tracking;
+        if (tracking.status === "FAIL") {
+          errors.push(`MANAGED_FILE_NOT_REPRODUCIBLE: ${describeTracking(tracking)}. ${remedy(tracking)}`);
+          if (data.status === "CLEAN" || data.status === "OUTDATED") data.status = "DRIFT";
+        } else if (tracking.status === "NOT_APPLICABLE") warnings.push(`tracking not checked: ${tracking.detail}`);
       }
       else if (argv.includes("--upgrade")) {
         const incoming = consumerFiles(releaseRoot, selection);
         data = argv.includes("--plan") ? planUpgrade(projectRoot, incoming) : applyUpgrade(projectRoot, incoming);
+        if (!argv.includes("--plan")) failIfIgnored();
       }
       else if (argv.includes("--plan")) data = planConsumer({ releaseRoot, projectRoot, ...selection });
       else {
         data = applyConsumer({ releaseRoot, projectRoot, skip: values("--skip"), ...selection });
         if (data.status === "BLOCKED") errors.push(`collisions with existing files (use --skip <path> to keep yours): ${data.collisions.join(", ")}`);
+        else failIfIgnored();
       }
     } catch (error) {
       errors.push(error.message);
     }
   }
-  const warnings = data.status === "PARTIAL" ? [`kept user-modified files: ${data.kept.join(", ")}`] : [];
+  if (data.status === "PARTIAL") warnings.push(`kept user-modified files: ${data.kept.join(", ")}`);
   const report = buildReport({ status: statusFromCounts({ errors: errors.length, warnings: warnings.length }), errors, warnings, data: { adoption: data } });
   console.log(renderOutput(report, { json: argv.includes("--json") }));
   process.exit(exitCodeForReport(report));

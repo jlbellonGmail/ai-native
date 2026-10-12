@@ -8,7 +8,9 @@
 //   circuit      deterministic dry-run: ASSESS over the PR's changed paths -> depth
 //   p45          touched runs/**/events.jsonl: chain, append-only vs base, runtime-made review ids,
 //                review-gate for the strictest depth
-//   adoption     if an adoption journal exists, every journaled file still matches its hash
+//   adoption     if an adoption/migration journal exists, every journaled file still matches its hash (an edit warns: it is the project's)
+//   tracking     every file ai-native manages is part of the committed state a clean clone gets (not ignored, not untracked,
+//                not absent); FAIL otherwise. NOT_APPLICABLE when nothing is journaled
 //   product      the profile's productTestCommand if set, else NOT_APPLICABLE (never a silent pass)
 // Read-only except for running the product test command the consumer itself declares.
 //   node runtime/consumer/l3.mjs --project <dir> --cache <dir> [--base <ref>] [--require-base] [--json] [--out <file>]
@@ -24,7 +26,8 @@ import { checkIntegrity } from "../status/integrity.mjs";
 import { assess } from "../circuit/assess.mjs";
 import { changedFiles, readFromCommit } from "../gates/control-plane.mjs";
 import { checkReviewIndependence } from "../gates/reviewer-independence.mjs";
-import { JOURNAL_PATH } from "../migrate/adopt.mjs";
+import { readOwnership } from "../migrate/journals.mjs";
+import { checkTracking, describe as describeTracking, remedy } from "../migrate/tracking.mjs";
 import { validateProject as validateConstitution } from "../policy/constitution-extension.mjs";
 import { checkProject as checkArchitecture } from "../policy/architecture.mjs";
 import { checkHumanGate, allowNoneFromLock } from "../policy/hitl.mjs";
@@ -86,13 +89,18 @@ export function runL3({ project, cache, base = null, requireBase = false, platfo
 
   checks.push(...policyChecks({ project, changed, base, lock, platformRoot }));
 
-  const journalPath = join(project, JOURNAL_PATH);
-  if (existsSync(journalPath)) {
-    const journal = JSON.parse(readFileSync(journalPath, "utf8"));
-    const drift = Object.entries(journal.created).filter(([rel, hash]) => !existsSync(join(project, rel)) || sha(readFileSync(join(project, rel))) !== hash).map(([rel]) => rel);
-    checks.push(drift.length ? check("adoption", "WARN", `${drift.length} adopted file(s) changed or missing since adoption: ${drift.slice(0, 5).join(", ")}`) : check("adoption", "PASS", `${Object.keys(journal.created).length} adopted file(s) intact`));
+  const owned = readOwnership(project);
+  const journaled = { ...owned.adopted, ...owned.created };
+  if (owned.hasAdoption || owned.hasMigration) {
+    const drift = Object.entries(journaled).filter(([rel, hash]) => !existsSync(join(project, rel)) || sha(readFileSync(join(project, rel))) !== hash).map(([rel]) => rel);
+    checks.push(drift.length ? check("adoption", "WARN", `${drift.length} adopted file(s) changed or missing since adoption: ${drift.slice(0, 5).join(", ")}`) : check("adoption", "PASS", `${Object.keys(journaled).length} adopted file(s) intact`));
+    // the check that matters for reproducibility: what ai-native manages must be in the commit under test, so the PR
+    // checkout (a clean clone) is judged, not the disk of whoever ran the adoption. Fails closed: this is the gi-clinicadental escape.
+    const tracking = checkTracking(project);
+    checks.push(tracking.status === "FAIL" ? check("tracking", "FAIL", `MANAGED_FILE_NOT_REPRODUCIBLE: ${describeTracking(tracking)}. ${remedy(tracking)}`) : check("tracking", tracking.status, tracking.detail));
   } else {
     checks.push(check("adoption", "NOT_APPLICABLE", "no adoption journal"));
+    checks.push(check("tracking", "NOT_APPLICABLE", "nothing is journaled as managed"));
   }
 
   // the profile (hence the product test command) is the BASE lock's when the base has one: a PR must not

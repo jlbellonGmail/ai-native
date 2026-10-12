@@ -30,6 +30,7 @@ import { statusFromCounts } from "../lib/result.mjs";
 import { validate } from "../lib/schema-lite.mjs";
 import { planBump, applyBump } from "./bump.mjs";
 import { referencesPath, commandIsOpaque } from "./command-refs.mjs";
+import { wouldBeIgnored, remedy } from "./tracking.mjs";
 import { checkRulesetImpact, fetchRequiredChecks, fetchBranchProtected, protectsBranchFromRulesets, requiredChecksFrom, CODES as RULESET_CODES } from "./ruleset-guard.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -139,8 +140,10 @@ export function planMigration({ target, release, profile = "factory", tools = ["
     else collisions.push({ path: p, reason: `${existing.classification} v2 file (yours or product-owned)` });
   }
   const unresolved = collisions.filter((c) => !keep.includes(c.path));
+  // a file a .gitignore rule hides would exist in this working tree and be missing from the PR (and from every clean clone)
+  const ignored = wouldBeIgnored(root, [...create, ...replace, JOURNAL]);
   const rulesetCheck = rulesetImpact({ root, requiredChecks, retire, add });
-  return { root, counts: inv.counts, retire, keptIdentical, keptByProfile, keptNoGuard, keptLocal, create, replace, collisions, unresolved, kept: collisions.filter((c) => keep.includes(c.path)), add, blocked: unresolved.length > 0, rulesetCheck };
+  return { root, counts: inv.counts, retire, keptIdentical, keptByProfile, keptNoGuard, keptLocal, create, replace, collisions, unresolved, kept: collisions.filter((c) => keep.includes(c.path)), add, ignored, blocked: unresolved.length > 0, rulesetCheck };
 }
 
 /** [{field, command}] the profile runs in the consumer (setup/test); [] when the profile is unknown or declares none. */
@@ -179,6 +182,8 @@ export function applyMigration(args) {
   const root = plan.root;
   if (existsSync(join(root, JOURNAL))) throw new MigrateError("a migration journal already exists; revert it first");
   if (plan.blocked) return { status: "BLOCKED", plan, written: [], removed: [] };
+  // refused before the first write: a managed file the repo ignores would never reach the PR. Fix the .gitignore (commit it) and re-run
+  if (plan.ignored?.length) return { status: "BLOCKED", reason: "ignored", plan, written: [], removed: [] };
   // a migration that would leave the consumer's PRs permanently unmergeable is refused until a human decides (--accept-ruleset-change)
   if (plan.rulesetCheck?.status === "FAIL" && !args.acceptRulesetChange) return { status: "BLOCKED", reason: "ruleset", plan, written: [], removed: [] };
   const baseCommit = git(root, "rev-parse", "HEAD");
@@ -400,6 +405,8 @@ function main() {
       const p = r.plan ?? r;
       data = { mode: cmd, ...(r.status ? { result: r.status } : {}), counts: p.counts, keptByProfile: p.keptByProfile, keptNoGuard: p.keptNoGuard, retire: p.retire.length, replace: p.replace, create: p.create, keptIdentical: p.keptIdentical.length, keptLocal: p.keptLocal.length, collisions: p.collisions, unresolved: p.unresolved.map((c) => c.path) };
       data.rulesetCheck = p.rulesetCheck;
+      data.ignored = p.ignored ?? [];
+      if (data.ignored.length) errors.push(`IGNORED_REQUIRED_FILE: a .gitignore rule hides files this migration must write, so they would never reach the PR or a clean clone: ${data.ignored.join(", ")}. ${remedy({ ignored: data.ignored, untracked: [], absent: [], divergent: [] })}, commit it, then re-run`);
       if (rulesetNote) warnings.push(rulesetNote);
       if (p.keptNoGuard?.length) warnings.push(`NO_PROTECTION_GAP: protection of the develop branch was not demonstrated (${developProtection.reason}), so the v2 guard-develop-branch.yml is KEPT (pass --develop-ruleset-file or --consumer-repo once the ruleset exists)`);
       const accepted = cmd === "apply" && r.status !== "BLOCKED" && argv.includes("--accept-ruleset-change");
@@ -410,7 +417,7 @@ function main() {
       }
       if (p.rulesetCheck?.status === "FAIL" && cmd === "apply" && r.status === "BLOCKED" && r.reason === "ruleset") errors.push("apply refused: fix the ruleset plan above or pass --accept-ruleset-change to proceed knowingly");
       if (p.rulesetCheck?.proposed?.length) warnings.push(`add ${p.rulesetCheck.proposed.map((c) => `'${c}'`).join(", ")} as a required check once the v3 caller is on the default branch (the migration never edits a ruleset)`);
-      if (r.status === "BLOCKED" && r.reason !== "ruleset" || (cmd === "plan" && p.blocked)) errors.push(`collisions need a decision (--keep <path>): ${p.unresolved.map((c) => c.path).join(", ")}`);
+      if (r.status === "BLOCKED" && r.reason !== "ruleset" && r.reason !== "ignored" || (cmd === "plan" && p.blocked)) errors.push(`collisions need a decision (--keep <path>): ${p.unresolved.map((c) => c.path).join(", ")}`);
     } else if (cmd === "bump") {
       for (const k of ["version", "commit", "digest"]) if (!release[k]) throw new MigrateError(`--${k} is required`);
       const callerSha = value("--caller-sha") ?? release.commit;

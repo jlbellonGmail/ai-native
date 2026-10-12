@@ -13,6 +13,8 @@ import { detectDrift, applyUpgrade } from "../migrate/upgrade-delta.mjs";
 import { safeJoin, AdoptError } from "../migrate/adopt.mjs";
 
 const REPO = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
+// the tracking check asks git about the consumer: a temp dir must not resolve to an unrelated repository above the OS temp dir
+process.env.GIT_CEILING_DIRECTORIES = tmpdir();
 const temps = [];
 const tmp = (prefix) => {
   const dir = mkdtempSync(join(tmpdir(), prefix));

@@ -91,11 +91,44 @@ test("L3 control-plane-sized change is assessed deeper than docs", () => {
 test("L3 adoption: intact adopted files pass, an edited one warns (never fails)", () => {
   const proj = consumer();
   applyConsumer({ releaseRoot: repoRoot, projectRoot: proj, tools: ["claude"] });
+  git(proj, "add", "-A");
+  git(proj, "commit", "-q", "-m", "adopt");
   assert.equal(runL3({ project: proj, cache }).checks.find((c) => c.id === "adoption").status, "PASS");
+  assert.equal(runL3({ project: proj, cache }).checks.find((c) => c.id === "tracking").status, "PASS");
   writeFileSync(join(proj, "CLAUDE.md"), `${readFileSync(join(proj, "CLAUDE.md"), "utf8")}\nlocal edit\n`);
+  git(proj, "commit", "-qam", "local edit"); // the project's own edit is committed: tracked, only the hash differs
   const r = runL3({ project: proj, cache });
   assert.equal(r.checks.find((c) => c.id === "adoption").status, "WARN");
+  assert.equal(r.checks.find((c) => c.id === "tracking").status, "PASS");
   assert.equal(r.status, "PASS_WITH_WARNINGS");
+});
+
+test("L3 tracking (IGNORED_REQUIRED_FILE_TEST): a projected file hidden by .gitignore fails the gate on the commit under test; the exception passes", () => {
+  const proj = consumer();
+  put(proj, ".codex/.gitignore", "*\n!.gitignore\n");
+  git(proj, "add", "-A");
+  git(proj, "commit", "-q", "-m", "ignore rule");
+  const base = git(proj, "rev-parse", "HEAD");
+  applyConsumer({ releaseRoot: repoRoot, projectRoot: proj, tools: ["codex"] });
+  git(proj, "add", "-A"); // skips every ignored .codex file, exactly like the real escape
+  git(proj, "commit", "-q", "-m", "adopt");
+  const r = runL3({ project: proj, cache, base });
+  const t = r.checks.find((c) => c.id === "tracking");
+  assert.equal(t.status, "FAIL", JSON.stringify(t));
+  assert.match(t.detail, /MANAGED_FILE_NOT_REPRODUCIBLE/);
+  assert.match(t.detail, /\.codex\/builder\.config\.toml/);
+  assert.equal(r.status, "FAIL");
+  assert.equal(r.checks.find((c) => c.id === "adoption").status, "PASS", "the working tree still has the files: the old check was green here");
+  // what CI sees is a clean clone of the PR: the files are gone, the old check only warned (this is why it escaped), tracking fails
+  const clone = tmp();
+  git(clone, "clone", "-q", proj, ".");
+  const cloned = runL3({ project: clone, cache, base });
+  assert.equal(cloned.checks.find((c) => c.id === "adoption").status, "WARN");
+  assert.equal(cloned.checks.find((c) => c.id === "tracking").status, "FAIL");
+  put(proj, ".codex/.gitignore", "*\n!.gitignore\n!*.config.toml\n!config.toml\n!README.md\n");
+  git(proj, "add", "-A");
+  git(proj, "commit", "-q", "-m", "allow projections");
+  assert.equal(runL3({ project: proj, cache, base }).checks.find((c) => c.id === "tracking").status, "PASS");
 });
 
 test("L3 product tests: a declared command runs for real, and a failing one fails the gate", () => {

@@ -9,25 +9,29 @@
 // Re-running an upgrade on an up-to-date project yields an empty delta.
 import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { AdoptError, JOURNAL_PATH, pruneEmptyDirs, safeJoin, sha } from "./adopt.mjs";
+import { AdoptError, JOURNAL_PATH, normalizedSha, pruneEmptyDirs, safeJoin } from "./adopt.mjs";
+import { readOwnership } from "./journals.mjs";
 
+// every hash here is of the text with CRLF read as LF: a checkout's core.autocrlf must not turn a pristine projection into an edited one
+const sha = (buf) => normalizedSha(Buffer.from(buf));
 const readJournal = (root) => {
-  const path = join(root, JOURNAL_PATH);
-  if (!existsSync(path)) throw new AdoptError("no adoption journal; run the initial adoption first (nothing to upgrade)");
-  return JSON.parse(readFileSync(path, "utf8"));
+  const own = readOwnership(root);
+  if (!own.hasAdoption && !own.hasMigration) throw new AdoptError("no adoption journal; run the initial adoption first (nothing to upgrade)");
+  return own;
 };
-const hashOf = (full) => sha(readFileSync(full));
+const hashOf = (full) => normalizedSha(readFileSync(full));
 
 /** incoming: { relPath: content }. Read-only. */
 export function planUpgrade(targetRoot, incoming) {
   const journal = readJournal(targetRoot);
-  const created = journal.created ?? {};
-  const skipped = new Set(journal.skipped ?? []);
+  // created and adopted are both managed: the file is updated or removed only while it still equals what the journal recorded
+  const created = { ...journal.adopted, ...journal.created };
+  const skipped = new Set(journal.skipped);
   const plan = { add: [], update: [], remove: [], unchanged: [], keepLocal: [], collisions: [], keepSkipped: [], refresh: [] };
 
   for (const rel of Object.keys(incoming).sort()) {
     const full = safeJoin(targetRoot, rel);
-    const want = sha(Buffer.from(incoming[rel]));
+    const want = sha(incoming[rel]);
     if (skipped.has(rel)) {
       plan.keepSkipped.push(rel);
       continue;
@@ -63,21 +67,25 @@ export function applyUpgrade(targetRoot, incoming) {
   const plan = planUpgrade(targetRoot, incoming);
   const journal = readJournal(targetRoot);
   const created = { ...journal.created };
-  for (const rel of plan.refresh) created[rel] = sha(Buffer.from(incoming[rel]));
+  const adopted = { ...journal.adopted };
+  // a hash is re-recorded in the map that already owns the file; a file this upgrade adds is ours (created)
+  const record = (rel, hash) => { if (rel in adopted) adopted[rel] = hash; else created[rel] = hash; };
+  for (const rel of plan.refresh) record(rel, sha(incoming[rel]));
   for (const rel of [...plan.add, ...plan.update]) {
     const full = safeJoin(targetRoot, rel);
     mkdirSync(dirname(full), { recursive: true });
     writeFileSync(full, incoming[rel]);
-    created[rel] = sha(Buffer.from(incoming[rel]));
+    record(rel, sha(incoming[rel]));
   }
   for (const rel of plan.remove) {
     rmSync(safeJoin(targetRoot, rel));
     delete created[rel];
+    delete adopted[rel];
     pruneEmptyDirs(targetRoot, rel);
   }
   // write-then-rename: an interrupted upgrade never leaves a half-written journal
   const journalPath = join(targetRoot, JOURNAL_PATH);
-  writeFileSync(`${journalPath}.tmp`, `${JSON.stringify({ ...journal, created }, null, 2)}\n`);
+  writeFileSync(`${journalPath}.tmp`, `${JSON.stringify({ schemaVersion: 1, created, adopted, skipped: journal.skipped }, null, 2)}\n`);
   renameSync(`${journalPath}.tmp`, journalPath);
   const changed = plan.summary.add + plan.summary.update + plan.summary.remove;
   // a refresh only re-tracks hashes in the journal: no project file was written, and it must not read as "nothing happened"

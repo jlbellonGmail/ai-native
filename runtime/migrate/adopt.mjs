@@ -17,6 +17,9 @@ export const JOURNAL_PATH = ".ai-native/adoption-journal.json";
 export class AdoptError extends Error {}
 
 export const sha = (buf) => `sha256:${createHash("sha256").update(buf).digest("hex")}`;
+const isBinary = (buf) => buf.subarray(0, 8000).includes(0);
+/** sha of a TEXT file with CRLF read as LF: a checkout's core.autocrlf must not make a file look edited. Binary files are hashed as is. */
+export const normalizedSha = (buf) => sha(isBinary(buf) ? buf : Buffer.from(buf.toString("utf8").replaceAll("\r\n", "\n")));
 
 export function safeJoin(root, rel) {
   if (isAbsolute(rel) || rel.split(/[\\/]/).includes("..")) throw new AdoptError(`unsafe path '${rel}'`);
@@ -61,11 +64,14 @@ export function applyAdoption(targetRoot, incoming, { resolve: resolutions = {} 
     }
     created[rel] = sha(Buffer.from(incoming[rel]));
   }
-  const skipped = plan.collisions.map((c) => c.path);
-  const journal = { schemaVersion: 1, created, skipped };
+  // an identical file that was already there (typically written by `migrate apply`) is still managed: it is recorded
+  // as `adopted` (covered by drift, upgrade and tracking, never removed by revert), not lost in `skipped`
+  const adopted = Object.fromEntries(plan.collisions.filter((c) => c.identical).map((c) => [c.path, sha(Buffer.from(incoming[c.path]))]));
+  const skipped = plan.collisions.filter((c) => !c.identical).map((c) => c.path);
+  const journal = { schemaVersion: 1, created, adopted, skipped };
   mkdirSync(dirname(join(targetRoot, JOURNAL_PATH)), { recursive: true });
   writeFileSync(join(targetRoot, JOURNAL_PATH), `${JSON.stringify(journal, null, 2)}\n`, { flag: "wx" });
-  return { status: "APPLIED", written: Object.keys(created), skipped, collisions: [] };
+  return { status: "APPLIED", written: Object.keys(created), adopted: Object.keys(adopted), skipped, collisions: [] };
 }
 
 export function pruneEmptyDirs(root, rel) {
