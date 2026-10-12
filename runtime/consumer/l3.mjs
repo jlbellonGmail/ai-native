@@ -25,9 +25,9 @@ import { checkIntegrity } from "../status/integrity.mjs";
 import { assess } from "../circuit/assess.mjs";
 import { changedFiles, readFromCommit } from "../gates/control-plane.mjs";
 import { checkReviewIndependence } from "../gates/reviewer-independence.mjs";
-import { readOwnership, ADOPTION_JOURNAL } from "../migrate/journals.mjs";
+import { readOwnership, JournalError } from "../migrate/journals.mjs";
 import { normalizedSha } from "../migrate/adopt.mjs";
-import { checkTracking, describe as describeTracking, remedy } from "../migrate/tracking.mjs";
+import { checkTracking, checkPersistedState, describe as describeTracking, remedy } from "../migrate/tracking.mjs";
 import { validateProject as validateConstitution } from "../policy/constitution-extension.mjs";
 import { checkProject as checkArchitecture } from "../policy/architecture.mjs";
 import { checkHumanGate, allowNoneFromLock } from "../policy/hitl.mjs";
@@ -43,21 +43,6 @@ function matchesJournal(project, rel, hash) {
   } catch {
     return false;
   }
-}
-
-/** files the BASE adoption journal lists that still exist at HEAD while HEAD has no journal (empty when there is no base or no such journal) */
-function journalHiddenByPr(project, base) {
-  if (!base) return [];
-  const text = readFromCommit(project, base, ADOPTION_JOURNAL);
-  if (text === null) return [];
-  let listed = [];
-  try {
-    const j = JSON.parse(text);
-    listed = [...Object.keys(j.created ?? {}), ...Object.keys(j.adopted ?? {})];
-  } catch {
-    return [ADOPTION_JOURNAL];
-  }
-  return listed.filter((rel) => readFromCommit(project, "HEAD", rel) !== null);
 }
 
 function check(id, status, detail = "", extra = {}) {
@@ -112,9 +97,27 @@ export function runL3({ project, cache, base = null, requireBase = false, platfo
 
   checks.push(...policyChecks({ project, changed, base, lock, platformRoot }));
 
-  const owned = readOwnership(project);
-  const journaled = { ...owned.adopted, ...owned.created };
-  if (owned.hasAdoption || owned.hasMigration) {
+  // Persisted state: the journals are read as a unit (contract in runtime/migrate/journals.mjs). A journal that is not what its writer
+  // produces fails closed; what the BASE branch's journals owned must still be owned (N-02b: deleting one of two journals went unseen).
+  let owned = null;
+  let corrupt = null;
+  try {
+    owned = readOwnership(project);
+  } catch (error) {
+    if (!(error instanceof JournalError)) throw error;
+    corrupt = error.message;
+  }
+  let persisted;
+  try {
+    persisted = checkPersistedState(project, { base });
+  } catch (error) {
+    persisted = { status: "FAIL", detail: `the persisted state could not be judged (${error.message}); the gate fails closed` };
+  }
+  if (corrupt) {
+    checks.push(check("adoption", "FAIL", `corrupt journal: ${corrupt}`));
+    checks.push(check("tracking", "FAIL", `corrupt journal: ${corrupt}. Restore it from the base branch or revert the adoption (consumer.mjs --revert)`));
+  } else if (owned.hasAdoption || owned.hasMigration) {
+    const journaled = { ...owned.adopted, ...owned.created };
     const drift = Object.entries(journaled).filter(([rel, hash]) => !matchesJournal(project, rel, hash)).map(([rel]) => rel);
     checks.push(drift.length ? check("adoption", "WARN", `${drift.length} adopted file(s) changed or missing since adoption: ${drift.slice(0, 5).join(", ")}`) : check("adoption", "PASS", `${Object.keys(journaled).length} adopted file(s) intact`));
     // the check that matters for reproducibility: what ai-native manages must be in the commit under test, so the PR
@@ -125,12 +128,11 @@ export function runL3({ project, cache, base = null, requireBase = false, platfo
     } catch (error) {
       tracking = { status: "FAIL", ignored: [], untracked: [], absent: [], divergent: [], unsafe: [], detail: `git could not be queried (${error.message}); tracking cannot be judged and the gate fails closed` };
     }
-    checks.push(tracking.status === "FAIL" && tracking.detail.startsWith("git could not") ? check("tracking", "FAIL", tracking.detail) : tracking.status === "FAIL" ? check("tracking", "FAIL", `MANAGED_FILE_NOT_REPRODUCIBLE: ${describeTracking(tracking)}. ${remedy(tracking)}`) : check("tracking", tracking.status, tracking.detail));
+    checks.push(tracking.status === "FAIL" && tracking.detail.startsWith("git could not") ? check("tracking", "FAIL", tracking.detail) : tracking.status === "FAIL" ? check("tracking", "FAIL", `MANAGED_FILE_NOT_REPRODUCIBLE: ${describeTracking(tracking)}. ${remedy(tracking)}`) : persisted.status === "FAIL" ? check("tracking", "FAIL", persisted.detail) : check("tracking", tracking.status, tracking.detail));
   } else {
     checks.push(check("adoption", "NOT_APPLICABLE", "no adoption journal"));
-    // a PR must not switch the check off by deleting the journal while keeping what it listed: judge the base journal
-    const hidden = journalHiddenByPr(project, base);
-    checks.push(hidden.length ? check("tracking", "FAIL", `the adoption journal of the base branch was removed but the files it lists remain: ${hidden.slice(0, 5).join(", ")}. Restore the journal, or remove the files with it (consumer.mjs --revert)`) : check("tracking", "NOT_APPLICABLE", "nothing is journaled as managed"));
+    // a PR must not switch the check off by deleting the journals while keeping what they listed: judge the base journals
+    checks.push(persisted.status === "FAIL" ? check("tracking", "FAIL", persisted.detail) : check("tracking", "NOT_APPLICABLE", "nothing is journaled as managed"));
   }
 
   // the profile (hence the product test command) is the BASE lock's when the base has one: a PR must not

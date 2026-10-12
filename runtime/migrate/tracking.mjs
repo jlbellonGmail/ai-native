@@ -13,7 +13,7 @@ import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { normalizedSha, safeJoin } from "./adopt.mjs";
-import { ADOPTION_JOURNAL, MIGRATION_JOURNAL, readOwnership } from "./journals.mjs";
+import { ADOPTION_JOURNAL, MIGRATION_JOURNAL, JournalError, parseJournal, readOwnership } from "./journals.mjs";
 
 const git = (cwd, args, input) => spawnSync("git", args, { cwd, input, maxBuffer: 256 * 1024 * 1024 });
 const lines = (buf) => buf.toString("utf8").split("\0").filter(Boolean);
@@ -149,4 +149,67 @@ export function wouldBeIgnored(root, paths) {
   const candidates = paths.filter((p) => !tracked.has(p));
   const hidden = ignoredAmong(root, candidates);
   return candidates.filter((p) => hidden.has(p)).sort();
+}
+
+/**
+ * Persisted-state contract (v3.1.3, N-02b): everything the BASE branch's journals owned must still be owned at HEAD, unless the
+ * file left the tree with it (the matching revert, or an upgrade that retires a pristine projection). "Some journal exists" is not
+ * the question: deleting one of two journals, or emptying one, kept every other check green.
+ * Read-only. { status: PASS|FAIL|NOT_APPLICABLE, lost[], corrupt[], detail }.
+ */
+export function checkPersistedState(root, { base = null } = {}) {
+  const none = { lost: [], corrupt: [] };
+  if (!base) return { status: "NOT_APPLICABLE", ...none, detail: "no base ref: there is no earlier state to compare with" };
+  if (!isGitRepo(root)) return { status: "NOT_APPLICABLE", ...none, detail: "not a git repository" };
+  // a base that cannot be resolved is not "a base without journals": judging nothing would fail open
+  if (String(base).startsWith("-") || git(root, ["rev-parse", "--verify", "--quiet", `${base}^{commit}`]).status !== 0) {
+    return { status: "FAIL", ...none, detail: `the base ref '${base}' cannot be read in this checkout (shallow clone, unfetched ref): the persisted state cannot be compared and the gate fails closed` };
+  }
+  const corrupt = [];
+  let adoptionBase = null;
+  let migrationBase = null;
+  const owned = new Set();
+  const released = new Set(); // `adopted` files of an adoption journal that was reverted: pre-existing files the revert deliberately leaves to the project
+  for (const rel of [ADOPTION_JOURNAL, MIGRATION_JOURNAL]) {
+    const r = git(root, ["cat-file", "blob", `${base}:${rel}`]);
+    if (r.status !== 0) continue; // the base never had this journal: nothing to preserve
+    owned.add(rel);
+    try {
+      const j = parseJournal(r.stdout.toString("utf8"), rel);
+      const paths = rel === ADOPTION_JOURNAL ? [...Object.keys(j.created ?? {}), ...Object.keys(j.adopted ?? {})] : (j.created ?? []).map((c) => c.path);
+      for (const p of paths) owned.add(p);
+      if (rel === ADOPTION_JOURNAL) adoptionBase = j;
+      else migrationBase = j;
+    } catch (error) {
+      corrupt.push(`base ${error.message}`);
+    }
+  }
+  let current = {};
+  try {
+    current = managedPaths(root);
+  } catch (error) {
+    if (!(error instanceof JournalError)) throw error;
+    corrupt.push(`HEAD ${error.message}`);
+  }
+  const inTree = stateBlobs(root, "head");
+  // `consumer.mjs --revert` removes what the adoption created and the journal, and keeps the `adopted` files (they were the project's).
+  // So an adoption journal that is gone with NONE of its `created` files left is a revert, not a deletion; one that is gone while
+  // any created file remains is a deletion, and everything it owned is still owed.
+  if (adoptionBase && !(ADOPTION_JOURNAL in inTree) && !Object.keys(adoptionBase.created ?? {}).some((p) => p in inTree)) {
+    for (const p of Object.keys(adoptionBase.adopted ?? {})) released.add(p);
+  }
+  // `migrate revert` puts back the v2 files the migration retired or replaced and removes what it created plus the journal. As with the
+  // adoption: a migration journal gone with none of its own creations left is a revert, and the v2 files it restored are the project's again.
+  if (migrationBase && !(MIGRATION_JOURNAL in inTree)) {
+    const restored = new Set([...(migrationBase.replaced ?? []), ...(migrationBase.retired ?? [])].map((r) => r?.path).filter((p) => typeof p === "string"));
+    const stillCreated = (migrationBase.created ?? []).map((c) => c.path).filter((p) => !restored.has(p) && p in inTree);
+    if (!stillCreated.length) for (const p of restored) released.add(p);
+  }
+  const lost = [...owned].filter((p) => !(p in current) && p in inTree && !released.has(p)).filter((p) => { try { safeJoin(root, p); return true; } catch { return false; } }).sort();
+  if (!lost.length && !corrupt.length) return { status: "PASS", ...none, detail: `${owned.size} path(s) owned by the base branch are still owned` };
+  const detail = [
+    corrupt.length ? `corrupt journal: ${corrupt.join("; ")}` : "",
+    lost.length ? `the base branch's journals owned ${lost.length} file(s) that remain in the tree but no longer belong to any journal: ${lost.slice(0, 5).join(", ")}${lost.length > 5 ? `, +${lost.length - 5} more` : ""}. Restore the journal, or remove the files together with it (consumer.mjs --revert / migrate revert)` : "",
+  ].filter(Boolean).join(". ");
+  return { status: "FAIL", lost, corrupt, detail };
 }
