@@ -16,7 +16,6 @@
 //   node runtime/consumer/l3.mjs --project <dir> --cache <dir> [--base <ref>] [--require-base] [--json] [--out <file>]
 // --require-base is what the PR workflow passes: with no resolvable base the circuit and p45 checks FAIL
 // instead of degrading to NOT_APPLICABLE (a gate must not fail open when its context is missing).
-import { createHash } from "node:crypto";
 import { existsSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { dirname, isAbsolute, join, relative, resolve } from "node:path";
@@ -26,7 +25,8 @@ import { checkIntegrity } from "../status/integrity.mjs";
 import { assess } from "../circuit/assess.mjs";
 import { changedFiles, readFromCommit } from "../gates/control-plane.mjs";
 import { checkReviewIndependence } from "../gates/reviewer-independence.mjs";
-import { readOwnership } from "../migrate/journals.mjs";
+import { readOwnership, ADOPTION_JOURNAL } from "../migrate/journals.mjs";
+import { normalizedSha } from "../migrate/adopt.mjs";
 import { checkTracking, describe as describeTracking, remedy } from "../migrate/tracking.mjs";
 import { validateProject as validateConstitution } from "../policy/constitution-extension.mjs";
 import { checkProject as checkArchitecture } from "../policy/architecture.mjs";
@@ -35,7 +35,30 @@ import { statusFromCounts, exitCodeFor, formatLine } from "../lib/result.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const PLATFORM_ROOT = join(here, "..", "..");
-const sha = (buf) => `sha256:${createHash("sha256").update(buf).digest("hex")}`;
+
+/** the journaled hash judged on the text with CRLF read as LF (a checkout's core.autocrlf is not an edit); one read, no check-then-use */
+function matchesJournal(project, rel, hash) {
+  try {
+    return normalizedSha(readFileSync(join(project, rel))) === hash;
+  } catch {
+    return false;
+  }
+}
+
+/** files the BASE adoption journal lists that still exist at HEAD while HEAD has no journal (empty when there is no base or no such journal) */
+function journalHiddenByPr(project, base) {
+  if (!base) return [];
+  const text = readFromCommit(project, base, ADOPTION_JOURNAL);
+  if (text === null) return [];
+  let listed = [];
+  try {
+    const j = JSON.parse(text);
+    listed = [...Object.keys(j.created ?? {}), ...Object.keys(j.adopted ?? {})];
+  } catch {
+    return [ADOPTION_JOURNAL];
+  }
+  return listed.filter((rel) => readFromCommit(project, "HEAD", rel) !== null);
+}
 
 function check(id, status, detail = "", extra = {}) {
   return { id, status, detail, ...extra };
@@ -92,15 +115,22 @@ export function runL3({ project, cache, base = null, requireBase = false, platfo
   const owned = readOwnership(project);
   const journaled = { ...owned.adopted, ...owned.created };
   if (owned.hasAdoption || owned.hasMigration) {
-    const drift = Object.entries(journaled).filter(([rel, hash]) => !existsSync(join(project, rel)) || sha(readFileSync(join(project, rel))) !== hash).map(([rel]) => rel);
+    const drift = Object.entries(journaled).filter(([rel, hash]) => !matchesJournal(project, rel, hash)).map(([rel]) => rel);
     checks.push(drift.length ? check("adoption", "WARN", `${drift.length} adopted file(s) changed or missing since adoption: ${drift.slice(0, 5).join(", ")}`) : check("adoption", "PASS", `${Object.keys(journaled).length} adopted file(s) intact`));
     // the check that matters for reproducibility: what ai-native manages must be in the commit under test, so the PR
     // checkout (a clean clone) is judged, not the disk of whoever ran the adoption. Fails closed: this is the gi-clinicadental escape.
-    const tracking = checkTracking(project);
-    checks.push(tracking.status === "FAIL" ? check("tracking", "FAIL", `MANAGED_FILE_NOT_REPRODUCIBLE: ${describeTracking(tracking)}. ${remedy(tracking)}`) : check("tracking", tracking.status, tracking.detail));
+    let tracking;
+    try {
+      tracking = checkTracking(project);
+    } catch (error) {
+      tracking = { status: "FAIL", ignored: [], untracked: [], absent: [], divergent: [], unsafe: [], detail: `git could not be queried (${error.message}); tracking cannot be judged and the gate fails closed` };
+    }
+    checks.push(tracking.status === "FAIL" && tracking.detail.startsWith("git could not") ? check("tracking", "FAIL", tracking.detail) : tracking.status === "FAIL" ? check("tracking", "FAIL", `MANAGED_FILE_NOT_REPRODUCIBLE: ${describeTracking(tracking)}. ${remedy(tracking)}`) : check("tracking", tracking.status, tracking.detail));
   } else {
     checks.push(check("adoption", "NOT_APPLICABLE", "no adoption journal"));
-    checks.push(check("tracking", "NOT_APPLICABLE", "nothing is journaled as managed"));
+    // a PR must not switch the check off by deleting the journal while keeping what it listed: judge the base journal
+    const hidden = journalHiddenByPr(project, base);
+    checks.push(hidden.length ? check("tracking", "FAIL", `the adoption journal of the base branch was removed but the files it lists remain: ${hidden.slice(0, 5).join(", ")}. Restore the journal, or remove the files with it (consumer.mjs --revert)`) : check("tracking", "NOT_APPLICABLE", "nothing is journaled as managed"));
   }
 
   // the profile (hence the product test command) is the BASE lock's when the base has one: a PR must not

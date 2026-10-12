@@ -8,6 +8,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { runL3 } from "./l3.mjs";
 import { applyConsumer } from "../adapters/consumer.mjs";
+import { revertAdoption } from "../migrate/adopt.mjs";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const cli = join(repoRoot, "runtime", "bootstrap", "cli.mjs");
@@ -357,4 +358,22 @@ test("review: L3 takes the allowNone profile from the BASE lock, not from the PR
   const r = policyChecks({ project: dir, changed: ["specs/001-a/spec.md", "ai-native.lock.json"], base: "HEAD~1", lock: { profiles: ["some-permissive-profile"] }, platformRoot: process.cwd() }).find((c) => c.id === "human-gate");
   assert.equal(r.status, "FAIL");
   assert.match(r.detail, /repository's policy/);
+});
+
+test("audit N-02: a PR that deletes the adoption journal but keeps what it listed fails tracking; a real revert (files gone too) does not", () => {
+  const proj = consumer();
+  applyConsumer({ releaseRoot: repoRoot, projectRoot: proj, tools: ["claude"] });
+  git(proj, "add", "-A");
+  git(proj, "commit", "-q", "-m", "adopt");
+  const base = git(proj, "rev-parse", "HEAD");
+  git(proj, "rm", "-q", ".ai-native/adoption-journal.json");
+  git(proj, "commit", "-q", "-m", "hide");
+  const hidden = runL3({ project: proj, cache, base }).checks.find((c) => c.id === "tracking");
+  assert.equal(hidden.status, "FAIL", JSON.stringify(hidden));
+  assert.match(hidden.detail, /journal of the base branch was removed/);
+  git(proj, "reset", "-q", "--hard", base);
+  assert.equal(revertAdoption(proj).status, "REVERTED");
+  git(proj, "add", "-A");
+  git(proj, "commit", "-q", "-m", "revert adoption");
+  assert.equal(runL3({ project: proj, cache, base }).checks.find((c) => c.id === "tracking").status, "NOT_APPLICABLE");
 });
