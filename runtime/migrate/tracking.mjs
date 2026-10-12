@@ -167,6 +167,7 @@ export function checkPersistedState(root, { base = null } = {}) {
   }
   const corrupt = [];
   let adoptionBase = null;
+  let migrationBase = null;
   const owned = new Set();
   const released = new Set(); // `adopted` files of an adoption journal that was reverted: pre-existing files the revert deliberately leaves to the project
   for (const rel of [ADOPTION_JOURNAL, MIGRATION_JOURNAL]) {
@@ -178,6 +179,7 @@ export function checkPersistedState(root, { base = null } = {}) {
       const paths = rel === ADOPTION_JOURNAL ? [...Object.keys(j.created ?? {}), ...Object.keys(j.adopted ?? {})] : (j.created ?? []).map((c) => c.path);
       for (const p of paths) owned.add(p);
       if (rel === ADOPTION_JOURNAL) adoptionBase = j;
+      else migrationBase = j;
     } catch (error) {
       corrupt.push(`base ${error.message}`);
     }
@@ -195,6 +197,13 @@ export function checkPersistedState(root, { base = null } = {}) {
   // any created file remains is a deletion, and everything it owned is still owed.
   if (adoptionBase && !(ADOPTION_JOURNAL in inTree) && !Object.keys(adoptionBase.created ?? {}).some((p) => p in inTree)) {
     for (const p of Object.keys(adoptionBase.adopted ?? {})) released.add(p);
+  }
+  // `migrate revert` puts back the v2 files the migration retired or replaced and removes what it created plus the journal. As with the
+  // adoption: a migration journal gone with none of its own creations left is a revert, and the v2 files it restored are the project's again.
+  if (migrationBase && !(MIGRATION_JOURNAL in inTree)) {
+    const restored = new Set([...(migrationBase.replaced ?? []), ...(migrationBase.retired ?? [])].map((r) => r?.path).filter((p) => typeof p === "string"));
+    const stillCreated = (migrationBase.created ?? []).map((c) => c.path).filter((p) => !restored.has(p) && p in inTree);
+    if (!stillCreated.length) for (const p of restored) released.add(p);
   }
   const lost = [...owned].filter((p) => !(p in current) && p in inTree && !released.has(p)).filter((p) => { try { safeJoin(root, p); return true; } catch { return false; } }).sort();
   if (!lost.length && !corrupt.length) return { status: "PASS", ...none, detail: `${owned.size} path(s) owned by the base branch are still owned` };

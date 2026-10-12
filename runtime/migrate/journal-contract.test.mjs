@@ -365,3 +365,33 @@ test("N-06: an unreadable base fails closed, and a journal that is a directory i
   mkdirSync(join(root, MIGRATION_JOURNAL));
   assert.throws(() => readOwnership(root), JournalError);
 });
+
+test("N-08: full rollback to v2 (adoption revert, then migrate revert that restores the v2 files it replaced) is not a loss; leaving a migration file is", () => {
+  const { root, base: first } = both();
+  // the migration had replaced a v2 CLAUDE.md: record it the way migrate apply does (journal field `replaced`) in a new base
+  const mig = JSON.parse(readFileSync(join(root, MIGRATION_JOURNAL), "utf8"));
+  mig.replaced = [{ path: "CLAUDE.md", sha256: `sha256:${"2".repeat(64)}` }];
+  put(root, MIGRATION_JOURNAL, `${JSON.stringify(mig, null, 2)}\n`);
+  commitAll(root, "journal with a replaced v2 file");
+  const base = git(root, "rev-parse", "HEAD");
+  assert.ok(readOwnership(root).migrationCreated["CLAUDE.md"] || "CLAUDE.md" in readOwnership(root).created || "CLAUDE.md" in readOwnership(root).adopted);
+  assert.equal(revertAdoption(root).status, "REVERTED");
+  commitAll(root, "revert adoption");
+  // migrate revert, by hand at the level of the contract: remove what it created, restore the v2 file, drop its journal
+  for (const c of mig.created) if (c.path !== "CLAUDE.md") rmSync(join(root, c.path), { force: true });
+  put(root, "CLAUDE.md", "v2 claude\n");
+  rmSync(join(root, MIGRATION_JOURNAL));
+  commitAll(root, "migrate revert");
+  const s = state(root, base);
+  assert.equal(s.status, "PASS", JSON.stringify(s));
+  assert.ok(first !== base);
+  // the same journal removal while one migration-created file stays behind is a deletion
+  const other = both();
+  const m2 = JSON.parse(readFileSync(join(other.root, MIGRATION_JOURNAL), "utf8"));
+  m2.replaced = [{ path: "CLAUDE.md", sha256: `sha256:${"2".repeat(64)}` }];
+  put(other.root, MIGRATION_JOURNAL, `${JSON.stringify(m2, null, 2)}\n`);
+  commitAll(other.root, "journal with a replaced v2 file");
+  const base2 = git(other.root, "rev-parse", "HEAD");
+  drop(other.root, MIGRATION_JOURNAL);
+  assert.equal(state(other.root, base2).status, "FAIL");
+});
