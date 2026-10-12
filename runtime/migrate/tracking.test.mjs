@@ -278,3 +278,42 @@ test("consumer.mjs --drift fails closed on the escape (CLEAN projections, but no
   assert.equal(JSON.parse(fixed.out).adoption.status, "CLEAN");
   assert.equal(JSON.parse(fixed.out).adoption.tracking.status, "PASS");
 });
+
+test("audit N-01: a journal path that leaves the project is a finding (UNSAFE_PATH), never probed", () => {
+  const root = repo();
+  adopt(root);
+  commitAll(root);
+  const jp = join(root, ".ai-native/adoption-journal.json");
+  const journal = JSON.parse(readFileSync(jp, "utf8"));
+  journal.created["../outside.txt"] = "sha256:00";
+  writeFileSync(jp, `${JSON.stringify(journal, null, 2)}\n`);
+  git(root, "commit", "-qam", "tampered journal");
+  const t = checkTracking(root);
+  assert.equal(t.status, "FAIL");
+  assert.deepEqual(t.unsafe, ["../outside.txt"]);
+  assert.match(t.detail, /UNSAFE_PATH/);
+});
+
+test("audit N-02: a git failure other than 'not a repository' throws instead of reading as NOT_APPLICABLE", () => {
+  const root = repo();
+  adopt(root);
+  commitAll(root);
+  const saved = process.env.GIT_DIR;
+  process.env.GIT_DIR = join(root, "does-not-exist");
+  try {
+    assert.throws(() => checkTracking(root), /git rev-parse failed|git ls-files failed|git could not run|not a git repository|does-not-exist/i);
+  } finally {
+    if (saved === undefined) delete process.env.GIT_DIR; else process.env.GIT_DIR = saved;
+  }
+});
+
+test("audit N-03: revert after a CRLF checkout is REVERTED, not PARTIAL (autocrlf is not an edit)", () => {
+  const root = repo({ autocrlf: "true" });
+  adopt(root);
+  for (const rel of [".claude/commands/feature.md", "CLAUDE.md"]) {
+    const f = join(root, rel);
+    writeFileSync(f, readFileSync(f, "utf8").replaceAll("\r\n", "\n").replaceAll("\n", "\r\n"));
+  }
+  const r = revertAdoption(root);
+  assert.equal(r.status, "REVERTED", JSON.stringify(r.kept));
+});

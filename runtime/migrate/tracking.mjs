@@ -9,10 +9,10 @@
 //   DIVERGENT   in the state but the working tree differs from it      -> the validated tree is not what a clone gets
 // `source: "index"` (default) judges what `git add` has staged = what the next commit, and so a clean clone of the PR, has;
 // `source: "head"` judges the last commit. Line endings are not a difference (core.autocrlf).
-import { execFileSync, spawnSync } from "node:child_process";
+import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { normalizedSha } from "./adopt.mjs";
+import { normalizedSha, safeJoin } from "./adopt.mjs";
 import { ADOPTION_JOURNAL, MIGRATION_JOURNAL, readOwnership } from "./journals.mjs";
 
 const git = (cwd, args, input) => spawnSync("git", args, { cwd, input, maxBuffer: 256 * 1024 * 1024 });
@@ -78,12 +78,14 @@ function readBlobs(root, oids) {
   return out;
 }
 
+/** true | false (git says: not a repository). Any other git failure (broken GIT_DIR, corrupt repo, git missing) throws: it must not read as "nothing to check". */
 export function isGitRepo(root) {
-  try {
-    return execFileSync("git", ["rev-parse", "--is-inside-work-tree"], { cwd: root, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim() === "true";
-  } catch {
-    return false;
-  }
+  const r = spawnSync("git", ["rev-parse", "--is-inside-work-tree"], { cwd: root, encoding: "utf8" });
+  if (r.error) throw new Error(`git could not run: ${r.error.message}`);
+  if (r.status === 0) return r.stdout.trim() === "true";
+  // an explicit GIT_DIR/GIT_WORK_TREE that git rejects is a broken environment, not a directory without a repository
+  if (/not a git repository/i.test(r.stderr) && process.env.GIT_DIR === undefined && process.env.GIT_WORK_TREE === undefined) return false;
+  throw new Error(`git rev-parse failed: ${r.stderr.trim()}`);
 }
 
 /**
@@ -92,14 +94,19 @@ export function isGitRepo(root) {
  * Returns { status: PASS|FAIL|NOT_APPLICABLE, source, managed, ignored[], untracked[], absent[], divergent[], detail }.
  */
 export function checkTracking(root, { source = "index", onlyIgnored = false } = {}) {
-  const empty = { source, managed: 0, ignored: [], untracked: [], absent: [], divergent: [] };
+  const empty = { source, managed: 0, ignored: [], untracked: [], absent: [], divergent: [], unsafe: [] };
   if (!isGitRepo(root)) return { status: "NOT_APPLICABLE", ...empty, detail: "not a git repository: tracking cannot be judged" };
   const managed = managedPaths(root);
+  // journals are untrusted input (a PR can edit them): a path that leaves the project is a finding, never something to probe
+  const unsafe = [];
+  for (const p of Object.keys(managed)) {
+    try { safeJoin(root, p); } catch { unsafe.push(p); delete managed[p]; }
+  }
   const paths = Object.keys(managed).sort();
   const state = stateBlobs(root, source);
   const missing = paths.filter((p) => !(p in state));
   const hidden = ignoredAmong(root, missing.filter((p) => existsSync(join(root, p))));
-  const result = { ...empty, managed: paths.length };
+  const result = { ...empty, managed: paths.length, unsafe };
   for (const p of missing) {
     if (existsSync(join(root, p))) (hidden.has(p) ? result.ignored : result.untracked).push(p);
     else result.absent.push(p);
@@ -117,13 +124,13 @@ export function checkTracking(root, { source = "index", onlyIgnored = false } = 
     result.absent = [];
     result.divergent = [];
   }
-  const problems = result.ignored.length + result.untracked.length + result.absent.length + result.divergent.length;
+  const problems = result.ignored.length + result.untracked.length + result.absent.length + result.divergent.length + result.unsafe.length;
   return { status: problems ? "FAIL" : "PASS", ...result, detail: problems ? describe(result) : `${paths.length} managed file(s) are part of the ${source === "head" ? "committed" : "staged"} state` };
 }
 
 export function describe(r) {
   const part = (label, list) => (list.length ? `${label}=[${list.slice(0, 8).join(", ")}${list.length > 8 ? `, +${list.length - 8} more` : ""}]` : "");
-  return [part("ignored-by-gitignore", r.ignored), part("untracked", r.untracked), part("absent-from-state", r.absent), part("differs-from-state", r.divergent)].filter(Boolean).join(" ");
+  return [part("ignored-by-gitignore", r.ignored), part("untracked", r.untracked), part("absent-from-state", r.absent), part("differs-from-state", r.divergent), part("UNSAFE_PATH", r.unsafe ?? [])].filter(Boolean).join(" ");
 }
 
 /** What to do about it, for a human or an agent reading the error. */

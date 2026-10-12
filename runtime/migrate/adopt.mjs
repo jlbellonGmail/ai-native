@@ -92,7 +92,9 @@ export function revertAdoption(targetRoot) {
   for (const [rel, hash] of Object.entries(journal.created)) {
     const full = safeJoin(targetRoot, rel);
     if (!existsSync(full)) continue;
-    if (sha(readFileSync(full)) !== hash) {
+    const now = readFileSync(full);
+    // a checkout with core.autocrlf rewrites line endings: that alone is not an edit (revert must not report PARTIAL)
+    if (sha(now) !== hash && normalizedSha(now) !== hash) {
       kept.push(rel);
       continue;
     }
