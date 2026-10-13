@@ -45,7 +45,7 @@ if ($?) { gh attestation verify $HOME.ai-nativedlai-native-cli.mjs --repo jlbell
 if ($?) { node $HOME.ai-nativedlai-native-cli.mjs install }
 ```
 
-`install` prints the one line that adds `~/.ai-native/bin` to your PATH. Without installing, `node ai-native-cli.mjs init` does the same. Offline later:
+`install` prints the one line that adds `~/.ai-native/bin` to your PATH. Without installing, running the downloaded `ai-native-cli.mjs` with `node` and the argument `init` does the same. Offline later:
 `ai-native init --offline` uses a release this machine already verified. How it is built and why it is safe: `governance/versioning/V3.1.4-PATCH.md`.
 
 ## Repository Structure
