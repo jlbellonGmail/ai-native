@@ -235,7 +235,10 @@ test("e2e: build HEAD -> sync --from-file -> run version/doctor; revoked release
   assert.equal(published.digest, summary.digest);
   assert.deepEqual(validate(published, schema("platform.schema.json")), []);
   const sums = readFileSync(join(out, "SHA256SUMS"), "utf8").trim().split("\n");
-  assert.equal(sums.length, 3);
+  assert.equal(sums.length, 4, "bundle, platform.json, revocations and the public command");
+  assert.ok(sums.some((l) => l.endsWith("  ai-native-cli.mjs")));
+  // the public command asset is byte-for-byte runtime/cli/ai-native.mjs at the built commit
+  assert.equal(readFileSync(join(out, "ai-native-cli.mjs"), "utf8"), execFileSync("git", ["show", `${commit}:runtime/cli/ai-native.mjs`], { cwd: repoRoot, encoding: "utf8" }));
   for (const line of sums) {
     const [hex, name] = line.split(/\s+/);
     assert.equal(sha256Hex(readFileSync(join(out, name))), hex, name);

@@ -23,3 +23,8 @@ test("a malformed tag is a FAIL before anything is downloaded", () => {
   assert.equal(r.length, 1);
   assert.equal(r[0].ok, false);
 });
+
+test("the public command is a required asset from v3.1.4 on; the immutable releases before it never had it", () => {
+  for (const old of ["v3.0.0", "v3.1.0", "v3.1.3", "v3.0.0-rc.2"]) assert.ok(!expectedAssets(old).includes("ai-native-cli.mjs"), old);
+  for (const now of ["v3.1.4", "v3.1.10", "v3.2.0", "v4.0.0", "v3.1.4-rc.1"]) assert.ok(expectedAssets(now).includes("ai-native-cli.mjs"), now);
+});
