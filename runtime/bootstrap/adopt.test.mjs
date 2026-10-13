@@ -97,7 +97,10 @@ test("a repository with commits is adopted too, and the second run is idempotent
   assert.equal(first.adoption, "ADOPTED");
   const snapshot = () => Object.fromEntries(tree(project).filter((p) => existsSync(join(project, p)) && !readdirSafe(join(project, p))).map((p) => [p, sha256(readFileSync(join(project, p)))]));
   const before = snapshot();
-  const second = await run(project, cache, { profile: "python-lib" }); // the lock decides; a different profile argument changes nothing
+  const conflict = await run(project, cache, { profile: "python-lib" }); // a contradicting --profile is an error, never silently ignored
+  assert.equal(conflict.status, "FAIL");
+  assert.match(conflict.errors[0], /PROFILE_CONFLICT: --profile python-lib contradicts the profile this repository is pinned to \(python-service\)/);
+  const second = await run(project, cache, { profile: "python-service" }); // the same profile as the lock is accepted and revalidated
   assert.equal(second.state, "READY");
   assert.match(second.adoption, /^ALREADY_ADOPTED/);
   assert.equal(second.drift, "CLEAN");
@@ -242,4 +245,61 @@ test("P-02: a failure AFTER the index was written unstages exactly what this run
   assert.equal(readFileSync(join(project, ".ai-native", "keep.txt"), "utf8"), "mine\n");
   assert.deepEqual(tree(project), [".ai-native", ".ai-native/keep.txt", "README.md"].map((p) => p.split("/").join(process.platform === "win32" ? "\\" : "/")).sort());
   assert.equal(existsSync(join(project, "ai-native.lock.json")), false);
+});
+
+test("N-10: managed file, versioned and deleted from the working tree before init -> failure after staging -> `git status --porcelain` is byte-identical and the message says so", async () => {
+  const project = repo();
+  writeFileSync(join(project, ".mcp.json"), "{}\n"); // a path ai-native manages, owned by the user and committed
+  writeFileSync(join(project, "README.md"), "# x\n");
+  git(project, "add", ".");
+  git(project, "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "base");
+  rmSync(join(project, ".mcp.json")); // staged? no: a plain working-tree deletion (" D")
+  writeFileSync(join(project, "README.md"), "# edited\n"); // plus an unstaged modification (" M")
+  const status = () => execFileSync("git", ["status", "--porcelain=v1", "-z", "--untracked-files=all"], { cwd: project, encoding: "utf8" });
+  const index = () => git(project, "ls-files", "-s");
+  const [statusBefore, indexBefore] = [status(), index()];
+  assert.match(statusBefore, / D \.mcp\.json/);
+  const r = await run(project, tmp("cache"), { afterStage: () => { throw new Error("boom after staging"); } });
+  assert.equal(r.status, "FAIL");
+  assert.match(r.adoption, /^ROLLED_BACK \(verified: `git status` and the index are identical to before\)$/);
+  assert.equal(status(), statusBefore, "git status --porcelain is byte-identical");
+  assert.equal(index(), indexBefore, "the index (mode, blob, stage, path) is identical");
+  assert.equal(readFileSync(join(project, "README.md"), "utf8"), "# edited\n");
+  assert.equal(existsSync(join(project, "ai-native.lock.json")), false);
+});
+
+test("N-10: a staged deletion and a staged modification of managed paths come back exactly as they were", async () => {
+  const project = repo();
+  writeFileSync(join(project, ".mcp.json"), "{}\n");
+  writeFileSync(join(project, "opencode.json"), "{}\n");
+  git(project, "add", ".");
+  git(project, "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "base");
+  git(project, "rm", "-q", ".mcp.json"); // staged deletion ("D ")
+  writeFileSync(join(project, "opencode.json"), "{\"mine\":true}\n");
+  git(project, "add", "opencode.json"); // staged modification ("M ")
+  const status = () => execFileSync("git", ["status", "--porcelain=v1", "-z", "--untracked-files=all"], { cwd: project, encoding: "utf8" });
+  const [statusBefore, indexBefore] = [status(), git(project, "ls-files", "-s")];
+  // opencode.json differs from what ai-native would write -> a collision: keep it, the rest is adopted, then the run fails after staging
+  const r = await run(project, tmp("cache"), { keepExisting: true, afterStage: () => { throw new Error("boom after staging"); } });
+  assert.match(r.adoption, /^ROLLED_BACK \(verified/);
+  assert.equal(status(), statusBefore);
+  assert.equal(git(project, "ls-files", "-s"), indexBefore);
+  assert.equal(readFileSync(join(project, "opencode.json"), "utf8"), "{\"mine\":true}\n");
+});
+
+test("N-10: when the previous state cannot be demonstrated, the report says ROLLBACK_INCOMPLETE and names what differs - never ROLLED_BACK", async () => {
+  const project = repo();
+  const r = await run(project, tmp("cache"), { afterStage: () => { writeFileSync(join(project, "stray.txt"), "appeared during the run\n"); throw new Error("boom"); } });
+  assert.equal(r.status, "FAIL");
+  assert.match(r.adoption, /^ROLLBACK_INCOMPLETE \(differs from before: .*stray\.txt/);
+  assert.doesNotMatch(r.adoption, /ROLLED_BACK/);
+});
+
+test("P-07: a --profile that contradicts the lock fails clearly; one that matches is accepted (engine, direct call)", async () => {
+  const project = repo();
+  const cache = tmp("cache");
+  assert.equal((await run(project, cache)).state, "READY");
+  const clash = await run(project, cache, { profile: "static-site" });
+  assert.match(clash.errors[0], /PROFILE_CONFLICT/);
+  assert.equal((await run(project, cache, { profile: "python-service" })).state, "READY");
 });

@@ -159,7 +159,7 @@ test("supply chain: a bundle whose digest is not the one GitHub published for th
 
 test("supply chain: a corrupt bundle that even passes attestation is rejected by the strict reader", async () => {
   const garbage = gzipSync(Buffer.from("this is not a tar"));
-  const w = world({ list: [{ tag_name: "v9.9.9", draft: false, prerelease: false, immutable: true, assets: [] }], bundles: { "v9.9.9": garbage } });
+  const w = world({ list: [{ tag_name: "v9.9.9", draft: false, prerelease: false, immutable: true, assets: [{ name: "ai-native-v9.9.9.tar.gz", digest: `sha256:${sha256(garbage)}` }] }], bundles: { "v9.9.9": garbage } });
   const project = gitInit();
   assert.equal(await w.run(["init", "--profile", "python-service"], { cwd: project, cache: tmp("cache") }), 1);
   assert.match(w.err.join("\n"), /bundle rejected/);
@@ -170,7 +170,7 @@ test("supply chain: a corrupt bundle that even passes attestation is rejected by
 test("a release that does not exist, an invalid --version, and an unknown option", async () => {
   const w = world();
   assert.equal(await w.run(["init", "--version", "v1.2.3", "--profile", "python-service"], { cwd: gitInit(), cache: tmp("c") }), 1);
-  assert.match(w.err.join("\n"), /cannot download .*v1\.2\.3.*HTTP 404/);
+  assert.match(w.err.join("\n"), /RELEASE_REJECTED: v1\.2\.3 of o\/ai-native is not among the published releases/);
   const w2 = world();
   assert.equal(await w2.run(["init", "--version", "latest"], { cwd: gitInit(), cache: tmp("c") }), 1);
   assert.match(w2.err.join("\n"), /invalid --version: latest/);
@@ -180,7 +180,7 @@ test("a release that does not exist, an invalid --version, and an unknown option
 
 test("a release from before `ai-native init` existed is refused with the reason", async () => {
   const old = workingTreeRelease({ version: "v9.9.9", mutate: (f) => { delete f["runtime/bootstrap/adopt.mjs"]; return f; } });
-  const w = world({ bundles: { "v9.9.9": old.bytes }, list: [{ tag_name: "v9.9.9", draft: false, prerelease: false, immutable: true, assets: [] }] });
+  const w = world({ bundles: { "v9.9.9": old.bytes }, list: [{ tag_name: "v9.9.9", draft: false, prerelease: false, immutable: true, assets: [{ name: "ai-native-v9.9.9.tar.gz", digest: old.digest }] }] });
   const project = gitInit();
   assert.equal(await w.run(["init", "--profile", "python-service"], { cwd: project, cache: tmp("c") }), 1);
   assert.match(w.err.join("\n"), /predates `ai-native init`/);
@@ -361,5 +361,70 @@ test("P-07: --version cannot contradict the pinned release; P-09: a malformed di
   assert.equal(await w.run(["init", "--version", "v9.9.8"], { cwd: project, cache: tmp("c") }), 1);
   assert.match(w.err.join(" "), /--version v9\.9\.8 conflicts with the release this repository is pinned to \(v9\.9\.9\)/);
   const bad = world({ list: [{ ...releases[0], assets: [{ name: "ai-native-v9.9.9.tar.gz", digest: "sha256:../../etc" }] }] });
-  assert.equal(await bad.run(["init", "--profile", "python-service"], { cwd: gitInit(), cache: tmp("c") }), 0, bad.log.engineOut + bad.err.join(" "));
+  assert.equal(await bad.run(["init", "--profile", "python-service"], { cwd: gitInit(), cache: tmp("c") }), 1);
+  assert.match(bad.err.join(" "), /RELEASE_REJECTED: v9\.9\.9 .*publishes no valid sha256 digest/);
+});
+
+// ---- final hardening: the --version and --profile contracts (N-09, P-07) ----
+
+const releaseWith = (over = {}) => ({ ...releases[0], ...over });
+
+test("N-09: --version selects only a stable, published, immutable release with a valid published digest; everything else is rejected fail-closed", async () => {
+  const cases = [
+    ["prerelease tag", ["--version", "v9.9.9-rc.1"], releases, /invalid --version: v9\.9\.9-rc\.1 \(only stable releases/],
+    ["prerelease flag on a stable-looking tag", ["--version", "v9.9.9"], [releaseWith({ prerelease: true })], /RELEASE_REJECTED: v9\.9\.9 .*is a prerelease/],
+    ["immutable:false", ["--version", "v9.9.9"], [releaseWith({ immutable: false })], /is not an immutable release/],
+    ["immutable absent from the metadata", ["--version", "v9.9.9"], [(({ immutable, ...rest }) => rest)(releases[0])], /is not an immutable release/],
+    ["draft", ["--version", "v9.9.9"], [releaseWith({ draft: true })], /is a draft/],
+    ["not published at all", ["--version", "v9.9.8"], releases, /is not among the published releases/],
+    ["no bundle asset", ["--version", "v9.9.9"], [releaseWith({ assets: [] })], /has no bundle asset/],
+    ["digest absent", ["--version", "v9.9.9"], [releaseWith({ assets: [{ name: "ai-native-v9.9.9.tar.gz" }] })], /publishes no valid sha256 digest/],
+    ["digest malformed", ["--version", "v9.9.9"], [releaseWith({ assets: [{ name: "ai-native-v9.9.9.tar.gz", digest: "md5:abc" }] })], /publishes no valid sha256 digest/],
+  ];
+  for (const [label, argv, list, pattern] of cases) {
+    const project = gitInit();
+    const w = world({ list });
+    assert.equal(await w.run(["init", ...argv, "--profile", "python-service"], { cwd: project, cache: tmp("c") }), 1, label);
+    assert.match(w.err.join(" "), pattern, label);
+    assert.deepEqual(w.log.gh, [], `${label}: nothing is attested or executed`);
+    assert.deepEqual(w.log.engine, [], label);
+    assert.deepEqual(tree(project), [], label);
+  }
+  // the same version, valid, is accepted (and its digest is the published one, enforced against the download)
+  const project = gitInit();
+  const ok = world();
+  assert.equal(await ok.run(["init", "--version", "v9.9.9", "--profile", "python-service"], { cwd: project, cache: tmp("c") }), 0, ok.log.engineOut + ok.err.join(" "));
+  const mismatch = world({ bundles: { "v9.9.9": Buffer.concat([rel.bytes, Buffer.from([0])]) } });
+  assert.equal(await mismatch.run(["init", "--version", "v9.9.9", "--profile", "python-service"], { cwd: gitInit(), cache: tmp("c") }), 1);
+  assert.match(mismatch.err.join(" "), /DIGEST_MISMATCH/);
+});
+
+test("N-09: the latest-release path applies the same rule (immutable must be affirmed, a digest must be published)", async () => {
+  for (const list of [[releaseWith({ immutable: false })], [(({ immutable, ...rest }) => rest)(releases[0])], [releaseWith({ assets: [] })]]) {
+    const w = world({ list });
+    assert.equal(await w.run(["init", "--profile", "python-service"], { cwd: gitInit(), cache: tmp("c") }), 1);
+    assert.match(w.err.join(" "), /no stable, immutable release found|RELEASE_REJECTED/);
+  }
+});
+
+test("N-09: offline, --version needs exactly that release verified in the cache", async () => {
+  const cache = tmp("cache");
+  await world().run(["init", "--profile", "python-service"], { cwd: gitInit(), cache });
+  const w = world({ network: false });
+  assert.equal(await w.run(["init", "--offline", "--version", "v9.9.9", "--profile", "python-service"], { cwd: gitInit(), cache }), 0, w.log.engineOut + w.err.join(" "));
+  const other = world({ network: false });
+  assert.equal(await other.run(["init", "--offline", "--version", "v9.9.8", "--profile", "python-service"], { cwd: gitInit(), cache }), 1);
+  assert.match(other.err.join(" "), /OFFLINE: this machine has no verified v9\.9\.8 in its cache/);
+});
+
+test("P-07: with a lock, --profile is never ignored: a contradiction fails clearly, a match is accepted", async () => {
+  const cache = tmp("cache");
+  const project = gitInit();
+  await world().run(["init", "--profile", "python-service"], { cwd: project, cache });
+  const clash = world({ network: false });
+  assert.equal(await clash.run(["init", "--offline", "--profile", "python-lib"], { cwd: project, cache }), 1);
+  assert.match(clash.err.join(" "), /PROFILE_CONFLICT: --profile python-lib contradicts the profile this repository is pinned to \(python-service\)/);
+  assert.deepEqual(clash.log.engine, []);
+  const same = world({ network: false });
+  assert.equal(await same.run(["init", "--offline", "--profile", "python-service"], { cwd: project, cache }), 0, same.log.engineOut + same.err.join(" "));
 });
