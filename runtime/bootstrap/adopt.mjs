@@ -167,6 +167,7 @@ export async function adopt({ projectRoot, cacheRoot, repo, bundleFile = null, d
     const r = readLock(projectRoot);
     if (r.errors.length) return fail(r.errors);
     lock = r.lock;
+    if (profile && !lock.profiles.includes(profile)) return fail([`PROFILE_CONFLICT: --profile ${profile} contradicts the profile this repository is pinned to (${lock.profiles.join(", ")}); the profile is changed in ${LOCK_FILE}, not by this command`]);
     repo = lock.platform.repo;
     digest = lock.platform.digest;
   }
@@ -232,7 +233,7 @@ export async function adopt({ projectRoot, cacheRoot, repo, bundleFile = null, d
 
   const base = { version: platform.version, profile: chosen.profile, how: adopted ? undefined : chosen.how, attestation: "PASS", revocation: revocations ? "CHECKED" : "NOT_CHECKED" };
   let wrote = false;
-  const indexBefore = trackedPaths(projectRoot); // what the index held before this run touched anything: rollback restores exactly this
+  const before = gitSnapshot(projectRoot); // the observable state before this run touched anything: rollback restores exactly this and proves it
   try {
     if (adopted) {
       const synced = sync({ projectRoot, cacheRoot, fromFile: bundleOnDisk, revocations });
@@ -274,8 +275,8 @@ export async function adopt({ projectRoot, cacheRoot, repo, bundleFile = null, d
     };
     return { ...out, text: renderText(out) };
   } catch (error) {
-    const left = wrote ? rollbackFresh(projectRoot, indexBefore) : [];
-    const adoption = !wrote ? undefined : left.length ? `ROLLBACK_INCOMPLETE (left behind: ${left.slice(0, 8).join(", ")}${left.length > 8 ? `, +${left.length - 8} more` : ""})` : "ROLLED_BACK (nothing was left in the repository or in the index)";
+    const left = wrote ? rollbackFresh(projectRoot, before) : [];
+    const adoption = !wrote ? undefined : left.length ? `ROLLBACK_INCOMPLETE (differs from before: ${left.slice(0, 8).join(", ")}${left.length > 8 ? `, +${left.length - 8} more` : ""})` : "ROLLED_BACK (verified: `git status` and the index are identical to before)";
     return fail([error.message], warnings, { ...base, adoption });
   }
 }
@@ -292,28 +293,47 @@ function ensureInCache(cacheRoot, digest, bytes, files) {
   putRelease(cacheRoot, digest, files);
 }
 
-const trackedPaths = (root) => {
-  const r = spawnSync("git", ["ls-files", "-z"], { cwd: root, encoding: "utf8", maxBuffer: 256 * 1024 * 1024 });
-  return new Set(r.status === 0 ? r.stdout.split("\0").filter(Boolean) : []);
-};
+const gitOut = (root, args) => spawnSync("git", args, { cwd: root, encoding: "utf8", maxBuffer: 256 * 1024 * 1024 });
+
+/** Index entries (mode, blob, stage, path) and `git status` of the working tree, as they are right now. */
+function gitSnapshot(root) {
+  const idx = gitOut(root, ["ls-files", "-s", "-z"]);
+  const st = gitOut(root, ["status", "--porcelain=v1", "-z", "--untracked-files=all"]);
+  const entries = new Map();
+  for (const e of (idx.status === 0 ? idx.stdout : "").split("\0").filter(Boolean)) {
+    const tab = e.indexOf("\t");
+    const [mode, oid, stage] = e.slice(0, tab).split(" ");
+    if (stage === "0") entries.set(e.slice(tab + 1), { mode, oid });
+  }
+  return { entries, index: idx.status === 0 ? idx.stdout : null, status: st.status === 0 ? st.stdout : null };
+}
 
 /**
- * Undo exactly what this run wrote: unstage what it added to the index (only what the index did not hold before), revert the adoption
- * (journal-driven; files the user changed since are kept by revert itself) and remove the lock. Returns what is still left, so the report
- * never claims a clean rollback it did not achieve.
+ * Undo what this run wrote and PROVE it. Every path ai-native manages is put back in the index exactly as it was (same mode and blob,
+ * or absent); the adoption is reverted from its journal (files the user changed since are kept by revert itself); the lock is removed.
+ * Then `git status` and the index are compared with the snapshot taken before the run. Returns the differences; empty means identical,
+ * so a clean rollback is never claimed that was not demonstrated.
  */
-function rollbackFresh(projectRoot, indexBefore) {
-  const ours = Object.keys(managedPaths(projectRoot)).filter((p) => !indexBefore.has(p));
-  if (ours.length) spawnSync("git", ["rm", "--cached", "-q", "--ignore-unmatch", "--", ...ours], { cwd: projectRoot });
+function rollbackFresh(projectRoot, before) {
+  const ours = Object.keys(managedPaths(projectRoot));
   if (existsSync(join(projectRoot, JOURNAL_PATH))) {
     try {
       revertAdoption(projectRoot);
     } catch {
-      // revert reports what it kept; the check below says what is left
+      // revert reports what it kept; the comparison below says what differs
     }
   }
   rmSync(join(projectRoot, LOCK_FILE), { force: true });
-  const leftInIndex = [...trackedPaths(projectRoot)].filter((p) => !indexBefore.has(p));
-  const leftOnDisk = ours.filter((p) => existsSync(join(projectRoot, p)) && !leftInIndex.includes(p));
-  return [...new Set([...leftInIndex, ...leftOnDisk])].sort();
+  for (const p of new Set([...ours, LOCK_FILE])) {
+    const was = before.entries.get(p);
+    if (was) gitOut(projectRoot, ["update-index", "--add", "--cacheinfo", `${was.mode},${was.oid},${p}`]);
+    else gitOut(projectRoot, ["rm", "--cached", "-q", "--ignore-unmatch", "--", p]);
+  }
+  const after = gitSnapshot(projectRoot);
+  if (before.index === null || before.status === null || after.index === null || after.status === null) return ["git state could not be read"];
+  const lines = (z) => new Set(z.split("\0").filter(Boolean));
+  const diff = (a, b) => [...a].filter((x) => !b.has(x));
+  const [sa, sb, ia, ib] = [lines(before.status), lines(after.status), lines(before.index), lines(after.index)];
+  const differing = [...diff(sa, sb), ...diff(sb, sa), ...diff(ia, ib), ...diff(ib, ia)].map((l) => l.replace(/^[0-7]{6} [0-9a-f]+ \d\t/, "index: "));
+  return [...new Set(differing)].sort();
 }

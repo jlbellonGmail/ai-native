@@ -24,7 +24,7 @@ const VERSION = /^v\d+\.\d+\.\d+(-(alpha|rc)\.\d+)?$/; // also what a lock may p
 const MAX_BYTES = 256 * 1024 * 1024;
 const HELP = `ai-native — start a project with the AI-NATIVE platform
 
-  ai-native init [--profile <id>] [--version vX.Y.Z] [--offline] [--trust-repo owner/name] [--keep-existing] [--json]
+  ai-native init [--profile <id>] [--version vX.Y.Z (stable only)] [--offline] [--trust-repo owner/name] [--keep-existing] [--json]
       Run inside a Git repository (empty or not). Fetches the latest stable release, verifies it (sha256 + sigstore attestation +
       revocations), writes ai-native.lock.json, the tool adapters and .ai-native/ai-native.mjs, and checks the result.
       Run it again any time: on an adopted repository it only re-verifies.
@@ -53,9 +53,27 @@ export async function listReleases({ fetchImpl, slug, env }) {
   }
 }
 
-/** Highest SemVer among releases that are published, stable and immutable. `immutable: false` is skipped; an API without the field is not held against it. */
+/** A release this command may install on its own: published (not a draft), stable (not a prerelease, plain vX.Y.Z) and affirmed immutable by GitHub. */
+const selectable = (r) => Boolean(r) && r.draft === false && r.prerelease === false && STABLE.test(r.tag_name ?? "") && r.immutable === true;
+
+/** The release the person asked for with --version: it must be exactly that tag, selectable, and publish a valid sha256 for its bundle. Returns that digest. */
+export function assertPublishable(release, version, slug) {
+  const why = (m) => new Fail(`RELEASE_REJECTED: ${version} of ${slug} ${m}`);
+  if (!release) throw why("is not among the published releases");
+  if (release.tag_name !== version) throw why(`is inconsistent (the API returned ${release.tag_name})`);
+  if (release.draft !== false) throw why("is a draft");
+  if (release.prerelease !== false) throw why("is a prerelease; only stable releases can be installed by this command");
+  if (!STABLE.test(version)) throw why("is not a stable vX.Y.Z version");
+  if (release.immutable !== true) throw why("is not an immutable release");
+  const asset = (release.assets ?? []).find((a) => a.name === `ai-native-${version}.tar.gz`);
+  if (!asset) throw why("has no bundle asset");
+  if (!DIGEST.test(asset.digest ?? "")) throw why("publishes no valid sha256 digest for its bundle");
+  return asset.digest;
+}
+
+/** Highest SemVer among selectable releases (see `selectable`). */
 export function pickLatest(list, slug) {
-  const ok = list.filter((r) => !r.draft && !r.prerelease && STABLE.test(r.tag_name) && r.immutable !== false).sort((a, b) => newer(b.tag_name, a.tag_name));
+  const ok = list.filter((r) => selectable(r)).sort((a, b) => newer(b.tag_name, a.tag_name));
   if (!ok.length) throw new Fail(`no stable, immutable release found for ${slug}`);
   return ok[0];
 }
@@ -106,6 +124,18 @@ async function assertNotRevoked({ list, slug, version, fetchImpl, spawn, tmp }) 
   }
   const hit = entries.find((e) => e && e.kind === "platform" && e.version === version);
   if (hit) throw new Fail(`REVOKED: ${version} is revoked (${hit.severity ?? "high"}): ${hit.reason}`);
+}
+
+/** The record of a release of `slug` at exactly `version` that this machine verified and still holds, or null. */
+export function cachedByVersion(cacheRoot, slug, version) {
+  const dir = join(cacheRoot, "attestations");
+  if (!existsSync(dir)) return null;
+  for (const name of readdirSync(dir).filter((n) => n.endsWith(".json"))) {
+    const hex = name.slice(0, -5);
+    const r = readRecord(cacheRoot, hex, { digest: `sha256:${hex}`, slug });
+    if (r && r.version === version && existsSync(join(cacheRoot, "blobs", "sha256", hex))) return r;
+  }
+  return null;
 }
 
 /** Highest stable release that this machine already verified and still holds (for --offline). */
@@ -193,7 +223,7 @@ function parse(argv) {
       o[a === "--trust-repo" ? "trustRepo" : a.slice(2)] = argv[++i];
     } else throw new Fail(`unknown option: ${a}`);
   }
-  if (o.version && !VERSION.test(o.version)) throw new Fail(`invalid --version: ${o.version}`);
+  if (o.version && !STABLE.test(o.version)) throw new Fail(`invalid --version: ${o.version} (only stable releases, vX.Y.Z, can be selected)`);
   if (o.trustRepo && !/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(o.trustRepo)) throw new Fail(`invalid --trust-repo: ${o.trustRepo}`);
   return o;
 }
@@ -221,7 +251,8 @@ export async function main(argv, { fetchImpl = fetch, spawn = spawnSync, env = p
       let pinned;
       try {
         const p = JSON.parse(readFileSync(lockFile, "utf8")).platform;
-        pinned = { version: p.version, digest: p.digest, slug: /^github:([A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+)$/.exec(p.repo)?.[1] };
+        const profiles = JSON.parse(readFileSync(lockFile, "utf8")).profiles;
+        pinned = { profiles: Array.isArray(profiles) ? profiles : [], version: p.version, digest: p.digest, slug: /^github:([A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+)$/.exec(p.repo)?.[1] };
         if (!pinned.slug || !DIGEST.test(pinned.digest) || !VERSION.test(pinned.version)) throw new Error("incomplete or malformed platform");
       } catch (error) {
         throw new Fail(`ai-native.lock.json is not usable (${error.message}); fix or remove it`);
@@ -229,6 +260,7 @@ export async function main(argv, { fetchImpl = fetch, spawn = spawnSync, env = p
       // The lock is repository content: it cannot choose whom this command trusts. Another source needs the person's explicit word.
       if (pinned.slug !== repo && o.trustRepo !== pinned.slug) throw new Fail(`TRUST_ROOT: this repository is pinned to releases of ${pinned.slug}, but this command trusts only ${repo}. If you trust ${pinned.slug}, say so: ai-native init --trust-repo ${pinned.slug}`);
       if (o.version && o.version !== pinned.version) throw new Fail(`--version ${o.version} conflicts with the release this repository is pinned to (${pinned.version}); bump the lock instead`);
+      if (o.profile && !pinned.profiles.includes(o.profile)) throw new Fail(`PROFILE_CONFLICT: --profile ${o.profile} contradicts the profile this repository is pinned to (${pinned.profiles.join(", ") || "none"}); the profile is changed in ai-native.lock.json, not by this command`);
       o.version = pinned.version;
       digest = pinned.digest;
       o.slug = pinned.slug;
@@ -240,16 +272,15 @@ export async function main(argv, { fetchImpl = fetch, spawn = spawnSync, env = p
       if (!digest && !o.version) {
         release = pickLatest(list, o.slug);
         o.version = release.tag_name;
-      } else release = list.find((r) => r.tag_name === o.version) ?? null;
+      } else if (!digest) release = list.find((r) => r.tag_name === o.version) ?? null;
+      if (!digest) digest = assertPublishable(release, o.version, o.slug);
       await assertNotRevoked({ list, slug: o.slug, version: o.version, fetchImpl, spawn, tmp });
-    } else if (!digest && !o.version) {
-      const c = newestCached(o.cache, o.slug);
-      if (!c) throw new Fail("OFFLINE: this machine has no verified release in its cache; run `ai-native init` once with network access");
+    } else if (!digest) {
+      const c = o.version ? cachedByVersion(o.cache, o.slug, o.version) : newestCached(o.cache, o.slug);
+      if (!c) throw new Fail(`OFFLINE: this machine has no verified ${o.version ?? "release"} in its cache; run \`ai-native init\` once with network access`);
       o.version = c.version;
       digest = c.digest;
     }
-    const published = release?.assets?.find((x) => x.name === `ai-native-${o.version}.tar.gz`)?.digest;
-    digest ??= DIGEST.test(published ?? "") ? published : null;
 
     // One path for the cache and the network: the engine always starts from a bundle whose sha256 was just checked and whose attestation is
     // on record, unpacked into a private temp directory. The cache's own unpacked copy of a release is never executed from here.
