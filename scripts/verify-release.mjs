@@ -31,8 +31,8 @@ export const sha256 = (buf) => createHash("sha256").update(buf).digest("hex");
 export const CLI_ASSET = "ai-native-cli.mjs";
 /** The public command is a release asset from the first release that ships `ai-native init`; older (immutable) releases never had it. */
 export const hasCliAsset = (tag) => {
-  const [a, b, c] = /^v(\d+)\.(\d+)\.(\d+)/.exec(tag).slice(1).map(Number);
-  return a > 3 || (a === 3 && (b > 1 || (b === 1 && c >= 4)));
+  const [a, b] = /^v(\d+)\.(\d+)\.(\d+)/.exec(tag).slice(1, 3).map(Number);
+  return a > 3 || (a === 3 && b >= 2);
 };
 
 /** Assets every platform release must carry. */

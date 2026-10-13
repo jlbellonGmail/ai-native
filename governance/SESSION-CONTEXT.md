@@ -13,7 +13,7 @@ STABLE_BASELINE: v3.1.3
 PREVIOUS_BASELINE: v3.1.2 (inmutable; los 9 consumidores siguen en v3.1.2)
 ```
 
-En curso (encargo explícito del humano, 2026-10-13): **`ai-native init`**, punto de entrada público para convertir un repositorio Git vacío en consumidor READY con una instrucción. Candidata `v3.1.4` (`governance/versioning/V3.1.4-PATCH.md`): PR abierta, **pendiente de revisión y merge humanos**; sin tag ni release; `v3.1.3` no se toca. La versión (PATCH vs MINOR) está marcada allí como decisión humana.
+En curso (encargo explícito del humano, 2026-10-13): **`ai-native init`**, punto de entrada público para convertir un repositorio Git vacío en consumidor READY con una instrucción. Candidata `v3.2.0` MINOR (`governance/versioning/V3.2.0-RELEASE.md`; versión decidida por el humano el 2026-10-13): PR abierta, **pendiente de revisión y merge humanos**; sin tag ni release; `v3.1.3` no se toca.
 
 Criterio de cierre y pendientes aceptados (`NOT_REQUIRED_FOR_COMPLETION`, que no reabren la iniciativa): `governance/versioning/V3.0.2-POST-RELEASE-VERIFICATION.md`, «Cierre formal de la iniciativa».
 
