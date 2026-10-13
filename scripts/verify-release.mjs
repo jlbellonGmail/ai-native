@@ -31,7 +31,7 @@ export const sha256 = (buf) => createHash("sha256").update(buf).digest("hex");
 export const CLI_ASSET = "ai-native-cli.mjs";
 /** The public command is a release asset from the first release that ships `ai-native init`; older (immutable) releases never had it. */
 export const hasCliAsset = (tag) => {
-  const [a, b, c] = /^v(d+).(d+).(d+)/.exec(tag).slice(1).map(Number);
+  const [a, b, c] = /^v(\d+)\.(\d+)\.(\d+)/.exec(tag).slice(1).map(Number);
   return a > 3 || (a === 3 && (b > 1 || (b === 1 && c >= 4)));
 };
 
@@ -88,8 +88,7 @@ export function verifyRelease({ tag, repo = "jlbellonGmail/ai-native", expectCom
     add("attestation verifies offline with the sigstore bundle", off.status === 0);
     if (hasCliAsset(tag)) {
       const signed = gh(["attestation", "verify", join(dir, CLI_ASSET), "--repo", repo, "--signer-workflow", `${repo}/.github/workflows/release.yml`]);
-      add("public command is attested by the release workflow", signed.status === 0, signed.status === 0 ? "" : signed.stderr.trim().split("
-")[0]);
+      add("public command is attested by the release workflow", signed.status === 0, signed.status === 0 ? "" : signed.stderr.trim().split("\n")[0]);
     }
     const foreign = gh(["attestation", "verify", join(dir, tarName), "--repo", "jlbellonGmail/template"]);
     add("attestation of a FOREIGN repo is rejected", foreign.status !== 0);
@@ -127,11 +126,9 @@ export function verifyRelease({ tag, repo = "jlbellonGmail/ai-native", expectCom
       mkdirSync(empty);
       run("git", ["init", "-q"], { cwd: empty });
       const r = run(process.execPath, [join(dir, CLI_ASSET), "init", "--version", tag, "--profile", "factory"], { cwd: empty, env: { ...process.env, AI_NATIVE_CACHE: join(dir, "cache-init") } });
-      const lines = r.stdout.split(/?
-/);
+      const lines = r.stdout.split(String.fromCharCode(10)).map((l) => l.trim());
       const ok = r.status === 0 && ["STATUS: READY", "DRIFT: CLEAN", "ATTESTATION: PASS", "REVOCATION: CHECKED"].every((l) => lines.includes(l));
-      add("ai-native init from the published asset: empty repository -> READY, CLEAN, attested, revocations checked", ok, ok ? "" : (r.stdout + r.stderr).trim().split("
-").slice(-3).join(" | "));
+      add("ai-native init from the published asset: empty repository -> READY, CLEAN, attested, revocations checked", ok, ok ? "" : (r.stdout + r.stderr).trim().split("\n").slice(-3).join(" | "));
     }
   } finally {
     rmSync(dir, { recursive: true, force: true });
