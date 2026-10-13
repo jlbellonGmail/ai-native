@@ -36,13 +36,17 @@ repository it only re-verifies. If it cannot verify the release it stops and lea
 running it:
 
 ```bash
-gh release download --repo jlbellonGmail/ai-native --pattern ai-native-cli.mjs --dir ~/.ai-native/dl   && gh attestation verify ~/.ai-native/dl/ai-native-cli.mjs --repo jlbellonGmail/ai-native --signer-workflow jlbellonGmail/ai-native/.github/workflows/release.yml   && node ~/.ai-native/dl/ai-native-cli.mjs install
+dl=~/.ai-native/dl
+gh release download --repo jlbellonGmail/ai-native --pattern ai-native-cli.mjs --dir "$dl" \
+  && gh attestation verify "$dl/ai-native-cli.mjs" --repo jlbellonGmail/ai-native --signer-workflow jlbellonGmail/ai-native/.github/workflows/release.yml \
+  && node "$dl/ai-native-cli.mjs" install
 ```
 
 ```powershell
-gh release download --repo jlbellonGmail/ai-native --pattern ai-native-cli.mjs --dir $HOME.ai-nativedl
-if ($?) { gh attestation verify $HOME.ai-nativedlai-native-cli.mjs --repo jlbellonGmail/ai-native --signer-workflow jlbellonGmail/ai-native/.github/workflows/release.yml }
-if ($?) { node $HOME.ai-nativedlai-native-cli.mjs install }
+$dl = Join-Path $HOME ".ai-native/dl"
+gh release download --repo jlbellonGmail/ai-native --pattern ai-native-cli.mjs --dir $dl
+if ($?) { gh attestation verify (Join-Path $dl "ai-native-cli.mjs") --repo jlbellonGmail/ai-native --signer-workflow jlbellonGmail/ai-native/.github/workflows/release.yml }
+if ($?) { node (Join-Path $dl "ai-native-cli.mjs") install }
 ```
 
 `install` prints the one line that adds `~/.ai-native/bin` to your PATH. Without installing, running the downloaded `ai-native-cli.mjs` with `node` and the argument `init` does the same. Offline later:
