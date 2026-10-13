@@ -141,7 +141,7 @@ jobs:
             if (s.bomFormat !== "CycloneDX" || !Array.isArray(s.components ?? [])) { console.error("not a CycloneDX SBOM"); process.exit(1); }
             console.log("CycloneDX", s.specVersion, "components:", (s.components ?? []).length);
           ' "dist/ai-native-$v.sbom.cdx.json"
-          (cd dist && sha256sum "ai-native-$v.tar.gz" "ai-native-$v.sbom.cdx.json" platform.json revocations-*.json > SHA256SUMS && cat SHA256SUMS)
+          (cd dist && sha256sum "ai-native-$v.tar.gz" "ai-native-$v.sbom.cdx.json" platform.json ai-native-cli.mjs revocations-*.json > SHA256SUMS && cat SHA256SUMS)
 
       - name: Upload release assets
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -197,6 +197,7 @@ jobs:
             dist/ai-native-*.tar.gz
             dist/ai-native-*.sbom.cdx.json
             dist/platform.json
+            dist/ai-native-cli.mjs
             dist/revocations-*.json
 
       - name: Attest SBOM against the bundle
@@ -218,7 +219,7 @@ jobs:
           case "$VERSION" in *-alpha.*|*-rc.*) flags="--prerelease" ;; esac
           notes="Platform release $VERSION at $GITHUB_SHA. Bundle digest: ${{ needs.build.outputs.digest }}. Verify: gh attestation verify ai-native-$VERSION.tar.gz --repo $GITHUB_REPOSITORY."
           # one command per line, no trailing backslashes: a workflow that runs the pushed branch file may not contain any (secret-exposure.mjs)
-          assets=("dist/ai-native-$VERSION.tar.gz" "dist/ai-native-$VERSION.sbom.cdx.json" "dist/ai-native-$VERSION.sigstore.json" dist/platform.json dist/SHA256SUMS dist/revocations-*.json)
+          assets=("dist/ai-native-$VERSION.tar.gz" "dist/ai-native-$VERSION.sbom.cdx.json" "dist/ai-native-$VERSION.sigstore.json" dist/platform.json dist/ai-native-cli.mjs dist/SHA256SUMS dist/revocations-*.json)
           gh release create "$VERSION" --repo "$GITHUB_REPOSITORY" $flags --draft --verify-tag --title "ai-native $VERSION" --notes "$notes" "${assets[@]}"
           gh release edit "$VERSION" --repo "$GITHUB_REPOSITORY" --draft=false
 
@@ -245,7 +246,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir pub && cd pub
-          for a in "ai-native-$VERSION.tar.gz" "ai-native-$VERSION.sbom.cdx.json" "ai-native-$VERSION.sigstore.json" platform.json SHA256SUMS; do
+          for a in "ai-native-$VERSION.tar.gz" "ai-native-$VERSION.sbom.cdx.json" "ai-native-$VERSION.sigstore.json" platform.json ai-native-cli.mjs SHA256SUMS; do
             curl -fsSL --retry 3 -O "https://github.com/$GITHUB_REPOSITORY/releases/download/$VERSION/$a"
           done
           # the revocations asset is revocations-<n>.json with the HIGHEST n the release published: take its name from SHA256SUMS
@@ -263,7 +264,7 @@ jobs:
         run: |
           set -euo pipefail
           cd pub
-          for a in "ai-native-$VERSION.tar.gz" "ai-native-$VERSION.sbom.cdx.json" platform.json "$(cat revocations.name)"; do
+          for a in "ai-native-$VERSION.tar.gz" "ai-native-$VERSION.sbom.cdx.json" platform.json ai-native-cli.mjs "$(cat revocations.name)"; do
             gh attestation verify "$a" --repo "$GITHUB_REPOSITORY" --signer-workflow "$GITHUB_REPOSITORY/.github/workflows/release.yml"
           done
           # offline: the published sigstore bundle verifies without network lookups of attestations
@@ -289,3 +290,21 @@ jobs:
           out="$(node runtime/bootstrap/cli.mjs run --project "$project" --cache "$cache" -- version | head -1)"
           echo "$out"
           [ "$out" = "$VERSION $GITHUB_SHA" ]
+
+      - name: Public command from the published asset (empty repository -> ai-native init -> READY)
+        shell: bash
+        env:
+          VERSION: ${{ needs.build.outputs.version }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          cli="$PWD/pub/ai-native-cli.mjs"
+          repo="$(mktemp -d)"; cache="$(mktemp -d)"
+          git init -q "$repo"
+          cd "$repo"
+          out="$(AI_NATIVE_CACHE="$cache" node "$cli" init --version "$VERSION" --profile factory)"
+          echo "$out"
+          echo "$out" | grep -qx 'STATUS: READY'
+          echo "$out" | grep -qx 'DRIFT: CLEAN'
+          echo "$out" | grep -qx 'ATTESTATION: PASS'
+          echo "$out" | grep -qx 'REVOCATION: CHECKED'

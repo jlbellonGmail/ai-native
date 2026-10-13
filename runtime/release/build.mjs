@@ -1,16 +1,18 @@
 #!/usr/bin/env node
 // M4.2: node runtime/release/build.mjs --version vX.Y.Z[-alpha.N] --out <dir> [--commit <sha>]
 // Writes <out>/ai-native-<version>.tar.gz, <out>/platform.json (real digest),
+// <out>/ai-native-cli.mjs (the public `ai-native` command, runtime/cli/ai-native.mjs at the commit),
 // <out>/SHA256SUMS and <out>/revocations-<n>.json (highest n from
 // governance/versioning/). SBOM and attestation are produced by release.yml
 // over exactly these bytes.
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { buildBundle, publishedPlatform, sha256Hex } from "./bundle.mjs";
+import { buildBundle, publishedPlatform, readShippedFiles, sha256Hex } from "./bundle.mjs";
 import { REVOCATIONS_ASSET, pickHighest } from "./revocations.mjs";
 import { headSha } from "../lib/git.mjs";
 
+const CLI_ASSET = "ai-native-cli.mjs";
 const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const argv = process.argv.slice(2);
 const value = (n) => (argv.includes(n) ? argv[argv.indexOf(n) + 1] : null);
@@ -44,6 +46,14 @@ if (!picked.list || picked.warnings.length) {
 const revName = `revocations-${picked.list.n}.json`;
 writeFileSync(join(out, revName), readFileSync(join(revDir, revName)));
 
-const sums = [bundleName, "platform.json", revName].map((n) => `${sha256Hex(readFileSync(join(out, n)))}  ${n}`);
+// the public command: the one file that runs before anything is verified, so it is a release asset like the rest (attested by release.yml)
+const cli = readShippedFiles(root, commit)["runtime/cli/ai-native.mjs"];
+if (!cli) {
+  console.error("runtime/cli/ai-native.mjs is not part of this commit");
+  process.exit(1);
+}
+writeFileSync(join(out, CLI_ASSET), cli);
+
+const sums = [bundleName, "platform.json", revName, CLI_ASSET].map((n) => `${sha256Hex(readFileSync(join(out, n)))}  ${n}`);
 writeFileSync(join(out, "SHA256SUMS"), `${sums.join("\n")}\n`);
 console.log(JSON.stringify({ version, commit, digest, bundle: bundleName, files: fileCount, revocations: revName }, null, 2));

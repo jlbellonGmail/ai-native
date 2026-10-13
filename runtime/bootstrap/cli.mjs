@@ -12,6 +12,9 @@
 //            Online it consults the published revocations; the result says revocation CHECKED|NOT_CHECKED|REVOKED. With --check an
 //            unreadable source fails closed (REVOCATION_UNKNOWN); --offline runs without it and warns that revocation was NOT checked.
 //   doctor
+//   adopt    --repo github:o/r (--bundle <file> --attestation-record <file> | --digest sha256:...) [--version vX.Y.Z] [--profile <id>]
+//            [--offline] [--keep-existing] [--revocations <file>]   the engine behind the public `ai-native init` (runtime/cli/ai-native.mjs): lock + cache +
+//            adapters + launcher + verification in one pass, fail closed without a verified attestation
 // Common: --project <dir> (default cwd), --cache <dir> (default $AI_NATIVE_CACHE
 // or ~/.ai-native/cache), --json.
 import { readFileSync, existsSync, mkdtempSync, writeFileSync } from "node:fs";
@@ -22,6 +25,7 @@ import { defaultCacheRoot, verifyRelease } from "./cache.mjs";
 import { downloadRelease, fetchRevocations } from "./remote.mjs";
 import { parseRevocations } from "../release/revocations.mjs";
 import { renderOutput, exitCodeForReport, buildReport } from "../lib/json.mjs";
+import { adopt } from "./adopt.mjs";
 
 const argv = process.argv.slice(2);
 const command = argv.shift();
@@ -63,11 +67,46 @@ try {
     case "doctor":
       result = doctor({ projectRoot, cacheRoot });
       break;
+    case "adopt":
+      result = await adoptCommand();
+      break;
     default:
       result = { status: "ERROR", errors: [`unknown command: ${command ?? "(none)"}`], warnings: [] };
   }
 } catch (error) {
   result = { status: "ERROR", errors: [error.message], warnings: [] };
+}
+
+async function adoptCommand() {
+  const recordFile = value("--attestation-record");
+  let attestationRecord = null;
+  if (recordFile) {
+    try {
+      attestationRecord = JSON.parse(readFileSync(recordFile, "utf8"));
+    } catch (error) {
+      return { status: "ERROR", errors: [`--attestation-record unreadable: ${error.message}`], warnings: [] };
+    }
+  }
+  const interactive = process.stdin.isTTY && process.stdout.isTTY && !flag("--json");
+  const ask = interactive ? async (offered) => {
+    const { createInterface } = await import("node:readline/promises");
+    const rl = createInterface({ input: process.stdin, output: process.stdout });
+    console.log("What kind of project is this?");
+    offered.forEach((id, i) => console.log(`  ${i + 1}) ${id}`));
+    const answer = (await rl.question(`Choose 1-${offered.length}: `)).trim();
+    rl.close();
+    return offered[Number(answer) - 1] ?? answer;
+  } : null;
+  // --revocations <file>: a list obtained out of band instead of the published one (same flag as status/sync)
+  const revFile = value("--revocations");
+  let fetchRevocationsImpl;
+  if (revFile) {
+    if (!existsSync(revFile)) return { status: "ERROR", errors: [`--revocations not found: ${revFile}`], warnings: [] };
+    const parsed = parseRevocations(readFileSync(revFile, "utf8"), null);
+    if (parsed.errors.length) return { status: "ERROR", errors: parsed.errors, warnings: [] };
+    fetchRevocationsImpl = async () => ({ list: parsed.list, errors: [], warnings: [] });
+  }
+  return adopt({ fetchRevocationsImpl, projectRoot, cacheRoot, repo: value("--repo"), bundleFile: value("--bundle"), digest: value("--digest"), attestationRecord, version: value("--version"), profile: value("--profile"), offline: flag("--offline"), keepExisting: flag("--keep-existing"), ask });
 }
 
 async function statusCommand() {
@@ -140,7 +179,7 @@ async function syncCommand() {
   return { ...r, warnings: [...warnings, ...r.warnings], status: r.status === "PASS" && warnings.length ? "PASS_WITH_WARNINGS" : r.status };
 }
 
-const { status, errors, warnings, ...data } = result;
+const { status, errors, warnings, text, ...data } = result;
 const out = buildReport({ status, errors, warnings, data });
-console.log(renderOutput(out, { json: flag("--json") }));
+console.log(text && !flag("--json") ? text : renderOutput(out, { json: flag("--json") }));
 process.exit(exitCodeForReport(out, { strict: false }));

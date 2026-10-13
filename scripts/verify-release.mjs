@@ -28,9 +28,16 @@ export function parseSums(text) {
 
 export const sha256 = (buf) => createHash("sha256").update(buf).digest("hex");
 
+export const CLI_ASSET = "ai-native-cli.mjs";
+/** The public command is a release asset from the first release that ships `ai-native init`; older (immutable) releases never had it. */
+export const hasCliAsset = (tag) => {
+  const [a, b, c] = /^v(d+).(d+).(d+)/.exec(tag).slice(1).map(Number);
+  return a > 3 || (a === 3 && (b > 1 || (b === 1 && c >= 4)));
+};
+
 /** Assets every platform release must carry. */
 export function expectedAssets(tag) {
-  return [`ai-native-${tag}.tar.gz`, `ai-native-${tag}.sbom.cdx.json`, `ai-native-${tag}.sigstore.json`, "platform.json", "SHA256SUMS"];
+  return [`ai-native-${tag}.tar.gz`, `ai-native-${tag}.sbom.cdx.json`, `ai-native-${tag}.sigstore.json`, "platform.json", ...(hasCliAsset(tag) ? [CLI_ASSET] : []), "SHA256SUMS"];
 }
 
 const run = (cmd, args, opts = {}) => spawnSync(cmd, args, { encoding: "utf8", maxBuffer: 256 * 1024 * 1024, ...opts });
@@ -79,6 +86,11 @@ export function verifyRelease({ tag, repo = "jlbellonGmail/ai-native", expectCom
     }
     const off = gh(["attestation", "verify", join(dir, tarName), "--repo", repo, "--bundle", join(dir, `ai-native-${tag}.sigstore.json`)]);
     add("attestation verifies offline with the sigstore bundle", off.status === 0);
+    if (hasCliAsset(tag)) {
+      const signed = gh(["attestation", "verify", join(dir, CLI_ASSET), "--repo", repo, "--signer-workflow", `${repo}/.github/workflows/release.yml`]);
+      add("public command is attested by the release workflow", signed.status === 0, signed.status === 0 ? "" : signed.stderr.trim().split("
+")[0]);
+    }
     const foreign = gh(["attestation", "verify", join(dir, tarName), "--repo", "jlbellonGmail/template"]);
     add("attestation of a FOREIGN repo is rejected", foreign.status !== 0);
 
@@ -109,6 +121,18 @@ export function verifyRelease({ tag, repo = "jlbellonGmail/ai-native", expectCom
     let stj = {};
     try { stj = JSON.parse(st.stdout); } catch { /* reported */ }
     add("status --check is READY with revocation CHECKED", st.status === 0 && stj.state === "READY" && stj.revocation === "CHECKED", `${stj.state} revocation=${stj.revocation}`);
+    if (hasCliAsset(tag)) {
+      // the acceptance test of the whole feature, from the PUBLISHED asset: an empty Git repository, one command, READY
+      const empty = join(dir, "empty-repo");
+      mkdirSync(empty);
+      run("git", ["init", "-q"], { cwd: empty });
+      const r = run(process.execPath, [join(dir, CLI_ASSET), "init", "--version", tag, "--profile", "factory"], { cwd: empty, env: { ...process.env, AI_NATIVE_CACHE: join(dir, "cache-init") } });
+      const lines = r.stdout.split(/?
+/);
+      const ok = r.status === 0 && ["STATUS: READY", "DRIFT: CLEAN", "ATTESTATION: PASS", "REVOCATION: CHECKED"].every((l) => lines.includes(l));
+      add("ai-native init from the published asset: empty repository -> READY, CLEAN, attested, revocations checked", ok, ok ? "" : (r.stdout + r.stderr).trim().split("
+").slice(-3).join(" | "));
+    }
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
