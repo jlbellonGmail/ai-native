@@ -19,6 +19,7 @@ import { gunzipSync } from "node:zlib";
 
 export const OFFICIAL_REPO = "jlbellonGmail/ai-native";
 const STABLE = /^v(\d+)\.(\d+)\.(\d+)$/;
+const VERSION = /^v\d+\.\d+\.\d+(-(alpha|rc)\.\d+)?$/; // also what a lock may pin: repository content is never trusted to build a URL or a file name
 const MAX_BYTES = 256 * 1024 * 1024;
 const HELP = `ai-native — start a project with the AI-NATIVE platform
 
@@ -141,7 +142,7 @@ function parse(argv) {
       o[a.slice(2)] = argv[++i];
     } else throw new Fail(`unknown option: ${a}`);
   }
-  if (o.version && !STABLE.test(o.version) && !/^v\d+\.\d+\.\d+-(alpha|rc)\.\d+$/.test(o.version)) throw new Fail(`invalid --version: ${o.version}`);
+  if (o.version && !VERSION.test(o.version)) throw new Fail(`invalid --version: ${o.version}`);
   return o;
 }
 
@@ -170,7 +171,7 @@ export async function main(argv, { fetchImpl = fetch, spawn = spawnSync, env = p
         o.version = p.version;
         digest = p.digest;
         o.slug = /^github:([A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+)$/.exec(p.repo)?.[1];
-        if (!o.slug || !/^sha256:[0-9a-f]{64}$/.test(digest) || !o.version) throw new Error("incomplete platform");
+        if (!o.slug || !/^sha256:[0-9a-f]{64}$/.test(digest) || !VERSION.test(o.version)) throw new Error("incomplete or malformed platform");
       } catch (error) {
         throw new Fail(`ai-native.lock.json is not usable (${error.message}); fix or remove it`);
       }

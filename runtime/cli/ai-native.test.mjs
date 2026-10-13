@@ -249,3 +249,19 @@ test("`install` puts the command on the machine: a copy and shims for sh and cmd
   const v = spawnSync(process.execPath, [join(bin, "ai-native.mjs"), "version"], { encoding: "utf8" });
   assert.match(v.stdout, /^ai-native cli \(/);
 });
+
+test("a lock is repository content: a malformed pinned version or repo never reaches a URL or a file name", async () => {
+  for (const platform of [
+    { repo: `github:${SLUG}`, version: "v1.0.0/../../x", digest: `sha256:${"a".repeat(64)}` },
+    { repo: `github:${SLUG}`, version: "v1.0.0", digest: "sha256:short" },
+    { repo: "https://evil.example/x", version: "v1.0.0", digest: `sha256:${"a".repeat(64)}` },
+  ]) {
+    const project = gitInit();
+    writeFileSync(join(project, "ai-native.lock.json"), JSON.stringify({ schemaVersion: 1, platform, profiles: ["factory"] }));
+    const w = world();
+    assert.equal(await w.run(["init"], { cwd: project, cache: tmp("c") }), 1);
+    assert.match(w.err.join("\n"), /ai-native\.lock\.json is not usable/);
+    assert.deepEqual(w.log.fetched, []);
+    assert.deepEqual(w.log.gh, []);
+  }
+});
