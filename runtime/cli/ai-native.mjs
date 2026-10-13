@@ -19,11 +19,12 @@ import { gunzipSync } from "node:zlib";
 
 export const OFFICIAL_REPO = "jlbellonGmail/ai-native";
 const STABLE = /^v(\d+)\.(\d+)\.(\d+)$/;
+const DIGEST = /^sha256:[0-9a-f]{64}$/;
 const VERSION = /^v\d+\.\d+\.\d+(-(alpha|rc)\.\d+)?$/; // also what a lock may pin: repository content is never trusted to build a URL or a file name
 const MAX_BYTES = 256 * 1024 * 1024;
 const HELP = `ai-native — start a project with the AI-NATIVE platform
 
-  ai-native init [--profile <id>] [--version vX.Y.Z] [--offline] [--keep-existing] [--json]
+  ai-native init [--profile <id>] [--version vX.Y.Z] [--offline] [--trust-repo owner/name] [--keep-existing] [--json]
       Run inside a Git repository (empty or not). Fetches the latest stable release, verifies it (sha256 + sigstore attestation +
       revocations), writes ai-native.lock.json, the tool adapters and .ai-native/ai-native.mjs, and checks the result.
       Run it again any time: on an adopted repository it only re-verifies.
@@ -39,22 +40,72 @@ export const defaultCache = (env = process.env) => env.AI_NATIVE_CACHE || join(h
 
 class Fail extends Error {}
 
-/** Latest stable, published, immutable release (highest SemVer). `immutable: false` is skipped; an API without the field is not held against it. */
-export async function latestStable({ fetchImpl, slug, env }) {
+export async function listReleases({ fetchImpl, slug, env }) {
   const headers = { accept: "application/vnd.github+json", "user-agent": "ai-native-cli" };
   const token = env.GH_TOKEN || env.GITHUB_TOKEN;
   if (token) headers.authorization = `Bearer ${token}`;
-  let list;
   try {
     const res = await fetchImpl(`https://api.github.com/repos/${slug}/releases?per_page=100`, { headers });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    list = await res.json();
+    return await res.json();
   } catch (error) {
     throw new Fail(`cannot reach GitHub Releases (${error.message}). Offline? \`ai-native init --offline\` uses a release this machine already verified.`);
   }
+}
+
+/** Highest SemVer among releases that are published, stable and immutable. `immutable: false` is skipped; an API without the field is not held against it. */
+export function pickLatest(list, slug) {
   const ok = list.filter((r) => !r.draft && !r.prerelease && STABLE.test(r.tag_name) && r.immutable !== false).sort((a, b) => newer(b.tag_name, a.tag_name));
   if (!ok.length) throw new Fail(`no stable, immutable release found for ${slug}`);
-  return { version: ok[0].tag_name, release: ok[0] };
+  return ok[0];
+}
+
+export async function latestStable({ fetchImpl, slug, env }) {
+  const release = pickLatest(await listReleases({ fetchImpl, slug, env }), slug);
+  return { version: release.tag_name, release };
+}
+
+/** The attestation record the cache keeps for a release, or null. It must name this digest and this source and say it came from `gh attestation verify`. */
+export function readRecord(cacheRoot, hex, { digest, slug }) {
+  try {
+    const r = JSON.parse(readFileSync(join(cacheRoot, "attestations", `${hex}.json`), "utf8"));
+    return r.digest === digest && r.repo === slug && r.verifiedBy === "gh attestation verify" && VERSION.test(r.version ?? "") ? r : null;
+  } catch {
+    return null;
+  }
+}
+
+/** The release must not be on the published revocations list (highest n, attested). Information that exists but cannot be read fails closed. */
+async function assertNotRevoked({ list, slug, version, fetchImpl, spawn, tmp }) {
+  const assets = new Map();
+  for (const r of list) {
+    for (const a of r.assets ?? []) {
+      const m = /^revocations-(\d+)\.json$/.exec(a.name ?? "");
+      if (m && !assets.has(a.name) && STABLE.test(r.tag_name ?? "")) assets.set(a.name, { n: Number(m[1]), url: `https://github.com/${slug}/releases/download/${r.tag_name}/${a.name}` });
+    }
+  }
+  const top = [...assets.entries()].sort((a, b) => b[1].n - a[1].n)[0];
+  if (!top) return;
+  let bytes;
+  try {
+    bytes = await download(fetchImpl, top[1].url, 1024 * 1024);
+  } catch (error) {
+    throw new Fail(`REVOCATION_UNKNOWN: ${top[0]} could not be read (${error.message}); use --offline to run without that information`);
+  }
+  const dir = mkdtempSync(join(tmpdir(), "ai-native-rev-"));
+  tmp.push(dir);
+  const file = join(dir, top[0]);
+  writeFileSync(file, bytes);
+  verifyAttestation({ spawn, file, slug });
+  let entries;
+  try {
+    entries = JSON.parse(bytes.toString("utf8")).entries;
+    if (!Array.isArray(entries)) throw new Error("no entries");
+  } catch (error) {
+    throw new Fail(`REVOCATION_UNKNOWN: ${top[0]} is not a valid list (${error.message})`);
+  }
+  const hit = entries.find((e) => e && e.kind === "platform" && e.version === version);
+  if (hit) throw new Fail(`REVOKED: ${version} is revoked (${hit.severity ?? "high"}): ${hit.reason}`);
 }
 
 /** Highest stable release that this machine already verified and still holds (for --offline). */
@@ -65,7 +116,7 @@ export function newestCached(cacheRoot, slug) {
   for (const name of readdirSync(dir).filter((n) => n.endsWith(".json"))) {
     try {
       const r = JSON.parse(readFileSync(join(dir, name), "utf8"));
-      if (r.repo === slug && STABLE.test(r.version) && r.digest === `sha256:${name.slice(0, -5)}` && r.verifiedBy === "gh attestation verify" && existsSync(join(cacheRoot, "releases", name.slice(0, -5), "runtime", "bootstrap", "cli.mjs"))) found.push(r);
+      if (r.repo === slug && STABLE.test(r.version) && r.digest === `sha256:${name.slice(0, -5)}` && r.verifiedBy === "gh attestation verify" && existsSync(join(cacheRoot, "blobs", "sha256", name.slice(0, -5)))) found.push(r);
     } catch { /* an unreadable record is not a verification */ }
   }
   return found.sort((a, b) => newer(b.version, a.version))[0] ?? null;
@@ -103,7 +154,7 @@ export function unpack(gz) {
   return files;
 }
 
-async function download(fetchImpl, url) {
+async function download(fetchImpl, url, limit = MAX_BYTES) {
   let res;
   try {
     res = await fetchImpl(url, { redirect: "follow", headers: { "user-agent": "ai-native-cli" } });
@@ -112,7 +163,7 @@ async function download(fetchImpl, url) {
   }
   if (!res.ok) throw new Fail(`cannot download ${url}: HTTP ${res.status}`);
   const bytes = Buffer.from(await res.arrayBuffer());
-  if (bytes.length > MAX_BYTES) throw new Fail(`${url}: response exceeds ${MAX_BYTES} bytes`);
+  if (bytes.length > limit) throw new Fail(`${url}: response exceeds ${limit} bytes`);
   return bytes;
 }
 
@@ -137,12 +188,13 @@ function parse(argv) {
     if (a === "--offline") o.offline = true;
     else if (a === "--keep-existing") o.keepExisting = true;
     else if (a === "--json") o.json = true;
-    else if (a === "--profile" || a === "--version") {
+    else if (a === "--profile" || a === "--version" || a === "--trust-repo") {
       if (!argv[i + 1] || argv[i + 1].startsWith("--")) throw new Fail(`${a} needs a value`);
-      o[a.slice(2)] = argv[++i];
+      o[a === "--trust-repo" ? "trustRepo" : a.slice(2)] = argv[++i];
     } else throw new Fail(`unknown option: ${a}`);
   }
   if (o.version && !VERSION.test(o.version)) throw new Fail(`invalid --version: ${o.version}`);
+  if (o.trustRepo && !/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(o.trustRepo)) throw new Fail(`invalid --trust-repo: ${o.trustRepo}`);
   return o;
 }
 
@@ -166,64 +218,74 @@ export async function main(argv, { fetchImpl = fetch, spawn = spawnSync, env = p
     let digest = null;
     const lockFile = join(o.project, "ai-native.lock.json");
     if (existsSync(lockFile)) {
+      let pinned;
       try {
         const p = JSON.parse(readFileSync(lockFile, "utf8")).platform;
-        o.version = p.version;
-        digest = p.digest;
-        o.slug = /^github:([A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+)$/.exec(p.repo)?.[1];
-        if (!o.slug || !/^sha256:[0-9a-f]{64}$/.test(digest) || !VERSION.test(o.version)) throw new Error("incomplete or malformed platform");
+        pinned = { version: p.version, digest: p.digest, slug: /^github:([A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+)$/.exec(p.repo)?.[1] };
+        if (!pinned.slug || !DIGEST.test(pinned.digest) || !VERSION.test(pinned.version)) throw new Error("incomplete or malformed platform");
       } catch (error) {
         throw new Fail(`ai-native.lock.json is not usable (${error.message}); fix or remove it`);
       }
-    }
-    let asset = null;
-    if (!digest && !o.version) {
-      if (o.offline) {
-        const c = newestCached(o.cache, o.slug);
-        if (!c) throw new Fail("OFFLINE: this machine has no verified release in its cache; run `ai-native init` once with network access");
-        o.version = c.version;
-        digest = c.digest;
-      } else {
-        const { version, release } = await latestStable({ fetchImpl, slug: o.slug, env });
-        o.version = version;
-        asset = release.assets?.find((a) => a.name === `ai-native-${version}.tar.gz`);
-      }
-    }
-    digest ??= asset?.digest ?? null;
+      // The lock is repository content: it cannot choose whom this command trusts. Another source needs the person's explicit word.
+      if (pinned.slug !== repo && o.trustRepo !== pinned.slug) throw new Fail(`TRUST_ROOT: this repository is pinned to releases of ${pinned.slug}, but this command trusts only ${repo}. If you trust ${pinned.slug}, say so: ai-native init --trust-repo ${pinned.slug}`);
+      if (o.version && o.version !== pinned.version) throw new Fail(`--version ${o.version} conflicts with the release this repository is pinned to (${pinned.version}); bump the lock instead`);
+      o.version = pinned.version;
+      digest = pinned.digest;
+      o.slug = pinned.slug;
+    } else if (o.trustRepo) throw new Fail("--trust-repo only applies to a repository that is already pinned to another source");
 
-    // cache hit with the record of its verified attestation: no network
+    let release = null;
+    if (!o.offline) {
+      const list = await listReleases({ fetchImpl, slug: o.slug, env });
+      if (!digest && !o.version) {
+        release = pickLatest(list, o.slug);
+        o.version = release.tag_name;
+      } else release = list.find((r) => r.tag_name === o.version) ?? null;
+      await assertNotRevoked({ list, slug: o.slug, version: o.version, fetchImpl, spawn, tmp });
+    } else if (!digest && !o.version) {
+      const c = newestCached(o.cache, o.slug);
+      if (!c) throw new Fail("OFFLINE: this machine has no verified release in its cache; run `ai-native init` once with network access");
+      o.version = c.version;
+      digest = c.digest;
+    }
+    const published = release?.assets?.find((x) => x.name === `ai-native-${o.version}.tar.gz`)?.digest;
+    digest ??= DIGEST.test(published ?? "") ? published : null;
+
+    // One path for the cache and the network: the engine always starts from a bundle whose sha256 was just checked and whose attestation is
+    // on record, unpacked into a private temp directory. The cache's own unpacked copy of a release is never executed from here.
+    const work = mkdtempSync(join(tmpdir(), "ai-native-init-"));
+    tmp.push(work);
+    const name = `ai-native-${o.version}.tar.gz`;
+    const bundle = join(work, name);
     const hex = digest?.replace(/^sha256:/, "");
-    const cached = hex && existsSync(join(o.cache, "releases", hex, "runtime", "bootstrap", "cli.mjs")) && existsSync(join(o.cache, "attestations", `${hex}.json`));
-    let engine;
-    let extra;
-    if (cached) {
-      engine = join(o.cache, "releases", hex);
-      extra = ["--digest", digest];
-    } else {
+    let record = hex ? readRecord(o.cache, hex, { digest, slug: o.slug }) : null;
+    const blob = hex ? join(o.cache, "blobs", "sha256", hex) : null;
+    let bytes = null;
+    if (record && existsSync(blob)) {
+      bytes = readFileSync(blob);
+      if (`sha256:${sha256(bytes)}` !== digest) throw new Fail(`CACHE_CORRUPT: the cached bundle for ${o.version} does not match its digest; remove ${blob} and run again with network access`);
+    }
+    if (!bytes) {
       if (o.offline) throw new Fail(`OFFLINE: ${o.version} is not in the cache with a verified attestation; run \`ai-native init\` once with network access`);
-      const work = mkdtempSync(join(tmpdir(), "ai-native-init-"));
-      tmp.push(work);
-      const name = `ai-native-${o.version}.tar.gz`;
-      const bytes = await download(fetchImpl, `https://github.com/${o.slug}/releases/download/${o.version}/${name}`);
+      bytes = await download(fetchImpl, `https://github.com/${o.slug}/releases/download/${o.version}/${name}`);
       const actual = `sha256:${sha256(bytes)}`;
       if (digest && actual !== digest) throw new Fail(`DIGEST_MISMATCH: ${name} is ${actual}, expected ${digest}`);
-      const bundle = join(work, name);
       writeFileSync(bundle, bytes);
       verifyAttestation({ spawn, file: bundle, slug: o.slug });
-      const files = unpack(bytes);
-      const platform = JSON.parse(files.get("platform.json")?.toString("utf8") ?? "{}");
-      if (platform.version !== o.version) throw new Fail(`bundle says ${platform.version}, release is ${o.version}`);
-      if (!files.has("runtime/bootstrap/adopt.mjs")) throw new Fail(`${o.version} predates \`ai-native init\` (it ships no engine for it): ${existsSync(lockFile) ? "this repository is pinned to it; bump the lock to a newer release first" : "use a newer release"}`);
-      const root = join(work, "release");
-      for (const [path, content] of files) {
-        mkdirSync(dirname(join(root, path)), { recursive: true });
-        writeFileSync(join(root, path), content);
-      }
-      const record = join(work, "attestation.json");
-      writeFileSync(record, JSON.stringify({ digest: actual, repo: o.slug, version: o.version, verifiedBy: "gh attestation verify", signerWorkflow: `${o.slug}/.github/workflows/release.yml`, verifiedAt: new Date().toISOString() }));
-      engine = root;
-      extra = ["--bundle", bundle, "--attestation-record", record];
+      record = { digest: actual, repo: o.slug, version: o.version, verifiedBy: "gh attestation verify", signerWorkflow: `${o.slug}/.github/workflows/release.yml`, verifiedAt: new Date().toISOString() };
+    } else writeFileSync(bundle, bytes);
+    const files = unpack(bytes);
+    const platform = JSON.parse(files.get("platform.json")?.toString("utf8") ?? "{}");
+    if (platform.version !== o.version) throw new Fail(`bundle says ${platform.version}, release is ${o.version}`);
+    if (!files.has("runtime/bootstrap/adopt.mjs")) throw new Fail(`${o.version} predates \`ai-native init\` (it ships no engine for it): ${existsSync(lockFile) ? "this repository is pinned to it; bump the lock to a newer release first" : "use a newer release"}`);
+    const engine = join(work, "release");
+    for (const [path, content] of files) {
+      mkdirSync(dirname(join(engine, path)), { recursive: true });
+      writeFileSync(join(engine, path), content);
     }
+    const recordFile = join(work, "attestation.json");
+    writeFileSync(recordFile, JSON.stringify(record));
+    const extra = ["--bundle", bundle, "--attestation-record", recordFile];
     const run = spawn(process.execPath, [join(engine, "runtime", "bootstrap", "cli.mjs"), ...engineArgs(o, extra)], { stdio: "inherit", env });
     return run.status ?? 1;
   } catch (error) {

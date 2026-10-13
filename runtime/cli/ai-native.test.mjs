@@ -101,7 +101,7 @@ test("a second run on the adopted repository is idempotent, needs no download an
   const snap = () => Object.fromEntries(tree(project).filter((p) => { try { readFileSync(join(project, p)); return true; } catch { return false; } }).map((p) => [p, sha256(readFileSync(join(project, p)))]));
   const before = snap();
   const w = world({ network: false });
-  assert.equal(await w.run(["init"], { cwd: project, cache }), 0, w.log.engineOut + w.err.join("\n"));
+  assert.equal(await w.run(["init", "--offline"], { cwd: project, cache }), 0, w.log.engineOut + w.err.join("\n"));
   assert.deepEqual(w.log.fetched, [], "the lock pins the release and the cache holds it with its attestation record: no network");
   assert.deepEqual(w.log.gh, []);
   assert.match(w.log.engineOut, /ADOPTION: ALREADY_ADOPTED/);
@@ -194,7 +194,7 @@ test("cache tampering: a damaged blob in the cache is not trusted; the run fails
   const project = gitInit();
   const w = world({ network: false });
   assert.equal(await w.run(["init", "--offline", "--profile", "python-service"], { cwd: project, cache }), 1);
-  assert.match(w.log.engineOut, /STATUS: FAILED/);
+  assert.match(w.err.join(" "), /CACHE_CORRUPT/);
   assert.deepEqual(tree(project), []);
 });
 
@@ -264,4 +264,102 @@ test("a lock is repository content: a malformed pinned version or repo never rea
     assert.deepEqual(w.log.fetched, []);
     assert.deepEqual(w.log.gh, []);
   }
+});
+
+// ---- independent audit of 41dd2a8 (AUDIT-PLATFORM-41dd2a8.md): P-01, P-03, P-05/P-06, P-07, P-09 ----
+
+const withLock = (project, platform) => writeFileSync(join(project, "ai-native.lock.json"), JSON.stringify({ schemaVersion: 1, platform, profiles: ["factory"] }));
+const revBody = (entries) => JSON.stringify({ schemaVersion: 1, n: 1, publishedAt: "2026-10-02T00:00:00Z", entries });
+
+/** A world whose latest release also publishes revocations-1.json; `body === null` makes that download fail. */
+function worldWithRevocations(body, { gh = "PASS" } = {}) {
+  const list = [{ ...releases[0], assets: [...releases[0].assets, { name: "revocations-1.json" }] }, ...releases.slice(1)];
+  const url = `https://github.com/${SLUG}/releases/download/v9.9.9/revocations-1.json`;
+  const log = { fetched: [], gh: [], engine: [], engineOut: "" };
+  const out = []; const err = [];
+  const fetchImpl = async (u) => {
+    log.fetched.push(u);
+    if (u === API) return reply(list);
+    if (u === url) return body === null ? reply("nope", 500) : reply(body);
+    if (u === BUNDLE_URL("v9.9.9")) return reply(rel.bytes);
+    return reply("not found", 404);
+  };
+  const spawn = (cmd, args, opts) => {
+    if (cmd === "gh") { log.gh.push(args); return gh === "PASS" ? { status: 0 } : { status: 1, stderr: "verification failed" }; }
+    if (cmd === process.execPath) {
+      log.engine.push(args);
+      const r = spawnSync(cmd, [...args, "--revocations", revocations], { ...opts, stdio: "pipe", encoding: "utf8" });
+      log.engineOut = r.stdout + r.stderr;
+      return r;
+    }
+    return spawnSync(cmd, args, opts);
+  };
+  const run = (argv, { cwd, cache } = {}) => main(argv, { fetchImpl, spawn, cwd, env: { ...process.env, AI_NATIVE_CACHE: cache, GIT_TERMINAL_PROMPT: "0" }, out: (m) => out.push(m), err: (m) => err.push(m), repo: SLUG });
+  return { log, run, out, err };
+}
+
+test("P-01: the lock cannot choose the trust root; another source needs the person's explicit --trust-repo", async () => {
+  const project = gitInit();
+  withLock(project, { repo: "github:evil/ai-native", version: "v1.0.0", commit: "a".repeat(40), digest: `sha256:${"a".repeat(64)}` });
+  const w = world();
+  assert.equal(await w.run(["init"], { cwd: project, cache: tmp("c") }), 1);
+  assert.match(w.err.join(" "), /TRUST_ROOT: .*pinned to releases of evil\/ai-native.*trusts only o\/ai-native.*--trust-repo evil\/ai-native/);
+  assert.deepEqual(w.log.fetched, [], "nothing is fetched from the other source");
+  assert.deepEqual(w.log.gh, []);
+  // with the explicit word it asks THAT source (and fails here because the fake world has no such release)
+  const w2 = world();
+  assert.equal(await w2.run(["init", "--trust-repo", "evil/ai-native"], { cwd: project, cache: tmp("c") }), 1);
+  assert.ok(w2.log.fetched.some((u) => u.includes("/repos/evil/ai-native/")));
+  // --trust-repo means nothing without a lock that names it
+  assert.equal(await world().run(["init", "--trust-repo", "evil/ai-native"], { cwd: gitInit(), cache: tmp("c") }), 1);
+});
+
+test("P-03: the launcher checks the attested revocations list before running any engine", async () => {
+  const project = gitInit();
+  const w = worldWithRevocations(revBody([{ kind: "platform", id: "ai-native", version: "v9.9.9", reason: "bad build", severity: "critical" }]));
+  assert.equal(await w.run(["init", "--profile", "python-service"], { cwd: project, cache: tmp("c") }), 1);
+  assert.match(w.err.join(" "), /REVOKED: v9\.9\.9 is revoked \(critical\): bad build/);
+  assert.deepEqual(w.log.engine, [], "a revoked release's engine never runs");
+  assert.deepEqual(tree(project), []);
+  // a list that exists but cannot be read is not "not revoked"
+  const unreadable = worldWithRevocations(null);
+  assert.equal(await unreadable.run(["init", "--profile", "python-service"], { cwd: gitInit(), cache: tmp("c") }), 1);
+  assert.match(unreadable.err.join(" "), /REVOCATION_UNKNOWN/);
+  // a list whose attestation fails is not used
+  const forged = worldWithRevocations(revBody([]), { gh: "FAIL" });
+  assert.equal(await forged.run(["init", "--profile", "python-service"], { cwd: gitInit(), cache: tmp("c") }), 1);
+  assert.match(forged.err.join(" "), /ATTESTATION_FAILED/);
+  // a clean list lets it through, and both the list and the bundle were attested
+  const clean = worldWithRevocations(revBody([]));
+  assert.equal(await clean.run(["init", "--profile", "python-service"], { cwd: gitInit(), cache: tmp("c") }), 0, clean.log.engineOut);
+  assert.equal(clean.log.gh.length, 2);
+});
+
+test("P-05/P-06: the cached unpacked release is never executed; the record must name this digest AND this source", async () => {
+  const cache = tmp("cache");
+  await world().run(["init", "--profile", "python-service"], { cwd: gitInit(), cache });
+  const hex = rel.digest.slice(7);
+  // malicious code planted in the cache's unpacked release changes nothing: that copy is not what runs
+  writeFileSync(join(cache, "releases", hex, "runtime", "bootstrap", "cli.mjs"), "require('node:fs').writeFileSync(process.env.PWNED_FILE, 'x'); process.exit(0)\n");
+  const pwned = join(tmp("pwn"), "pwned");
+  const w = world({ network: false });
+  assert.equal(await w.run(["init", "--offline", "--profile", "python-service"], { cwd: gitInit(), cache, env: { PWNED_FILE: pwned } }), 0, w.log.engineOut + w.err.join(" "));
+  assert.equal(existsSync(pwned), false);
+  // a record for another source, or an empty one, is not a verification
+  for (const rec of [{}, { digest: rel.digest, repo: "evil/ai-native", version: "v9.9.9", verifiedBy: "gh attestation verify" }]) {
+    writeFileSync(join(cache, "attestations", `${hex}.json`), JSON.stringify(rec));
+    const w2 = world({ network: false });
+    assert.equal(await w2.run(["init", "--offline", "--profile", "python-service"], { cwd: gitInit(), cache }), 1);
+    assert.match(w2.err.join(" "), /OFFLINE/);
+  }
+});
+
+test("P-07: --version cannot contradict the pinned release; P-09: a malformed digest from the API is not used", async () => {
+  const project = gitInit();
+  withLock(project, { repo: `github:${SLUG}`, version: "v9.9.9", commit: "c".repeat(40), digest: rel.digest });
+  const w = world();
+  assert.equal(await w.run(["init", "--version", "v9.9.8"], { cwd: project, cache: tmp("c") }), 1);
+  assert.match(w.err.join(" "), /--version v9\.9\.8 conflicts with the release this repository is pinned to \(v9\.9\.9\)/);
+  const bad = world({ list: [{ ...releases[0], assets: [{ name: "ai-native-v9.9.9.tar.gz", digest: "sha256:../../etc" }] }] });
+  assert.equal(await bad.run(["init", "--profile", "python-service"], { cwd: gitInit(), cache: tmp("c") }), 0, bad.log.engineOut + bad.err.join(" "));
 });

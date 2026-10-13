@@ -155,7 +155,7 @@ function verify({ projectRoot, cacheRoot, selection, revocations, offline }) {
  * @param {boolean} [o.offline] no network: revocations are NOT checked (and said so)
  * @param {boolean} [o.keepExisting] leave files that already exist and differ untouched instead of stopping
  */
-export async function adopt({ projectRoot, cacheRoot, repo, bundleFile = null, digest = null, attestationRecord = null, version = null, profile = null, offline = false, keepExisting = false, ask = null, fetchRevocationsImpl = fetchRevocations }) {
+export async function adopt({ projectRoot, cacheRoot, repo, bundleFile = null, digest = null, attestationRecord = null, version = null, profile = null, offline = false, keepExisting = false, ask = null, fetchRevocationsImpl = fetchRevocations, afterStage = null }) {
   projectRoot = resolve(projectRoot);
   const facts = repoFacts(projectRoot);
   if (facts.errors.length) return fail(facts.errors);
@@ -232,6 +232,7 @@ export async function adopt({ projectRoot, cacheRoot, repo, bundleFile = null, d
 
   const base = { version: platform.version, profile: chosen.profile, how: adopted ? undefined : chosen.how, attestation: "PASS", revocation: revocations ? "CHECKED" : "NOT_CHECKED" };
   let wrote = false;
+  const indexBefore = trackedPaths(projectRoot); // what the index held before this run touched anything: rollback restores exactly this
   try {
     if (adopted) {
       const synced = sync({ projectRoot, cacheRoot, fromFile: bundleOnDisk, revocations });
@@ -255,6 +256,7 @@ export async function adopt({ projectRoot, cacheRoot, repo, bundleFile = null, d
       const hidden = checkTracking(projectRoot, { onlyIgnored: true });
       if (hidden.status === "FAIL") throw new Error(`IGNORED_REQUIRED_FILE: hidden by a .gitignore rule, so it would not reach a clean clone: ${hidden.ignored.join(", ")}. ${remedy(hidden)}`);
       stage(projectRoot, Object.keys(managedPaths(projectRoot)));
+      if (afterStage) afterStage(); // test seam: a failure after the index was written
     }
     writeAttestation(cacheRoot, { ...record, schemaVersion: 1 });
     const v = verify({ projectRoot, cacheRoot, selection, revocations, offline });
@@ -272,8 +274,9 @@ export async function adopt({ projectRoot, cacheRoot, repo, bundleFile = null, d
     };
     return { ...out, text: renderText(out) };
   } catch (error) {
-    if (wrote) rollbackFresh(projectRoot);
-    return fail([error.message], warnings, { ...base, adoption: wrote ? "ROLLED_BACK (nothing was left in the repository)" : undefined });
+    const left = wrote ? rollbackFresh(projectRoot, indexBefore) : [];
+    const adoption = !wrote ? undefined : left.length ? `ROLLBACK_INCOMPLETE (left behind: ${left.slice(0, 8).join(", ")}${left.length > 8 ? `, +${left.length - 8} more` : ""})` : "ROLLED_BACK (nothing was left in the repository or in the index)";
+    return fail([error.message], warnings, { ...base, adoption });
   }
 }
 
@@ -289,15 +292,28 @@ function ensureInCache(cacheRoot, digest, bytes, files) {
   putRelease(cacheRoot, digest, files);
 }
 
-/** Undo exactly what this run wrote: the adoption (journal-driven) and the lock. Files the user changed since are kept by revert itself. */
-function rollbackFresh(projectRoot) {
+const trackedPaths = (root) => {
+  const r = spawnSync("git", ["ls-files", "-z"], { cwd: root, encoding: "utf8", maxBuffer: 256 * 1024 * 1024 });
+  return new Set(r.status === 0 ? r.stdout.split("\0").filter(Boolean) : []);
+};
+
+/**
+ * Undo exactly what this run wrote: unstage what it added to the index (only what the index did not hold before), revert the adoption
+ * (journal-driven; files the user changed since are kept by revert itself) and remove the lock. Returns what is still left, so the report
+ * never claims a clean rollback it did not achieve.
+ */
+function rollbackFresh(projectRoot, indexBefore) {
+  const ours = Object.keys(managedPaths(projectRoot)).filter((p) => !indexBefore.has(p));
+  if (ours.length) spawnSync("git", ["rm", "--cached", "-q", "--ignore-unmatch", "--", ...ours], { cwd: projectRoot });
   if (existsSync(join(projectRoot, JOURNAL_PATH))) {
     try {
       revertAdoption(projectRoot);
     } catch {
-      // revert reports what it kept; the lock is removed below either way
+      // revert reports what it kept; the check below says what is left
     }
   }
   rmSync(join(projectRoot, LOCK_FILE), { force: true });
-  spawnSync("git", ["rm", "--cached", "-r", "-q", "--ignore-unmatch", "--", LOCK_FILE, ".ai-native"], { cwd: projectRoot });
+  const leftInIndex = [...trackedPaths(projectRoot)].filter((p) => !indexBefore.has(p));
+  const leftOnDisk = ours.filter((p) => existsSync(join(projectRoot, p)) && !leftInIndex.includes(p));
+  return [...new Set([...leftInIndex, ...leftOnDisk])].sort();
 }

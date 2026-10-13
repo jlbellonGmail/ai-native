@@ -226,3 +226,20 @@ test("an existing lock that is not valid is reported, not overwritten", async ()
   assert.match(r.errors[0], /not valid JSON/);
   assert.equal(readFileSync(join(project, "ai-native.lock.json"), "utf8"), "{ nope");
 });
+
+test("P-02: a failure AFTER the index was written unstages exactly what this run staged, keeps what was tracked before, and says the truth", async () => {
+  const project = repo();
+  mkdirSync(join(project, ".ai-native"));
+  writeFileSync(join(project, ".ai-native", "keep.txt"), "mine\n");
+  writeFileSync(join(project, "README.md"), "# x\n");
+  git(project, "add", ".ai-native/keep.txt", "README.md");
+  const before = git(project, "ls-files").trim();
+  const r = await run(project, tmp("cache"), { afterStage: () => { throw new Error("boom after staging"); } });
+  assert.equal(r.status, "FAIL");
+  assert.match(r.errors[0], /boom after staging/);
+  assert.match(r.adoption, /^ROLLED_BACK/);
+  assert.equal(git(project, "ls-files").trim(), before, "the index is exactly what it was");
+  assert.equal(readFileSync(join(project, ".ai-native", "keep.txt"), "utf8"), "mine\n");
+  assert.deepEqual(tree(project), [".ai-native", ".ai-native/keep.txt", "README.md"].map((p) => p.split("/").join(process.platform === "win32" ? "\\" : "/")).sort());
+  assert.equal(existsSync(join(project, "ai-native.lock.json")), false);
+});
