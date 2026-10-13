@@ -9,6 +9,45 @@ longer separate Git repositories. `ai-native` is evolving from that consolidated
 toward a versioned-reference platform (see `governance/adr/ADR-001-arquitectura-referencia-versionada.md`
 and `governance/roadmaps/AI-NATIVE-V3-ROADMAP.md`).
 
+## New project
+
+```bash
+git clone <your-repo>      # or: git init
+cd <your-repo>
+ai-native init
+```
+
+That is all. `ai-native init` downloads the latest stable release, verifies it (sha256, sigstore attestation, revocations), writes
+`ai-native.lock.json`, the Claude / Codex / OpenCode files and `.ai-native/ai-native.mjs`, stages them and checks the result:
+
+```text
+STATUS: READY
+AI-NATIVE: vX.Y.Z
+PROFILE: python-service (detected: pyproject.toml)
+DRIFT: CLEAN
+ATTESTATION: PASS
+```
+
+It works on an empty repository, on one with only a README, and on an existing project. It asks what kind of project it is only when the repository
+gives no hint (`--profile <id>` skips the question). It commits nothing: review with `git status`, then commit. Run it again at any time: on an adopted
+repository it only re-verifies. If it cannot verify the release it stops and leaves your repository untouched.
+
+**Once per machine** — put the command on your PATH (needs Node >= 20, git and the GitHub CLI `gh`, signed in). The file is attested; verify it before
+running it:
+
+```bash
+gh release download --repo jlbellonGmail/ai-native --pattern ai-native-cli.mjs --dir ~/.ai-native/dl   && gh attestation verify ~/.ai-native/dl/ai-native-cli.mjs --repo jlbellonGmail/ai-native --signer-workflow jlbellonGmail/ai-native/.github/workflows/release.yml   && node ~/.ai-native/dl/ai-native-cli.mjs install
+```
+
+```powershell
+gh release download --repo jlbellonGmail/ai-native --pattern ai-native-cli.mjs --dir $HOME.ai-nativedl
+if ($?) { gh attestation verify $HOME.ai-nativedlai-native-cli.mjs --repo jlbellonGmail/ai-native --signer-workflow jlbellonGmail/ai-native/.github/workflows/release.yml }
+if ($?) { node $HOME.ai-nativedlai-native-cli.mjs install }
+```
+
+`install` prints the one line that adds `~/.ai-native/bin` to your PATH. Without installing, `node ai-native-cli.mjs init` does the same. Offline later:
+`ai-native init --offline` uses a release this machine already verified. How it is built and why it is safe: `governance/versioning/V3.1.4-PATCH.md`.
+
 ## Repository Structure
 
 ```
@@ -58,12 +97,13 @@ node runtime/release/build.mjs --version v3.0.0-rc.1 --out ./out --commit "$(git
 node scripts/verify-release.mjs <tag> --expect-commit <sha>
 ```
 
-Releases: https://github.com/jlbellonGmail/ai-native/releases (latest stable `v3.0.2`; earlier `v3.0.1`, `v3.0.0` and the `v3.0.0-rc.N` pre-releases).
+Releases: https://github.com/jlbellonGmail/ai-native/releases (latest stable: see the releases page; earlier `v3.0.1`, `v3.0.0` and the `v3.0.0-rc.N` pre-releases).
 State of the quality evidence: `governance/quality/QUALITY-MATRIX.md`.
 
-## Using the platform from a consumer repository
+## Advanced: the primitives behind `ai-native init`
 
-A consumer keeps `ai-native.lock.json` and the generated tool entry points. Everything else comes from a verified release.
+You do not need these to start a project. A consumer keeps `ai-native.lock.json` and the generated tool entry points; everything else comes from a verified release.
+`ai-native init` is these steps (init → sync → adapters → status) in one verified pass; they remain for upgrades, pinning and debugging.
 
 ```bash
 node runtime/bootstrap/cli.mjs init   --bundle <bundle.tar.gz> --repo github:<owner>/ai-native --profile factory
