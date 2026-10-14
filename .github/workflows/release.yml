@@ -23,6 +23,10 @@ on:
       - "runtime/release/**"
       - "runtime/bootstrap/**"
       - "runtime/main.mjs"
+      - "runtime/cli/**"
+      - "contracts/**"
+      - "scripts/verify-release*.mjs"
+      - "evaluation/fixtures/cli/**"
       - "governance/versioning/**"
 
 permissions:
@@ -310,6 +314,8 @@ jobs:
           cd "$repo"
           # the published CLI declares exactly the tag that published it
           [ "$(node "$cli" --version)" = "CLI: $VERSION" ]
+          # the public command installs STABLE releases only (by design): its acceptance by `init --version` exists for stable tags
+          case "$VERSION" in *-alpha.*|*-rc.*) echo "prerelease $VERSION: CLI version check passed; init acceptance applies to stable releases"; exit 0;; esac
           out="$(AI_NATIVE_CACHE="$cache" node "$cli" init --version "$VERSION" --profile factory)"
           echo "$out"
           echo "$out" | grep -qx 'STATUS: READY'

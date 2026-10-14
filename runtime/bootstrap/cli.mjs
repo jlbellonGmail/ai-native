@@ -122,7 +122,7 @@ async function upgradeCommand() {
 }
 
 function detachCommand() {
-  return detach({ projectRoot, keepModified: flag("--keep-modified"), caller: callerOfThisRun() });
+  return detach({ projectRoot, keepModified: flag("--keep-modified"), offline: flag("--offline"), caller: callerOfThisRun() });
 }
 
 async function adoptCommand() {

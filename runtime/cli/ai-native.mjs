@@ -20,14 +20,14 @@ import { delimiter, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { gunzipSync } from "node:zlib";
 
-export const CLI_VERSION = "v3.3.0"; // the tag of the release that publishes this file (release build refuses a mismatch)
+export const CLI_VERSION = "v3.3.0"; // the tag of the release that publishes this file, prereleases included (the release build refuses a mismatch)
 export const CLI_PROTOCOL = 1; // launcher -> engine interface; platform.json `bootstrap.protocol` is what a release needs of it
 export const CLI_CAPABILITIES = ["adopt", "upgrade", "detach"]; // what this CLI can do before trust exists; platform.json `bootstrap.requiredCapabilities`
 export const OFFICIAL_REPO = "jlbellonGmail/ai-native";
 const STABLE = /^v(\d+)\.(\d+)\.(\d+)$/;
 const DIGEST = /^sha256:[0-9a-f]{64}$/;
 const VERSION = /^v\d+\.\d+\.\d+(-(alpha|rc)\.\d+)?$/; // also what a lock may pin: repository content is never trusted to build a URL or a file name
-const MARKER = /^export const CLI_VERSION = "(v\d+\.\d+\.\d+)";/m;
+const MARKER = /^export const CLI_VERSION = "(v\d+\.\d+\.\d+(?:-(?:alpha|rc)\.\d+)?)";/m; // = runtime/release/cli-version.mjs DECLARATION (a test keeps them equal)
 const CLI_ASSET = "ai-native-cli.mjs";
 const MAX_BYTES = 256 * 1024 * 1024;
 const HELP = `ai-native — start a project with the AI-NATIVE platform
@@ -39,7 +39,9 @@ const HELP = `ai-native — start a project with the AI-NATIVE platform
                                     Adopted repository: the lock decides; it only re-verifies. Safe to run again.
   ai-native upgrade [--to vX.Y.Z] [--offline] [--json]
                                     Move THIS repository to the latest stable release (or --to). Nothing ever upgrades by itself. Never a downgrade.
-  ai-native detach [--keep-modified] Take ai-native out of THIS repository: only what ai-native wrote, never your files.
+  ai-native detach [--keep-modified] [--offline]
+                                    Take ai-native out of THIS repository: only what ai-native wrote, never your files. Works whatever release the
+                                    repository is pinned to (even a revoked or older one); runs the newest verified release that ships it.
   ai-native self-update [--check]   Update this command (same verification as a release; atomic; never a downgrade). --check only reports.
   ai-native uninstall [--purge-cache]  Remove this command from this machine. Repositories are not touched.
   ai-native --version               CLI: vX.Y.Z   (inside an adopted repository: CLI: vX.Y.Z | PLATFORM: vA.B.C)
@@ -64,7 +66,7 @@ export async function listReleases({ fetchImpl, slug, env }) {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return await res.json();
   } catch (error) {
-    throw new Fail(`cannot reach GitHub Releases (${error.message}). Offline? Nothing was changed. \`ai-native init --offline\` uses a release this machine already verified.`);
+    throw new Fail(`cannot reach GitHub Releases (${error.message}). Offline? Nothing was changed. \`--offline\` uses a release this machine already verified.`);
   }
 }
 
@@ -155,6 +157,28 @@ async function assertNotRevoked({ list, slug, version = null, cli = CLI_VERSION,
   }
 }
 
+const DETACH_ENGINE = "runtime/bootstrap/detach.mjs";
+
+/**
+ * `detach` needs no release of its own: what ai-native wrote is listed in the repository's journal. So it never reads the lock and never depends on the
+ * pin: it runs the engine of the newest VERIFIED release that ships it. Online that is the latest stable release that is not revoked (the revocation of
+ * the release being REMOVED is no reason to keep it); offline it is the newest such release already in the cache. Nothing usable = fail closed.
+ */
+async function chooseDetachEngine({ o, repo, fetchImpl, spawn, env, tmp }) {
+  if (o.offline) {
+    const found = newestCachedWith(o.cache, repo, DETACH_ENGINE);
+    if (!found) throw new Fail("OFFLINE: no release this machine has verified ships `ai-native detach`; run it once with network access. Nothing was changed");
+    return { version: found.version, digest: found.digest };
+  }
+  const list = await listReleases({ fetchImpl, slug: repo, env });
+  await assertNotRevoked({ list, slug: repo, version: null, fetchImpl, spawn, tmp }); // this CLI itself must not be revoked
+  const entries = (await revocationEntries({ list, slug: repo, prefix: "revocations", fetchImpl, spawn, tmp })) ?? [];
+  const revoked = new Set(entries.filter((e) => e && e.kind === "platform").map((e) => e.version));
+  const usable = list.filter(selectable).filter((r) => !revoked.has(r.tag_name)).sort((a, b) => cmp(b.tag_name, a.tag_name));
+  if (!usable.length) throw new Fail(`REVOKED: no stable release of ${repo} is available to run \`ai-native detach\` (all are revoked or none is published). Nothing was changed`);
+  return { version: usable[0].tag_name, digest: assertPublishable(usable[0], usable[0].tag_name, repo) };
+}
+
 /** The record of a release of `slug` at exactly `version` that this machine verified and still holds, or null. */
 export function cachedByVersion(cacheRoot, slug, version) {
   const dir = join(cacheRoot, "attestations");
@@ -167,10 +191,10 @@ export function cachedByVersion(cacheRoot, slug, version) {
   return null;
 }
 
-/** Highest stable release that this machine already verified and still holds (for --offline). */
-export function newestCached(cacheRoot, slug) {
+/** Every stable release this machine verified and still holds (record + blob), newest first. */
+function verifiedReleases(cacheRoot, slug) {
   const dir = join(cacheRoot, "attestations");
-  if (!existsSync(dir)) return null;
+  if (!existsSync(dir)) return [];
   const found = [];
   for (const name of readdirSync(dir).filter((n) => n.endsWith(".json"))) {
     try {
@@ -178,7 +202,23 @@ export function newestCached(cacheRoot, slug) {
       if (r.repo === slug && STABLE.test(r.version) && r.digest === `sha256:${name.slice(0, -5)}` && r.verifiedBy === "gh attestation verify" && existsSync(join(cacheRoot, "blobs", "sha256", name.slice(0, -5)))) found.push(r);
     } catch { /* an unreadable record is not a verification */ }
   }
-  return found.sort((a, b) => cmp(b.version, a.version))[0] ?? null;
+  return found.sort((a, b) => cmp(b.version, a.version));
+}
+
+/** Highest stable release that this machine already verified and still holds (for --offline). */
+export function newestCached(cacheRoot, slug) {
+  return verifiedReleases(cacheRoot, slug)[0] ?? null;
+}
+
+/** The newest verified release held in the cache whose bundle (digest re-checked) contains `file`. */
+export function newestCachedWith(cacheRoot, slug, file) {
+  for (const r of verifiedReleases(cacheRoot, slug)) {
+    try {
+      const bytes = readFileSync(join(cacheRoot, "blobs", "sha256", r.digest.slice(7)));
+      if (`sha256:${sha256(bytes)}` === r.digest && unpack(bytes).has(file)) return r;
+    } catch { /* a damaged blob is not an engine */ }
+  }
+  return null;
 }
 
 /** Strict ustar reader: regular files only, no absolute / `..` / backslash / duplicate paths. Same rules as runtime/bootstrap/tar.mjs (a test keeps them equal). */
@@ -248,7 +288,7 @@ export function assertCompatible(platform) {
 const FLAGS = {
   init: ["--offline", "--keep-existing", "--json", "--profile", "--version", "--trust-repo"],
   upgrade: ["--offline", "--json", "--to", "--trust-repo"],
-  detach: ["--offline", "--json", "--keep-modified", "--trust-repo"],
+  detach: ["--offline", "--json", "--keep-modified"],
   "self-update": ["--check"],
   uninstall: ["--purge-cache"],
   install: [],
@@ -341,7 +381,7 @@ async function obtainBundle({ o, digest, fetchImpl, spawn, tmp, engineFile }) {
   const files = unpack(bytes);
   const platform = JSON.parse(files.get("platform.json")?.toString("utf8") ?? "{}");
   if (platform.version !== o.version) throw new Fail(`bundle says ${platform.version}, release is ${o.version}`);
-  if (!files.has(engineFile)) throw new Fail(`${o.version} predates \`ai-native ${o.command}\` (it ships no engine for it): ${o.command === "upgrade" ? "pick a newer release" : o.adopted ? "this repository is pinned to it; run `ai-native upgrade` first" : "use a newer release"}`);
+  if (!files.has(engineFile)) throw new Fail(`${o.version} predates \`ai-native ${o.command}\` (it ships no engine for it): ${o.command === "upgrade" ? "pick a newer release" : o.adopted ? "this repository is pinned to it; run `ai-native upgrade` first" : o.command === "detach" ? "no newer release ships it yet" : "use a newer release"}`);
   assertCompatible(platform);
   const engine = join(work, "release");
   for (const [path, content] of files) {
@@ -351,6 +391,12 @@ async function obtainBundle({ o, digest, fetchImpl, spawn, tmp, engineFile }) {
   const recordFile = join(work, "attestation.json");
   writeFileSync(recordFile, JSON.stringify(record));
   return { engine, args: ["--bundle", bundle, "--attestation-record", recordFile] };
+}
+
+/** Hands over to the engine inside the verified bundle. */
+function launch({ o, engine, args, spawn, env }) {
+  const run = spawn(process.execPath, [join(engine, "runtime", "bootstrap", "cli.mjs"), ...engineArgs(o, args)], { stdio: "inherit", env });
+  return run.status ?? 1;
 }
 
 /** deps: fetchImpl, spawn, env, cwd, out, err, rename. Returns the exit code. */
@@ -380,7 +426,14 @@ export async function main(argv, { fetchImpl = fetch, spawn = spawnSync, env = p
     }
     if (command === "upgrade" && !o.adopted) throw new Fail("NOT_ADOPTED: this repository has no ai-native.lock.json; run `ai-native init` first");
 
-    // already adopted: the lock decides which release (init, detach); a new repository: --version, or the latest stable
+    if (command === "detach") {
+      const chosen = await chooseDetachEngine({ o, repo, fetchImpl, spawn, env, tmp });
+      o.version = chosen.version;
+      const { engine, args } = await obtainBundle({ o, digest: chosen.digest, fetchImpl, spawn, tmp, engineFile: DETACH_ENGINE });
+      return launch({ o, engine, args, spawn, env });
+    }
+
+    // already adopted: the lock decides which release (init); a new repository: --version, or the latest stable; upgrade: the lock is the pin, the target is chosen
     let digest = null;
     let pinned = null;
     if (o.adopted) {
@@ -390,7 +443,7 @@ export async function main(argv, { fetchImpl = fetch, spawn = spawnSync, env = p
         if (o.profile && !pinned.profiles.includes(o.profile)) throw new Fail(`PROFILE_CONFLICT: --profile ${o.profile} contradicts the profile this repository is pinned to (${pinned.profiles.join(", ") || "none"}); the profile is changed in ai-native.lock.json, not by this command`);
       }
       o.slug = pinned.slug;
-      if (command !== "upgrade") { o.version = pinned.version; digest = pinned.digest; }
+      if (command !== "upgrade") { o.version = pinned.version; digest = pinned.digest; } // init: the lock decides
     } else if (o.trustRepo) throw new Fail("--trust-repo only applies to a repository that is already pinned to another source");
 
     const uptodate = () => { out(`STATUS: UP_TO_DATE\nAI-NATIVE: ${pinned.version}\nUPGRADE: already on ${pinned.version}; nothing changed`); return 0; };
@@ -408,7 +461,7 @@ export async function main(argv, { fetchImpl = fetch, spawn = spawnSync, env = p
         o.version = pickLatest(list, o.slug).tag_name;
         digest = assertPublishable(list.find((r) => r.tag_name === o.version), o.version, o.slug);
       } else if (!digest) digest = assertPublishable(list.find((r) => r.tag_name === o.version) ?? null, o.version, o.slug);
-      await assertNotRevoked({ list, slug: o.slug, version: command === "detach" ? pinned.version : o.version, fetchImpl, spawn, tmp });
+      await assertNotRevoked({ list, slug: o.slug, version: o.version, fetchImpl, spawn, tmp });
     } else if (command === "upgrade") {
       const c = o.to ? cachedByVersion(o.cache, o.slug, o.to) : newestCached(o.cache, o.slug);
       if (!c) throw new Fail(`OFFLINE: this machine has no verified ${o.to ?? "release"} in its cache; run \`ai-native upgrade\` with network access. Nothing was changed`);
@@ -424,9 +477,8 @@ export async function main(argv, { fetchImpl = fetch, spawn = spawnSync, env = p
       digest = c.digest;
     }
 
-    const { engine, args } = await obtainBundle({ o, digest, fetchImpl, spawn, tmp, engineFile: command === "upgrade" ? "runtime/bootstrap/upgrade.mjs" : command === "detach" ? "runtime/bootstrap/detach.mjs" : "runtime/bootstrap/adopt.mjs" });
-    const run = spawn(process.execPath, [join(engine, "runtime", "bootstrap", "cli.mjs"), ...engineArgs(o, args)], { stdio: "inherit", env });
-    return run.status ?? 1;
+    const { engine, args } = await obtainBundle({ o, digest, fetchImpl, spawn, tmp, engineFile: command === "upgrade" ? "runtime/bootstrap/upgrade.mjs" : "runtime/bootstrap/adopt.mjs" });
+    return launch({ o, engine, args, spawn, env });
   } catch (error) {
     if (!(error instanceof Fail)) throw error;
     err(`STATUS: FAILED\nERROR: ${error.message}`);
@@ -446,9 +498,16 @@ export function declaredVersion(file) {
 /** >0 when `a` is newer than `b`; a program from before versions existed (null) is older than any version. */
 const newerThan = (a, b) => (b ? cmp(a, b) : 1);
 
+/** POSIX single-quoting: nothing inside is special to sh (`$`, backtick, `"`, `\`), and a `'` is closed, escaped and reopened. */
+const shq = (text) => `'${text.split("'").join("'\\''")}'`;
+/** PowerShell single-quoting: a `'` is doubled. */
+const psq = (text) => `'${text.split("'").join("''")}'`;
+/** In a batch file a literal `%` is `%%`; everything else is safe inside double quotes (a path cannot contain one). */
+const cmdq = (text) => text.split("%").join("%%");
+
 const SHIMS = (script) => ({
-  "ai-native": [`#!/bin/sh\nexec node "${script.split("\\").join("/")}" "$@"\n`, 0o755],
-  "ai-native.cmd": [`@echo off\r\nnode "${script}" %*\r\n`, 0o644],
+  "ai-native": [`#!/bin/sh\nexec node ${shq(script.split("\\").join("/"))} "$@"\n`, 0o755],
+  "ai-native.cmd": [`@echo off\r\nnode "${cmdq(script)}" %*\r\n`, 0o644],
 });
 
 /** Writes `text` next to `file` and renames it over: a reader sees the old file or the new one, never half of it. Retries the brief locks Windows antivirus/indexers take. */
@@ -498,11 +557,13 @@ function writeShims(bin, script, rename) {
 
 const onPath = (dir, env) => (env.PATH ?? env.Path ?? "").split(delimiter).some((p) => p && (process.platform === "win32" ? p.toLowerCase() === dir.toLowerCase() : p === dir));
 
-function pathHint(bin, env) {
+/** The one line that puts `bin` on the PATH of a person. It quotes the path for the shell it is typed into: nothing in a directory name can break or inject. */
+export function pathHint(bin, env, platform = process.platform) {
   if (onPath(bin, env)) return `${bin} is already on your PATH`;
-  if (process.platform !== "win32") return `Add it to your PATH (once):  export PATH="${bin}:$PATH"`;
+  if (platform !== "win32") return `Add it to your PATH (once):  export PATH=${shq(bin)}:"$PATH"`;
   // the USER path only (never the process or machine one, which would copy the Machine PATH into the User PATH), and only if the entry is not there yet
-  return `Add it to your PATH (once, safe to repeat):  $u=[Environment]::GetEnvironmentVariable('Path','User'); if (($u -split ';') -notcontains '${bin}') { [Environment]::SetEnvironmentVariable('Path', ((@($u,'${bin}') | Where-Object { $_ }) -join ';'), 'User') }`;
+  const dir = psq(bin);
+  return `Add it to your PATH (once, safe to repeat):  $u=[Environment]::GetEnvironmentVariable('Path','User'); if (($u -split ';') -notcontains ${dir}) { [Environment]::SetEnvironmentVariable('Path', ((@($u,${dir}) | Where-Object { $_ }) -join ';'), 'User') }`;
 }
 
 /** Install this file as the machine's command. Safe to repeat; replaces an older install atomically; refuses to put an older CLI over a newer one. */

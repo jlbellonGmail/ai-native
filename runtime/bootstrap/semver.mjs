@@ -10,6 +10,8 @@ const parts = (tag) => {
 export const cmpVersions = (a, b) => { const [x, y] = [parts(a), parts(b)]; return x[0] - y[0] || x[1] - y[1] || x[2] - y[2]; };
 
 const ANY = /^v(\d+)\.(\d+)\.(\d+)(?:-(alpha|rc)\.(\d+))?$/;
+/** A tag release.yml accepts: stable, -alpha.N or -rc.N. */
+export const isAnyVersion = (tag) => ANY.test(tag ?? "");
 /** Full ordering of the tags a lock may pin: alpha.N < rc.N < stable of the same X.Y.Z. */
 export function cmpAny(a, b) {
   const key = (tag) => {

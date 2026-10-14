@@ -3,18 +3,16 @@
 // patched any more: a v3.2.0 CLI sends no version at all, and is recognized by that.
 //   platform.bootstrap = { protocol, minCliVersion, requiredCapabilities }   (contracts/bootstrap-protocol.json, published in platform.json)
 //   caller             = { version, protocol, capabilities }                  (what the CLI says about itself; --cli-version/--cli-protocol/--cli-capabilities)
-import { cmpVersions } from "./semver.mjs";
+import { cmpAny, isAnyVersion } from "./semver.mjs";
 
 /** What a CLI that sends nothing is: the v3.2.0 launcher, the last one that could not say who it is. */
 export const LEGACY_CALLER = Object.freeze({ version: "v3.2.0", protocol: 1, capabilities: Object.freeze(["adopt"]), legacy: true });
 /** What a release that predates the contract (no `bootstrap` in platform.json) asks of its caller. */
 export const DEFAULT_BOOTSTRAP = Object.freeze({ protocol: 1, minCliVersion: "v3.2.0", requiredCapabilities: Object.freeze(["adopt"]) });
 
-const STABLE = /^v\d+\.\d+\.\d+$/;
-
 export function callerFrom({ version = null, protocol = null, capabilities = null } = {}) {
   if (version === null && protocol === null && capabilities === null) return { ...LEGACY_CALLER, capabilities: [...LEGACY_CALLER.capabilities] };
-  if (!STABLE.test(version ?? "")) return { error: `invalid --cli-version: ${version}` };
+  if (!isAnyVersion(version)) return { error: `invalid --cli-version: ${version}` }; // a CLI built from a prerelease tag is a valid caller
   const p = Number(protocol);
   if (!Number.isInteger(p) || p < 1) return { error: `invalid --cli-protocol: ${protocol}` };
   return { version, protocol: p, capabilities: String(capabilities ?? "").split(",").filter(Boolean), legacy: false };
@@ -31,7 +29,7 @@ export function negotiate({ platform, caller }) {
   const warnings = [];
   const label = caller.legacy ? `${caller.version} (legacy: it identified itself as nothing)` : caller.version;
   if (caller.protocol < need.protocol) errors.push(`INCOMPATIBLE_CLI: ${platform.version} speaks bootstrap protocol ${need.protocol}, this CLI ${label} speaks ${caller.protocol}.`);
-  if (cmpVersions(caller.version, need.minCliVersion) < 0) errors.push(`INCOMPATIBLE_CLI: ${platform.version} needs CLI >= ${need.minCliVersion}, this is ${label}.`);
+  if (cmpAny(caller.version, need.minCliVersion) < 0) errors.push(`INCOMPATIBLE_CLI: ${platform.version} needs CLI >= ${need.minCliVersion}, this is ${label}.`);
   const missing = need.requiredCapabilities.filter((c) => !caller.capabilities.includes(c));
   if (missing.length) errors.push(`INCOMPATIBLE_CLI: ${platform.version} needs CLI capabilities [${missing.join(", ")}] that this CLI ${label} does not offer.`);
   if (errors.length) errors.push(remedy(caller));

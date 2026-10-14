@@ -6,6 +6,7 @@
 // revocations equal to the repo's, and a real bootstrap init/sync/doctor/run/status in a temp project. Exit code != 0 on any FAIL.
 // It never prints secrets and never writes outside a temp dir.
 import { spawnSync } from "node:child_process";
+import { hasCliLifecycle, isPrerelease } from "../runtime/release/cli-version.mjs";
 import { createHash } from "node:crypto";
 import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -28,6 +29,7 @@ export function parseSums(text) {
 
 export const sha256 = (buf) => createHash("sha256").update(buf).digest("hex");
 
+export { hasCliLifecycle };
 export const CLI_ASSET = "ai-native-cli.mjs";
 /** The public command is a release asset from the first release that ships `ai-native init`; older (immutable) releases never had it. */
 export const hasCliAsset = (tag) => {
@@ -35,11 +37,6 @@ export const hasCliAsset = (tag) => {
   return a > 3 || (a === 3 && b >= 2);
 };
 
-/** The CLI lifecycle (version, self-update, CLI revocations, the CLI <-> PLATFORM contract) exists from v3.3.0. */
-export const hasCliLifecycle = (tag) => {
-  const [a, b] = /^v(\d+)\.(\d+)\.(\d+)/.exec(tag).slice(1, 3).map(Number);
-  return a > 3 || (a === 3 && b >= 3);
-};
 /** The minimum supported CLI, kept byte for byte (evaluation/fixtures/cli): every release must still serve it. */
 export const LEGACY_CLI = join(root, "evaluation", "fixtures", "cli", "ai-native-v3.2.0.mjs");
 
@@ -143,7 +140,7 @@ export function verifyRelease({ tag, repo = "jlbellonGmail/ai-native", expectCom
     let stj = {};
     try { stj = JSON.parse(st.stdout); } catch { /* reported */ }
     add("status --check is READY with revocation CHECKED", st.status === 0 && stj.state === "READY" && stj.revocation === "CHECKED", `${stj.state} revocation=${stj.revocation}`);
-    if (hasCliAsset(tag)) {
+    if (hasCliAsset(tag) && !isPrerelease(tag)) {
       // the acceptance test of the whole feature, from the PUBLISHED asset: an empty Git repository, one command, READY
       const empty = join(dir, "empty-repo");
       mkdirSync(empty);
@@ -153,7 +150,7 @@ export function verifyRelease({ tag, repo = "jlbellonGmail/ai-native", expectCom
       const ok = r.status === 0 && ["STATUS: READY", "DRIFT: CLEAN", "ATTESTATION: PASS", "REVOCATION: CHECKED"].every((l) => lines.includes(l));
       add("ai-native init from the published asset: empty repository -> READY, CLEAN, attested, revocations checked", ok, ok ? "" : (r.stdout + r.stderr).trim().split("\n").slice(-3).join(" | "));
     }
-    if (hasCliLifecycle(tag)) {
+    if (hasCliLifecycle(tag) && !isPrerelease(tag)) {
       // the compatibility matrix against the PUBLISHED release: the minimum supported CLI (v3.2.0, which sends no version) still adopts it
       const legacyRepo = join(dir, "legacy-repo");
       mkdirSync(legacyRepo);

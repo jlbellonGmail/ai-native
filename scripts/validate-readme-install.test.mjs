@@ -92,3 +92,20 @@ test("every `ai-native init` flag the README shows is one the command accepts", 
   const shown = new Set([...readme.matchAll(/ai-native init[^\n`]*?(--[a-z-]+)/g)].map((m) => m[1]));
   for (const flag of shown) assert.ok(accepted.has(flag), `README shows ${flag} but the command does not accept it`);
 });
+
+test("N-20: every fail-closed code the public command and its engines can print is explained in the README", () => {
+  const sources = ["runtime/cli/ai-native.mjs", "runtime/bootstrap/adopt.mjs", "runtime/bootstrap/upgrade.mjs", "runtime/bootstrap/detach.mjs", "runtime/bootstrap/compat.mjs"];
+  const states = new Set(["DEGRADED_READONLY", "RESTART_REQUIRED"]); // bootstrap states of `status`, documented there
+  const codes = new Set(["OFFLINE", "REVOKED", "ROLLBACK_INCOMPLETE"]); // the ones printed without the CODE_WORD: shape
+  for (const file of sources) for (const m of read(file).matchAll(/\b([A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+):/g)) codes.add(m[1]);
+  const from = readme.indexOf("## When something stops");
+  assert.ok(from >= 0, "README has the fail-closed codes section");
+  const section = readme.slice(from, readme.indexOf("\n## ", from + 4));
+  const missing = [...codes].filter((c) => !states.has(c) && !section.includes(`\`${c}\``)).sort();
+  assert.deepEqual(missing, [], "a code the command prints but the README does not explain");
+  assert.ok(codes.size >= 26, `the scan found the codes (${codes.size})`);
+});
+
+test("N-14: the install blocks can be run again: `gh release download` overwrites the previous download", () => {
+  for (const b of [...byLang("bash").slice(1), ...byLang("powershell")]) assert.match(b.body, /gh release download[^\n]*--clobber/, b.lang);
+});

@@ -9,10 +9,10 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, renameSy
 import { tmpdir } from "node:os";
 import { basename, delimiter, join } from "node:path";
 import { pathToFileURL } from "node:url";
-import { main, declaredVersion, CLI_VERSION } from "./ai-native.mjs";
+import { main, declaredVersion, newestCachedWith, pathHint, CLI_VERSION } from "./ai-native.mjs";
 import { upgrade } from "../bootstrap/upgrade.mjs";
 import { detach } from "../bootstrap/detach.mjs";
-import { sha256 } from "../bootstrap/cache.mjs";
+import { putBlob, sha256 } from "../bootstrap/cache.mjs";
 import { cmpAny } from "../bootstrap/semver.mjs";
 import { callerFrom, negotiate } from "../bootstrap/compat.mjs";
 import { REPO_ROOT, record, workingTreeRelease } from "../../evaluation/fixtures/working-tree-release.mjs";
@@ -686,3 +686,208 @@ function gunzipFile(gz, name) {
   throw new Error(`${name} not in bundle`);
 }
 import * as awaitedZlib from "node:zlib";
+
+// ---- detach does not depend on the pin (N-17) --------------------------------------------------------------------------------------------------
+
+/** Rewrites the lock so the repository is pinned to `pin` (a release that does not exist in the test's GitHub). */
+const repin = (project, pin) => {
+  const file = join(project, "ai-native.lock.json");
+  const lock = JSON.parse(readFileSync(file, "utf8"));
+  lock.platform = { ...lock.platform, version: pin, commit: "e".repeat(40), digest: `sha256:${"e".repeat(64)}` };
+  writeFileSync(file, `${JSON.stringify(lock, null, 2)}\n`);
+};
+const platformRevocations = (n, versions) => JSON.stringify({ schemaVersion: 1, n, publishedAt: "2026-10-14T00:00:00Z", entries: versions.map((version) => ({ kind: "platform", id: "ai-native", version, reason: "audit", severity: "high" })) });
+const bundleFetches = (w) => w.log.fetched.filter((u) => u.endsWith(".tar.gz"));
+const BUNDLE = (v) => URL_OF(v, `ai-native-${v}.tar.gz`);
+
+test("DETACH works whatever release the repository is pinned to: v3.1.3, v3.2.0 and v3.3.0 pins, none of which exists where the command runs", async () => {
+  for (const pin of ["v3.1.3", "v3.2.0", "v3.3.0"]) {
+    const { project } = await adopted(R2);
+    repin(project, pin);
+    const w = world({ releases: [R2] });
+    assert.equal(await w.run(["detach"], { cwd: project, cache: tmp("cache") }), 0, `${pin}: ${w.log.engineOut}${w.err.join("\n")}`); // an empty cache: another machine, online
+    assert.match(w.log.engineOut, /DETACH: DETACHED/, pin);
+    assert.deepEqual(bundleFetches(w), [BUNDLE("v9.9.2")], `${pin}: only the release that runs the engine was fetched, never the pin`);
+    assert.deepEqual(files(project), [], `${pin}: everything ai-native wrote is gone`);
+    assert.equal(git(project, "status", "--porcelain", "-uall"), "", pin);
+  }
+  // and `--trust-repo` no longer exists for it: the lock is not read, so there is no trust to extend
+  const { project } = await adopted(R2);
+  const w = world({ releases: [R2] });
+  assert.equal(await w.run(["detach", "--trust-repo", "a/b"], { cwd: project }), 1);
+  assert.match(w.err.join("\n"), /unknown option: --trust-repo/);
+});
+
+test("DETACH is not stopped by a lock that is malformed or points to another source: the lock is not what it reads", async () => {
+  const { project } = await adopted(R2);
+  writeFileSync(join(project, "ai-native.lock.json"), "{ nope");
+  const w = world({ releases: [R2] });
+  assert.equal(await w.run(["detach"], { cwd: project, cache: tmp("cache") }), 0, w.log.engineOut + w.err.join("\n"));
+  assert.deepEqual(files(project), []);
+  const { project: p2 } = await adopted(R2);
+  const lock = JSON.parse(readFileSync(join(p2, "ai-native.lock.json"), "utf8"));
+  lock.platform.repo = "github:evil/ai-native";
+  writeFileSync(join(p2, "ai-native.lock.json"), JSON.stringify(lock));
+  const w2 = world({ releases: [R2] });
+  assert.equal(await w2.run(["detach"], { cwd: p2, cache: tmp("cache") }), 0, w2.log.engineOut + w2.err.join("\n"));
+  assert.ok(w2.log.fetched.every((u) => !u.includes("evil/")), "the engine always comes from the official repository");
+  assert.deepEqual(files(p2), []);
+});
+
+test("DETACH with a REVOKED pin: it still runs, with the newest release that is not revoked; if the latest is revoked it falls back; if every one is revoked it fails closed", async () => {
+  // the pinned release (v9.9.2) is revoked: the removal must not depend on it
+  const R3rev = release("v9.9.3", { assets: { "revocations-2.json": platformRevocations(2, ["v9.9.2"]) } });
+  const { project } = await adopted(R2);
+  const w = world({ releases: [R2, R3rev] });
+  assert.equal(await w.run(["detach"], { cwd: project, cache: tmp("cache") }), 0, w.log.engineOut + w.err.join("\n"));
+  assert.deepEqual(bundleFetches(w), [BUNDLE("v9.9.3")], "the engine is the newest release that is not revoked");
+  assert.ok(w.log.gh.some((a) => a[2].endsWith("revocations-2.json")), "the revocations list itself was attested");
+  assert.deepEqual(files(project), []);
+
+  // the LATEST release is revoked: its code is not run; the next one is
+  const R2x = release("v9.9.2", { assets: { "revocations-2.json": platformRevocations(2, ["v9.9.3"]) } });
+  const { project: p2 } = await adopted(R2x);
+  const w2 = world({ releases: [R2x, R3] });
+  assert.equal(await w2.run(["detach"], { cwd: p2, cache: tmp("cache") }), 0, w2.log.engineOut + w2.err.join("\n"));
+  assert.deepEqual(bundleFetches(w2), [BUNDLE("v9.9.2")], "the revoked latest release was never downloaded");
+
+  // every release is revoked: nothing trustworthy can run the removal -> fail closed, nothing changes
+  const R3all = release("v9.9.3", { assets: { "revocations-2.json": platformRevocations(2, ["v9.9.2", "v9.9.3"]) } });
+  const { project: p3 } = await adopted(R2);
+  const before = state(p3);
+  const w3 = world({ releases: [R2, R3all] });
+  assert.equal(await w3.run(["detach"], { cwd: p3, cache: tmp("cache") }), 1);
+  assert.match(w3.err.join("\n"), /REVOKED: no stable release of o\/ai-native is available to run `ai-native detach`.*Nothing was changed/);
+  assert.equal(w3.log.engine.length, 0);
+  assert.deepEqual(state(p3), before);
+});
+
+test("DETACH offline: it uses the newest release this machine verified AND that ships it, warns that revocations were not checked; an empty cache or no network fails closed and changes nothing", async () => {
+  const { project, cache } = await adopted(R2);
+  const off = world({ releases: [R2], network: false });
+  assert.equal(await off.run(["detach", "--offline"], { cwd: project, cache }), 0, off.log.engineOut + off.err.join("\n"));
+  assert.deepEqual(off.log.fetched, [], "offline means no network at all");
+  assert.match(off.log.engineOut, /WARNING: offline: revocation status of the release that ran this command NOT checked/);
+  assert.deepEqual(files(project), []);
+
+  const { project: p2 } = await adopted(R2);
+  const before = state(p2);
+  const w = world({ releases: [R2], network: false });
+  assert.equal(await w.run(["detach", "--offline"], { cwd: p2, cache: tmp("cache") }), 1);
+  assert.match(w.err.join("\n"), /OFFLINE: no release this machine has verified ships `ai-native detach`.*Nothing was changed/);
+  assert.equal(await w.run(["detach"], { cwd: p2, cache: tmp("cache") }), 1, "online with no network: the same fail-closed refusal");
+  assert.match(w.err.join("\n"), /cannot reach GitHub Releases.*Nothing was changed/);
+  assert.equal(w.log.engine.length, 0);
+  assert.deepEqual(state(p2), before);
+
+  // the cache holds a NEWER verified release that does not ship `detach` (a v3.2.0-like one): it is skipped, not trusted to do it
+  const cache2 = tmp("cache");
+  const { project: p3 } = await adopted(R2, { cache: cache2 });
+  const old = workingTreeRelease({ version: "v9.9.8", mutate: (f) => Object.fromEntries(Object.entries(f).filter(([path]) => path !== "runtime/bootstrap/detach.mjs")) });
+  putBlob(cache2, old.bytes);
+  const hex = sha256(old.bytes);
+  mkdirSync(join(cache2, "attestations"), { recursive: true });
+  writeFileSync(join(cache2, "attestations", `${hex}.json`), JSON.stringify({ digest: `sha256:${hex}`, repo: SLUG, version: "v9.9.8", verifiedBy: "gh attestation verify" }));
+  assert.equal(newestCachedWith(cache2, SLUG, "runtime/bootstrap/adopt.mjs").version, "v9.9.8");
+  assert.equal(newestCachedWith(cache2, SLUG, "runtime/bootstrap/detach.mjs").version, "v9.9.2", "the newest release WITH the engine, not just the newest");
+  const w3 = world({ releases: [R2], network: false });
+  assert.equal(await w3.run(["detach", "--offline"], { cwd: p3, cache: cache2 }), 0, w3.log.engineOut + w3.err.join("\n"));
+  assert.deepEqual(files(p3), []);
+});
+
+test("DETACH with this CLI revoked is refused online before any engine runs, and still refuses to touch an edited managed file", async () => {
+  const entries = [{ kind: "cli", id: "ai-native-cli", version: CLI_VERSION, reason: "compromised build", severity: "critical" }];
+  const mine = release("v9.9.2", { assets: { "cli-revocations-1.json": JSON.stringify({ schemaVersion: 1, n: 1, publishedAt: "2026-10-14T00:00:00Z", entries }) } });
+  const { project } = await adopted(R2);
+  const before = state(project);
+  const w = world({ releases: [mine] });
+  assert.equal(await w.run(["detach"], { cwd: project, cache: tmp("cache") }), 1);
+  assert.match(w.err.join("\n"), /CLI_REVOKED/);
+  assert.equal(w.log.engine.length, 0);
+  assert.deepEqual(state(project), before);
+});
+
+// ---- prereleases (N-16) ------------------------------------------------------------------------------------------------------------------------
+
+test("A CLI built from a prerelease tag is a first-class CLI: it declares it, orders below its stable release, and install, self-update and the engine agree", async () => {
+  const m = await machine("v9.9.9-rc.1");
+  assert.equal(declaredVersion(m.script), "v9.9.9-rc.1");
+  const shown = spawnSync(process.execPath, [m.script, "--version"], { encoding: "utf8" });
+  assert.equal(shown.stdout.trim(), "CLI: v9.9.9-rc.1");
+  assert.equal(JSON.parse(spawnSync(process.execPath, [m.script, "version", "--json"], { encoding: "utf8" }).stdout).cli, "v9.9.9-rc.1");
+
+  // the stable release of the same X.Y.Z is newer than its rc: self-update moves rc -> stable, and only forward
+  const w = world({ releases: [release("v9.9.9")], home: m.home });
+  assert.equal(await w.run(["self-update"], {}), 0, w.err.join("\n"));
+  assert.equal(m.version(), "v9.9.9");
+  const again = world({ releases: [release("v9.9.9")], home: m.home });
+  await again.run(["self-update"], {});
+  assert.match(again.out[0], /CLI: v9\.9\.9 is up to date/);
+
+  // install never puts an older CLI over a newer one: alpha < rc < stable
+  const put = async (version, home) => {
+    const file = join(tmp("dl"), "ai-native-cli.mjs");
+    writeFileSync(file, cliAsset(version));
+    const err = [];
+    const code = await main(["install"], { env: { ...process.env, AI_NATIVE_HOME: home }, self: file, out() {}, err: (e) => err.push(e) });
+    return { code, err: err.join("\n") };
+  };
+  const refused = await put("v9.9.9-rc.1", m.home); // over the installed stable v9.9.9
+  assert.equal(refused.code, 1);
+  assert.match(refused.err, /INSTALL_DOWNGRADE_REFUSED: v9\.9\.9 is installed and this file is v9\.9\.9-rc\.1/);
+  assert.equal(m.version(), "v9.9.9");
+  const home = tmp("home");
+  assert.equal((await put("v9.9.9-rc.2", home)).code, 0);
+  assert.equal((await put("v9.9.9-alpha.5", home)).code, 1, "alpha is older than rc");
+  assert.equal((await put("v9.9.9-rc.10", home)).code, 0, "rc.10 is newer than rc.2 (numeric, not textual)");
+  assert.equal(declaredVersion(join(home, "bin", "ai-native.mjs")), "v9.9.9-rc.10");
+});
+
+test("The engine accepts a prerelease CLI as the caller and compares it by SemVer: an rc is below its own stable release", () => {
+  const rc = callerFrom({ version: "v9.9.9-rc.1", protocol: "1", capabilities: "adopt,upgrade,detach" });
+  assert.equal(rc.error, undefined);
+  assert.equal(rc.legacy, false);
+  const need = (minCliVersion) => ({ version: "v9.9.10", bootstrap: { protocol: 1, minCliVersion, requiredCapabilities: ["adopt"] } });
+  assert.equal(negotiate({ platform: need("v9.9.8"), caller: rc }).ok, true);
+  assert.equal(negotiate({ platform: need("v9.9.9"), caller: rc }).ok, false, "v9.9.9-rc.1 < v9.9.9");
+  assert.match(negotiate({ platform: need("v9.9.9"), caller: rc }).errors.join(), /needs CLI >= v9\.9\.9, this is v9\.9\.9-rc\.1/);
+  for (const bad of ["v9.9.9-beta.1", "v9.9", "9.9.9", "v9.9.9-rc"]) assert.match(callerFrom({ version: bad, protocol: "1", capabilities: "adopt" }).error, /invalid --cli-version/, bad);
+});
+
+// ---- install quotes what it embeds (N-18) ------------------------------------------------------------------------------------------------------
+
+test("INSTALL quotes everything it embeds: an apostrophe, %, $, a backtick and spaces in the home path cannot break the shims, and the PATH lines parse in their shells", async () => {
+  const home = join(tmp("home"), "O'Brien 100% $USER `x`");
+  const out = [];
+  assert.equal(await main(["install"], { env: { ...process.env, AI_NATIVE_HOME: home, PATH: process.env.PATH }, out: (o) => out.push(o), err() {} }), 0);
+  const bin = join(home, "bin");
+  const sh = readFileSync(join(bin, "ai-native"), "utf8");
+  const cmd = readFileSync(join(bin, "ai-native.cmd"), "utf8");
+  assert.match(sh, /^#!\/bin\/sh\nexec node '.*' "\$@"\n$/, "single quotes: nothing inside is special to sh");
+  assert.ok(sh.includes("O'\\''Brien"), "the apostrophe is closed, escaped and reopened");
+  assert.ok(cmd.includes("100%% $USER"), "a literal % is %% in a batch file");
+  // the shim runs from that path, in the shell it was written for
+  const shim = process.platform === "win32"
+    ? spawnSync("cmd.exe", ["/c", `"${join(bin, "ai-native.cmd")}"`, "--version"], { encoding: "utf8", windowsVerbatimArguments: true })
+    : spawnSync("sh", [join(bin, "ai-native"), "--version"], { encoding: "utf8" });
+  assert.equal(shim.stdout.trim(), `CLI: ${CLI_VERSION}`, shim.stderr);
+
+  // the PATH lines, for both shells, whatever the platform running this test
+  const plain = { PATH: "" };
+  const win = pathHint(bin, plain, "win32");
+  const code = win.replace(/^Add it to your PATH \(once, safe to repeat\):\s*/, "");
+  assert.ok(code.includes(`'${bin.replaceAll("'", "''")}'`), "a PowerShell single-quoted string with the apostrophe doubled");
+  assert.doesNotMatch(win, /\$env:Path/i, "never the process PATH (it holds the Machine PATH too)");
+  for (const exe of ["pwsh", "powershell"]) {
+    if (spawnSync(exe, ["-NoProfile", "-Command", "$PSVersionTable.PSVersion.Major"], { encoding: "utf8" }).status !== 0) continue;
+    // parse only: running it would edit the User PATH of the machine running the test
+    const r = spawnSync(exe, ["-NoProfile", "-Command", "try { [void][scriptblock]::Create($env:HINT); 'PARSE_OK' } catch { 'PARSE_FAIL ' + $_.Exception.Message }"], { encoding: "utf8", env: { ...process.env, HINT: code } });
+    assert.equal(r.stdout.trim(), "PARSE_OK", `${exe}: ${r.stdout}${r.stderr}`);
+  }
+  const posix = pathHint(bin, plain, "linux");
+  assert.match(posix, /^Add it to your PATH \(once\):  export PATH='.*':"\$PATH"$/);
+  if (spawnSync("sh", ["-c", "true"]).status === 0) {
+    const r = spawnSync("sh", ["-c", 'eval "$HINT" && printf "%s" "$PATH"'], { encoding: "utf8", env: { ...process.env, HINT: posix.replace(/^Add it to your PATH \(once\):\s*/, "") } });
+    assert.ok(r.stdout.startsWith(`${bin}:`), `the line puts exactly the directory first on PATH: ${r.stdout.slice(0, 120)} ${r.stderr}`);
+  }
+});
