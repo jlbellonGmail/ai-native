@@ -3,7 +3,7 @@
 // file the person edited is never deleted silently: without --keep-modified the run FAILS CLOSED naming the file and changes nothing; with it
 // the file stays on disk as an ordinary file of the project. Files that were already there and identical (`adopted`) were never ai-native's to
 // remove and stay. Nothing outside the journal is touched; the repository is left as a normal one, with the removal staged (not committed).
-import { existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
@@ -92,8 +92,7 @@ function detachLegacyLock({ projectRoot, offline }) {
   if (existsSync(join(projectRoot, dirname(JOURNAL_PATH)))) return inconsistent(`, and ${dirname(JOURNAL_PATH)}/ exists`);
   let content;
   try {
-    if (!statSync(lockFile).isFile()) throw new Error("not a file");
-    content = readFileSync(lockFile);
+    content = readFileSync(lockFile); // a directory or an unreadable path throws here: no separate check, so no check-then-use window
     const lock = JSON.parse(content.toString("utf8"));
     if (!lock || typeof lock !== "object" || !lock.platform || typeof lock.platform !== "object") throw new Error("not an ai-native lock");
   } catch {
