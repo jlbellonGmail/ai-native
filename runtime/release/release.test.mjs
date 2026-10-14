@@ -235,8 +235,12 @@ test("e2e: build HEAD -> sync --from-file -> run version/doctor; revoked release
   assert.equal(published.digest, summary.digest);
   assert.deepEqual(validate(published, schema("platform.schema.json")), []);
   const sums = readFileSync(join(out, "SHA256SUMS"), "utf8").trim().split("\n");
-  assert.equal(sums.length, 4, "bundle, platform.json, revocations and the public command");
+  assert.equal(sums.length, 5, "bundle, platform.json, revocations, CLI revocations and the public command");
   assert.ok(sums.some((l) => l.endsWith("  ai-native-cli.mjs")));
+  assert.ok(sums.some((l) => l.endsWith("  cli-revocations-1.json")), "the CLI revocations are their own asset series");
+  assert.equal(JSON.parse(readFileSync(join(out, "cli-revocations-1.json"), "utf8")).entries.every((e) => e.kind === "cli"), true);
+  const { protocol, minCliVersion, requiredCapabilities } = JSON.parse(git(repoRoot, "show", `${commit}:contracts/bootstrap-protocol.json`));
+  assert.deepEqual(published.bootstrap, { protocol, minCliVersion, requiredCapabilities }, "platform.json publishes the CLI <-> PLATFORM contract of the built commit");
   // the public command asset is byte-for-byte runtime/cli/ai-native.mjs at the built commit
   assert.equal(readFileSync(join(out, "ai-native-cli.mjs"), "utf8"), execFileSync("git", ["show", `${commit}:runtime/cli/ai-native.mjs`], { cwd: repoRoot, encoding: "utf8" }));
   for (const line of sums) {
@@ -283,4 +287,17 @@ test("revocations: the api.github.com request carries the token when one exists 
   assert.equal(seen.length, 1);
   assert.match(seen[0].url, /^https:\/\/api\.github\.com\//);
   assert.equal(seen[0].init.headers.authorization, "Bearer tok");
+});
+
+test("CLI lifecycle (v3.3.0): the build refuses a CLI that does not declare the tag publishing it, and keeps the CLI revocations out of the platform list", () => {
+  const commit = git(repoRoot, "rev-parse", "HEAD");
+  const declared = /^export const CLI_VERSION = "(v\d+\.\d+\.\d+)";/m.exec(readFileSync(join(repoRoot, "runtime", "cli", "ai-native.mjs"), "utf8"))[1];
+  const build = (version) => spawnSync(process.execPath, [join(repoRoot, "runtime", "release", "build.mjs"), "--version", version, "--out", tmp(), "--commit", commit], { encoding: "utf8" });
+  assert.equal(build(declared).status, 0, "the tag the CLI declares builds");
+  const other = build("v99.0.0");
+  assert.equal(other.status, 1);
+  assert.match(other.stderr, new RegExp(`declares CLI_VERSION ${declared.replaceAll(".", "\.")}; this release is v99\.0\.0`));
+  assert.equal(build("v3.2.1").status, 0, "releases before the CLI lifecycle are not held to it");
+  const platformList = JSON.parse(readFileSync(join(repoRoot, "governance", "versioning", "revocations-1.json"), "utf8"));
+  assert.equal(platformList.entries.some((e) => e.kind === "cli"), false, "an entry of kind cli in revocations-N.json would make every earlier engine fail closed");
 });
