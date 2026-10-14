@@ -2,17 +2,18 @@
 // M4.2: node runtime/release/build.mjs --version vX.Y.Z[-alpha.N] --out <dir> [--commit <sha>]
 // Writes <out>/ai-native-<version>.tar.gz, <out>/platform.json (real digest),
 // <out>/ai-native-cli.mjs (the public `ai-native` command, runtime/cli/ai-native.mjs at the commit),
-// <out>/SHA256SUMS and <out>/revocations-<n>.json (highest n from
-// governance/versioning/). SBOM and attestation are produced by release.yml
+// <out>/SHA256SUMS, <out>/revocations-<n>.json and <out>/cli-revocations-<n>.json (highest n of each series from
+// governance/versioning/; the CLI series is its own asset so an engine of an earlier release never meets an entry it cannot parse). SBOM and attestation are produced by release.yml
 // over exactly these bytes.
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { buildBundle, publishedPlatform, readShippedFiles, sha256Hex } from "./bundle.mjs";
-import { REVOCATIONS_ASSET, pickHighest } from "./revocations.mjs";
+import { CLI_REVOCATIONS_ASSET, REVOCATIONS_ASSET, pickHighest } from "./revocations.mjs";
 import { headSha } from "../lib/git.mjs";
 
 const CLI_ASSET = "ai-native-cli.mjs";
+const cliLifecycle = (tag) => { const [a, b] = /^v(\d+)\.(\d+)/.exec(tag).slice(1).map(Number); return a > 3 || (a === 3 && b >= 3); };
 const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const argv = process.argv.slice(2);
 const value = (n) => (argv.includes(n) ? argv[argv.indexOf(n) + 1] : null);
@@ -52,8 +53,24 @@ if (!cli) {
   console.error("runtime/cli/ai-native.mjs is not part of this commit");
   process.exit(1);
 }
+// the CLI declares the tag that publishes it (from v3.3.0): self-update, install and `--version` all read that one literal
+const declared = /^export const CLI_VERSION = "(v\d+\.\d+\.\d+)";/m.exec(cli.toString("utf8"))?.[1];
+if (cliLifecycle(version) && declared !== version) {
+  console.error(`runtime/cli/ai-native.mjs declares CLI_VERSION ${declared ?? "(nothing)"}; this release is ${version}`);
+  process.exit(1);
+}
 writeFileSync(join(out, CLI_ASSET), cli);
 
-const sums = [bundleName, "platform.json", revName, CLI_ASSET].map((n) => `${sha256Hex(readFileSync(join(out, n)))}  ${n}`);
+// the CLI revocations: same workflow, same attestation, same trust root; entries are kind "cli" only (and none in the platform list)
+const cliRevFiles = readdirSync(revDir).filter((n) => CLI_REVOCATIONS_ASSET.test(n));
+const cliPicked = pickHighest(cliRevFiles.map((name) => ({ name, text: readFileSync(join(revDir, name), "utf8") })), CLI_REVOCATIONS_ASSET);
+if (!cliPicked.list || cliPicked.warnings.length || cliPicked.list.entries.some((e) => e.kind !== "cli") || picked.list.entries.some((e) => e.kind === "cli")) {
+  console.error(`invalid CLI revocations source: ${cliPicked.warnings.join("; ") || "none found, or entries of the wrong kind"}`);
+  process.exit(1);
+}
+const cliRevName = `cli-revocations-${cliPicked.list.n}.json`;
+writeFileSync(join(out, cliRevName), readFileSync(join(revDir, cliRevName)));
+
+const sums = [bundleName, "platform.json", revName, cliRevName, CLI_ASSET].map((n) => `${sha256Hex(readFileSync(join(out, n)))}  ${n}`);
 writeFileSync(join(out, "SHA256SUMS"), `${sums.join("\n")}\n`);
 console.log(JSON.stringify({ version, commit, digest, bundle: bundleName, files: fileCount, revocations: revName }, null, 2));

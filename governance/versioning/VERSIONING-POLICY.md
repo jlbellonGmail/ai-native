@@ -66,6 +66,13 @@ Antes de cambiar una versión debe existir:
 
 Esta regla se mantiene sin cambios para la versión de plataforma v3.
 
+## Contrato CLI ↔ PLATFORM
+
+`platform.json` publica `bootstrap` (`contracts/bootstrap-protocol.json`): `protocol`, `minCliVersion`, `requiredCapabilities`. Subir `minCliVersion` o
+`requiredCapabilities` deja fuera a CLI ya instalados: es una decisión explícita, documentada en la release y con el fixture del nuevo mínimo en
+`evaluation/fixtures/cli/`; subir `protocol` es MAJOR. Añadir capacidades al CLI sin exigirlas es MINOR. Una release que exige más de lo que el CLI ofrece
+falla cerrada (`INCOMPATIBLE_CLI`), nunca parcialmente. Detalle: `governance/versioning/V3.3.0-RELEASE.md`.
+
 ## Compatibilidad y deprecación
 
 Cada contrato (schema, skill del core, perfil, workflow reutilizable) declara:

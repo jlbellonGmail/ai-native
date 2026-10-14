@@ -19,6 +19,7 @@ import { detectDrift } from "../migrate/upgrade-delta.mjs";
 import { revertAdoption, JOURNAL_PATH } from "../migrate/adopt.mjs";
 import { checkTracking, managedPaths, describe as describeTracking, remedy } from "../migrate/tracking.mjs";
 import { checkReference } from "../consumer/knowledge.mjs";
+import { callerFrom, negotiate } from "./compat.mjs";
 
 const STABLE = /^v[0-9]+\.[0-9]+\.[0-9]+$/;
 export const ATTESTATIONS_DIR = "attestations";
@@ -35,7 +36,7 @@ export function readAttestation(cacheRoot, digest) {
   }
 }
 
-function writeAttestation(cacheRoot, record) {
+export function writeAttestation(cacheRoot, record) {
   const path = attestationPath(cacheRoot, record.digest);
   mkdirSync(join(cacheRoot, ATTESTATIONS_DIR), { recursive: true });
   const tmp = `${path}.${process.pid}.tmp`;
@@ -60,7 +61,7 @@ export function repoFacts(projectRoot) {
   return { errors: [], commits: head.status === 0, remote: remote.status === 0 ? remote.stdout.trim() : null };
 }
 
-function stage(projectRoot, paths) {
+export function stage(projectRoot, paths) {
   if (!paths.length) return;
   // Windows: antivirus / indexers briefly lock freshly written objects ("unable to write file .git/objects/..: Permission denied"); git add is idempotent, so retry
   let r;
@@ -94,7 +95,7 @@ async function choose({ explicit, root, available, ask }) {
   return offered.includes(profile) ? { profile, how: "chosen" } : { error: `unknown profile '${profile}'; available: ${offered.join(", ")}` };
 }
 
-const fail = (errors, warnings = [], data = {}) => ({ status: "FAIL", errors, warnings, ...data, text: renderText({ status: "FAILED", errors, warnings, ...data }) });
+export const fail = (errors, warnings = [], data = {}) => ({ status: "FAIL", errors, warnings, ...data, text: renderText({ status: "FAILED", errors, warnings, ...data }) });
 
 export function renderText(r) {
   const lines = [`STATUS: ${r.state ?? r.status}`];
@@ -103,6 +104,8 @@ export function renderText(r) {
   if (r.drift) lines.push(`DRIFT: ${r.drift}`);
   if (r.attestation) lines.push(`ATTESTATION: ${r.attestation}`);
   if (r.revocation) lines.push(`REVOCATION: ${r.revocation}`);
+  if (r.upgrade) lines.push(`UPGRADE: ${r.upgrade}`);
+  if (r.detach) lines.push(`DETACH: ${r.detach}`);
   if (r.lock) lines.push(`LOCK: ${r.lock}`);
   if (r.adapters) lines.push(`ADAPTERS: ${r.adapters}`);
   if (r.launcher) lines.push(`LAUNCHER: ${r.launcher}`);
@@ -115,10 +118,11 @@ export function renderText(r) {
 }
 
 /** Verification shared by a fresh adoption and a re-run on an adopted repo: lock, release integrity, projections vs release, tracking. */
-function verify({ projectRoot, cacheRoot, selection, revocations, offline }) {
+export function verify({ projectRoot, cacheRoot, selection, revocations, offline, tolerateEdits = false }) {
   const { lock, errors: lockErrors } = readLock(projectRoot);
   if (lockErrors.length) return { errors: lockErrors };
   const errors = [];
+  const warnings = [];
   const st = bootstrapStatus({ projectRoot, cacheRoot, revocations, offline });
   if (st.state !== "READY") errors.push(`${st.state}: ${st.detail}`);
   let releaseRoot;
@@ -130,7 +134,8 @@ function verify({ projectRoot, cacheRoot, selection, revocations, offline }) {
   }
   const reference = checkReference({ projectRoot, cacheRoot });
   const drift = detectDrift(projectRoot, consumerFiles(releaseRoot, selection), { reference });
-  if (drift.status === "DRIFT") errors.push(`projections diverge from the release: edited=[${drift.edited.join(", ")}] missing=[${drift.missing.join(", ")}]`);
+  // an upgrade keeps what the person changed (never overwrites it): that is reported, and it is what keeps DRIFT from being CLEAN
+  if (drift.status === "DRIFT") (tolerateEdits ? warnings : errors).push(`projections diverge from the release: edited=[${drift.edited.join(", ")}] missing=[${drift.missing.join(", ")}]`);
   else if (drift.status === "MISSING_REFERENCE" || drift.status === "INCOMPATIBLE_VERSION") errors.push(`${drift.status}: ${drift.reference}`);
   let driftState = drift.status;
   const tracking = checkTracking(projectRoot, { source: "index" });
@@ -140,7 +145,7 @@ function verify({ projectRoot, cacheRoot, selection, revocations, offline }) {
   }
   const dr = doctor({ projectRoot, cacheRoot });
   if (dr.status === "FAIL" || dr.errors.length) errors.push(...dr.errors);
-  return { errors, lock, drift: driftState, revocation: st.revocation ?? "NOT_CHECKED", releaseRoot, files: Object.keys(consumerFiles(releaseRoot, selection)) };
+  return { errors, warnings, lock, drift: driftState, revocation: st.revocation ?? "NOT_CHECKED", releaseRoot, files: Object.keys(consumerFiles(releaseRoot, selection)) };
 }
 
 /**
@@ -155,7 +160,7 @@ function verify({ projectRoot, cacheRoot, selection, revocations, offline }) {
  * @param {boolean} [o.offline] no network: revocations are NOT checked (and said so)
  * @param {boolean} [o.keepExisting] leave files that already exist and differ untouched instead of stopping
  */
-export async function adopt({ projectRoot, cacheRoot, repo, bundleFile = null, digest = null, attestationRecord = null, version = null, profile = null, offline = false, keepExisting = false, ask = null, fetchRevocationsImpl = fetchRevocations, afterStage = null }) {
+export async function adopt({ projectRoot, cacheRoot, repo, bundleFile = null, digest = null, attestationRecord = null, version = null, profile = null, offline = false, keepExisting = false, caller = callerFrom(), ask = null, fetchRevocationsImpl = fetchRevocations, afterStage = null }) {
   projectRoot = resolve(projectRoot);
   const facts = repoFacts(projectRoot);
   if (facts.errors.length) return fail(facts.errors);
@@ -204,6 +209,10 @@ export async function adopt({ projectRoot, cacheRoot, repo, bundleFile = null, d
   if (version && platform.version !== version) return fail([`bundle platform.json says ${platform.version}, expected ${version}`]);
   if (adopted && (platform.version !== lock.platform.version || platform.commit !== lock.platform.commit)) return fail([`bundle ${platform.version}@${platform.commit} does not match the lock (${lock.platform.version}@${lock.platform.commit})`]);
   if (!files.has("runtime/bootstrap/adopt.mjs")) return fail(["this release predates `ai-native init`"]);
+  if (caller.error) return fail([caller.error]);
+  const deal = negotiate({ platform, caller });
+  if (!deal.ok) return fail(deal.errors);
+  warnings.push(...deal.warnings);
 
   // revocations: fail closed unless the caller declares --offline
   let revocations = null;
@@ -282,7 +291,7 @@ export async function adopt({ projectRoot, cacheRoot, repo, bundleFile = null, d
 }
 
 /** Same two writes `sync` does after checking the digest; both are content-addressed and re-verified on every read. */
-function ensureInCache(cacheRoot, digest, bytes, files) {
+export function ensureInCache(cacheRoot, digest, bytes, files) {
   try {
     verifyRelease(cacheRoot, digest);
     return;
@@ -296,7 +305,7 @@ function ensureInCache(cacheRoot, digest, bytes, files) {
 const gitOut = (root, args) => spawnSync("git", args, { cwd: root, encoding: "utf8", maxBuffer: 256 * 1024 * 1024 });
 
 /** Index entries (mode, blob, stage, path) and `git status` of the working tree, as they are right now. */
-function gitSnapshot(root) {
+export function gitSnapshot(root) {
   const idx = gitOut(root, ["ls-files", "-s", "-z"]);
   const st = gitOut(root, ["status", "--porcelain=v1", "-z", "--untracked-files=all"]);
   const entries = new Map();
@@ -324,7 +333,12 @@ function rollbackFresh(projectRoot, before) {
     }
   }
   rmSync(join(projectRoot, LOCK_FILE), { force: true });
-  for (const p of new Set([...ours, LOCK_FILE])) {
+  return restoreGit(projectRoot, before, [...ours, LOCK_FILE]);
+}
+
+/** Puts `paths` back in the index exactly as `before` had them (same mode and blob, or absent), then compares `git status` and the index with it. Returns the differences. */
+export function restoreGit(projectRoot, before, paths) {
+  for (const p of new Set(paths)) {
     const was = before.entries.get(p);
     if (was) gitOut(projectRoot, ["update-index", "--add", "--cacheinfo", `${was.mode},${was.oid},${p}`]);
     else gitOut(projectRoot, ["rm", "--cached", "-q", "--ignore-unmatch", "--", p]);

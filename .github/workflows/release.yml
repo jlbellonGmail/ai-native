@@ -141,7 +141,7 @@ jobs:
             if (s.bomFormat !== "CycloneDX" || !Array.isArray(s.components ?? [])) { console.error("not a CycloneDX SBOM"); process.exit(1); }
             console.log("CycloneDX", s.specVersion, "components:", (s.components ?? []).length);
           ' "dist/ai-native-$v.sbom.cdx.json"
-          (cd dist && sha256sum "ai-native-$v.tar.gz" "ai-native-$v.sbom.cdx.json" platform.json ai-native-cli.mjs revocations-*.json > SHA256SUMS && cat SHA256SUMS)
+          (cd dist && sha256sum "ai-native-$v.tar.gz" "ai-native-$v.sbom.cdx.json" platform.json ai-native-cli.mjs revocations-*.json cli-revocations-*.json > SHA256SUMS && cat SHA256SUMS)
 
       - name: Upload release assets
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -199,6 +199,7 @@ jobs:
             dist/platform.json
             dist/ai-native-cli.mjs
             dist/revocations-*.json
+            dist/cli-revocations-*.json
 
       - name: Attest SBOM against the bundle
         uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
@@ -219,7 +220,7 @@ jobs:
           case "$VERSION" in *-alpha.*|*-rc.*) flags="--prerelease" ;; esac
           notes="Platform release $VERSION at $GITHUB_SHA. Bundle digest: ${{ needs.build.outputs.digest }}. Verify: gh attestation verify ai-native-$VERSION.tar.gz --repo $GITHUB_REPOSITORY."
           # one command per line, no trailing backslashes: a workflow that runs the pushed branch file may not contain any (secret-exposure.mjs)
-          assets=("dist/ai-native-$VERSION.tar.gz" "dist/ai-native-$VERSION.sbom.cdx.json" "dist/ai-native-$VERSION.sigstore.json" dist/platform.json dist/ai-native-cli.mjs dist/SHA256SUMS dist/revocations-*.json)
+          assets=("dist/ai-native-$VERSION.tar.gz" "dist/ai-native-$VERSION.sbom.cdx.json" "dist/ai-native-$VERSION.sigstore.json" dist/platform.json dist/ai-native-cli.mjs dist/SHA256SUMS dist/revocations-*.json dist/cli-revocations-*.json)
           gh release create "$VERSION" --repo "$GITHUB_REPOSITORY" $flags --draft --verify-tag --title "ai-native $VERSION" --notes "$notes" "${assets[@]}"
           gh release edit "$VERSION" --repo "$GITHUB_REPOSITORY" --draft=false
 
@@ -254,6 +255,11 @@ jobs:
           [ -n "$REV" ] || { echo "no revocations asset listed in SHA256SUMS"; exit 1; }
           curl -fsSL --retry 3 -O "https://github.com/$GITHUB_REPOSITORY/releases/download/$VERSION/$REV"
           echo "$REV" > revocations.name
+          # same for the CLI revocations series (cli-revocations-<n>.json): a separate asset so that engines of earlier releases never read an entry they cannot parse
+          CLIREV="$(awk '{print $2}' SHA256SUMS | { grep -E '^cli-revocations-[0-9]+\.json$' || true; } | sort -V | tail -1)"
+          [ -n "$CLIREV" ] || { echo "no CLI revocations asset listed in SHA256SUMS"; exit 1; }
+          curl -fsSL --retry 3 -O "https://github.com/$GITHUB_REPOSITORY/releases/download/$VERSION/$CLIREV"
+          echo "$CLIREV" > cli-revocations.name
           sha256sum -c SHA256SUMS
 
       - name: Verify provenance of every asset
@@ -264,7 +270,7 @@ jobs:
         run: |
           set -euo pipefail
           cd pub
-          for a in "ai-native-$VERSION.tar.gz" "ai-native-$VERSION.sbom.cdx.json" platform.json ai-native-cli.mjs "$(cat revocations.name)"; do
+          for a in "ai-native-$VERSION.tar.gz" "ai-native-$VERSION.sbom.cdx.json" platform.json ai-native-cli.mjs "$(cat revocations.name)" "$(cat cli-revocations.name)"; do
             gh attestation verify "$a" --repo "$GITHUB_REPOSITORY" --signer-workflow "$GITHUB_REPOSITORY/.github/workflows/release.yml"
           done
           # offline: the published sigstore bundle verifies without network lookups of attestations
@@ -302,6 +308,8 @@ jobs:
           repo="$(mktemp -d)"; cache="$(mktemp -d)"
           git init -q "$repo"
           cd "$repo"
+          # the published CLI declares exactly the tag that published it
+          [ "$(node "$cli" --version)" = "CLI: $VERSION" ]
           out="$(AI_NATIVE_CACHE="$cache" node "$cli" init --version "$VERSION" --profile factory)"
           echo "$out"
           echo "$out" | grep -qx 'STATUS: READY'

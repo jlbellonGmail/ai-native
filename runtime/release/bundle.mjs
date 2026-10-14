@@ -106,6 +106,13 @@ export function componentVersions(root, commit) {
   return { "unit-event": { version: String(unitEvent) }, "audit-method": { version: String(audit) }, "kernel-contract": { version: `sha256:${kernelDigest}` } };
 }
 
+/** The CLI <-> PLATFORM contract of this commit (contracts/bootstrap-protocol.json), published in platform.json as `bootstrap`. A commit that predates it has none (and is read as protocol 1, CLI >= v3.2.0). */
+export function bootstrapContract(root, commit) {
+  if (!git(root, ["ls-tree", "--name-only", commit, "contracts/bootstrap-protocol.json"]).length) return null;
+  const { protocol, minCliVersion, requiredCapabilities } = JSON.parse(show(root, commit, "contracts/bootstrap-protocol.json"));
+  return { protocol, minCliVersion, requiredCapabilities };
+}
+
 /**
  * A capability is "executable" only if every parity test that proves it is
  * IMPLEMENTED (P25). Anything else is reported "missing", never optimistic.
@@ -137,6 +144,8 @@ export function buildBundle({ root, commit, version }) {
     components: componentVersions(root, commit),
     capabilities: capabilities(root, commit),
   };
+  const bootstrap = bootstrapContract(root, commit);
+  if (bootstrap) platform.bootstrap = bootstrap;
   const entries = { ...files, "platform.json": `${JSON.stringify(platform, null, 2)}\n` };
   const bytes = gzipDeterministic(writeTar(entries));
   return { bytes, digest: `sha256:${sha256Hex(bytes)}`, platform, fileCount: Object.keys(entries).length };
