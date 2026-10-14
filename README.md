@@ -52,6 +52,38 @@ if ($?) { node (Join-Path $dl "ai-native-cli.mjs") install }
 `install` prints the one line that adds `~/.ai-native/bin` to your PATH. Without installing, running the downloaded `ai-native-cli.mjs` with `node` and the argument `init` does the same. Offline later:
 `ai-native init --offline` uses a release this machine already verified. How it is built and why it is safe: `governance/versioning/V3.2.0-RELEASE.md`.
 
+## The `ai-native` command: install, update, remove
+
+Two different things have a version, and `ai-native --version` shows both: the **CLI** is the command installed on a machine; the **PLATFORM** is the
+release of ai-native a repository is pinned to by its `ai-native.lock.json`. Each repository keeps its own PLATFORM; one CLI serves them all.
+
+```text
+INSTALL ONCE PER MACHINE        ai-native install            (the verified download above; Node >= 20, git, gh)
+NEW REPOSITORY                  ai-native init               latest stable PLATFORM; on an adopted repository it only re-verifies
+UPGRADE A REPOSITORY            ai-native upgrade            to the latest stable PLATFORM, or: ai-native upgrade --to vX.Y.Z
+UPDATE THE CLI                  ai-native self-update        or: ai-native self-update --check   (only reports)
+SHOW VERSIONS                   ai-native --version          CLI: v3.3.0 | PLATFORM: v3.2.0   (PLATFORM only inside an adopted repository)
+REMOVE THE CLI FROM A MACHINE   ai-native uninstall          repositories are not touched; --purge-cache also deletes the release cache
+REMOVE AI-NATIVE FROM A REPO    ai-native detach             only what ai-native wrote; --keep-modified keeps files you edited
+```
+
+- **A new release never changes a repository.** The lock decides. A repository moves only when someone runs `ai-native upgrade` (it resolves commit
+  and digest itself, verifies the release like `init` does, updates the lock, the pinned workflow and the managed files, keeps files you edited, never
+  goes backwards, and puts everything back if any step fails). Review with `git diff --staged` and commit.
+- **When a new release comes out**: repositories — nothing, until you choose to `upgrade`; new repositories use it automatically; the CLI — `ai-native
+  self-update` when you want its new commands. A release that needs a newer CLI than yours refuses to run (`INCOMPATIBLE_CLI`) and says so; it never
+  half-works. The contract is `contracts/bootstrap-protocol.json`, published in each release's `platform.json` as `bootstrap`.
+- **`self-update`** verifies the new CLI like a release (published sha256, sigstore attestation by the release workflow, revocations), refuses a
+  downgrade, starts the new CLI before trusting it, replaces the old one atomically and keeps it as `ai-native.mjs.prev`. If anything fails, your
+  current `ai-native` still works. Offline it changes nothing. `install` never puts an older CLI over a newer one.
+- **If you installed v3.2.0** (the only version without `self-update`) update it once by hand: repeat the verified download in "New project" and run
+  `node <the downloaded file> install`; that replaces it. From then on `ai-native self-update` is all you need. Until you do, a v3.2.0 CLI keeps working with
+  every release that does not require more of it, and warns (`LEGACY_CLI`) when it is the reason something cannot be done.
+- **Offline**: a repository already adopted keeps working (its launcher runs from the local cache), `init --offline` and `upgrade --offline` use only
+  releases this machine already verified, and anything that needs the network fails closed without changing anything.
+- **Compromised or revoked CLI**: `self-update` is for a CLI you can still trust. If your installed command may be compromised, do not run it to repair
+  itself: `governance/security/CLI-RECOVERY.md`.
+
 ## Repository Structure
 
 ```

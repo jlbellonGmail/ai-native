@@ -23,7 +23,7 @@ const rel = workingTreeRelease();
 const bundle = join(tmp("bundle"), "ai-native-v9.9.9.tar.gz");
 writeFileSync(bundle, rel.bytes);
 
-const run = (projectRoot, cacheRoot, extra = {}) => adopt({ projectRoot, cacheRoot, repo: REPO, bundleFile: bundle, attestationRecord: record(rel), version: "v9.9.9", profile: "python-service", fetchRevocationsImpl: CLEAN, ...extra });
+const run = (projectRoot, cacheRoot, extra = {}) => adopt({ projectRoot, cacheRoot, repo: REPO, bundleFile: bundle, attestationRecord: record(rel), version: "v9.9.9", profile: "python-service", fetchRevocationsImpl: CLEAN, caller: { version: "v3.3.0", protocol: 1, capabilities: ["adopt", "upgrade", "detach"], legacy: false }, ...extra });
 const tree = (root) => readdirSync(root, { recursive: true }).map(String).filter((p) => p !== ".git" && !/^\.git[\\/]/.test(p)).sort();
 
 test("EMPTY GIT REPO -> one call -> lock valid, supply chain verified, adapters projected, drift clean, READY", async () => {
