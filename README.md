@@ -84,6 +84,9 @@ REMOVE AI-NATIVE FROM A REPO    ai-native detach             only what ai-native
 - **`detach` does not depend on the release a repository is pinned to**: what ai-native wrote is listed in the repository's own journal, so a repository
   pinned to an old, unavailable or even revoked release can still be detached. It runs the engine of the newest verified release that ships it (the latest
   stable one that is not revoked; with `--offline`, the newest one already in the cache) and fails closed, changing nothing, if there is none.
+  A repository left by the bootstrap of v3.1.x or earlier has the lock and no adoption journal: `detach` then removes **only the lock** (the one file ai-native
+  is known to have written there) and lists, without touching them, any file it could have projected. If `.ai-native/` exists without its journal, or the lock is
+  not readable, it refuses and changes nothing: run `ai-native upgrade` (it records what is ai-native's without overwriting anything) and then `detach`.
 - **Compromised or revoked CLI**: `self-update` is for a CLI you can still trust. If your installed command may be compromised, do not run it to repair
   itself: `governance/security/CLI-RECOVERY.md`.
 
@@ -110,7 +113,7 @@ is rolled back and the rollback is proved against `git status`). The CLI never p
 | `PROFILE_REQUIRED` | The repository gives no hint of what kind of project it is. | `ai-native init --profile <id>`. |
 | `PROFILE_CONFLICT` | `--profile` contradicts the profile in the lock. | The profile changes in `ai-native.lock.json`, not by flag. |
 | `NOT_ADOPTED` | The repository has no `ai-native.lock.json`. | `ai-native init`. |
-| `ADOPTION_INCONSISTENT` | The lock and the adoption journal do not both exist, so ai-native cannot tell what is its own. | Restore the missing file from Git history; nothing was removed. |
+| `ADOPTION_INCONSISTENT` | A journal without its lock, or a lock without a journal where `.ai-native/` exists (or the lock is unreadable): ai-native cannot tell what is its own. | Nothing was removed. Restore the missing file from Git history, or run `ai-native upgrade` and then `ai-native detach`. |
 | `MIGRATED_FROM_V2` | The repository carries a v2 migration journal. | Revert it with `migrate revert` first. |
 | `DOWNGRADE_REFUSED` | `upgrade` only moves forward. | Choose a newer `--to`. |
 | `INSTALL_DOWNGRADE_REFUSED` | `install` will not put an older CLI over a newer one. | Use `ai-native self-update`. |

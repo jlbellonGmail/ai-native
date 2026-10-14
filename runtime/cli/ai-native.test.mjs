@@ -243,7 +243,7 @@ test("`install` puts the command on the machine: a copy and shims for sh and cmd
   const bin = join(home, "bin");
   assert.deepEqual(readdirSync(bin).sort(), ["ai-native", "ai-native.cmd", "ai-native.mjs"]);
   assert.match(readFileSync(join(bin, "ai-native"), "utf8"), /^#!\/bin\/sh\nexec node '.*ai-native\.mjs' "\$@"\n$/);
-  assert.match(readFileSync(join(bin, "ai-native.cmd"), "utf8"), /^@echo off\r\nnode ".*ai-native\.mjs" %\*\r\n$/);
+  assert.match(readFileSync(join(bin, "ai-native.cmd"), "utf8"), /^@echo off\r\nnode "%~dp0ai-native.mjs" %\*\r\n$/);
   assert.match(out.join("\n"), /Add it to your PATH/);
   // the installed copy is the same program
   const v = spawnSync(process.execPath, [join(bin, "ai-native.mjs"), "version"], { encoding: "utf8" });

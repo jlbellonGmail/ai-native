@@ -4,10 +4,10 @@
 > `governance/history/SESSION-CONTEXT-HISTORY-2026-10-04.md`. Fuente de verdad del estado: este archivo, `governance/roadmaps/AI-NATIVE-V3-ROADMAP.md` y Git/GitHub.
 > Política del merge humano: `governance/security/HITL-MERGE-POLICY.md`. Frontera de secretos: `governance/security/SECRETS-BOUNDARY.md`.
 
-Actualizado: 2026-10-14 (v3.2.0 publicada; v3.3.0 fusionada en main, en correcciones de auditoría, sin tag).
+Actualizado: 2026-10-14 (v3.2.0 publicada; v3.3.0 fusionada en main, en cierre previo a la auditoría final, sin tag).
 
 ```text
-STATUS: V3_3_0_CANDIDATE_IN_AUDIT_FIXES
+STATUS: V3_3_0_CANDIDATE_CLOSING_PENDING_FINAL_AUDIT
 INITIATIVE: CLOSED (N-02b); CLI_LIFECYCLE: EN CURSO
 STABLE_BASELINE: v3.2.0
 PREVIOUS_BASELINE: v3.1.3 (inmutable). Los 9 consumidores seguían en v3.1.2 el 2026-10-12; no re-verificado desde entonces
@@ -15,7 +15,7 @@ PREVIOUS_BASELINE: v3.1.3 (inmutable). Los 9 consumidores seguían en v3.1.2 el 
 
 Cerrado: **`ai-native init`**, punto de entrada público para convertir un repositorio Git vacío en consumidor READY con una instrucción (encargo explícito del humano, 2026-10-13). **`v3.2.0` publicada** el 2026-10-13T20:51:59Z: tag sobre `d9b590b`, release inmutable, `release.yml` del tag en success (`governance/versioning/V3.2.0-RELEASE.md`). `v3.1.3` y anteriores no se tocan.
 
-En curso (encargo explícito del humano, 2026-10-14): **lifecycle completo del CLI global** (`ai-native --version`, `upgrade`, `detach`, `self-update`, `uninstall`, contrato CLI↔PLATFORM, revocación del CLI). Candidata `v3.3.0` MINOR (`governance/versioning/V3.3.0-RELEASE.md`): **fusionada en main por la PR #115** (merge `6260751`); auditoría PLATFORM de ese SHA 88.25/100, 0 BLOCKER/CRITICAL/MAJOR, 5 MINOR N-16..N-20 (`.audit/reports/AUDIT-PLATFORM-6260751.md`; declara no ser independiente). Las correcciones van en una PR posterior; falta una nueva auditoría independiente sobre el SHA resultante. **Sin tag ni release**: el tag `v3.3.0` se crea solo con el release-gate vigente y tras la decisión humana.
+En curso (encargo explícito del humano, 2026-10-14): **lifecycle completo del CLI global** (`ai-native --version`, `upgrade`, `detach`, `self-update`, `uninstall`, contrato CLI↔PLATFORM, revocación del CLI). Candidata `v3.3.0` MINOR (`governance/versioning/V3.3.0-RELEASE.md`): **fusionada en main por la PR #115** (merge `6260751`); auditoría PLATFORM de ese SHA 88.25/100, 0 BLOCKER/CRITICAL/MAJOR, 5 MINOR N-16..N-20 (`.audit/reports/AUDIT-PLATFORM-6260751.md`; declara no ser independiente). La auditoría independiente de `d16adfe` (post-#116, informe `AUDIT-PLATFORM-d16adfe.md`) dio 91.00/100 con 0 BLOCKER/CRITICAL/MAJOR y dejó abiertos N-18 (shim `.cmd` con rutas no ASCII), N-21 (`detach` en consumidores legacy) y N-22 (documentación); su corrección y las actualizaciones seguras de acciones van en PR(s) de cierre que cambian código y CI, por lo que ese informe no certifica el SHA final: **falta una nueva auditoría independiente sobre el SHA resultante** antes de cualquier tag. **Sin tag ni release**: el tag `v3.3.0` se crea solo con el release-gate vigente y tras la decisión humana.
 
 Criterio de cierre y pendientes aceptados (`NOT_REQUIRED_FOR_COMPLETION`, que no reabren la iniciativa): `governance/versioning/V3.0.2-POST-RELEASE-VERIFICATION.md`, «Cierre formal de la iniciativa».
 

@@ -16,7 +16,7 @@ import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, renameSync, rmSync, rmdirSync, writeFileSync } from "node:fs";
 import { homedir, tmpdir } from "node:os";
-import { delimiter, dirname, join, resolve } from "node:path";
+import { basename, delimiter, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { gunzipSync } from "node:zlib";
 
@@ -502,12 +502,12 @@ const newerThan = (a, b) => (b ? cmp(a, b) : 1);
 const shq = (text) => `'${text.split("'").join("'\\''")}'`;
 /** PowerShell single-quoting: a `'` is doubled. */
 const psq = (text) => `'${text.split("'").join("''")}'`;
-/** In a batch file a literal `%` is `%%`; everything else is safe inside double quotes (a path cannot contain one). */
-const cmdq = (text) => text.split("%").join("%%");
 
 const SHIMS = (script) => ({
   "ai-native": [`#!/bin/sh\nexec node ${shq(script.split("\\").join("/"))} "$@"\n`, 0o755],
-  "ai-native.cmd": [`@echo off\r\nnode "${cmdq(script)}" %*\r\n`, 0o644],
+  // the batch shim embeds NO path: cmd.exe reads the file in the OEM code page (850, 437...) while the path is Unicode, so a profile such as C:\Users\José
+  // would be corrupted. `%~dp0` is the directory of the shim itself, resolved by cmd.exe in its own encoding; both files always live in `bin`
+  "ai-native.cmd": [`@echo off\r\nnode "%~dp0${basename(script)}" %*\r\n`, 0o644],
 });
 
 /** Writes `text` next to `file` and renames it over: a reader sees the old file or the new one, never half of it. Retries the brief locks Windows antivirus/indexers take. */
