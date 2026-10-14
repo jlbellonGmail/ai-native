@@ -4,24 +4,24 @@
 > `governance/history/SESSION-CONTEXT-HISTORY-2026-10-04.md`. Fuente de verdad del estado: este archivo, `governance/roadmaps/AI-NATIVE-V3-ROADMAP.md` y Git/GitHub.
 > Política del merge humano: `governance/security/HITL-MERGE-POLICY.md`. Frontera de secretos: `governance/security/SECRETS-BOUNDARY.md`.
 
-Actualizado: 2026-10-12 (v3.1.3 publicada; N-02b cerrado).
+Actualizado: 2026-10-14 (v3.2.0 publicada; v3.3.0 fusionada en main, en correcciones de auditoría, sin tag).
 
 ```text
-STATUS: N02B_CLOSED_AND_PATCH_RELEASED
-INITIATIVE: CLOSED
-STABLE_BASELINE: v3.1.3
-PREVIOUS_BASELINE: v3.1.2 (inmutable; los 9 consumidores siguen en v3.1.2)
+STATUS: V3_3_0_CANDIDATE_IN_AUDIT_FIXES
+INITIATIVE: CLOSED (N-02b); CLI_LIFECYCLE: EN CURSO
+STABLE_BASELINE: v3.2.0
+PREVIOUS_BASELINE: v3.1.3 (inmutable). Los 9 consumidores seguían en v3.1.2 el 2026-10-12; no re-verificado desde entonces
 ```
 
-En curso (encargo explícito del humano, 2026-10-13): **`ai-native init`**, punto de entrada público para convertir un repositorio Git vacío en consumidor READY con una instrucción. Candidata `v3.2.0` MINOR (`governance/versioning/V3.2.0-RELEASE.md`; versión decidida por el humano el 2026-10-13): PR abierta, **pendiente de revisión y merge humanos**; sin tag ni release; `v3.1.3` no se toca.
+Cerrado: **`ai-native init`**, punto de entrada público para convertir un repositorio Git vacío en consumidor READY con una instrucción (encargo explícito del humano, 2026-10-13). **`v3.2.0` publicada** el 2026-10-13T20:51:59Z: tag sobre `d9b590b`, release inmutable, `release.yml` del tag en success (`governance/versioning/V3.2.0-RELEASE.md`). `v3.1.3` y anteriores no se tocan.
 
-En curso (encargo explícito del humano, 2026-10-14): **lifecycle completo del CLI global** (`ai-native --version`, `upgrade`, `detach`, `self-update`, `uninstall`, contrato CLI↔PLATFORM, revocación del CLI). Candidata `v3.3.0` MINOR (`governance/versioning/V3.3.0-RELEASE.md`): PR abierta, **pendiente de revisión y merge humanos**; sin tag ni release.
+En curso (encargo explícito del humano, 2026-10-14): **lifecycle completo del CLI global** (`ai-native --version`, `upgrade`, `detach`, `self-update`, `uninstall`, contrato CLI↔PLATFORM, revocación del CLI). Candidata `v3.3.0` MINOR (`governance/versioning/V3.3.0-RELEASE.md`): **fusionada en main por la PR #115** (merge `6260751`); auditoría PLATFORM de ese SHA 88.25/100, 0 BLOCKER/CRITICAL/MAJOR, 5 MINOR N-16..N-20 (`.audit/reports/AUDIT-PLATFORM-6260751.md`; declara no ser independiente). Las correcciones van en una PR posterior; falta una nueva auditoría independiente sobre el SHA resultante. **Sin tag ni release**: el tag `v3.3.0` se crea solo con el release-gate vigente y tras la decisión humana.
 
 Criterio de cierre y pendientes aceptados (`NOT_REQUIRED_FOR_COMPLETION`, que no reabren la iniciativa): `governance/versioning/V3.0.2-POST-RELEASE-VERIFICATION.md`, «Cierre formal de la iniciativa».
 
 ## Arquitectura (vigente)
 
-`ai-native` es **un único repositorio** (ADR-001, desde la PR #2): áreas de fábrica `governance/`, `foundation/`, `knowledge/`, `template/`; plataforma v3 en `core/ contracts/ runtime/ mcp/ profiles/ audit/ parity/ evaluation/`; `legacy/` es material congelado, no instrucciones. Versión de la plataforma = tag/release (`VERSION` de la raíz: `3.0.0-dev`, ver `governance/versioning/VERSIONING-POLICY.md`). Última release publicada: `v3.1.3` (2026-10-12; tag sobre `4a067e8`; `governance/versioning/V3.1.3-POST-RELEASE-VERIFICATION.md`; parche en `V3.1.3-PATCH.md`). Anteriores: `v3.1.2` (`e36040f`), `v3.1.1`, `v3.1.0`. Referencia histórica `v3.0.2` (2026-10-10; tag sobre `ca43c7b`; verificación en `governance/versioning/V3.0.2-POST-RELEASE-VERIFICATION.md`). `v3.0.1` (tag sobre `da84fb1`; `governance/versioning/V3.0.1-POST-RELEASE-VERIFICATION.md`) queda como release anterior. `v3.0.0` y las prereleases `alpha.1`, `rc.1`, `rc.2` se conservan como historia publicada.
+`ai-native` es **un único repositorio** (ADR-001, desde la PR #2): áreas de fábrica `governance/`, `foundation/`, `knowledge/`, `template/`; plataforma v3 en `core/ contracts/ runtime/ mcp/ profiles/ audit/ parity/ evaluation/`; `legacy/` es material congelado, no instrucciones. Versión de la plataforma = tag/release (`VERSION` de la raíz: `3.0.0-dev`, ver `governance/versioning/VERSIONING-POLICY.md`). Última release publicada: `v3.2.0` (2026-10-13; tag sobre `d9b590b`; release inmutable). Anterior: `v3.1.3` (2026-10-12; tag sobre `4a067e8`; `governance/versioning/V3.1.3-POST-RELEASE-VERIFICATION.md`; parche en `V3.1.3-PATCH.md`). Anteriores: `v3.1.2` (`e36040f`), `v3.1.1`, `v3.1.0`. Referencia histórica `v3.0.2` (2026-10-10; tag sobre `ca43c7b`; verificación en `governance/versioning/V3.0.2-POST-RELEASE-VERIFICATION.md`). `v3.0.1` (tag sobre `da84fb1`; `governance/versioning/V3.0.1-POST-RELEASE-VERIFICATION.md`) queda como release anterior. `v3.0.0` y las prereleases `alpha.1`, `rc.1`, `rc.2` se conservan como historia publicada.
 
 ## Roadmap v3: dónde estamos
 
