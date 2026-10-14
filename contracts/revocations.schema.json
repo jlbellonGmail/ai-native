@@ -15,7 +15,7 @@
         "type": "object",
         "required": ["kind", "id", "version", "reason"],
         "properties": {
-          "kind": { "type": "string", "enum": ["platform", "pack"] },
+          "kind": { "type": "string", "enum": ["platform", "pack", "cli"], "description": "platform and pack entries live in revocations-<n>.json; cli entries live ONLY in cli-revocations-<n>.json (id 'ai-native-cli', version = the CLI release tag): a separate asset of the same release workflow, so an engine of an earlier release never reads an entry kind it cannot parse." },
           "id": { "type": "string", "description": "Pack id, or 'ai-native' for the platform itself." },
           "version": { "type": "string" },
           "commit": { "type": ["string", "null"] },

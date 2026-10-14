@@ -106,6 +106,12 @@ export function componentVersions(root, commit) {
   return { "unit-event": { version: String(unitEvent) }, "audit-method": { version: String(audit) }, "kernel-contract": { version: `sha256:${kernelDigest}` } };
 }
 
+/** The CLI <-> PLATFORM contract of this commit (contracts/bootstrap-protocol.json), published in platform.json as `bootstrap`. */
+export function bootstrapContract(root, commit) {
+  const { protocol, minCliVersion, requiredCapabilities } = JSON.parse(show(root, commit, "contracts/bootstrap-protocol.json"));
+  return { protocol, minCliVersion, requiredCapabilities };
+}
+
 /**
  * A capability is "executable" only if every parity test that proves it is
  * IMPLEMENTED (P25). Anything else is reported "missing", never optimistic.
@@ -136,6 +142,7 @@ export function buildBundle({ root, commit, version }) {
     generatedAt: commitTimestamp(root, commit),
     components: componentVersions(root, commit),
     capabilities: capabilities(root, commit),
+    bootstrap: bootstrapContract(root, commit),
   };
   const entries = { ...files, "platform.json": `${JSON.stringify(platform, null, 2)}\n` };
   const bytes = gzipDeterministic(writeTar(entries));

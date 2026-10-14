@@ -1,0 +1,6 @@
+{
+  "$comment": "CLI <-> PLATFORM contract (v3.3.0). Copied into platform.json as `bootstrap` at release build. protocol: version of the launcher->engine interface (a release whose protocol is higher than the CLI speaks is refused). minCliVersion: oldest public CLI this release's engine supports. requiredCapabilities: what the CLI must offer BEFORE trust exists (a legacy v3.2.0 CLI, which sends nothing, is assumed to offer exactly [\"adopt\"]). Raising any of these is a compatibility decision: see governance/versioning/VERSIONING-POLICY.md.",
+  "protocol": 1,
+  "minCliVersion": "v3.2.0",
+  "requiredCapabilities": ["adopt"]
+}

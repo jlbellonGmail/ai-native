@@ -35,6 +35,14 @@ export const hasCliAsset = (tag) => {
   return a > 3 || (a === 3 && b >= 2);
 };
 
+/** The CLI lifecycle (version, self-update, CLI revocations, the CLI <-> PLATFORM contract) exists from v3.3.0. */
+export const hasCliLifecycle = (tag) => {
+  const [a, b] = /^v(\d+)\.(\d+)\.(\d+)/.exec(tag).slice(1, 3).map(Number);
+  return a > 3 || (a === 3 && b >= 3);
+};
+/** The minimum supported CLI, kept byte for byte (evaluation/fixtures/cli): every release must still serve it. */
+export const LEGACY_CLI = join(root, "evaluation", "fixtures", "cli", "ai-native-v3.2.0.mjs");
+
 /** Assets every platform release must carry. */
 export function expectedAssets(tag) {
   return [`ai-native-${tag}.tar.gz`, `ai-native-${tag}.sbom.cdx.json`, `ai-native-${tag}.sigstore.json`, "platform.json", ...(hasCliAsset(tag) ? [CLI_ASSET] : []), "SHA256SUMS"];
@@ -43,7 +51,7 @@ export function expectedAssets(tag) {
 const run = (cmd, args, opts = {}) => spawnSync(cmd, args, { encoding: "utf8", maxBuffer: 256 * 1024 * 1024, ...opts });
 const gh = (args) => run("gh", args);
 
-export function verifyRelease({ tag, repo = "jlbellonGmail/ai-native", expectCommit = null, revocationsFile = join(root, "governance", "versioning", "revocations-1.json") }) {
+export function verifyRelease({ tag, repo = "jlbellonGmail/ai-native", expectCommit = null, revocationsFile = join(root, "governance", "versioning", "revocations-1.json"), cliRevocationsFile = join(root, "governance", "versioning", "cli-revocations-1.json") }) {
   const checks = [];
   const add = (name, ok, detail = "") => checks.push({ name, ok, detail });
   if (!/^v\d+\.\d+\.\d+(-(alpha|rc)\.\d+)?$/.test(tag)) return [{ name: "tag format", ok: false, detail: tag }];
@@ -104,6 +112,21 @@ export function verifyRelease({ tag, repo = "jlbellonGmail/ai-native", expectCom
       const revoked = (list.entries ?? []).some((e) => e.kind === "platform" && (e.version === tag || e.commit === commit));
       add("this release is not revoked", !revoked);
     } else add("revocations asset present", false, "no revocations-N.json asset");
+    if (hasCliLifecycle(tag)) {
+      // the CLI revocations are their own asset series (same workflow, same attestation): an engine of an earlier release never reads an entry it cannot parse
+      const cliRev = readdirSync(dir).find((n) => /^cli-revocations-\d+\.json$/.test(n));
+      add("CLI revocations asset present", Boolean(cliRev), cliRev ?? "no cli-revocations-N.json asset");
+      if (cliRev) {
+        const hereCli = readFileSync(cliRevocationsFile, "utf8").replace(/\r\n/g, "\n");
+        add("CLI revocations asset equals the repository's list", readFileSync(join(dir, cliRev), "utf8").replace(/\r\n/g, "\n") === hereCli, cliRev);
+        const cliList = JSON.parse(readFileSync(join(dir, cliRev), "utf8"));
+        add("CLI list holds only CLI entries", (cliList.entries ?? []).every((e) => e.kind === "cli"));
+        add("this release's CLI is not revoked", !(cliList.entries ?? []).some((e) => e.kind === "cli" && e.version === tag));
+      }
+      add("platform.json declares the CLI <-> PLATFORM contract", Number.isInteger(platform.bootstrap?.protocol) && /^v\d+\.\d+\.\d+$/.test(platform.bootstrap?.minCliVersion ?? "") && Array.isArray(platform.bootstrap?.requiredCapabilities), JSON.stringify(platform.bootstrap));
+      const declared = run(process.execPath, [join(dir, CLI_ASSET), "--version"], { cwd: dir });
+      add("the published CLI declares exactly the tag that published it", declared.status === 0 && declared.stdout.trim() === `CLI: ${tag}`, declared.stdout.trim());
+    }
 
     // real consumer: init -> sync (downloads from the public release) -> doctor -> run -> status
     const project = join(dir, "consumer");
@@ -129,6 +152,16 @@ export function verifyRelease({ tag, repo = "jlbellonGmail/ai-native", expectCom
       const lines = r.stdout.split(String.fromCharCode(10)).map((l) => l.trim());
       const ok = r.status === 0 && ["STATUS: READY", "DRIFT: CLEAN", "ATTESTATION: PASS", "REVOCATION: CHECKED"].every((l) => lines.includes(l));
       add("ai-native init from the published asset: empty repository -> READY, CLEAN, attested, revocations checked", ok, ok ? "" : (r.stdout + r.stderr).trim().split("\n").slice(-3).join(" | "));
+    }
+    if (hasCliLifecycle(tag)) {
+      // the compatibility matrix against the PUBLISHED release: the minimum supported CLI (v3.2.0, which sends no version) still adopts it
+      const legacyRepo = join(dir, "legacy-repo");
+      mkdirSync(legacyRepo);
+      run("git", ["init", "-q"], { cwd: legacyRepo });
+      const r = run(process.execPath, [LEGACY_CLI, "init", "--version", tag, "--profile", "factory"], { cwd: legacyRepo, env: { ...process.env, AI_NATIVE_CACHE: join(dir, "cache-legacy") } });
+      const lines = r.stdout.split(String.fromCharCode(10)).map((l) => l.trim());
+      const ok = r.status === 0 && lines.includes("STATUS: READY") && lines.includes("ATTESTATION: PASS");
+      add("minimum supported CLI (v3.2.0) adopts this release: legacy caller recognized, READY", ok, ok ? "" : (r.stdout + r.stderr).trim().split("\n").slice(-3).join(" | "));
     }
   } finally {
     rmSync(dir, { recursive: true, force: true });

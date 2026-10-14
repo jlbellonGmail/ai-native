@@ -14,6 +14,7 @@ export class BumpError extends Error {}
 
 const lockSchema = JSON.parse(readFileSync(new URL("../../contracts/lock.schema.json", import.meta.url), "utf8"));
 const SHA_REF = /(uses:\s*[^\s@]+@)[0-9a-f]{40}/;
+const pinOf = (slug) => new RegExp(String.raw`(uses:\s*` + slug.replace(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`) + String.raw`/[^\s@]+@)[0-9a-f]{40}`);
 
 /** Throws unless every path is one of the two allowed bump files. */
 export function assertBumpFootprint(paths) {
@@ -42,8 +43,11 @@ export function planBump({ projectRoot, release, callerSha = null }) {
   const callerPath = join(projectRoot, CALLER_WORKFLOW);
   if (callerSha && existsSync(callerPath)) {
     const text = readFileSync(callerPath, "utf8");
-    if (!SHA_REF.test(text)) throw new BumpError(`${CALLER_WORKFLOW} has no SHA-pinned 'uses:' to update`);
-    const updated = text.replace(SHA_REF, `$1${callerSha}`);
+    // with a known source repository only ITS pin moves (never another action's); without one, the first pin, as before
+    const slug = release.repo?.replace(/^github:/, "");
+    const ref = slug ? pinOf(slug) : SHA_REF;
+    if (!ref.test(text)) throw new BumpError(`${CALLER_WORKFLOW} has no SHA-pinned 'uses:' to update`);
+    const updated = text.replace(ref, `$1${callerSha}`);
     if (updated !== text) files[CALLER_WORKFLOW] = updated;
   }
   assertBumpFootprint(Object.keys(files));

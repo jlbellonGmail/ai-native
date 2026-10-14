@@ -9,8 +9,10 @@ import { validate } from "../lib/schema-lite.mjs";
 const schema = JSON.parse(readFileSync(join(dirname(fileURLToPath(import.meta.url)), "..", "..", "contracts", "revocations.schema.json"), "utf8"));
 
 export const REVOCATIONS_ASSET = /^revocations-([1-9][0-9]*)\.json$/;
+/** The CLI's own series (same schema, same workflow, same attestation): entries are kind "cli"; platform engines never read it. */
+export const CLI_REVOCATIONS_ASSET = /^cli-revocations-([1-9][0-9]*)\.json$/;
 
-export function parseRevocations(text, assetName = null) {
+export function parseRevocations(text, assetName = null, assetPattern = REVOCATIONS_ASSET) {
   let data;
   try {
     data = JSON.parse(text);
@@ -18,17 +20,17 @@ export function parseRevocations(text, assetName = null) {
     return { errors: [`revocations is not valid JSON: ${error.message}`] };
   }
   const errors = validate(data, schema).map((e) => `revocations: ${e}`);
-  const m = assetName?.match(REVOCATIONS_ASSET);
+  const m = assetName?.match(assetPattern);
   if (!errors.length && m && Number(m[1]) !== data.n) errors.push(`revocations: asset ${assetName} declares n=${data.n}`);
   return errors.length ? { errors } : { list: data, errors: [] };
 }
 
 /** @param {{name:string,text:string}[]} candidates */
-export function pickHighest(candidates) {
+export function pickHighest(candidates, assetPattern = REVOCATIONS_ASSET) {
   const warnings = [];
   let best = null;
   for (const { name, text } of candidates) {
-    const { list, errors } = parseRevocations(text, name);
+    const { list, errors } = parseRevocations(text, name, assetPattern);
     if (errors.length) {
       warnings.push(`ignored ${name}: ${errors[0]}`);
       continue;

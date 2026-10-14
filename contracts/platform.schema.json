@@ -38,6 +38,17 @@
         }
       }
     },
+    "bootstrap": {
+      "type": "object",
+      "description": "CLI <-> PLATFORM compatibility contract (contracts/bootstrap-protocol.json). Absent in releases before v3.3.0: they are read as protocol 1, minCliVersion v3.2.0, capabilities [adopt].",
+      "required": ["protocol", "minCliVersion", "requiredCapabilities"],
+      "additionalProperties": false,
+      "properties": {
+        "protocol": { "type": "integer", "minimum": 1 },
+        "minCliVersion": { "type": "string", "pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]+$" },
+        "requiredCapabilities": { "type": "array", "items": { "type": "string", "pattern": "^[a-z][a-z-]*$" } }
+      }
+    },
     "sbom": { "type": "string", "description": "Path of the CycloneDX SBOM asset within the release." },
     "provenance": { "type": "string", "description": "Path of the sigstore attestation bundle asset within the release." }
   }

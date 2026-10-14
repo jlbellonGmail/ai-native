@@ -12,6 +12,9 @@
 //            Online it consults the published revocations; the result says revocation CHECKED|NOT_CHECKED|REVOKED. With --check an
 //            unreadable source fails closed (REVOCATION_UNKNOWN); --offline runs without it and warns that revocation was NOT checked.
 //   doctor
+//   upgrade  --repo github:o/r --bundle <file> [--attestation-record <file>] [--offline]   the engine behind `ai-native upgrade`: the pinned release moves to the one in --bundle
+//   detach   [--keep-modified]   the engine behind `ai-native detach`: removes what the adoption journal says ai-native wrote
+//   (adopt/upgrade/detach also take --cli-version vX.Y.Z --cli-protocol N --cli-capabilities a,b: who is calling; none = a v3.2.0 launcher)
 //   adopt    --repo github:o/r (--bundle <file> --attestation-record <file> | --digest sha256:...) [--version vX.Y.Z] [--profile <id>]
 //            [--offline] [--keep-existing] [--revocations <file>]   the engine behind the public `ai-native init` (runtime/cli/ai-native.mjs): lock + cache +
 //            adapters + launcher + verification in one pass, fail closed without a verified attestation
@@ -26,6 +29,9 @@ import { downloadRelease, fetchRevocations } from "./remote.mjs";
 import { parseRevocations } from "../release/revocations.mjs";
 import { renderOutput, exitCodeForReport, buildReport } from "../lib/json.mjs";
 import { adopt } from "./adopt.mjs";
+import { upgrade } from "./upgrade.mjs";
+import { detach } from "./detach.mjs";
+import { callerFrom } from "./compat.mjs";
 
 const argv = process.argv.slice(2);
 const command = argv.shift();
@@ -70,6 +76,12 @@ try {
     case "adopt":
       result = await adoptCommand();
       break;
+    case "upgrade":
+      result = await upgradeCommand();
+      break;
+    case "detach":
+      result = detachCommand();
+      break;
     default:
       result = { status: "ERROR", errors: [`unknown command: ${command ?? "(none)"}`], warnings: [] };
   }
@@ -77,16 +89,45 @@ try {
   result = { status: "ERROR", errors: [error.message], warnings: [] };
 }
 
-async function adoptCommand() {
+/** Who is calling: a launcher from v3.3.0 says so; one from v3.2.0 says nothing, and that silence is how it is recognized. */
+function callerOfThisRun() {
+  return callerFrom({ version: value("--cli-version"), protocol: value("--cli-protocol"), capabilities: value("--cli-capabilities") });
+}
+
+function readRecord() {
   const recordFile = value("--attestation-record");
-  let attestationRecord = null;
-  if (recordFile) {
-    try {
-      attestationRecord = JSON.parse(readFileSync(recordFile, "utf8"));
-    } catch (error) {
-      return { status: "ERROR", errors: [`--attestation-record unreadable: ${error.message}`], warnings: [] };
-    }
+  if (!recordFile) return { attestationRecord: null };
+  try {
+    return { attestationRecord: JSON.parse(readFileSync(recordFile, "utf8")) };
+  } catch (error) {
+    return { error: { status: "ERROR", errors: [`--attestation-record unreadable: ${error.message}`], warnings: [] } };
   }
+}
+
+/** --revocations <file>: a list obtained out of band instead of the published one (same flag as status/sync). */
+function revocationsSource() {
+  const revFile = value("--revocations");
+  if (!revFile) return {};
+  if (!existsSync(revFile)) return { error: { status: "ERROR", errors: [`--revocations not found: ${revFile}`], warnings: [] } };
+  const parsed = parseRevocations(readFileSync(revFile, "utf8"), null);
+  if (parsed.errors.length) return { error: { status: "ERROR", errors: parsed.errors, warnings: [] } };
+  return { fetchRevocationsImpl: async () => ({ list: parsed.list, errors: [], warnings: [] }) };
+}
+
+async function upgradeCommand() {
+  const { attestationRecord, error } = readRecord();
+  const rv = revocationsSource();
+  if (error || rv.error) return error ?? rv.error;
+  return upgrade({ fetchRevocationsImpl: rv.fetchRevocationsImpl, projectRoot, cacheRoot, bundleFile: value("--bundle"), attestationRecord, offline: flag("--offline"), caller: callerOfThisRun() });
+}
+
+function detachCommand() {
+  return detach({ projectRoot, keepModified: flag("--keep-modified"), caller: callerOfThisRun() });
+}
+
+async function adoptCommand() {
+  const { attestationRecord, error } = readRecord();
+  if (error) return error;
   const interactive = process.stdin.isTTY && process.stdout.isTTY && !flag("--json");
   const ask = interactive ? async (offered) => {
     const { createInterface } = await import("node:readline/promises");
@@ -106,7 +147,7 @@ async function adoptCommand() {
     if (parsed.errors.length) return { status: "ERROR", errors: parsed.errors, warnings: [] };
     fetchRevocationsImpl = async () => ({ list: parsed.list, errors: [], warnings: [] });
   }
-  return adopt({ fetchRevocationsImpl, projectRoot, cacheRoot, repo: value("--repo"), bundleFile: value("--bundle"), digest: value("--digest"), attestationRecord, version: value("--version"), profile: value("--profile"), offline: flag("--offline"), keepExisting: flag("--keep-existing"), ask });
+  return adopt({ fetchRevocationsImpl, caller: callerOfThisRun(), projectRoot, cacheRoot, repo: value("--repo"), bundleFile: value("--bundle"), digest: value("--digest"), attestationRecord, version: value("--version"), profile: value("--profile"), offline: flag("--offline"), keepExisting: flag("--keep-existing"), ask });
 }
 
 async function statusCommand() {

@@ -247,7 +247,7 @@ test("`install` puts the command on the machine: a copy and shims for sh and cmd
   assert.match(out.join("\n"), /Add it to your PATH/);
   // the installed copy is the same program
   const v = spawnSync(process.execPath, [join(bin, "ai-native.mjs"), "version"], { encoding: "utf8" });
-  assert.match(v.stdout, /^ai-native cli \(/);
+  assert.match(v.stdout, /^CLI: v\d+\.\d+\.\d+\n$/);
 });
 
 test("a lock is repository content: a malformed pinned version or repo never reaches a URL or a file name", async () => {
