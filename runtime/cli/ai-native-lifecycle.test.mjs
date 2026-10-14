@@ -7,7 +7,7 @@ import { execFileSync, spawn as spawnAsync, spawnSync } from "node:child_process
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { basename, delimiter, join } from "node:path";
+import { basename, delimiter, dirname, join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { main, declaredVersion, newestCachedWith, pathHint, CLI_VERSION } from "./ai-native.mjs";
 import { upgrade } from "../bootstrap/upgrade.mjs";
@@ -384,7 +384,7 @@ test("SELF-UPDATE --check only reports; the update replaces the installed CLI at
   assert.ok(works(m.script, "v9.9.9"));
   assert.ok(readFileSync(`${m.script}.prev`).equals(cliAsset("v3.3.0")), "the previous CLI is kept, byte for byte, for recovery");
   assert.deepEqual(m.shims(), ["ai-native", "ai-native.cmd", "ai-native.mjs", "ai-native.mjs.prev"]);
-  assert.match(readFileSync(join(m.bin, "ai-native.cmd"), "utf8"), /^@echo off\r\nnode ".*ai-native\.mjs" %\*\r\n$/);
+  assert.match(readFileSync(join(m.bin, "ai-native.cmd"), "utf8"), /^@echo off\r\nnode "%~dp0ai-native.mjs" %\*\r\n$/);
   // the attestation was demanded of the signer workflow, on the downloaded CLI file
   assert.deepEqual(w.log.gh.map((a) => [basename(a[2]), a[a.indexOf("--signer-workflow") + 1]]), [["ai-native-cli.mjs", SIGNER]]);
   // and the shim itself runs the new CLI (the user's way in)
@@ -865,7 +865,7 @@ test("INSTALL quotes everything it embeds: an apostrophe, %, $, a backtick and s
   const cmd = readFileSync(join(bin, "ai-native.cmd"), "utf8");
   assert.match(sh, /^#!\/bin\/sh\nexec node '.*' "\$@"\n$/, "single quotes: nothing inside is special to sh");
   assert.ok(sh.includes("O'\\''Brien"), "the apostrophe is closed, escaped and reopened");
-  assert.ok(cmd.includes("100%% $USER"), "a literal % is %% in a batch file");
+  assert.equal(cmd, "@echo off\r\nnode \"%~dp0ai-native.mjs\" %*\r\n", "the batch shim embeds no path at all: nothing in the home directory can break it");
   // the shim runs from that path, in the shell it was written for
   const shim = process.platform === "win32"
     ? spawnSync("cmd.exe", ["/c", `"${join(bin, "ai-native.cmd")}"`, "--version"], { encoding: "utf8", windowsVerbatimArguments: true })
@@ -889,5 +889,73 @@ test("INSTALL quotes everything it embeds: an apostrophe, %, $, a backtick and s
   if (spawnSync("sh", ["-c", "true"]).status === 0) {
     const r = spawnSync("sh", ["-c", 'eval "$HINT" && printf "%s" "$PATH"'], { encoding: "utf8", env: { ...process.env, HINT: posix.replace(/^Add it to your PATH \(once\):\s*/, "") } });
     assert.ok(r.stdout.startsWith(`${bin}:`), `the line puts exactly the directory first on PATH: ${r.stdout.slice(0, 120)} ${r.stderr}`);
+  }
+});
+
+// ---- N-18 (non-ASCII profile) and N-21 (legacy consumers without a journal) -----------------------------------------------------------------
+
+test("INSTALL works under a home with non-ASCII characters, % and spaces: the shim does not embed the path (cmd.exe reads it in the OEM code page)", async () => {
+  for (const name of ["José Muñoz", "’curly‘ q", "50% done (x) a&b", "日本語"]) {
+    const home = join(tmp("home"), name);
+    assert.equal(await main(["install"], { env: { ...process.env, AI_NATIVE_HOME: home, PATH: process.env.PATH }, out() {}, err() {} }), 0, name);
+    const bin = join(home, "bin");
+    const cmd = readFileSync(join(bin, "ai-native.cmd"));
+    assert.ok(cmd.every((b) => b < 128), `${name}: the batch file is pure ASCII`);
+    const shim = process.platform === "win32"
+      ? spawnSync("cmd.exe", ["/d", "/s", "/c", `""${join(bin, "ai-native.cmd")}" --version"`], { encoding: "utf8", windowsVerbatimArguments: true })
+      : spawnSync("sh", [join(bin, "ai-native"), "--version"], { encoding: "utf8" });
+    assert.equal(shim.stdout.trim(), `CLI: ${CLI_VERSION}`, `${name}: ${shim.stderr}`);
+  }
+});
+
+/** A repository the way the bootstrap of v3.1.x left it: the lock, and nothing else ai-native wrote (no adoption journal). */
+async function legacyRepo(extra = {}) {
+  const { project: source } = await adopted(R2);
+  const project = gitInit();
+  writeFileSync(join(project, "ai-native.lock.json"), readFileSync(join(source, "ai-native.lock.json")));
+  for (const [rel, content] of Object.entries(extra)) {
+    mkdirSync(dirname(join(project, rel)), { recursive: true });
+    writeFileSync(join(project, rel), content);
+  }
+  git(project, "add", "-A");
+  return project;
+}
+
+test("DETACH of a legacy repository (lock, no journal, as v3.1.x left it) removes the lock and nothing else, and says so", async () => {
+  const project = await legacyRepo({ "src/app.py": "print('mine')\n", "README.md": "# mine\n" });
+  const w = world({ releases: [R2] });
+  assert.equal(await w.run(["detach"], { cwd: project, cache: tmp("cache") }), 0, w.log.engineOut + w.err.join("\n"));
+  assert.match(w.log.engineOut, /DETACH: DETACHED \(the lock removed/);
+  assert.match(w.log.engineOut, /WARNING: legacy repository: it has no adoption journal/);
+  assert.deepEqual(files(project).map((p) => p.replaceAll("\\", "/")), ["README.md", "src", "src/app.py"], "your files are untouched");
+  assert.equal(readFileSync(join(project, "src/app.py"), "utf8"), "print('mine')\n");
+  assert.doesNotMatch(git(project, "ls-files"), /ai-native\.lock\.json/, "the removal is staged");
+});
+
+test("DETACH of a legacy repository never deletes a file it cannot prove is ai-native's: projections already present are listed and left; .ai-native/ or an unreadable lock fail closed", async () => {
+  // a file ai-native could project, present without any journal: kept, and named
+  const p1 = await legacyRepo({ "CLAUDE.md": "mine\n" });
+  const w1 = world({ releases: [R2] });
+  assert.equal(await w1.run(["detach"], { cwd: p1, cache: tmp("cache") }), 0, w1.log.engineOut + w1.err.join("\n"));
+  assert.equal(readFileSync(join(p1, "CLAUDE.md"), "utf8"), "mine\n");
+  assert.match(w1.log.engineOut, /left as they are, because no journal says they are ai-native's.*CLAUDE\.md/);
+
+  // the launcher directory exists but the journal does not: ownership is unknown -> refuse, change nothing, point to upgrade
+  const p2 = await legacyRepo({ ".ai-native/ai-native.mjs": "// launcher\n" });
+  const before = state(p2);
+  const w2 = world({ releases: [R2] });
+  assert.equal(await w2.run(["detach"], { cwd: p2, cache: tmp("cache") }), 1);
+  assert.match(w2.err.join("\n") + w2.log.engineOut, /ADOPTION_INCONSISTENT[^\n]*\.ai-native\/ exists[^\n]*Nothing was removed[^\n]*ai-native upgrade/);
+  assert.deepEqual(state(p2), before);
+
+  // a lock that is not an ai-native lock (or is not even JSON) is not removed
+  for (const bad of ["{ nope", "[]", '{"schemaVersion":1}']) {
+    const p3 = await legacyRepo();
+    writeFileSync(join(p3, "ai-native.lock.json"), bad);
+    const b3 = state(p3);
+    const w3 = world({ releases: [R2] });
+    assert.equal(await w3.run(["detach"], { cwd: p3, cache: tmp("cache") }), 1, bad);
+    assert.match(w3.err.join("\n") + w3.log.engineOut, /ADOPTION_INCONSISTENT/, bad);
+    assert.deepEqual(state(p3), b3, bad);
   }
 });
