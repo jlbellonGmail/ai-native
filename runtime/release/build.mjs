@@ -11,9 +11,9 @@ import { fileURLToPath } from "node:url";
 import { buildBundle, publishedPlatform, readShippedFiles, sha256Hex } from "./bundle.mjs";
 import { CLI_REVOCATIONS_ASSET, REVOCATIONS_ASSET, pickHighest } from "./revocations.mjs";
 import { headSha } from "../lib/git.mjs";
+import { assertCliDeclaresTag } from "./cli-version.mjs";
 
 const CLI_ASSET = "ai-native-cli.mjs";
-const cliLifecycle = (tag) => { const [a, b] = /^v(\d+)\.(\d+)/.exec(tag).slice(1).map(Number); return a > 3 || (a === 3 && b >= 3); };
 const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const argv = process.argv.slice(2);
 const value = (n) => (argv.includes(n) ? argv[argv.indexOf(n) + 1] : null);
@@ -53,10 +53,11 @@ if (!cli) {
   console.error("runtime/cli/ai-native.mjs is not part of this commit");
   process.exit(1);
 }
-// the CLI declares the tag that publishes it (from v3.3.0): self-update, install and `--version` all read that one literal
-const declared = /^export const CLI_VERSION = "(v\d+\.\d+\.\d+)";/m.exec(cli.toString("utf8"))?.[1];
-if (cliLifecycle(version) && declared !== version) {
-  console.error(`runtime/cli/ai-native.mjs declares CLI_VERSION ${declared ?? "(nothing)"}; this release is ${version}`);
+// the CLI declares the tag that publishes it (from v3.3.0, prereleases included): self-update, install and `--version` all read that one literal
+try {
+  assertCliDeclaresTag(cli.toString("utf8"), version);
+} catch (error) {
+  console.error(error.message);
   process.exit(1);
 }
 writeFileSync(join(out, CLI_ASSET), cli);

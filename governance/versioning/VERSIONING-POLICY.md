@@ -71,7 +71,7 @@ Esta regla se mantiene sin cambios para la versión de plataforma v3.
 `platform.json` publica `bootstrap` (`contracts/bootstrap-protocol.json`): `protocol`, `minCliVersion`, `requiredCapabilities`. Subir `minCliVersion` o
 `requiredCapabilities` deja fuera a CLI ya instalados: es una decisión explícita, documentada en la release y con el fixture del nuevo mínimo en
 `evaluation/fixtures/cli/`; subir `protocol` es MAJOR. Añadir capacidades al CLI sin exigirlas es MINOR. Una release que exige más de lo que el CLI ofrece
-falla cerrada (`INCOMPATIBLE_CLI`), nunca parcialmente. Detalle: `governance/versioning/V3.3.0-RELEASE.md`.
+falla cerrada (`INCOMPATIBLE_CLI`), nunca parcialmente. El CLI declara el tag que lo publica (`CLI_VERSION`), prereleases incluidos: el build rechaza un commit cuya declaración no sea exactamente el tag (`runtime/release/cli-version.mjs`). El CLI solo selecciona e instala releases estables. Detalle: `governance/versioning/V3.3.0-RELEASE.md`.
 
 ## Compatibilidad y deprecación
 

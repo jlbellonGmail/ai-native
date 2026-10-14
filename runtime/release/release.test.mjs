@@ -10,6 +10,7 @@ import { fileURLToPath } from "node:url";
 import { gunzipSync, gzipSync } from "node:zlib";
 import { buildBundle, crc32, gzipDeterministic, isShipped, publishedPlatform, sha256Hex, PLACEHOLDER_DIGEST } from "./bundle.mjs";
 import { findRevocation, parseRevocations, pickHighest } from "./revocations.mjs";
+import { declaredCliVersion } from "./cli-version.mjs";
 import { readTar } from "../bootstrap/tar.mjs";
 import { validate } from "../lib/schema-lite.mjs";
 import { downloadRelease, fetchRevocations, parseRepo, bundleAsset, apiHeaders } from "../bootstrap/remote.mjs";
@@ -291,13 +292,56 @@ test("revocations: the api.github.com request carries the token when one exists 
 
 test("CLI lifecycle (v3.3.0): the build refuses a CLI that does not declare the tag publishing it, and keeps the CLI revocations out of the platform list", () => {
   const commit = git(repoRoot, "rev-parse", "HEAD");
-  const declared = /^export const CLI_VERSION = "(v\d+\.\d+\.\d+)";/m.exec(readFileSync(join(repoRoot, "runtime", "cli", "ai-native.mjs"), "utf8"))[1];
+  const declared = declaredCliVersion(readFileSync(join(repoRoot, "runtime", "cli", "ai-native.mjs"), "utf8"));
+  assert.match(declared, /^v\d+\.\d+\.\d+/);
   const build = (version) => spawnSync(process.execPath, [join(repoRoot, "runtime", "release", "build.mjs"), "--version", version, "--out", tmp(), "--commit", commit], { encoding: "utf8" });
   assert.equal(build(declared).status, 0, "the tag the CLI declares builds");
   const other = build("v99.0.0");
   assert.equal(other.status, 1);
   assert.ok(other.stderr.includes(`declares CLI_VERSION ${declared}; this release is v99.0.0`), other.stderr);
+  const pre = build(`${declared}-rc.1`);
+  assert.equal(pre.status, 1, "a prerelease of the declared version is another version: the CLI must declare it");
+  assert.ok(pre.stderr.includes(`declares CLI_VERSION ${declared}; this release is ${declared}-rc.1`), pre.stderr);
   assert.equal(build("v3.2.1").status, 0, "releases before the CLI lifecycle are not held to it");
   const platformList = JSON.parse(readFileSync(join(repoRoot, "governance", "versioning", "revocations-1.json"), "utf8"));
   assert.equal(platformList.entries.some((e) => e.kind === "cli"), false, "an entry of kind cli in revocations-N.json would make every earlier engine fail closed");
+});
+
+test("N-16: the release build works for every tag release.yml accepts once the CLI declares it (v3.3.0, v3.3.1, v3.3.1-rc.1, v3.3.1-alpha.1), and for nothing else", () => {
+  // a real clone of this tree: the CLI is changed and committed there, and the clone's own build.mjs builds that commit
+  const clone = join(tmp(), "clone");
+  execFileSync("git", ["clone", "-q", "--local", repoRoot, clone], { encoding: "utf8" });
+  const cliFile = join(clone, "runtime", "cli", "ai-native.mjs");
+  const original = readFileSync(cliFile, "utf8");
+  const declare = (text) => {
+    writeFileSync(cliFile, original.replace(/^export const CLI_VERSION = "[^"]*";/m, () => `export const CLI_VERSION = "${text}";`));
+    git(clone, "add", "-A");
+    git(clone, "commit", "-q", "--allow-empty", "-m", `declare ${text}`);
+    return git(clone, "rev-parse", "HEAD");
+  };
+  const build = (tag, commit) => {
+    const out = tmp();
+    return { out, run: spawnSync(process.execPath, [join(clone, "runtime", "release", "build.mjs"), "--version", tag, "--out", out, "--commit", commit], { encoding: "utf8" }) };
+  };
+  for (const tag of ["v3.3.0", "v3.3.1", "v3.3.1-rc.1", "v3.3.1-alpha.1"]) {
+    const { out, run } = build(tag, declare(tag));
+    assert.equal(run.status, 0, `${tag}: ${run.stderr}`);
+    assert.equal(JSON.parse(readFileSync(join(out, "platform.json"), "utf8")).version, tag);
+    const shown = spawnSync(process.execPath, [join(out, "ai-native-cli.mjs"), "--version"], { encoding: "utf8" });
+    assert.equal(shown.stdout.trim(), `CLI: ${tag}`, `${tag}: the published CLI declares exactly the tag that publishes it`);
+  }
+  // the declaration and the tag must be the SAME version, prerelease suffix included
+  for (const [declares, tag] of [["v3.3.1-rc.1", "v3.3.1"], ["v3.3.1", "v3.3.1-rc.1"], ["v3.3.1-alpha.1", "v3.3.1-rc.1"], ["v3.3.0", "v3.3.1"]]) {
+    const { run } = build(tag, declare(declares));
+    assert.equal(run.status, 1, `${declares} must not publish ${tag}`);
+    assert.ok(run.stderr.includes(`declares CLI_VERSION ${declares}; this release is ${tag}`), run.stderr);
+  }
+  // a declaration that is not a tag release.yml accepts is "nothing valid"
+  for (const bad of ["v3.3", "3.3.1", "V3.3.1", "v3.3.1-beta.1", "v3.3.1-rc.", "v3.3.1-rc.x", "v3.3.1+build.5"]) {
+    const { run } = build("v3.3.1", declare(bad));
+    assert.equal(run.status, 1, bad);
+    assert.ok(run.stderr.includes("declares CLI_VERSION (nothing valid)"), `${bad}: ${run.stderr}`);
+  }
+  // a tag that release.yml would not even start on is refused by the build itself
+  for (const tag of ["v3.3", "3.3.1", "v3.3.1-beta.1"]) assert.equal(build(tag, declare("v3.3.1")).run.status, 2, tag);
 });

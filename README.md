@@ -37,14 +37,14 @@ running it:
 
 ```bash
 dl=~/.ai-native/dl
-gh release download --repo jlbellonGmail/ai-native --pattern ai-native-cli.mjs --dir "$dl" \
+gh release download --repo jlbellonGmail/ai-native --pattern ai-native-cli.mjs --dir "$dl" --clobber \
   && gh attestation verify "$dl/ai-native-cli.mjs" --repo jlbellonGmail/ai-native --signer-workflow jlbellonGmail/ai-native/.github/workflows/release.yml \
   && node "$dl/ai-native-cli.mjs" install
 ```
 
 ```powershell
 $dl = Join-Path $HOME ".ai-native/dl"
-gh release download --repo jlbellonGmail/ai-native --pattern ai-native-cli.mjs --dir $dl
+gh release download --repo jlbellonGmail/ai-native --pattern ai-native-cli.mjs --dir $dl --clobber
 if ($?) { gh attestation verify (Join-Path $dl "ai-native-cli.mjs") --repo jlbellonGmail/ai-native --signer-workflow jlbellonGmail/ai-native/.github/workflows/release.yml }
 if ($?) { node (Join-Path $dl "ai-native-cli.mjs") install }
 ```
@@ -64,7 +64,7 @@ UPGRADE A REPOSITORY            ai-native upgrade            to the latest stabl
 UPDATE THE CLI                  ai-native self-update        or: ai-native self-update --check   (only reports)
 SHOW VERSIONS                   ai-native --version          CLI: v3.3.0 | PLATFORM: v3.2.0   (PLATFORM only inside an adopted repository)
 REMOVE THE CLI FROM A MACHINE   ai-native uninstall          repositories are not touched; --purge-cache also deletes the release cache
-REMOVE AI-NATIVE FROM A REPO    ai-native detach             only what ai-native wrote; --keep-modified keeps files you edited
+REMOVE AI-NATIVE FROM A REPO    ai-native detach             only what ai-native wrote; --keep-modified keeps files you edited; any pinned release
 ```
 
 - **A new release never changes a repository.** The lock decides. A repository moves only when someone runs `ai-native upgrade` (it resolves commit
@@ -81,8 +81,45 @@ REMOVE AI-NATIVE FROM A REPO    ai-native detach             only what ai-native
   every release that does not require more of it, and warns (`LEGACY_CLI`) when it is the reason something cannot be done.
 - **Offline**: a repository already adopted keeps working (its launcher runs from the local cache), `init --offline` and `upgrade --offline` use only
   releases this machine already verified, and anything that needs the network fails closed without changing anything.
+- **`detach` does not depend on the release a repository is pinned to**: what ai-native wrote is listed in the repository's own journal, so a repository
+  pinned to an old, unavailable or even revoked release can still be detached. It runs the engine of the newest verified release that ships it (the latest
+  stable one that is not revoked; with `--offline`, the newest one already in the cache) and fails closed, changing nothing, if there is none.
 - **Compromised or revoked CLI**: `self-update` is for a CLI you can still trust. If your installed command may be compromised, do not run it to repair
   itself: `governance/security/CLI-RECOVERY.md`.
+
+## When something stops: the fail-closed codes
+
+Every refusal prints `STATUS: FAILED` and one `ERROR:` line starting with a code. Nothing is written when a command fails (an interrupted `init`/`upgrade`
+is rolled back and the rollback is proved against `git status`). The CLI never publishes a prerelease to you: it selects stable, immutable releases only.
+
+| Code | Meaning | What to do |
+|---|---|---|
+| `OFFLINE` | The release needed is not in this machine's cache with a verified attestation. | Run the command once with network access. |
+| `REVOKED` | The release is on the published revocations list. | Pick another release; `detach` is not affected by the pinned release being revoked. |
+| `REVOCATION_UNKNOWN` | The revocations list exists but could not be read or is invalid. | Retry with network; `--offline` runs without that information and says so. |
+| `CLI_REVOKED` | This installed CLI version is revoked. | `ai-native self-update`; if you cannot trust the installed command: `governance/security/CLI-RECOVERY.md`. |
+| `INCOMPATIBLE_CLI` | The release needs a newer CLI (protocol, version or capability). | `ai-native self-update`. Nothing was changed. |
+| `LEGACY_CLI` | Warning: a v3.2.0 CLI cannot update itself or run `upgrade`/`detach`. | Update it once by hand (see above). |
+| `RELEASE_REJECTED` | The release is not published, is a draft or prerelease, is not immutable, or has no published digest. | Choose a stable release. |
+| `DIGEST_MISMATCH` | The download is not the file GitHub published, or not the one the lock pins. | Do not use it; retry, and report it if it persists. |
+| `ATTESTATION_FAILED` | The sigstore attestation did not verify for the release workflow. | Do not use it. |
+| `ATTESTATION_UNAVAILABLE` | The GitHub CLI `gh` is missing or not signed in. | Install `gh` and run `gh auth login`. |
+| `ATTESTATION_NOT_VERIFIED` | No verified attestation is on record for that bundle. | Run `ai-native init`/`upgrade` with network access. |
+| `CACHE_CORRUPT` | A cached bundle does not match its digest. | Delete the file named in the message and retry online. |
+| `TRUST_ROOT` | The lock points to another source than the official repository. | Only if you trust it: `--trust-repo owner/name`. |
+| `PROFILE_REQUIRED` | The repository gives no hint of what kind of project it is. | `ai-native init --profile <id>`. |
+| `PROFILE_CONFLICT` | `--profile` contradicts the profile in the lock. | The profile changes in `ai-native.lock.json`, not by flag. |
+| `NOT_ADOPTED` | The repository has no `ai-native.lock.json`. | `ai-native init`. |
+| `ADOPTION_INCONSISTENT` | The lock and the adoption journal do not both exist, so ai-native cannot tell what is its own. | Restore the missing file from Git history; nothing was removed. |
+| `MIGRATED_FROM_V2` | The repository carries a v2 migration journal. | Revert it with `migrate revert` first. |
+| `DOWNGRADE_REFUSED` | `upgrade` only moves forward. | Choose a newer `--to`. |
+| `INSTALL_DOWNGRADE_REFUSED` | `install` will not put an older CLI over a newer one. | Use `ai-native self-update`. |
+| `DETACH_BLOCKED` | A managed file was edited since ai-native wrote it. | Review it, or `ai-native detach --keep-modified`. |
+| `IGNORED_REQUIRED_FILE` | A `.gitignore` rule hides a file ai-native needs to be reproducible. | Adjust the rule named in the message. |
+| `MANAGED_FILE_NOT_REPRODUCIBLE` | A managed file is not in the staged state a clean clone gets. | `git add` it, or fix what the message says. |
+| `ROLLBACK_INCOMPLETE` | A failed run could not prove it restored the repository exactly. | Read the paths listed and review `git status`. |
+| `NOT_INSTALLED` | `self-update` found no installed CLI. | Install it first (see above). |
+| `UPDATE_REJECTED` / `UPDATE_FAILED` | The new CLI did not start, or could not replace the old one. | The installed CLI is unchanged and works; retry. |
 
 ## Repository Structure
 

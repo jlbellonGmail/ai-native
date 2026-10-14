@@ -15,7 +15,7 @@ import { CALLER_WORKFLOW } from "../migrate/bump.mjs";
 
 const unchanged = (buf, hash) => sha(buf) === hash || normalizedSha(buf) === hash;
 
-export function detach({ projectRoot, keepModified = false, caller = callerFrom(), platform = null }) {
+export function detach({ projectRoot, keepModified = false, offline = false, caller = callerFrom(), platform = null }) {
   projectRoot = resolve(projectRoot);
   const facts = repoFacts(projectRoot);
   if (facts.errors.length) return fail(facts.errors);
@@ -66,6 +66,7 @@ export function detach({ projectRoot, keepModified = false, caller = callerFrom(
     return fail([`detach failed and was undone: ${error.message}`]);
   }
   const warnings = [];
+  if (offline) warnings.push("offline: revocation status of the release that ran this command NOT checked");
   if (modified.length) warnings.push(`kept your edited file(s), now ordinary project files: ${modified.join(", ")}`);
   if (keep.length) warnings.push(`kept ${keep.length} file(s) that existed before ai-native and are identical to what it projects: ${keep.join(", ")}`);
   if (existsSync(join(projectRoot, CALLER_WORKFLOW))) warnings.push(`${CALLER_WORKFLOW} is not tracked by the adoption journal and was left as it is; remove it if you no longer want the check`);

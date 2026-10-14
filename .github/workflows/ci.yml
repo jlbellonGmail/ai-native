@@ -232,6 +232,12 @@ jobs:
         shell: bash
         run: node --test runtime/release/*.test.mjs
 
+      # the public command is the only code that runs before anything is verified: its tests (lifecycle, CLI <-> PLATFORM compatibility with the minimum
+      # supported CLI, the Windows and Linux shims) run on every PR, on both operating systems of this matrix
+      - name: runtime/cli tests (public command lifecycle, v3.3.0)
+        shell: bash
+        run: node --test runtime/cli/*.test.mjs
+
       - name: runtime/mcp-gateway tests (M4.4, PAR-MCP-TRUST/PAR-STEP-UP)
         shell: bash
         run: node --test runtime/mcp-gateway/*.test.mjs
