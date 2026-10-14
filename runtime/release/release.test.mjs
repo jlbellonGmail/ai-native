@@ -296,7 +296,7 @@ test("CLI lifecycle (v3.3.0): the build refuses a CLI that does not declare the 
   assert.equal(build(declared).status, 0, "the tag the CLI declares builds");
   const other = build("v99.0.0");
   assert.equal(other.status, 1);
-  assert.match(other.stderr, new RegExp(`declares CLI_VERSION ${declared.replaceAll(".", "\.")}; this release is v99\.0\.0`));
+  assert.ok(other.stderr.includes(`declares CLI_VERSION ${declared}; this release is v99.0.0`), other.stderr);
   assert.equal(build("v3.2.1").status, 0, "releases before the CLI lifecycle are not held to it");
   const platformList = JSON.parse(readFileSync(join(repoRoot, "governance", "versioning", "revocations-1.json"), "utf8"));
   assert.equal(platformList.entries.some((e) => e.kind === "cli"), false, "an entry of kind cli in revocations-N.json would make every earlier engine fail closed");

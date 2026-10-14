@@ -382,7 +382,7 @@ test("SELF-UPDATE --check only reports; the update replaces the installed CLI at
   assert.equal(await w.run(["self-update"], {}), 0, w.err.join("\n"));
   assert.equal(m.version(), "v9.9.9");
   assert.ok(works(m.script, "v9.9.9"));
-  assert.ok(works(`${m.script}.prev`.replace(/\.prev$/, ".prev"), "v3.3.0") || readFileSync(`${m.script}.prev`).equals(cliAsset("v3.3.0")), "the previous CLI is kept for recovery");
+  assert.ok(readFileSync(`${m.script}.prev`).equals(cliAsset("v3.3.0")), "the previous CLI is kept, byte for byte, for recovery");
   assert.deepEqual(m.shims(), ["ai-native", "ai-native.cmd", "ai-native.mjs", "ai-native.mjs.prev"]);
   assert.match(readFileSync(join(m.bin, "ai-native.cmd"), "utf8"), /^@echo off\r\nnode ".*ai-native\.mjs" %\*\r\n$/);
   // the attestation was demanded of the signer workflow, on the downloaded CLI file
