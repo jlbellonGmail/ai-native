@@ -39,10 +39,11 @@ test("the onboarding section has the three blocks a person needs: `ai-native ini
 
 test("the bash blocks parse (bash -n) and keep their line continuations intact", () => {
   for (const [i, b] of byLang("bash").entries()) {
-    const file = join(tmp, `block-${i}.sh`);
     // placeholders like <your-repo> are prose, not syntax: quote them for the parser only
-    writeFileSync(file, b.body.replace(/<[^>\n]+>/g, "placeholder"));
-    const r = spawnSync("bash", ["-n", file], { encoding: "utf8" });
+    // Feed stdin rather than a Windows temp path: WSL's `bash.exe` launcher may pass
+    // `C:\\...` through without converting it to a Linux path.
+    const script = b.body.replace(/<[^>\n]+>/g, "placeholder");
+    const r = spawnSync("bash", ["-n"], { encoding: "utf8", input: script });
     assert.equal(r.status, 0, `bash -n failed for block ${i}: ${r.stderr}`);
     for (const line of b.body.split("\n")) assert.ok(!/\\\s+$/.test(line), `a continuation backslash must be the last character: ${JSON.stringify(line)}`);
   }
