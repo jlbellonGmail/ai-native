@@ -33,6 +33,14 @@ export function verifyRuleset(live, desired, config) {
   for (const t of ["deletion", "non_fast_forward", "pull_request"]) {
     if (!live.rules?.some((r) => r.type === t)) findings.push({ code: "RULE_MISSING", detail: `rule '${t}' missing` });
   }
+  const liveStatusChecks = live.rules?.find((r) => r.type === "required_status_checks")?.parameters;
+  const desiredStatusChecks = desired.rules?.find((r) => r.type === "required_status_checks")?.parameters;
+  if (liveStatusChecks?.strict_required_status_checks_policy !== desiredStatusChecks?.strict_required_status_checks_policy) {
+    findings.push({
+      code: "STATUS_CHECK_FRESHNESS",
+      detail: `strict_required_status_checks_policy=${liveStatusChecks?.strict_required_status_checks_policy}; expected ${desiredStatusChecks?.strict_required_status_checks_policy}`,
+    });
+  }
   const liveChecks = requiredChecks(live);
   for (const want of requiredChecks(desired)) {
     const got = liveChecks.find((c) => c.context === want.context);

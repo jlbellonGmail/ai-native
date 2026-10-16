@@ -219,6 +219,7 @@ const desired = resolveRuleset(template, 4242);
 
 test("PAR-BRANCH-PROTECTION: desired ruleset has no bypass, requires the App-sourced checks, and resolves the App id", () => {
   assert.deepEqual(desired.bypass_actors, []);
+  assert.equal(desired.rules.find((r) => r.type === "required_status_checks").parameters.strict_required_status_checks_policy, true);
   const checks = desired.rules.find((r) => r.type === "required_status_checks").parameters.required_status_checks;
   assert.equal(checks.find((c) => c.context === "ai-native/trust-gate").integration_id, 4242);
   assert.equal(checks.find((c) => c.context === "ai-native/merge-gate").integration_id, 4242);
@@ -230,6 +231,7 @@ test("PAR-BRANCH-PROTECTION: weakened live rulesets are detected", () => {
   const f = (mutate) => { const l = structuredClone(desired); mutate(l); return verifyRuleset(l, desired, config).map((x) => x.code); };
   assert.deepEqual(verifyRuleset(null, desired, config).map((x) => x.code), ["RULESET_MISSING"]);
   assert.ok(f((l) => (l.enforcement = "disabled")).includes("NOT_ACTIVE"));
+  assert.ok(f((l) => { l.rules.find((r) => r.type === "required_status_checks").parameters.strict_required_status_checks_policy = false; }).includes("STATUS_CHECK_FRESHNESS"));
   assert.ok(f((l) => (l.bypass_actors = [{ actor_id: 5, actor_type: "RepositoryRole" }])).includes("BYPASS_ACTORS"));
   assert.ok(f((l) => (l.rules = l.rules.filter((r) => r.type !== "non_fast_forward"))).includes("RULE_MISSING"));
   const rsc = (l) => l.rules.find((r) => r.type === "required_status_checks").parameters.required_status_checks;
