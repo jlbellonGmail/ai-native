@@ -1,0 +1,50 @@
+{
+  "captured_at": "2026-10-16T21:59:52.5277549Z",
+  "environment": {
+    "id": 23392896226,
+    "node_id": "EN_kwDOSzvQqM8AAAAFclNE4g",
+    "name": "ai-native-trust",
+    "url": "https://api.github.com/repos/jlbellonGmail/ai-native/environments/ai-native-trust",
+    "html_url": "https://github.com/jlbellonGmail/ai-native/deployments/activity_log?environments_filter=ai-native-trust",
+    "created_at": "2026-10-03T22:32:45Z",
+    "updated_at": "2026-10-16T21:58:32Z",
+    "can_admins_bypass": false,
+    "protection_rules": [
+      {
+        "id": 67583935,
+        "node_id": "GA_kwDOSzvQqM4EBz-_",
+        "type": "branch_policy"
+      }
+    ],
+    "deployment_branch_policy": {
+      "protected_branches": false,
+      "custom_branch_policies": true
+    }
+  },
+  "deployment_branch_policies": {
+    "total_count": 1,
+    "branch_policies": [
+      {
+        "id": 61882758,
+        "node_id": "MDE2OkdhdGVCcmFuY2hQb2xpY3k2MTg4Mjc1OA==",
+        "name": "main",
+        "type": "branch"
+      }
+    ]
+  },
+  "secrets_metadata": {
+    "total_count": 2,
+    "secrets": [
+      {
+        "name": "TRUST_APP_ID",
+        "created_at": "2026-10-04T14:01:51Z",
+        "updated_at": "2026-10-04T21:02:40Z"
+      },
+      {
+        "name": "TRUST_APP_PRIVATE_KEY",
+        "created_at": "2026-10-04T14:01:05Z",
+        "updated_at": "2026-10-04T21:02:39Z"
+      }
+    ]
+  }
+}

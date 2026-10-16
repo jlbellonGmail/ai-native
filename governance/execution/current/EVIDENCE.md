@@ -3,56 +3,53 @@
 ## Governance and Candidate Sources
 
 * Current v3.3.0 lifecycle status: `governance/SESSION-CONTEXT.md`.
-* Candidate and release constraints: `governance/versioning/V3.3.0-RELEASE.md`.
-* Human merge rule D6 and ruleset intent:
-  `governance/security/HITL-MERGE-POLICY.md`.
-* P0-T2 historical evidence (preserved, not edited):
+* Candidate/release constraints: `governance/versioning/V3.3.0-RELEASE.md`.
+* Human merge rule D6: `governance/security/HITL-MERGE-POLICY.md`.
+* P0-T2 history (preserved, not edited):
   `governance/execution/archive/AI-NATIVE-HARDENING-V1.1/P0-T2-IMPLEMENTATION/`.
 
 ## Main and Merged PR Evidence
 
-Pre-reconciliation main was clean at
-`9faf58534fa45102da9518de2edc7b7db5a15c3a`, equal to `origin/main` after
-`git fetch origin` and `git merge --ff-only origin/main`.
+After `git fetch origin` and `git merge --ff-only origin/main`, the verified
+clean main baseline is `823b31976cfc255926a2e39a205b2c22472b8d85`.
+GitHub API confirms PRs #127–#132 are merged; #131 is the current-snapshot
+reconciliation and #132 records the prior audit. The previous audit report is
+`.audit/reports/AUDIT-PLATFORM-e4dee28.md` (92.25/100; one MAJOR before the
+remote trust-environment correction).
 
-GitHub API confirmed these PRs are merged:
+## Trust Environment — Complete Before/After API Evidence
 
-| PR | Merge SHA | Relevance |
-|---|---|---|
-| #127 | `64bc11ec139388fb9140c36bc29ffc7413a30cfb` | Previous PLATFORM audit record |
-| #128 | `2ef6b5ba8a31c5871eb9a697c5af5f19122ffeb8` | B-01 lock-validation remediation |
-| #129 | `0d9cea46b36a16d2c32737ad7722262f9c61dd41` | Previous PLATFORM audit record |
-| #130 | `9faf58534fa45102da9518de2edc7b7db5a15c3a` | Require fresh base for status checks |
+The composite snapshots preserve the full environment GET, selected deployment
+branch-policy response, and secret metadata (names/timestamps only; never
+secret values):
 
-## A-02 — Complete Remote Ruleset Snapshots
+* `TRUST-ENV-BEFORE.json`
+* `TRUST-ENV-AFTER.json`
 
-The full GET responses for ruleset `ai-native-main` (ID `24405506`) are stored
-in:
+Before: `can_admins_bypass=true`; policy `main`; protection type `branch_policy`;
+secret names `TRUST_APP_ID` and `TRUST_APP_PRIVATE_KEY`.
+After: `can_admins_bypass=false`; policy remains `main`; same protection type
+and same secret names/metadata. A full structural comparison, excluding only
+the requested boolean, API `updated_at`, and capture timestamps, passed. This
+closes the bypass capability; it does not establish whether a historical
+bypass occurred.
 
-* `governance/execution/current/A02-RULESET-BEFORE.json`
-* `governance/execution/current/A02-RULESET-AFTER.json`
+## Revalidated Control Plane
 
-The API values show `strict_required_status_checks_policy=false` before and
-`true` after. A structural comparison, excluding only that intended field and
-the server-maintained `updated_at` timestamp, passed. Enforcement, target,
-conditions, bypass actors, all pull-request parameters and all six required
-check contexts/source app IDs are unchanged.
-
-## F-001 — Live Environment
-
-GitHub REST API GET for `ai-native-human-review` reports
-`can_admins_bypass=false`; the required reviewer and branch-policy protection
-remain configured. This confirms F-001 remains closed at the remote-config
-level. No claim is made here about `prevent_self_review` or a new behavioral
-end-to-end exercise.
+* `ai-native-trust`: `can_admins_bypass=false`; custom deployment policy still
+  selects only `main`; secrets metadata unchanged.
+* `ai-native-human-review`: `can_admins_bypass=false`; reviewer
+  `jlbellonGmail` and `main` branch policy remain.
+* `ai-native-main` (ID `24405506`): active; default-branch target; no bypass
+  actors; `strict_required_status_checks_policy=true`; PR rule unchanged; all
+  six required contexts and integration IDs match the verified after snapshot.
 
 ## Candidate Publication State
 
-* Local `refs/tags/v3.3.0`: absent.
-* GitHub tag ref `v3.3.0`: API returned 404.
-* GitHub release `v3.3.0`: not found.
-* New final PLATFORM audit: pending and not run in this execution.
-* Final release-gate: pending and not run in this execution.
-* Audit host: Windows; `CONTEXTUAL_NON_BLOCKING` for this governance task.
+* Local v3.3.0 tag: absent; GitHub tag ref: 404.
+* GitHub v3.3.0 release: not found.
+* New independent PLATFORM audit: pending.
+* Final release-gate: pending; not run before the new audit.
+* Audit host: Windows / `CONTEXTUAL_NON_BLOCKING`.
 
-No files in the P0-T2 archive were changed.
+No P0-T2 archive files were changed.
