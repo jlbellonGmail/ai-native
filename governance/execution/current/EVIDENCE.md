@@ -1,74 +1,58 @@
 # EVIDENCE
 
-## Governance Evidence
+## Governance and Candidate Sources
 
-* `governance/SESSION-CONTEXT.md`
-* `governance/roadmaps/AI-NATIVE-HARDENING-V1.1-ROADMAP.md`
-* `governance/execution/current/`
-* `governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H8/`
-* `governance/execution/archive/AI-NATIVE-HARDENING-V1.1/P0-T2-SPEC/`
-* `governance/execution/archive/AI-NATIVE-HARDENING-V1.1/P0-T2-IMPLEMENTATION/`
+* Current v3.3.0 lifecycle status: `governance/SESSION-CONTEXT.md`.
+* Candidate and release constraints: `governance/versioning/V3.3.0-RELEASE.md`.
+* Human merge rule D6 and ruleset intent:
+  `governance/security/HITL-MERGE-POLICY.md`.
+* P0-T2 historical evidence (preserved, not edited):
+  `governance/execution/archive/AI-NATIVE-HARDENING-V1.1/P0-T2-IMPLEMENTATION/`.
 
-## Specification And Approval Evidence
+## Main and Merged PR Evidence
 
-```text
-P0-T2 specification: APPROVED / FORMALLY_ACCEPTED
-Accepted spec commit: f077fe0
-Specification approval commit: 70fadaa
-Implementation approval: APPROVED / FORMALLY_ACCEPTED
-Accepted implementation commit: 78e3214
-```
+Pre-reconciliation main was clean at
+`9faf58534fa45102da9518de2edc7b7db5a15c3a`, equal to `origin/main` after
+`git fetch origin` and `git merge --ff-only origin/main`.
 
-## Implementation Evidence
+GitHub API confirmed these PRs are merged:
 
-* `scripts/audit-safe-script-mode.mjs`
-* `scripts/validate-audit-safe-script-mode.mjs`
-* `governance/policies/AUDIT-SAFE-SCRIPT-MODE.md`
-* `governance/policies/audit-safe-script-mode.implementation.contract.json`
+| PR | Merge SHA | Relevance |
+|---|---|---|
+| #127 | `64bc11ec139388fb9140c36bc29ffc7413a30cfb` | Previous PLATFORM audit record |
+| #128 | `2ef6b5ba8a31c5871eb9a697c5af5f19122ffeb8` | B-01 lock-validation remediation |
+| #129 | `0d9cea46b36a16d2c32737ad7722262f9c61dd41` | Previous PLATFORM audit record |
+| #130 | `9faf58534fa45102da9518de2edc7b7db5a15c3a` | Require fresh base for status checks |
 
-The implementation provides:
+## A-02 — Complete Remote Ruleset Snapshots
 
-* package script inventory without package-level execution
-* command classification before execution
-* default blocking for lifecycle/install/setup/bootstrap, package-level,
-  destructive, network/secret and unknown commands
-* dry-run recognition for generator commands
-* direct `node` execution only through explicit `--execute`
-* baseline and final git state capture
-* working-tree mutation detection when side effects are declared as `none`
+The full GET responses for ruleset `ai-native-main` (ID `24405506`) are stored
+in:
 
-## Product Repository Evidence
+* `governance/execution/current/A02-RULESET-BEFORE.json`
+* `governance/execution/current/A02-RULESET-AFTER.json`
 
-`ai-foundation` evidence HEAD:
+The API values show `strict_required_status_checks_policy=false` before and
+`true` after. A structural comparison, excluding only that intended field and
+the server-maintained `updated_at` timestamp, passed. Enforcement, target,
+conditions, bypass actors, all pull-request parameters and all six required
+check contexts/source app IDs are unchanged.
 
-```text
-74611a7
-```
+## F-001 — Live Environment
 
-`ai-knowledge` evidence HEAD:
+GitHub REST API GET for `ai-native-human-review` reports
+`can_admins_bypass=false`; the required reviewer and branch-policy protection
+remain configured. This confirms F-001 remains closed at the remote-config
+level. No claim is made here about `prevent_self_review` or a new behavioral
+end-to-end exercise.
 
-```text
-8582290
-```
+## Candidate Publication State
 
-`ai-template` evidence HEAD:
+* Local `refs/tags/v3.3.0`: absent.
+* GitHub tag ref `v3.3.0`: API returned 404.
+* GitHub release `v3.3.0`: not found.
+* New final PLATFORM audit: pending and not run in this execution.
+* Final release-gate: pending and not run in this execution.
+* Audit host: Windows; `CONTEXTUAL_NON_BLOCKING` for this governance task.
 
-```text
-01b0971
-```
-
-## HITL
-
-```text
-P0-T2 implementation: APPROVED / FORMALLY_ACCEPTED
-Human approval required: true
-Human approval recorded: true
-HITL approved at: 2026-07-17
-Accepted implementation commit: 78e3214
-```
-
-## Push
-
-```text
-NOT_PUSHED_BY_POLICY
-```
+No files in the P0-T2 archive were changed.
