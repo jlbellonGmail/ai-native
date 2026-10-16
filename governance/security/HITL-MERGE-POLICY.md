@@ -14,11 +14,13 @@ Cuando un merge constituya el HITL requerido, el agente **se detiene**. El merge
 
 | Control | Tipo | Alcance |
 |---|---|---|
-| El ruleset exige PR y los checks de las Apps; sin bypass actors; push directo rechazado por el servidor | preventivo | siempre |
+| El ruleset deseado exige PR, checks de las Apps y rama actualizada (`strict_required_status_checks_policy=true`); sin bypass actors; push directo rechazado tras aplicar la configuración | preventivo tras aplicar y verificar la configuración remota |
 | `merge-gate` emite un veredicto sobre el SHA exacto; un push nuevo lo invalida | preventivo | siempre |
 | `neutral` no es PASS: el `merge-gate` lo bloquea (GitHub lo trata como éxito en la protección de rama, por eso lo bloquea el gate). Un cambio de plano de control exige aprobación humana explícita en el Environment `ai-native-human-review` | preventivo | siempre |
 | `post-merge` verifica `merged_by` humano, merge commit en `main` y evidencia del `merge-gate` | **detectivo** (alerta tras el hecho) | siempre |
 | Que quien ejecuta el merge sea una persona y no el agente | **norma operativa + detección**, no imposición técnica | ver límite |
+
+**Frescura de checks.** El ruleset de `governance/rulesets/main.json` requiere que la rama de la PR esté actualizada con `main` antes de integrar. `runtime/gates/ruleset.mjs verify` detecta si la configuración remota deja de exigir esta condición. Tras cambiar el desired state, la regla remota debe actualizarse preservando las demás protecciones y verificarse; el archivo versionado por sí solo no demuestra enforcement live.
 
 **Límite honesto.** Con un solo maintainer y un token personal, GitHub no distingue «el owner» de «el agente usando su token». Por eso la regla es operativa (D6) y la parte técnica es detectiva. Lo que sí impone el servidor: ninguna PR llega a `main` sin los checks de las Apps, y los cambios al plano de control no pasan el `merge-gate` sin una aprobación registrada en el Environment `ai-native-human-review`. Esa aprobación procede de la cuenta del owner; el servidor no puede probar que la pulsó una persona y no un agente con su token, por lo que cae bajo la misma norma D6 (el agente no aprueba el Environment ni mergea con credenciales del owner).
 
