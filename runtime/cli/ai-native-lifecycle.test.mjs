@@ -321,6 +321,20 @@ test("COMPAT matrix (new CLI): N->N, N->N+1 compatible, a release that predates 
   }
 });
 
+test("DETACH of a legacy repository fails closed on a parseable lock that violates the lock schema", async () => {
+  const project = await legacyRepo();
+  const lockPath = join(project, "ai-native.lock.json");
+  const invalid = '{"schemaVersion":1,"platform":{},"profiles":["factory"]}\n';
+  writeFileSync(lockPath, invalid);
+  const before = state(project);
+  const w = world({ releases: [R2] });
+
+  assert.equal(await w.run(["detach"], { cwd: project, cache: tmp("cache") }), 1, w.log.engineOut + w.err.join("\n"));
+  assert.match(w.err.join("\n") + w.log.engineOut, /ADOPTION_INCONSISTENT/);
+  assert.equal(readFileSync(lockPath, "utf8"), invalid, "an untrusted lock remains byte-identical");
+  assert.deepEqual(state(project), before, "files, index and status remain unchanged");
+});
+
 test("COMPAT matrix (minimum supported CLI): the REAL v3.2.0 CLI against the engine of this tree - init works, it is recognized as legacy, and an incompatible release fails closed", async () => {
   const legacy = await import(pathToFileURL(join(REPO_ROOT, "evaluation", "fixtures", "cli", "ai-native-v3.2.0.mjs")).href);
   const run = async (r, project) => {
@@ -718,12 +732,19 @@ test("DETACH works whatever release the repository is pinned to: v3.1.3, v3.2.0 
   assert.match(w.err.join("\n"), /unknown option: --trust-repo/);
 });
 
-test("DETACH is not stopped by a lock that is malformed or points to another source: the lock is not what it reads", async () => {
-  const { project } = await adopted(R2);
-  writeFileSync(join(project, "ai-native.lock.json"), "{ nope");
-  const w = world({ releases: [R2] });
-  assert.equal(await w.run(["detach"], { cwd: project, cache: tmp("cache") }), 0, w.log.engineOut + w.err.join("\n"));
-  assert.deepEqual(files(project), []);
+test("DETACH fails closed on malformed or schema-invalid locks but ignores a valid foreign-repo pin", async () => {
+  for (const invalid of ["{ nope", '{"schemaVersion":1,"platform":{},"profiles":["factory"]}']) {
+    const { project } = await adopted(R2);
+    const lockPath = join(project, "ai-native.lock.json");
+    writeFileSync(lockPath, invalid);
+    const before = state(project);
+    const w = world({ releases: [R2] });
+    assert.equal(await w.run(["detach"], { cwd: project, cache: tmp("cache") }), 1, w.log.engineOut + w.err.join("\n"));
+    assert.match(w.err.join("\n") + w.log.engineOut, /ADOPTION_INCONSISTENT/);
+    assert.equal(readFileSync(lockPath, "utf8"), invalid, "an invalid lock remains byte-identical");
+    assert.deepEqual(state(project), before, "the adopted repository is unchanged");
+  }
+
   const { project: p2 } = await adopted(R2);
   const lock = JSON.parse(readFileSync(join(p2, "ai-native.lock.json"), "utf8"));
   lock.platform.repo = "github:evil/ai-native";

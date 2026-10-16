@@ -25,6 +25,10 @@ export const LOCK_FILE = "ai-native.lock.json";
 const here = dirname(fileURLToPath(import.meta.url));
 const schema = (name) => JSON.parse(readFileSync(join(here, "..", "..", "contracts", name), "utf8"));
 
+export function validateLock(lock) {
+  return validate(lock, schema("lock.schema.json"));
+}
+
 export function readLock(projectRoot) {
   const path = join(projectRoot, LOCK_FILE);
   if (!existsSync(path)) return { errors: [`${LOCK_FILE} not found`] };
@@ -34,7 +38,7 @@ export function readLock(projectRoot) {
   } catch (error) {
     return { errors: [`${LOCK_FILE} is not valid JSON: ${error.message}`] };
   }
-  const errors = validate(lock, schema("lock.schema.json"));
+  const errors = validateLock(lock);
   return errors.length ? { errors: errors.map((e) => `${LOCK_FILE}: ${e}`) } : { lock, errors: [] };
 }
 

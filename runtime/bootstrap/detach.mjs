@@ -7,7 +7,7 @@ import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
-import { LOCK_FILE } from "./install.mjs";
+import { LOCK_FILE, validateLock } from "./install.mjs";
 import { callerFrom, negotiate } from "./compat.mjs";
 import { fail, renderText, repoFacts } from "./adopt.mjs";
 import { JOURNAL_PATH, normalizedSha, pruneEmptyDirs, safeJoin, sha } from "../migrate/adopt.mjs";
@@ -16,6 +16,19 @@ import { consumerFiles } from "../adapters/consumer.mjs";
 import { CALLER_WORKFLOW } from "../migrate/bump.mjs";
 
 const unchanged = (buf, hash) => sha(buf) === hash || normalizedSha(buf) === hash;
+
+function readTrustedLock(lockFile) {
+  let content;
+  let lock;
+  try {
+    content = readFileSync(lockFile);
+    lock = JSON.parse(content.toString("utf8"));
+  } catch {
+    return { content: null, reason: "is not a readable JSON lock" };
+  }
+  if (validateLock(lock).length) return { content: null, reason: "does not satisfy contracts/lock.schema.json" };
+  return { content, reason: null };
+}
 
 export function detach({ projectRoot, keepModified = false, offline = false, caller = callerFrom(), platform = null }) {
   projectRoot = resolve(projectRoot);
@@ -36,6 +49,9 @@ export function detach({ projectRoot, keepModified = false, offline = false, cal
   if (!own.hasAdoption && hasLock) return detachLegacyLock({ projectRoot, offline });
   if (!own.hasAdoption || !hasLock) return fail([`ADOPTION_INCONSISTENT: ${hasLock ? `${LOCK_FILE} without ${JOURNAL_PATH}` : `${JOURNAL_PATH} without ${LOCK_FILE}`}; ai-native cannot tell which files are its own. Nothing was removed`]);
 
+  const lockSnapshot = readTrustedLock(join(projectRoot, LOCK_FILE));
+  if (lockSnapshot.reason) return fail([`ADOPTION_INCONSISTENT: ${LOCK_FILE} ${lockSnapshot.reason}. Nothing was removed`]);
+
   const remove = [];
   const modified = [];
   const keep = Object.keys(own.adopted);
@@ -49,7 +65,7 @@ export function detach({ projectRoot, keepModified = false, offline = false, cal
   }
 
   const gone = [...remove, JOURNAL_PATH, ...(hasLock ? [LOCK_FILE] : [])];
-  const saved = new Map(gone.map((rel) => [rel, existsSync(join(projectRoot, rel)) ? readFileSync(join(projectRoot, rel)) : null]));
+  const saved = new Map(gone.map((rel) => [rel, rel === LOCK_FILE ? lockSnapshot.content : existsSync(join(projectRoot, rel)) ? readFileSync(join(projectRoot, rel)) : null]));
   try {
     for (const rel of gone) {
       const full = safeJoin(projectRoot, rel);
@@ -90,14 +106,9 @@ function detachLegacyLock({ projectRoot, offline }) {
   const lockFile = join(projectRoot, LOCK_FILE);
   const inconsistent = (why) => fail([`ADOPTION_INCONSISTENT: ${LOCK_FILE} without ${JOURNAL_PATH}${why}; ai-native cannot tell which files are its own. Nothing was removed. Run \`ai-native upgrade\` (it records what is ai-native's without overwriting anything), then \`ai-native detach\``]);
   if (existsSync(join(projectRoot, dirname(JOURNAL_PATH)))) return inconsistent(`, and ${dirname(JOURNAL_PATH)}/ exists`);
-  let content;
-  try {
-    content = readFileSync(lockFile); // a directory or an unreadable path throws here: no separate check, so no check-then-use window
-    const lock = JSON.parse(content.toString("utf8"));
-    if (!lock || typeof lock !== "object" || !lock.platform || typeof lock.platform !== "object") throw new Error("not an ai-native lock");
-  } catch {
-    return inconsistent(", and the lock is not a readable ai-native lock");
-  }
+  const lockSnapshot = readTrustedLock(lockFile); // one byte snapshot is parsed, validated, and retained for rollback
+  if (lockSnapshot.reason) return inconsistent(`, and the lock ${lockSnapshot.reason}`);
+  const { content } = lockSnapshot;
   let present = [];
   try {
     const releaseRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
