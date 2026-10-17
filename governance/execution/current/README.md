@@ -1,12 +1,29 @@
-# AI-NATIVE v3.3.0 — Final Audit Readiness
+# AI-NATIVE v3.3.0 — Released and Verified
 
-Current execution snapshot for the merged v3.3.0 candidate. The next release
-decision depends on a new independent PLATFORM audit.
+v3.3.0 is published and verified against the public release. Facts and
+evidence: `governance/versioning/V3.3.0-POST-RELEASE-VERIFICATION.md`.
 
 Status:
 
 ```text
-ROADMAP: AI-NATIVE V3 / v3.3.0 candidate
+ROADMAP: AI-NATIVE V3 / v3.3.0
+STATE: V3.3.0_RELEASED_AND_VERIFIED
+FINAL CANDIDATE / RELEASE SHA: ae6d50b02b6e0301c481871fb6038e42809dd55e
+AUDITED SHA: d98a89e5079c98bb6f65b74f7f658e47553ac7e9 (differs only in .audit/**)
+PLATFORM AUDIT: 93.00/100; 0 BLOCKER, 0 CRITICAL, 0 MAJOR, 10 MINOR
+RELEASE-GATE: PASS_WITH_WARNINGS (21 STALE historical reports)
+v3.3.0 TAG: annotated, on ae6d50b
+v3.3.0 RELEASE: published, immutable; digest sha256:0c21bbae2ff0b809bdc29cc5fc57ad9802312aac812476ce1d955551ff631f1d
+RELEASE WORKFLOW: run 39045212338; build PASS, publish PASS, verify PASS
+verify-release: PASS (33 checks)
+ACCEPTANCE FROM THE PUBLIC RELEASE: PASS (A-N)
+PILOT #171: attempt 1 TRANSIENT_ENVIRONMENTAL (Docker exit 125); rerun PASS 10/10
+```
+
+The rest of this file is the previous snapshot (final audit readiness), kept
+as history:
+
+```text
 STATE: V3_3_0_CANDIDATE_PENDING_FINAL_AUDIT
 VERIFIED MAIN BASE: 823b31976cfc255926a2e39a205b2c22472b8d85
 PR #127–#132: MERGED
@@ -27,7 +44,7 @@ The live setting is now false; this records the configuration change only and
 makes no claim that a historical bypass occurred. A new audit must verify the
 current state before the release gate can run.
 
-Explicit non-goals for this execution:
+Explicit non-goals of that previous execution:
 
 * running the new PLATFORM audit before this governance snapshot is merged;
 * running release-gate, creating a tag, or publishing a release;
