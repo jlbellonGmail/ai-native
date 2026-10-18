@@ -23,3 +23,8 @@ Permisos: `READ`, `MODIFY_LOCAL` (worktree), `EXECUTE`, `GIT_WRITE`/
 `REMOTE_WRITE` acotado a la rama de su propia unidad. `EXTERNAL_WRITE`,
 `SECRET_ACCESS` y `DESTRUCTIVE` requieren step-up humano. Nunca `MERGE`,
 `TAG` ni `ADMIN` (ver `core/security-policy.json`).
+
+Capacidad faltante (conocimiento especializado, documentación externa o
+actual, sistema externo, herramienta de verificación): la declara como
+incidencia con lo que no pudo hacer o verificar; no la simula ni la activa
+(skill `sdd`, «Capability routing»).
