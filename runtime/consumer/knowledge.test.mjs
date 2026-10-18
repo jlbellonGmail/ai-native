@@ -141,6 +141,17 @@ test("E2E knowledge: with no local methodology copy the sdd skill points at the 
   for (const phase of phases) assert.equal(resolveKnowledge({ releaseRoot: dir, ref: `sdd/methodology/${phase}.md` }).status, "OK", phase);
 });
 
+test("E2E knowledge: capability routing reaches the consumer skill and every role, and names no provider", () => {
+  const { project } = consumerWithCache();
+  applyConsumer({ releaseRoot: REPO, projectRoot: project, tools: ["claude", "opencode"] });
+  const skill = readFileSync(join(project, ".claude/skills/sdd/SKILL.md"), "utf8");
+  const section = skill.split("## Capability routing")[1]?.split("\n## ")[0];
+  assert.ok(section, "the sdd skill carries the capability routing section");
+  // the policy decides when and which kind of capability, never which provider, MCP, skill or agent
+  assert.doesNotMatch(section, /context7|supabase|github|figma|playwright|devtools|claude|codex|opencode|\bmcp\b|systematic-debugging|frontend-design/i);
+  for (const role of ["planner", "builder", "reviewer"]) assert.match(readFileSync(join(project, `.claude/agents/${role}.md`), "utf8"), /Capability routing/, role);
+});
+
 test("safeJoin refuses a symlinked directory that points outside the project", (t) => {
   const root = tmp("kn-sym-");
   const outside = tmp("kn-out-");

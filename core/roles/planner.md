@@ -22,3 +22,8 @@ el contrato de SDD lo permite. No reimplementa la clasificación de ASSESS
 Permisos: `READ` + `MODIFY_LOCAL` acotado a `runs/<unit>/{spec,plan,tasks,
 decision}` (ver `core/security-policy.json`). Nunca `EXECUTE`, `GIT_WRITE`
 ni `MERGE`.
+
+Capacidad faltante (conocimiento especializado, documentación externa o
+actual, sistema externo, herramienta de verificación): la declara como
+decisión pendiente con lo que no pudo resolver; no la simula ni la activa
+(skill `sdd`, «Capability routing»).
