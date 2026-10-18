@@ -1,3 +1,16 @@
+# AI-NATIVE v3.3.1 candidate — prepared, pending human promotion
+
+```text
+CANDIDATE: v3.3.1 (PATCH) on release/v3.3.1, from develop 3c9fe11 (#137, #138)
+CONTENT: Capability Routing (sdd skill + role references); develop PR checks; CLI_VERSION v3.3.1
+DETAIL: governance/versioning/V3.3.1-PATCH.md
+PLATFORM AUDIT: report for the final SHA in .audit/reports/
+v3.3.1 TAG / RELEASE: NOT CREATED / NOT PUBLISHED
+NEXT: human PR develop -> main (merge commit), release-gate, tag
+```
+
+Current release: v3.3.0, below.
+
 # AI-NATIVE v3.3.0 — Released and Verified
 
 v3.3.0 is published and verified against the public release. Facts and
