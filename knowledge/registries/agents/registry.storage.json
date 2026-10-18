@@ -1,0 +1,131 @@
+{
+  "schemaVersion": "agent-registry-storage.v1",
+  "roadmapTask": "W5-T2",
+  "storageRoot": "registries/agents",
+  "storageMode": "repository-filesystem",
+  "description": "Repository-backed agent registry storage contract for ENTERPRISE-10-10 W5-T2. This contract governs stored agent file locations, lifecycle, retention and integrity only; runtime persistence, service APIs, capability catalog semantics, ownership approval chains and evaluation linkage are outside this task.",
+  "layout": {
+    "indexFile": "skills-index.md",
+    "folderEntryTemplate": "registries/agents/<agent-family>/skill.md",
+    "singleFileEntryTemplate": "registries/agents/<agent-family>.md",
+    "pathStyle": "forward-slash-relative-paths"
+  },
+  "lifecycle": {
+    "states": ["stored", "candidate", "active", "retired"],
+    "initialState": "stored",
+    "allowedTransitions": [
+      { "from": "stored", "to": "candidate", "requires": "schema-valid-agent-entry" },
+      { "from": "candidate", "to": "active", "requires": "future-governance-approval" },
+      { "from": "active", "to": "retired", "requires": "future-retention-record" }
+    ],
+    "nonGoals": [
+      "No runtime persistence is introduced.",
+      "No database table, migration or service API is created.",
+      "No W5-T3 capability catalog is closed.",
+      "No W5-T4 ownership or approval workflow is closed.",
+      "No W5-T5 evaluation linkage is closed."
+    ]
+  },
+  "retention": {
+    "policy": "git-retained-stable-paths",
+    "minimumRetention": "retain-while-referenced-by-storage-contract",
+    "pathChangeRule": "update-contract-and-checksum-before-dependent-use",
+    "deletionRule": "future-retention-record-required"
+  },
+  "integrity": {
+    "algorithm": "sha256",
+    "requiredForEveryEntry": true
+  },
+  "entries": [
+    {
+      "id": "agent-skill-index",
+      "family": "registry-index",
+      "storageKind": "index",
+      "lifecycleState": "stored",
+      "storagePath": "registries/agents/skills-index.md",
+      "contentType": "text/markdown",
+      "retentionClass": "registry-index",
+      "sha256": "096a2c4302e16d78b61565a35f69b5f5573fc38563b0835d63089281c4035101"
+    },
+    {
+      "id": "api-design",
+      "family": "api-design",
+      "storageKind": "single-file",
+      "lifecycleState": "stored",
+      "storagePath": "registries/agents/api-design.md",
+      "contentType": "text/markdown",
+      "retentionClass": "agent-skill",
+      "sha256": "dd41fbe1f4b4f9efd435345927c0708297dddaef4e1947ee78717d7d70e3b6c2"
+    },
+    {
+      "id": "frontend-design",
+      "family": "frontend-design",
+      "storageKind": "single-file",
+      "lifecycleState": "stored",
+      "storagePath": "registries/agents/frontend-design.md",
+      "contentType": "text/markdown",
+      "retentionClass": "agent-skill",
+      "sha256": "f8ae6c933dbe1dfd1ad3fc2aa27dffa85305b519e26e60eb0fe59615d6ec087b"
+    },
+    {
+      "id": "architecture-design",
+      "family": "architecture-design",
+      "storageKind": "folder-skill",
+      "lifecycleState": "stored",
+      "storagePath": "registries/agents/architecture-design/skill.md",
+      "contentType": "text/markdown",
+      "retentionClass": "agent-skill",
+      "sha256": "a149d23057f0716d709fef21a1d5ff8e0409b4ff72d5fe372aca78df20dea37e"
+    },
+    {
+      "id": "code-review",
+      "family": "code-review",
+      "storageKind": "folder-skill",
+      "lifecycleState": "stored",
+      "storagePath": "registries/agents/code-review/skill.md",
+      "contentType": "text/markdown",
+      "retentionClass": "agent-skill",
+      "sha256": "17cc4906856ddacae08ea561d482eadaa484bb3c4b9477613141465a821ec75c"
+    },
+    {
+      "id": "documentation-generation",
+      "family": "documentation-generation",
+      "storageKind": "folder-skill",
+      "lifecycleState": "stored",
+      "storagePath": "registries/agents/documentation-generation/skill.md",
+      "contentType": "text/markdown",
+      "retentionClass": "agent-skill",
+      "sha256": "6bc3cf67aabd4e36afcbb0b1df63a9071b8dc47c6d64a982422b0a6597365887"
+    },
+    {
+      "id": "prompt-design",
+      "family": "prompt-design",
+      "storageKind": "folder-skill",
+      "lifecycleState": "stored",
+      "storagePath": "registries/agents/prompt-design/skill.md",
+      "contentType": "text/markdown",
+      "retentionClass": "agent-skill",
+      "sha256": "20f1f99c1d1a217da1aa760333ae8e5c2e25c4d688b48d2a3e356aae6c32f44d"
+    },
+    {
+      "id": "requirements-analysis",
+      "family": "requirements-analysis",
+      "storageKind": "folder-skill",
+      "lifecycleState": "stored",
+      "storagePath": "registries/agents/requirements-analysis/skill.md",
+      "contentType": "text/markdown",
+      "retentionClass": "agent-skill",
+      "sha256": "e02e6b9ea0c83b89cbf105d5847dcf5a7570981d6e100eeded19a0faefaa60b6"
+    }
+  ],
+  "governance": {
+    "roadmapTask": "W5-T2",
+    "closes": [
+      "registry storage model",
+      "lifecycle contract",
+      "retention rules"
+    ],
+    "doesNotClose": ["W5-T3", "W5-T4", "W5-T5", "W5-T6"],
+    "validation": "scripts/validate-agent-registry-storage.mjs"
+  }
+}

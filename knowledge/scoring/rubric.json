@@ -1,0 +1,14 @@
+{
+  "id": "weighted-rubric-v1",
+  "weights": {
+    "correctness": 0.35,
+    "traceability": 0.2,
+    "safety": 0.2,
+    "operability": 0.15,
+    "maintainability": 0.1
+  },
+  "thresholds": {
+    "pass": 0.8,
+    "review": 0.65
+  }
+}

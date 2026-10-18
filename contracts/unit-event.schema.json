@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-native.local/contracts/unit-event.schema.json",
+  "title": "Work Unit event (one line of runs/<unit>/events.jsonl)",
+  "description": "events.jsonl is append-only and is the single source of truth for a Work Unit; unit.json is always a derived, recomputed view (never stored), which avoids the lost-update races a single mutable file would have between parallel Builder/Reviewer/Orchestrator writers. Consolidates and replaces TEMPLATE v2.0.5's 5 separate machine files (assess.jsonl, sdd.json, convergence.json, model-routing.jsonl, veredicto YAML files) behind one append-only log. Every event is chained by prevHash for tamper-evidence (P45, local-only guarantee; the strong guarantee is the CI review-gate).",
+  "type": "object",
+  "required": ["schemaVersion", "eventType", "unitId", "timestamp", "prevHash"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "unitId": { "type": "string", "description": "Feature/Milestone/Maintenance slug, same shape as TEMPLATE v2.0.5 (NN-slug / slug / TNN-slug)." },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "prevHash": { "type": "string", "pattern": "^(sha256:[0-9a-f]{64}|genesis)$" },
+    "eventType": {
+      "type": "string",
+      "enum": ["assess", "transition", "review", "verify", "converge", "routing", "docImpact", "trace"]
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "eventType": { "const": "assess" } } },
+      "then": {
+        "required": ["signals", "score", "risk", "depth", "deterministic"],
+        "properties": {
+          "deterministic": { "const": true },
+          "signals": { "type": "array", "items": { "type": "object", "required": ["code", "level", "weight"] } },
+          "score": { "type": "number" },
+          "risk": { "type": "string", "enum": ["LOW", "MEDIUM", "HIGH"] },
+          "depth": { "type": "string", "enum": ["LIGHT", "STANDARD", "FULL"] }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "eventType": { "const": "transition" } } },
+      "then": {
+        "required": ["fromState", "toState"],
+        "properties": {
+          "fromState": { "type": "string" },
+          "toState": { "type": "string" },
+          "reason": { "type": "string" }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "eventType": { "const": "review" } } },
+      "then": {
+        "required": ["stage", "verdict", "reviewInvocationId", "inputDigest", "tool"],
+        "properties": {
+          "stage": { "type": "string", "enum": ["spec", "code"] },
+          "verdict": { "type": "string", "enum": ["approved", "rejected", "blocked"] },
+          "reviewInvocationId": { "type": "string", "description": "Runtime-generated id of the separate, non-interactive invocation that produced this verdict (P45). Never equal to the Builder's own session/invocation id." },
+          "nonce": { "type": "string" },
+          "inputDigest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$", "description": "Digest of exactly what the Reviewer was shown (spec or diff), binding the verdict to that content." },
+          "tool": { "type": "string", "enum": ["claude", "codex", "opencode"] },
+          "model": { "type": "string" },
+          "toolSessionId": { "type": ["string", "null"], "description": "The tool's own session/invocation identity, recorded only if C1-C4 (M2.3) confirm it is stable and not self-reportable by the Builder." },
+          "parentInvocationId": { "type": ["string", "null"], "description": "The Builder invocation that triggered 'review run', for traceability only — never used to authorize the verdict." },
+          "findings": { "type": "array", "items": { "type": "object", "required": ["id", "severity", "status"] } }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "eventType": { "const": "verify" } } },
+      "then": {
+        "required": ["treeSha", "status", "exitCode"],
+        "properties": {
+          "treeSha": { "type": "string", "pattern": "^[0-9a-f]{40}$", "description": "Binds this verify result to an exact tree; any later code/test/config change invalidates it (PAR-STALE-EVIDENCE)." },
+          "command": { "type": "string" },
+          "status": { "$ref": "result-status.schema.json#/properties/status" },
+          "exitCode": { "type": "integer" },
+          "testingProfile": { "type": "string" }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "eventType": { "const": "converge" } } },
+      "then": {
+        "required": ["iteration", "verdict", "terminal", "budget"],
+        "properties": {
+          "iteration": { "type": "integer", "minimum": 1 },
+          "verdict": { "type": "string", "enum": ["APPROVED", "CHANGES_REQUESTED", "BLOCKED", "NEEDS_HUMAN_DECISION", "FAILED_SAFELY"] },
+          "terminal": { "type": "boolean" },
+          "budget": { "type": "object", "required": ["maxIterations"], "properties": { "maxIterations": { "type": "integer", "enum": [2, 4, 6] } } },
+          "findings": { "type": "object", "properties": { "openCount": { "type": "integer" }, "fingerprint": { "type": "string" } } },
+          "escalation": { "type": ["string", "null"] }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "eventType": { "const": "routing" } } },
+      "then": {
+        "required": ["role", "provider", "model"],
+        "properties": {
+          "role": { "type": "string", "enum": ["planner", "builder", "reviewer"] },
+          "provider": { "type": "string" },
+          "model": { "type": "string" },
+          "variant": { "type": "string" },
+          "fallbackApplied": { "type": "boolean", "default": false },
+          "metricStatus": {
+            "type": "object",
+            "description": "Explicit per-metric status, never a silent null (AGT-06 regression guard: TEMPLATE v2.0.5's model-routing.jsonl always had cost=null with no explanation).",
+            "additionalProperties": { "type": "string", "enum": ["MEASURED", "NOT_AVAILABLE_FROM_TOOL"] }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "eventType": { "const": "docImpact" } } },
+      "then": {
+        "required": ["impact"],
+        "properties": {
+          "impact": { "type": "string", "enum": ["none", "updated"] },
+          "paths": { "type": "array", "items": { "type": "string" } },
+          "docImpactConfirmed": { "type": "boolean", "default": false, "description": "Required true (with a reason in the code-review verdict) when impact=none but the diff touches a docRelevantPaths match." }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "eventType": { "const": "trace" } } },
+      "then": {
+        "required": ["commit"],
+        "properties": {
+          "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+          "prNumber": { "type": ["integer", "null"] },
+          "prUrl": { "type": ["string", "null"] }
+        }
+      }
+    }
+  ]
+}

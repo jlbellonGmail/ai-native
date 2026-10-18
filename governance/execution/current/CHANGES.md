@@ -1,27 +1,28 @@
 # CHANGES
 
-Governance/root changes:
+## Current Execution Snapshot
 
-* Recorded HITL approval for the P0-T2 implementation.
-* Accepted implementation commit `78e3214`.
-* Added P0-T2 implementation approval contract.
-* Updated current execution evidence to
-  `P0-T2_IMPLEMENTATION_APPROVED / FORMALLY_ACCEPTED`.
-* Updated `governance/SESSION-CONTEXT.md` with the P0-T2 implementation
-  approval summary.
+Reconciles the post-#132 v3.3.0 candidate state, closes the remote trust
+Environment administrator-bypass setting, and records complete before/after
+API evidence.
 
-Product changes:
+Files in scope:
 
-* None.
+* `README.md`
+* `SUMMARY.md`
+* `EVIDENCE.md`
+* `VALIDATION.md`
+* `CHANGES.md`
+* `TRUST-ENV-BEFORE.json`
+* `TRUST-ENV-AFTER.json`
 
-Explicitly not changed:
+## Preserved / Not Changed
 
-* Product scripts.
-* Product `package.json` files.
-* Lockfiles.
-* `VERSION` files.
-* H1-H8 archives.
-* P0-T1 approval records.
-* H9.
-* `ENTERPRISE-10-10-V2`.
-* First real application artifacts.
+* P0-T2 historical records in
+  `governance/execution/archive/AI-NATIVE-HARDENING-V1.1/P0-T2-IMPLEMENTATION/`.
+* `governance/SESSION-CONTEXT.md` and roadmap/versioning records.
+* Product code, tests, workflows, contracts, ruleset source files, and `VERSION`.
+* Existing audit reports and all non-blocking MINOR findings.
+
+No new PLATFORM audit, release-gate, tag, or release was created or executed.
+The governance-only PR is subject to human merge under D6.

@@ -1,0 +1,288 @@
+name: CI
+
+# M0.3a (governance/roadmaps/AI-NATIVE-V3-ROADMAP.md): root CI for ai-native.
+# Runs the node:* -only validators of foundation/, knowledge/, template/ and
+# the root audit-safe-script-mode regression fixture, on Ubuntu and Windows.
+# No package install step: every validator here imports only node: builtins
+# (verified 2026-09-30), so there is nothing to install.
+#
+# v3.0.2: the legacy/template-v2 pytest baseline job was retired together with the frozen tree; its compact
+# traceability lives in parity/v2.0.5/legacy-import-manifest.json (governance/cleanup/FINAL-CONSOLIDATION.md).
+#
+# Deliberately excluded from this workflow (tracked in the roadmap):
+# - Security workflows (CodeQL/Trivy/SBOM/dependency-review/supply-chain):
+#   M0.3b, live as separate workflows (codeql.yml, trivy.yml, sbom.yml,
+#   dependency-review.yml, supply-chain.yml) since D1 resolved (public).
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validators:
+    name: validators (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Node (pinned major; package.json engines says >= 20)
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24"
+
+      - name: Node version
+        shell: bash
+        run: node --version
+
+      - name: foundation/ validators
+        shell: bash
+        run: |
+          set -e
+          cd foundation
+          for f in scripts/validate-*.mjs; do
+            echo "::group::foundation/$f"
+            node "$f"
+            echo "::endgroup::"
+          done
+
+      - name: knowledge/ validators
+        shell: bash
+        run: |
+          set -e
+          cd knowledge
+          for f in scripts/validate-*.mjs; do
+            echo "::group::knowledge/$f"
+            node "$f"
+            echo "::endgroup::"
+          done
+
+      - name: template/ validators
+        shell: bash
+        run: |
+          set -e
+          cd template
+          for f in scripts/validate-*.mjs; do
+            echo "::group::template/$f"
+            node "$f"
+            echo "::endgroup::"
+          done
+
+      - name: root audit-safe-script-mode regression fixture
+        shell: bash
+        run: node scripts/validate-audit-safe-script-mode.mjs
+
+      - name: runtime/lib result-semantics conformance (PAR-RESULT-SEMANTICS)
+        shell: bash
+        run: node --test runtime/lib/result.test.mjs
+
+      - name: runtime/lib result-semantics conformance, pwsh reference implementation (PAR-RESULT-SEMANTICS)
+        shell: pwsh
+        run: ./runtime/lib/result.conformance.test.ps1
+
+      - name: parity gate (P38 TEST_PARITY / P40 PARITY_SCORECARD, UNMAPPED=0)
+        shell: bash
+        run: node parity/validate-parity.mjs
+
+      - name: migrate-inventory tests (PAR-MIGRATE-CLASSIFY)
+        shell: bash
+        run: node --test parity/migrate-inventory.test.mjs
+
+      - name: contracts validation (PAR-SCHEMAS)
+        shell: bash
+        run: node contracts/validate-contracts.mjs
+
+      - name: contracts tests
+        shell: bash
+        run: node --test contracts/validate-contracts.test.mjs
+
+      - name: runtime/lib schema-lite tests
+        shell: bash
+        run: node --test runtime/lib/schema-lite.test.mjs
+
+      - name: core validation (PAR-CONTEXT-BUDGET, PAR-ROLES)
+        shell: bash
+        run: node core/validate-core.mjs
+
+      - name: core tests
+        shell: bash
+        run: node --test core/validate-core.test.mjs
+
+      - name: compat-matrix validation (C1-C4 structural check; does not invoke claude/codex/opencode)
+        shell: bash
+        run: node evaluation/compat/validate-compat-matrix.mjs
+
+      - name: compat-matrix tests
+        shell: bash
+        run: node --test evaluation/compat/validate-compat-matrix.test.mjs
+
+      - name: runtime/lib git tests (PAR-STATUS-SELF-STALE)
+        shell: bash
+        run: node --test runtime/lib/git.test.mjs
+
+      - name: runtime/lib lock tests
+        shell: bash
+        run: node --test runtime/lib/lock.test.mjs
+
+      - name: runtime/lib json tests
+        shell: bash
+        run: node --test runtime/lib/json.test.mjs
+
+      - name: runtime/lib preflight tests (PAR-PREFLIGHT)
+        shell: bash
+        run: node --test runtime/lib/preflight.test.mjs
+
+      - name: runtime/status snapshot tests (PAR-STATUS-DERIVED, PAR-STATUS-ACTIVE-UNITS)
+        shell: bash
+        run: node --test runtime/status/snapshot.test.mjs
+
+      - name: runtime/status integrity tests (PAR-STATUS-SELF-STALE)
+        shell: bash
+        run: node --test runtime/status/integrity.test.mjs
+
+      - name: runtime/status integrity gate, live self-check (PAR-INTEGRITY-IN-CI)
+        shell: bash
+        run: node runtime/status/validate-integrity.mjs
+
+      - name: runtime/lib fs-safe + runtime/observability tests (platform audit F7)
+        shell: bash
+        run: node --test runtime/lib/fs-safe.test.mjs runtime/observability/*.test.mjs
+
+      - name: evaluation/metrics tests
+        shell: bash
+        run: node --test evaluation/metrics/*.test.mjs
+
+      - name: M5.2 evidence validators, release guard (F-09) and hermetic test harness (F-05)
+        shell: bash
+        run: |
+          node --test evaluation/m52/*.test.mjs scripts/test-hermetic.test.mjs
+          node evaluation/m52/validate-evidence.mjs
+
+      - name: every committed test file is run by a workflow
+        shell: bash
+        run: |
+          node --test scripts/validate-ci-tests-listed.test.mjs
+          node scripts/validate-ci-tests-listed.mjs
+
+      - name: template/ validators are cwd-independent (run from the repo root)
+        shell: bash
+        run: |
+          node template/scripts/validate-structure.mjs
+          node template/scripts/validate-enterprise-template.mjs
+
+      - name: runtime/circuit tests (M3.2 circuito completo)
+        shell: bash
+        run: node --test runtime/circuit/*.test.mjs
+
+      - name: runtime/adapters tests (M3.3 adaptadores + skills lazy)
+        shell: bash
+        run: node --test runtime/adapters/*.test.mjs
+
+      - name: runtime/adapters entry-point check, live self-check (M3.3, "check de puntos de entrada")
+        shell: bash
+        run: node runtime/adapters/validate-entrypoints.mjs
+
+      - name: runtime/policy tests (M3.4, PAR-POLICY-ENFORCED)
+        shell: bash
+        run: node --test runtime/policy/*.test.mjs
+
+      - name: Policies on the real change (constitution, human gate derived from the diff)
+        shell: bash
+        run: |
+          node runtime/policy/constitution-extension.mjs
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git fetch --no-tags --depth=1 origin "${{ github.base_ref }}"
+            node runtime/policy/hitl.mjs --base "origin/${{ github.base_ref }}"
+          fi
+
+      - name: runtime/mcp tests (M3.4, decision real sobre core/security-policy.json)
+        shell: bash
+        run: node --test runtime/mcp/*.test.mjs
+
+      - name: runtime/routing tests (M3.4, PAR-ROUTING-EVIDENCE/PAR-ROUTING-SAFEGUARDS)
+        shell: bash
+        run: node --test runtime/routing/*.test.mjs
+
+      - name: runtime/docs tests (M3.5, PAR-DOC-DRIFT/PAR-CANONICAL-SOURCE)
+        shell: bash
+        run: node --test runtime/docs/*.test.mjs
+
+      - name: Doc drift + canonical source check (M3.5)
+        shell: bash
+        run: node runtime/docs/validate-doc-drift.mjs
+
+      - name: runtime/bootstrap tests (M4.1, PAR-CACHE-*/PAR-ROLLBACK-*/PAR-DOCTOR)
+        shell: bash
+        run: node --test runtime/bootstrap/*.test.mjs
+
+      - name: runtime/release tests (M4.2, PAR-REPRODUCIBLE-BUNDLE/PAR-RELEASE)
+        shell: bash
+        run: node --test runtime/release/*.test.mjs
+
+      # the public command is the only code that runs before anything is verified: its tests (lifecycle, CLI <-> PLATFORM compatibility with the minimum
+      # supported CLI, the Windows and Linux shims) run on every PR, on both operating systems of this matrix
+      - name: runtime/cli tests (public command lifecycle, v3.3.0)
+        shell: bash
+        run: node --test runtime/cli/*.test.mjs
+
+      - name: runtime/mcp-gateway tests (M4.4, PAR-MCP-TRUST/PAR-STEP-UP)
+        shell: bash
+        run: node --test runtime/mcp-gateway/*.test.mjs
+
+      - name: runtime/gates tests (M4.3, P44/P45, PAR-MERGE-GATE-TRUST/PAR-POST-MERGE/PAR-PR-GATE/PAR-SUPPLY-CHAIN/...)
+        shell: bash
+        run: node --test runtime/gates/*.test.mjs
+
+      - name: runtime/migrate tests (M5 prereqs, PAR-BUMP-FOOTPRINT/PAR-BROWNFIELD-SAFETY/PAR-MIGRATION-REVERT/PAR-PRODUCT-CONTEXT/PAR-TRUST-BOUNDARY)
+        shell: bash
+        run: node --test runtime/migrate/*.test.mjs
+
+      - name: runtime/consumer tests (L3 consumer gate)
+        shell: bash
+        run: node --test runtime/consumer/*.test.mjs
+
+      - name: runtime/migrate migrate v2->v3 on the real starter (also covered by runtime/migrate/*.test.mjs above)
+        shell: bash
+        run: node --test runtime/migrate/migrate-v2.test.mjs
+        env:
+          AI_NATIVE_REQUIRE_NETWORK: "1"
+
+      - name: runtime/pilot fixtures - from scratch (M5.2) and real v2 starter v2.0.4 migration (M5.3 partial)
+        shell: bash
+        env:
+          AI_NATIVE_REQUIRE_NETWORK: "1"
+          GH_TOKEN: ${{ github.token }}
+        run: node --test runtime/pilot/*.test.mjs
+
+      - name: runtime/audit tests (M4.5, PAR-AUDIT-METHOD/PAR-AUDIT-VALIDITY)
+        shell: bash
+        run: node --test runtime/audit/*.test.mjs
+
+      - name: Audit framework check (M4.5)
+        shell: bash
+        run: node runtime/audit/cli.mjs check
+
+      - name: runtime/packs tests (M4.7, PAR-PACK-RULES)
+        shell: bash
+        run: node --test runtime/packs/*.test.mjs
+
+      - name: runtime/evals tests (M4.6, PAR-EVAL-REAL/PAR-OBSERVABILITY-CORRELATION)
+        shell: bash
+        run: node --test runtime/evals/*.test.mjs
+
+      - name: L1 evaluation suite against the real circuit code (M4.6)
+        shell: bash
+        run: node runtime/evals/cli.mjs l1

@@ -1,0 +1,7 @@
+{
+  "gates": [
+    { "id": "gate-evaluation-has-dataset", "requires": ["dataset", "benchmark", "scoringModel"] },
+    { "id": "gate-score-meets-threshold", "requires": ["score >= benchmark.minimumScore"] },
+    { "id": "gate-traceability", "requires": ["roadmapTask", "realFiles", "validationCommand"] }
+  ]
+}

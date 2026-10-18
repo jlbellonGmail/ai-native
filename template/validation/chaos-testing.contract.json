@@ -1,0 +1,121 @@
+{
+  "schemaVersion": "chaos-testing.v1",
+  "roadmapTask": "W6-T5",
+  "description": "Reusable chaos testing governance, resilience scenarios and validation contract for generated projects. This contract defines chaos-readiness without injecting failures, altering environments or closing W6-T6.",
+  "chaosGovernance": {
+    "scenarioCategories": [
+      "dependency-latency",
+      "dependency-error",
+      "resource-pressure",
+      "workflow-timeout",
+      "repository-unavailable"
+    ],
+    "requiredScenarioFields": [
+      "id",
+      "category",
+      "owner",
+      "sourcePerformanceTarget",
+      "failureMode",
+      "blastRadius",
+      "controls",
+      "observabilitySignals",
+      "executionStatus",
+      "environmentAlteration",
+      "evidence"
+    ],
+    "allowedEvidence": [
+      "contract-test",
+      "load-scenario",
+      "performance-target",
+      "validation-policy",
+      "scenario-catalog",
+      "validator"
+    ],
+    "forbiddenAsSoleEvidence": [
+      "manual-note",
+      "governance-archive",
+      "unbounded-runtime-log"
+    ],
+    "failureInjection": "not-run-by-w6-t5",
+    "environmentAlteration": "not-altered-by-w6-t5",
+    "productRuntimeModification": "not-modified-by-w6-t5"
+  },
+  "validationContract": {
+    "requiresSourcePerformanceTarget": true,
+    "requiresOwner": true,
+    "requiresBlastRadiusLimit": true,
+    "requiresRollbackPlan": true,
+    "requiresAbortTriggers": true,
+    "requiresDataSafetyControls": true,
+    "requiresObservabilitySignals": true,
+    "allowedExecutionStatuses": [
+      "not-run-by-w6-t5",
+      "planned",
+      "approved-for-future-isolated-run",
+      "blocked"
+    ],
+    "w6T5ExecutionStatus": "not-run-by-w6-t5"
+  },
+  "resilienceScenarios": [
+    {
+      "id": "password-validator-dependency-latency",
+      "category": "dependency-latency",
+      "owner": "template-validation",
+      "sourcePerformanceTarget": "password-validator-service-performance",
+      "failureMode": {
+        "type": "latency-injection",
+        "target": "password-validation-boundary",
+        "description": "Future isolated experiment may add bounded latency around validation dependency seams to verify timeout and abort behavior.",
+        "injectionMechanism": "not-created-by-w6-t5"
+      },
+      "blastRadius": {
+        "scope": "single-service-boundary",
+        "maximumDurationSeconds": 300,
+        "externalUserImpact": "none-by-w6-t5",
+        "dataMutation": "none"
+      },
+      "controls": {
+        "rollbackPlan": "disable-experiment-and-restore-baseline",
+        "abortTriggers": [
+          "error-rate-threshold",
+          "latency-threshold",
+          "manual-abort"
+        ],
+        "dataSafety": "seeded-or-synthetic-data-only",
+        "environmentRequirement": "future-isolated-environment-required"
+      },
+      "observabilitySignals": [
+        "request-count",
+        "latency-distribution",
+        "error-rate",
+        "dependency-error-rate"
+      ],
+      "expectedResilienceBehavior": [
+        "bounded-timeout",
+        "controlled-error-response",
+        "no-unbounded-retry-loop"
+      ],
+      "executionStatus": "not-run-by-w6-t5",
+      "environmentAlteration": "not-altered-by-w6-t5",
+      "evidence": [
+        "validation/performance-testing.contract.json",
+        "validation/load-testing.contract.json",
+        "validation/contract-testing.contract.json",
+        "examples/reference-app/services/domain/services/password-validator.ts"
+      ]
+    }
+  ],
+  "governance": {
+    "roadmapTask": "W6-T5",
+    "closes": [
+      "chaos governance",
+      "resilience scenarios",
+      "validation contract"
+    ],
+    "doesNotClose": [
+      "W6-T6",
+      "W6-T7"
+    ],
+    "validation": "scripts/validate-chaos-testing.mjs"
+  }
+}

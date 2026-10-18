@@ -1,0 +1,9 @@
+{
+  "name": "notes-api",
+  "version": "1.2.0",
+  "private": true,
+  "description": "Fixture APPLICATION: a tiny notes HTTP API with no runtime dependencies.",
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "scripts": { "start": "node src/server.mjs", "test": "node --test" }
+}

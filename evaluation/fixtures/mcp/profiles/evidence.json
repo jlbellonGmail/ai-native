@@ -1,0 +1,1 @@
+{ "schemaVersion": 1, "id": "evidence", "description": "C5 evidence profile: notes (read-only) and writer (step-up)", "servers": ["notes", "writer"] }

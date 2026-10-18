@@ -1,0 +1,169 @@
+{
+  "schemaVersion": 1,
+  "milestone": "M5.2",
+  "kind": "offline-real",
+  "release": {
+    "tag": "v3.0.0-rc.2",
+    "commit": "51ef1859fbb39af5f0c82547597faa54aa945457",
+    "digest": "sha256:55b9589f7f78f7f0acd15ccffb2b297fe199889206a8f04123cfc45e266f6e0f"
+  },
+  "checkout": "4ecc156617ddf090256c8b26b02b99cc56abc377",
+  "mode": "guard",
+  "isolation": "in-process net-guard (blocks and counts attempts; NOT OS-level isolation)",
+  "os": "win32",
+  "node": "v26.7.0",
+  "date": "2026-10-05T22:10:40.775Z",
+  "cases": [
+    {
+      "id": "net-proof",
+      "title": "net-guard blocks fetch to github.com",
+      "exit": 3,
+      "ok": true,
+      "expected": "fetch blocked"
+    },
+    {
+      "id": "with-cache/sync",
+      "title": "sync --offline with a populated cache",
+      "args": "sync --offline",
+      "exit": 0,
+      "status": "PASS",
+      "state": null,
+      "revocation": null,
+      "errors": [],
+      "warnings": [],
+      "networkAttempts": 0,
+      "ok": true,
+      "expected": "PASS, cacheHit, 0 network attempts"
+    },
+    {
+      "id": "with-cache/doctor",
+      "title": "doctor with cache",
+      "args": "doctor",
+      "exit": 0,
+      "status": "PASS",
+      "state": null,
+      "revocation": null,
+      "errors": [],
+      "warnings": [],
+      "networkAttempts": 0,
+      "ok": true,
+      "expected": "PASS, 0 network attempts"
+    },
+    {
+      "id": "with-cache/status",
+      "title": "status --offline is READY and says revocation was NOT checked",
+      "args": "status --offline",
+      "exit": 0,
+      "status": "PASS",
+      "state": "READY",
+      "revocation": "NOT_CHECKED",
+      "errors": [],
+      "warnings": [
+        "offline: revocation status NOT checked (READY is not a statement that this version is not revoked)"
+      ],
+      "networkAttempts": 0,
+      "ok": true,
+      "expected": "READY, revocation NOT_CHECKED, 0 network attempts"
+    },
+    {
+      "id": "with-cache/run",
+      "title": "run version from the cache",
+      "args": "run -- version",
+      "exit": 0,
+      "status": null,
+      "state": null,
+      "revocation": null,
+      "errors": [],
+      "warnings": [],
+      "networkAttempts": 0,
+      "ok": true,
+      "expected": "exit 0"
+    },
+    {
+      "id": "no-cache/sync",
+      "title": "sync --offline with an empty cache fails closed",
+      "args": "sync --offline",
+      "exit": 1,
+      "status": "FAIL",
+      "state": null,
+      "revocation": null,
+      "errors": [
+        "release sha256:55b9589f7f78f7f0acd15ccffb2b297fe199889206a8f04123cfc45e266f6e0f is not in the cache and no bundle source was given (offline, or the download did not run): sync online so the pinned release is downloaded and verified, or pass --from-file <bundle>"
+      ],
+      "warnings": [],
+      "networkAttempts": 0,
+      "ok": true,
+      "expected": "non-zero exit, not PASS, actionable error"
+    },
+    {
+      "id": "no-cache/status",
+      "title": "status --offline with an empty cache is not READY",
+      "args": "status --offline",
+      "exit": 0,
+      "status": "PASS",
+      "state": "DEGRADED_READONLY",
+      "revocation": "NOT_CHECKED",
+      "errors": [],
+      "warnings": [],
+      "networkAttempts": 0,
+      "ok": true,
+      "expected": "state != READY"
+    },
+    {
+      "id": "no-cache/run",
+      "title": "run with an empty cache fails",
+      "args": "run -- version",
+      "exit": 1,
+      "status": "FAIL",
+      "state": null,
+      "revocation": null,
+      "errors": [
+        "refusing to execute: release not in cache: sha256:55b9589f7f78f7f0acd15ccffb2b297fe199889206a8f04123cfc45e266f6e0f"
+      ],
+      "warnings": [],
+      "networkAttempts": 0,
+      "ok": true,
+      "expected": "non-zero exit"
+    },
+    {
+      "id": "no-network/sync",
+      "title": "sync (online mode) without network degrades with an EXPLICIT warning, never a silent PASS",
+      "args": "sync --require-attestation",
+      "exit": 0,
+      "status": "PASS_WITH_WARNINGS",
+      "state": null,
+      "revocation": null,
+      "errors": [],
+      "warnings": [
+        "revocations unavailable (network disabled by net-guard (fetch)); revocation status NOT checked"
+      ],
+      "networkAttempts": 1,
+      "ok": true,
+      "expected": "PASS_WITH_WARNINGS with a \"revocation status NOT checked\" warning"
+    },
+    {
+      "id": "no-network/status-check",
+      "title": "status --check without network fails closed (REVOCATION_UNKNOWN)",
+      "args": "status --check",
+      "exit": 1,
+      "status": "FAIL",
+      "state": "READY",
+      "revocation": "NOT_CHECKED",
+      "errors": [
+        "REVOCATION_UNKNOWN: the revocations list could not be read; use --offline to run without that information"
+      ],
+      "warnings": [
+        "revocations unavailable (network disabled by net-guard (fetch)); revocation status NOT checked",
+        "revocation status could not be determined (see warnings); READY is not a statement that this version is not revoked"
+      ],
+      "networkAttempts": 1,
+      "ok": true,
+      "expected": "non-zero exit, not PASS"
+    }
+  ],
+  "totals": {
+    "cases": 10,
+    "ok": 10
+  },
+  "status": "PASS"
+}

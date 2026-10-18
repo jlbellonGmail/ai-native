@@ -1,0 +1,371 @@
+// Ruleset impact of a migration (canary finding C-2). `migrate apply` retires platform-owned v2 workflows
+// (e.g. `.github/workflows/ci.yml`). If the consumer's ruleset REQUIRES a check that only a retired workflow
+// produced, that check never reports again and the migration PR is blocked forever, with no hint beforehand.
+// `planMigration` calls `checkRulesetImpact` so the risk shows up BEFORE `apply`.
+//
+// Fail-closed and honest about its limits:
+//   * it never edits a ruleset; it only reports, with a recommended action;
+//   * a retired workflow it cannot read COMPLETELY (no jobs found, or lines at job-id indentation it did not
+//     understand: quoted ids, anchors, odd indentation) is an error, not a pass;
+//   * a required check no surviving workflow explains is reported (WILL_DISAPPEAR when a retired workflow produced it,
+//     UNKNOWN_SOURCE otherwise: it may come from an external app), never as safe;
+//   * when deciding that a check SURVIVES it is conservative: a surviving job named only by an expression (it could be
+//     anything), a surviving workflow it cannot read, or one that never runs for a PR (schedule / workflow_dispatch /
+//     workflow_call only) does NOT count as a keeper;
+//   * the check-context derivation is a line-based reading of `jobs:` (names, matrix, reusable calls). It is a
+//     heuristic for GitHub Actions' naming, not a YAML parser.
+import { spawnSync } from "node:child_process";
+
+export const CODES = {
+  WILL_DISAPPEAR: "RULESET_REQUIRED_CHECK_WILL_DISAPPEAR",
+  UNKNOWN_SOURCE: "RULESET_REQUIRED_CHECK_UNKNOWN_SOURCE",
+  WORKFLOW_UNREADABLE: "RULESET_WORKFLOW_UNREADABLE",
+  UNREADABLE: "RULESET_UNREADABLE",
+  NOT_CHECKED: "RULESET_NOT_CHECKED",
+};
+
+/**
+ * Events whose workflows report a check on a PR. `push` is deliberately NOT here: it runs in the repository that received
+ * the push (never for a PR from a fork) and usually behind a `branches:` filter, so it is not a reliable source.
+ */
+const REPORTING_EVENTS = ["pull_request", "pull_request_target"];
+
+/** A scalar value: a quoted string keeps any ` #` inside the quotes; an unquoted one loses a trailing comment. */
+const unquote = (s) => {
+  const t = s.trim();
+  const q = /^(["'])(.*?)\1(?:\s+#.*)?$/.exec(t);
+  return q ? q[2] : t.replace(/\s+#.*$/, "");
+};
+const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+/**
+ * Jobs of a workflow file: [{ id, name, uses, matrix }]. Empty when no `jobs:` block can be read.
+ * The array has an `unrecognized` property: lines at job-id indentation that were NOT understood (quoted ids, anchors,
+ * odd indentation). A file with any of them is only PARTIALLY read, and callers must not trust the job list as complete.
+ */
+export function parseJobs(text) {
+  const lines = text.replace(/\r/g, "").split("\n");
+  const start = lines.findIndex((l) => /^jobs:\s*(#.*)?$/.test(l));
+  const jobs = [];
+  jobs.unrecognized = [];
+  if (start < 0) return jobs;
+  let current = null;
+  for (let i = start + 1; i < lines.length; i += 1) {
+    const line = lines[i];
+    if (!line.trim() || /^\s*#/.test(line)) continue;
+    if (!/^\s/.test(line)) break; // next top-level key: the jobs block is over
+    const id = /^ {2}([A-Za-z_][\w-]*):\s*(#.*)?$/.exec(line);
+    if (id) {
+      current = { id: id[1], name: null, uses: null, matrix: false };
+      jobs.push(current);
+      continue;
+    }
+    // anything else at (or shallower than) job-id indentation is a job we did not understand
+    if (/^ {0,2}\S/.test(line)) { jobs.unrecognized.push(line.trim()); current = null; continue; }
+    if (!current) continue;
+    const name = /^ {4}name:\s*(.+)$/.exec(line);
+    if (name) {
+      current.name = unquote(name[1]);
+      // a block scalar (`>`, `|`) or an anchor/alias as the name: the real name is on other lines, so the job is not understood
+      if (/^[>|][+-]?\d*$/.test(current.name) || /^[&*]/.test(current.name)) jobs.unrecognized.push(`${current.id}: name: ${current.name}`);
+    }
+    const uses = /^ {4}uses:\s*(.+)$/.exec(line);
+    if (uses) current.uses = unquote(uses[1]);
+    if (/^ {6}matrix:/.test(line)) current.matrix = true;
+  }
+  return jobs;
+}
+
+/** Event names a workflow triggers on, or null when `on:` cannot be read. */
+export function parseTriggers(text) {
+  const lines = text.replace(/\r/g, "").split("\n");
+  const i = lines.findIndex((l) => /^(on|"on"|'on'):/.test(l));
+  if (i < 0) return null;
+  const events = new Set();
+  const first = lines[i].replace(/^(on|"on"|'on'):/, "").replace(/\s+#.*$/, "").trim();
+  if (first) for (const w of first.match(/[a-z_]+/g) ?? []) events.add(w);
+  const body = [first];
+  for (let j = i + 1; j < lines.length; j += 1) {
+    const line = lines[j];
+    if (!line.trim() || /^\s*#/.test(line)) continue;
+    if (!/^\s/.test(line)) break;
+    const key = /^ {2}([a-z_]+):/.exec(line) ?? /^ {2}- *([a-z_]+)\s*$/.exec(line);
+    if (key) events.add(key[1]);
+    body.push(line.replace(/\s+#.*$/, ""));
+  }
+  // A path filter makes the workflow skip PRs that do not touch those paths, so it is not a reliable source of a check.
+  // Looked for ANYWHERE in the `on:` block (any indentation, flow maps, quoted keys): over-reporting is fine, missing it is not.
+  if (/["']?\bpaths(-ignore)?["']?\s*:/.test(body.join("\n"))) events.pathFiltered = true;
+  return events.size ? events : null;
+}
+
+/** Check contexts a job reports, as a regular expression. `opaque` = a name made only of expressions (could be anything). */
+export function contextsOfJob(job) {
+  if (job.uses) return [{ pattern: new RegExp(`^${escapeRe(job.id)} / .+$`), source: `${job.id} / <reusable job>`, opaque: false }];
+  const base = job.name ?? job.id;
+  if (base.includes("${{")) {
+    const opaque = base.replace(/\$\{\{.*?\}\}/g, "").replace(/[\s()]/g, "").length === 0;
+    const re = base.split(/\$\{\{.*?\}\}/g).map(escapeRe).join(".*");
+    return [{ pattern: new RegExp(`^${re}( \\(.*\\))?$`), source: `${base} (expression)`, opaque }];
+  }
+  if (job.matrix) return [{ pattern: new RegExp(`^${escapeRe(base)}( \\(.*\\))?$`), source: `${base} (matrix)`, opaque: false }];
+  return [{ pattern: new RegExp(`^${escapeRe(base)}$`), source: base, opaque: false }];
+}
+
+/**
+ * All the contexts a set of workflow files can report: { produced: [{ file, source, pattern, opaque }], unreadable, partial }.
+ * `unreadable` = no jobs found; `partial` = some lines at job-id indentation were not understood.
+ */
+export function producedContexts(workflows) {
+  const produced = [];
+  const unreadable = [];
+  const partial = [];
+  for (const { path, text } of workflows) {
+    const jobs = parseJobs(text);
+    if (!jobs.length) unreadable.push(path);
+    else if (jobs.unrecognized.length) partial.push({ path, lines: jobs.unrecognized });
+    const triggers = parseTriggers(text);
+    const reportsOnPr = triggers ? REPORTING_EVENTS.some((e) => triggers.has(e)) && !triggers.pathFiltered : false;
+    for (const job of jobs) for (const c of contextsOfJob(job)) produced.push({ file: path, reportsOnPr, ...c });
+  }
+  return { produced, unreadable, partial };
+}
+
+/**
+ * @param {object} o
+ * @param {Array<{context: string, integrationId?: number}>} o.required  required status checks of the consumer's ruleset
+ * @param {Array<{path: string, text: string}>} o.retiring               workflows the migration deletes
+ * @param {Array<{path: string, text: string}>} o.surviving              workflows that stay (kept or new, incl. the L3 caller)
+ * @param {string[]} [o.proposed]                                        canonical checks the migration introduces
+ */
+export function checkRulesetImpact({ required, retiring, surviving, proposed = [] }) {
+  const findings = [];
+  const gone = producedContexts(retiring);
+  const stays = producedContexts(surviving);
+  for (const path of gone.unreadable) {
+    findings.push({ severity: "error", code: CODES.WORKFLOW_UNREADABLE, workflow: path, detail: `could not read the jobs of the retired workflow ${path}; its check contexts are unknown`, action: "read the workflow by hand and compare its jobs with the ruleset's required checks before applying" });
+  }
+  for (const { path, lines } of gone.partial) {
+    findings.push({ severity: "error", code: CODES.WORKFLOW_UNREADABLE, workflow: path, detail: `the retired workflow ${path} was only partially read (not understood: ${lines.slice(0, 3).join(" | ")}); some of its jobs, and so some check contexts, are unknown`, action: "read the workflow by hand and compare ALL its jobs with the ruleset's required checks before applying" });
+  }
+  for (const path of [...stays.unreadable, ...stays.partial.map((p) => p.path)]) {
+    findings.push({ severity: "warning", code: CODES.WORKFLOW_UNREADABLE, workflow: path, detail: `the surviving workflow ${path} could not be read completely; it is NOT counted as a source of any required check`, action: "if a required check really comes from it, the report may over-state what disappears" });
+  }
+  for (const { context } of required) {
+    const keepers = stays.produced.filter((p) => p.reportsOnPr && !p.opaque && p.pattern.test(context));
+    if (keepers.length) continue;
+    const dying = gone.produced.filter((p) => p.pattern.test(context));
+    if (dying.length) {
+      findings.push({
+        severity: "error", code: CODES.WILL_DISAPPEAR, context, workflow: dying[0].file,
+        detail: `required check '${context}' is produced only by ${dying.map((d) => d.file).join(", ")}, which this migration retires: it will never report again and the PR cannot be merged`,
+        action: `before merging, change the consumer's ruleset: replace '${context}' by ${proposed.length ? proposed.map((p) => `'${p}'`).join(", ") : "the check the v3 caller produces"} (do not add a fake job named '${context}'); apply with --accept-ruleset-change only once you decided`,
+      });
+    } else {
+      findings.push({ severity: "warning", code: CODES.UNKNOWN_SOURCE, context, detail: `required check '${context}' is not produced by any workflow in the tree that reports on pull requests (an external app?); the migration cannot tell whether it keeps reporting`, action: "confirm its source in the ruleset before merging" });
+    }
+  }
+  const requiredNames = new Set(required.map((r) => r.context));
+  const toPropose = proposed.filter((p) => !requiredNames.has(p));
+  return { status: findings.some((f) => f.severity === "error") ? "FAIL" : "PASS", findings, proposed: toPropose, required: required.map((r) => r.context) };
+}
+
+/** Normalises what the GitHub API or a saved file returns into [{context, integrationId}]. */
+export function requiredChecksFrom(payload) {
+  const rules = [];
+  const visit = (x) => {
+    if (Array.isArray(x)) x.forEach(visit);
+    else if (x && typeof x === "object") {
+      if (x.type === "required_status_checks") rules.push(x);
+      else if (Array.isArray(x.rules)) x.rules.forEach(visit);
+      else if (Array.isArray(x.required_status_checks)) rules.push({ parameters: x });
+      else if (Array.isArray(x.contexts)) rules.push({ parameters: { required_status_checks: x.contexts.map((context) => ({ context })) } });
+    }
+  };
+  visit(payload);
+  const out = [];
+  for (const r of rules) {
+    for (const c of r.parameters?.required_status_checks ?? []) out.push({ context: c.context, integrationId: c.integration_id ?? c.app_id ?? null });
+  }
+  return out;
+}
+
+const gh = (args) => spawnSync("gh", args, { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
+
+/** Live read of the checks required on `branch`. Returns {required} or {error}. `run` is injectable for tests. */
+export function fetchRequiredChecks({ repo, branch, run = gh }) {
+  // owner: GitHub login charset; name: no "." / ".." (they would walk the API path)
+  if (!/^[A-Za-z0-9](?:[A-Za-z0-9-]*)\/(?!\.{1,2}$)[\w.-]+$/.test(repo ?? "")) return { error: `invalid consumer repo '${repo}' (expected owner/name)` };
+  const rules = run(["api", `repos/${repo}/rules/branches/${encodeURIComponent(branch)}`]);
+  if (rules.error || rules.status !== 0) return { error: `could not read the rules of ${repo}@${branch}: ${(rules.stderr || rules.error?.message || "gh failed").trim().split("\n")[0]}` };
+  let required;
+  try {
+    required = requiredChecksFrom(JSON.parse(rules.stdout));
+  } catch {
+    return { error: `unreadable ruleset response for ${repo}@${branch}` };
+  }
+  // classic branch protection can also require checks; 404 means there is none
+  const classic = run(["api", `repos/${repo}/branches/${encodeURIComponent(branch)}/protection/required_status_checks`]);
+  if (!classic.error && classic.status === 0) {
+    try {
+      required.push(...requiredChecksFrom(JSON.parse(classic.stdout)));
+    } catch {
+      return { error: `unreadable branch-protection response for ${repo}@${branch}` };
+    }
+  } else if (!/404|Not Found|not protected/i.test(`${classic.stderr ?? ""}${classic.stdout ?? ""}`)) {
+    return { error: `could not read the branch protection of ${repo}@${branch}: ${(classic.stderr || classic.error?.message || "gh failed").trim().split("\n")[0]}` };
+  }
+  return { required };
+}
+
+/**
+ * PROTECTION CONTRACT (gap 7). The v2 `guard-develop-branch.yml` reverted any direct push to `develop` and any force-push.
+ * It may be retired only when the same is PROVEN to be prevented, and "proven" is exactly the contract AI-Native already
+ * enforces on its own branches (`verifyRuleset` in runtime/gates/ruleset.mjs, `governance/rulesets/main.json`):
+ *   - the ruleset is `active` (not `evaluate`/`disabled`) and targets branches;
+ *   - `bypass_actors` is PRESENT and EMPTY (policy: none). A missing or unreadable list is "unknown", never "empty";
+ *   - the rules include `deletion`, `non_fast_forward` and `pull_request`.
+ * Deliberately NOT required: `required_approving_review_count > 0` (the contract itself sets 0 for the single-maintainer
+ * model, F2) or any particular status check (the old guard checked neither); nothing is added beyond the contract.
+ * Anything not demonstrably satisfying it keeps the guard (FAIL CLOSED).
+ */
+export const PROTECTION_RULES = ["deletion", "non_fast_forward", "pull_request"];
+
+/** True when `rules` (array of {type}) contains every rule type of the contract. */
+export function satisfiesProtectionContract(rules) {
+  if (!Array.isArray(rules)) return false;
+  const types = new Set(rules.map((r) => r?.type));
+  return PROTECTION_RULES.every((t) => types.has(t));
+}
+
+/** True only for a ruleset object whose own flags satisfy the contract (the bypass list must be a real, empty array). */
+function rulesetFlagsOk(rs) {
+  return Boolean(rs) && typeof rs === "object" && rs.enforcement === "active" && rs.target === "branch" && Array.isArray(rs.bypass_actors) && rs.bypass_actors.length === 0;
+}
+
+/**
+ * Classic branch protection (GET /branches/:b/protection) equivalent to the contract: pull-request reviews required,
+ * force-pushes and deletions disallowed, and NO bypass in either of its two forms (the analogue of an empty bypass list):
+ * admins are not exempt (`enforce_admins`) AND `required_pull_request_reviews.bypass_pull_request_allowances` names no user,
+ * team or app. An absent allowance object means none; a present one with anything in it, or a non-object, is a bypass/unknown.
+ */
+export function classicProtectionOk(p) {
+  if (!p || typeof p !== "object" || !p.required_pull_request_reviews || typeof p.required_pull_request_reviews !== "object") return false;
+  const allow = p.required_pull_request_reviews.bypass_pull_request_allowances;
+  const noAllowance = allow === undefined || (allow !== null && typeof allow === "object" && ["users", "teams", "apps"].every((k) => allow[k] === undefined || (Array.isArray(allow[k]) && allow[k].length === 0)));
+  return noAllowance && p.allow_force_pushes?.enabled === false && p.allow_deletions?.enabled === false && p.enforce_admins?.enabled === true;
+}
+
+/**
+ * Live check that `branch` of `repo` is protected per the contract. Returns {protected, reason} or {error}. Only a ruleset
+ * whose full definition (GET /rulesets/:id, the only call that exposes `bypass_actors`) satisfies the contract counts; a
+ * definition that cannot be read (permissions, organisation rulesets, errors) is UNKNOWN => not protected.
+ */
+export function fetchBranchProtected({ repo, branch, run = gh }) {
+  if (!/^[A-Za-z0-9](?:[A-Za-z0-9-]*)\/(?!\.{1,2}$)[\w.-]+$/.test(repo ?? "")) return { error: `invalid consumer repo '${repo}' (expected owner/name)` };
+  const rules = run(["api", `repos/${repo}/rules/branches/${encodeURIComponent(branch)}`]);
+  if (rules.error || rules.status !== 0) return { error: `could not read the rules of ${repo}@${branch}: ${(rules.stderr || rules.error?.message || "gh failed").trim().split("\n")[0]}` };
+  let effective;
+  try {
+    effective = JSON.parse(rules.stdout);
+  } catch {
+    return { error: `unreadable ruleset response for ${repo}@${branch}` };
+  }
+  let why = "no ruleset applies to the branch";
+  if (Array.isArray(effective) && effective.length) {
+    why = null;
+    if (!satisfiesProtectionContract(effective)) why = "the effective rules lack deletion, non_fast_forward or pull_request";
+    // every ruleset that contributes a rule must itself be active with an EMPTY bypass list (only the full definition shows it)
+    for (const id of new Set(effective.map((r) => r?.ruleset_id))) {
+      if (why) break;
+      const source = effective.find((r) => r?.ruleset_id === id)?.ruleset_source_type;
+      if (!Number.isInteger(id) || source !== "Repository") { why = `bypass_actors UNKNOWN: ruleset ${id} is not a repository ruleset readable here (source ${source})`; break; }
+      const def = run(["api", `repos/${repo}/rulesets/${id}`]);
+      if (def.error || def.status !== 0) { why = `bypass_actors UNKNOWN: could not read ruleset ${id}`; break; }
+      let parsed = null;
+      try { parsed = JSON.parse(def.stdout); } catch { /* unreadable */ }
+      if (!parsed || !Array.isArray(parsed.bypass_actors)) why = `bypass_actors UNKNOWN: ruleset ${id} does not expose the list (insufficient permission?)`;
+      else if (!rulesetFlagsOk(parsed)) why = `ruleset ${id} is not active/branch-targeted or has bypass actors`;
+    }
+    if (!why) return { protected: true, reason: "an active ruleset with no bypass actors enforces deletion, non_fast_forward and pull_request" };
+  }
+  const classic = run(["api", `repos/${repo}/branches/${encodeURIComponent(branch)}/protection`]);
+  if (!classic.error && classic.status === 0) {
+    try {
+      return classicProtectionOk(JSON.parse(classic.stdout)) ? { protected: true, reason: "classic branch protection satisfies the contract" } : { protected: false, reason: why ?? "classic branch protection does not satisfy the contract" };
+    } catch { return { error: `unreadable branch-protection response for ${repo}@${branch}` }; }
+  }
+  return { protected: false, reason: why ?? "no ruleset or branch protection could be shown to apply" };
+}
+
+/**
+ * Ref-name glob matcher with LINEAR-time dynamic programming (no regex, so no catastrophic backtracking). Returns a
+ * `(ref) => boolean`, or null when the pattern cannot be interpreted with certainty: `?`, `[...]`, `{...}`, `\`, non-strings,
+ * empty or oversized patterns are AMBIGUOUS. Supports literals, `*` (one path segment) and `**` (any depth); `loose` lets
+ * `*` cross `/` (used for EXCLUDE patterns, where over-matching is the safe direction).
+ */
+export function patternToMatcher(pattern, loose = false) {
+  if (typeof pattern !== "string" || !pattern || pattern.length > 200 || /[?[\]{}\\]/.test(pattern)) return null;
+  if (pattern.includes("***")) return null; // runs of 3+ stars have no single reading across glob engines: ambiguous
+  // EXCLUDE (loose) mode also treats `**/` as "zero or more directories" (fnmatch convention), so `refs/heads/**/develop` covers
+  // `refs/heads/develop`; INCLUDE mode keeps `**` + a literal `/` (stricter: it can only match less, never more).
+  const tokens = pattern.split(loose ? /(\*\*\/|\*\*|\*)/ : /(\*\*|\*)/).filter((t) => t !== "");
+  const lower = loose ? tokens.map((t) => t.toLowerCase()) : tokens; // EXCLUDE mode is case-insensitive (matches MORE: the safe direction)
+  return (rawRef) => {
+    if (typeof rawRef !== "string" || rawRef.length > 255) return false;
+    const ref = loose ? rawRef.toLowerCase() : rawRef;
+    // reach[t][i]: the first t tokens can consume exactly the first i characters of ref
+    let reach = new Array(ref.length + 1).fill(false);
+    reach[0] = true;
+    for (const t of lower) {
+      const next = new Array(ref.length + 1).fill(false);
+      if (t === "**/") {
+        let open = false; // an earlier position reached, so "anything ending in /" can lead here
+        for (let i = 0; i <= ref.length; i += 1) {
+          next[i] = reach[i] || (open && ref[i - 1] === "/");
+          if (reach[i]) open = true;
+        }
+      } else if (t === "**" || t === "*") {
+        const crosses = loose; // INCLUDE mode: `**` is treated like `*` (one segment), so an include can only match LESS than the real glob
+        let open = false; // some earlier position reaches here with a wildcard that can still extend
+        for (let i = 0; i <= ref.length; i += 1) {
+          if (reach[i]) open = true;
+          next[i] = open;
+          if (!crosses && ref[i] === "/") open = false;
+        }
+      } else {
+        for (let i = 0; i + t.length <= ref.length; i += 1) if (reach[i] && ref.startsWith(t, i)) next[i + t.length] = true;
+      }
+      reach = next;
+    }
+    return reach[ref.length];
+  };
+}
+
+/**
+ * A SAVED ruleset (export/file) carries no per-branch filtering, so it counts only when it can be PROVEN to protect the
+ * branch (fail closed; any doubt keeps the v2 guard): `enforcement` is `active`; `conditions.ref_name.include` has the
+ * exact ref, `~ALL`, or a pattern that provably matches it; and NO `exclude` entry can touch it: a literal or glob that
+ * matches the ref (`refs/heads/dev*`, `refs/heads/*`), `~DEFAULT_BRANCH`/`~ALL` (cannot be resolved offline) or anything
+ * not interpretable. Unrelated excludes (`refs/heads/release/*`) are fine. The rules must satisfy the PROTECTION CONTRACT (see `satisfiesProtectionContract`).
+ */
+export function protectsBranchFromRulesets(payload, branch) {
+  const list = Array.isArray(payload) ? payload : [payload];
+  if (typeof branch !== "string" || branch.length > 255 || !/^[A-Za-z0-9][A-Za-z0-9._\/-]*$/.test(branch)) return false; // not a plausible branch name: nothing is provable (also bounds the matching cost)
+  const ref = `refs/heads/${branch}`;
+  return list.some((rs) => {
+    if (!rulesetFlagsOk(rs)) return false; // active, branch target, and a PRESENT empty bypass list (missing = unknown = not protected)
+    const rn = rs.conditions?.ref_name;
+    const inc = rn?.include ?? [];
+    const exc = rn?.exclude ?? [];
+    if (!Array.isArray(inc) || !Array.isArray(exc)) return false;
+    const included = inc.some((p) => p === ref || p === "~ALL" || patternToMatcher(p)?.(ref) === true);
+    if (!included) return false;
+    const excluded = exc.some((p) => {
+      if (p === ref || p === "~ALL" || p === "~DEFAULT_BRANCH") return true;
+      const match = patternToMatcher(p, true);
+      return match === null || match(ref);
+    });
+    return !excluded && satisfiesProtectionContract(rs.rules);
+  });
+}

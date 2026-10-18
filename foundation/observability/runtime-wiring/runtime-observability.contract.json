@@ -1,0 +1,70 @@
+{
+  "id": "runtime-observability-wiring",
+  "roadmap": "AI-NATIVE-HARDENING-V1.1",
+  "task": "H3",
+  "status": "IMPLEMENTED",
+  "ownerRepo": "ai-foundation",
+  "runtimeDefault": {
+    "enabled": false,
+    "mode": "noop",
+    "requiresEndpoint": false,
+    "requiresToken": false,
+    "exportsRemotelyByDefault": false
+  },
+  "signals": {
+    "traces": [
+      {
+        "operation": "runtime.agent_task",
+        "attributes": ["service.name", "operation.name", "agent.name", "runtime.session_id", "outcome"]
+      }
+    ],
+    "metrics": [
+      {
+        "name": "ai_runtime_operation_total",
+        "unit": "count",
+        "attributes": ["service.name", "operation.name", "outcome"]
+      },
+      {
+        "name": "ai_runtime_operation_duration_ms",
+        "unit": "milliseconds",
+        "attributes": ["service.name", "operation.name", "outcome"]
+      }
+    ],
+    "logs": [
+      {
+        "event": "runtime.operation.completed",
+        "attributes": ["service.name", "operation.name", "outcome", "duration_ms"]
+      }
+    ]
+  },
+  "bindings": {
+    "enterpriseObservabilityRecords": [
+      "obs-001-request-success",
+      "obs-002-tool-latency",
+      "obs-008-incident-retention"
+    ],
+    "runtimeFiles": [
+      "runtime/core/runtime.ts",
+      "observability/runtime-wiring/runtime-observability.ts"
+    ],
+    "templateFiles": [
+      "ai-template/scaffolds/ai-native-app/files/config/observability/runtime-observability.json",
+      "ai-template/scaffolds/ai-native-app/files/services/infrastructure/observability/runtime-observability.mjs"
+    ]
+  },
+  "validation": {
+    "localSmoke": "observability/smoke-tests/validate-runtime-observability-wiring.mjs",
+    "requiresNetwork": false,
+    "requiresSecrets": false
+  },
+  "nonGoals": [
+    "remote collector deployment",
+    "dashboard provisioning",
+    "alert provisioning",
+    "testing profile execution",
+    "real evaluation runs",
+    "target repository security validation",
+    "first client project playbook",
+    "adoption readiness final audit"
+  ]
+}

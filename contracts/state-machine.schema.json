@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-native.local/contracts/state-machine.schema.json",
+  "title": "Work Unit state machine",
+  "description": "States persisted in events.jsonl (as 'transition' events) go up to AWAITING_HITL; MERGED/CLOSED/CLEANED are always derived from git/GitHub state, never written as events (a Work Unit cannot close itself). Exception states are reachable from any persisted state.",
+  "type": "object",
+  "required": ["schemaVersion", "states", "transitions", "exceptionStates", "derivedStates"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "states": { "type": "array", "items": { "type": "string" } },
+    "derivedStates": { "type": "array", "items": { "type": "string" }, "description": "Never persisted as a transition event; computed from git/GitHub at read time." },
+    "exceptionStates": { "type": "array", "items": { "type": "string" } },
+    "transitions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["from", "to"],
+        "properties": {
+          "from": { "type": "string" },
+          "to": { "type": "string" },
+          "precondition": { "type": "string" }
+        }
+      }
+    }
+  }
+}

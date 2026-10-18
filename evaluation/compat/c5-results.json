@@ -1,0 +1,223 @@
+{
+  "schemaVersion": 1,
+  "tools": {
+    "claude": {
+      "cliVersion": "2.1.288 (Claude Code)",
+      "scenarios": {
+        "lookup": {
+          "status": "CONFIRMED",
+          "attempts": 1,
+          "proof": {
+            "nonce": "c5-claude-lookup-ybk758",
+            "expectedArgsDigest": "sha256:2334a71c4dec505935d72551c8f8b68b3b403f34955b463978031380698c18d7",
+            "auditChain": "OK",
+            "auditEntries": [
+              {
+                "schemaVersion": 1,
+                "timestamp": "2026-10-03T18:30:48.207Z",
+                "prevHash": "genesis",
+                "profile": "evidence",
+                "role": "builder",
+                "server": "notes",
+                "operation": "lookup",
+                "scope": "",
+                "argsDigest": "sha256:2334a71c4dec505935d72551c8f8b68b3b403f34955b463978031380698c18d7",
+                "decision": "ALLOW",
+                "reason": "scoped_capability",
+                "outcome": "ok",
+                "result": {
+                  "bytes": 113,
+                  "truncated": false,
+                  "injectionSuspected": true,
+                  "findings": [
+                    "override-instructions"
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        "stepup": {
+          "status": "CONFIRMED",
+          "attempts": 1,
+          "proof": {
+            "nonce": "c5-claude-stepup-wdq770",
+            "expectedArgsDigest": "sha256:bdd4fd1cc6ea108a2328faaa01af7d4ba0ac3cc649d2d9b5db3952b100e51b91",
+            "auditChain": "OK",
+            "auditEntries": [
+              {
+                "schemaVersion": 1,
+                "timestamp": "2026-10-03T18:31:11.272Z",
+                "prevHash": "genesis",
+                "profile": "evidence",
+                "role": "builder",
+                "server": "writer",
+                "operation": "insert",
+                "scope": "",
+                "argsDigest": "sha256:bdd4fd1cc6ea108a2328faaa01af7d4ba0ac3cc649d2d9b5db3952b100e51b91",
+                "decision": "DENY",
+                "reason": "step_up_no_interactive_confirmation_channel_available"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "codex": {
+      "cliVersion": "codex-cli 0.158.0",
+      "scenarios": {
+        "lookup": {
+          "status": "CONFIRMED",
+          "attempts": 1,
+          "proof": {
+            "nonce": "c5-codex-lookup-6w1www",
+            "expectedArgsDigest": "sha256:f9721271f5f9332e045ee668ffa98b7ea9dff8d68ba658e441051566b59b50de",
+            "auditChain": "OK",
+            "auditEntries": [
+              {
+                "schemaVersion": 1,
+                "timestamp": "2026-10-03T18:31:28.677Z",
+                "prevHash": "genesis",
+                "profile": "evidence",
+                "role": "builder",
+                "server": "notes",
+                "operation": "lookup",
+                "scope": "",
+                "argsDigest": "sha256:f9721271f5f9332e045ee668ffa98b7ea9dff8d68ba658e441051566b59b50de",
+                "decision": "ALLOW",
+                "reason": "scoped_capability",
+                "outcome": "ok",
+                "result": {
+                  "bytes": 112,
+                  "truncated": false,
+                  "injectionSuspected": true,
+                  "findings": [
+                    "override-instructions"
+                  ]
+                }
+              },
+              {
+                "schemaVersion": 1,
+                "timestamp": "2026-10-03T18:31:32.830Z",
+                "prevHash": "sha256:938041d2d3882cf56a806ee0c73f91a309619c7759890fe4e72e313f9ef64a4c",
+                "profile": "evidence",
+                "role": "builder",
+                "server": "notes",
+                "operation": "lookup",
+                "scope": "",
+                "argsDigest": "sha256:f9721271f5f9332e045ee668ffa98b7ea9dff8d68ba658e441051566b59b50de",
+                "decision": "ALLOW",
+                "reason": "scoped_capability",
+                "outcome": "ok",
+                "result": {
+                  "bytes": 112,
+                  "truncated": false,
+                  "injectionSuspected": true,
+                  "findings": [
+                    "override-instructions"
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        "stepup": {
+          "status": "CONFIRMED",
+          "attempts": 1,
+          "proof": {
+            "nonce": "c5-codex-stepup-hgftzj",
+            "expectedArgsDigest": "sha256:9fdd6904c36ee15098a85523e501e5e6457067ad327d1c5075497e7c477f5423",
+            "auditChain": "OK",
+            "auditEntries": [
+              {
+                "schemaVersion": 1,
+                "timestamp": "2026-10-03T18:31:52.503Z",
+                "prevHash": "genesis",
+                "profile": "evidence",
+                "role": "builder",
+                "server": "writer",
+                "operation": "insert",
+                "scope": "",
+                "argsDigest": "sha256:9fdd6904c36ee15098a85523e501e5e6457067ad327d1c5075497e7c477f5423",
+                "decision": "DENY",
+                "reason": "step_up_no_interactive_confirmation_channel_available"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "opencode": {
+      "cliVersion": "opencode v2.0.22",
+      "scenarios": {
+        "lookup": {
+          "status": "NOT_AVAILABLE_FROM_TOOL",
+          "reason": "no audit entry proved the call after 4 attempt(s): > build · openrouter/free | \u001b[0m⚙ \u001b[0mexecute {\"code\":\"const available = [\\\"gw\\\", \\\"headroom\\\"];\\nconst result = await tools.gw.notes__lookup({ q: \\\"c5-opencode-lookup-ujlzjn\\\" });\\nJSON.stringify(result, null, 2)\"}  | > build · openrouter/free",
+          "attempts": 4,
+          "proof": {
+            "nonce": "c5-opencode-lookup-ujlzjn",
+            "expectedArgsDigest": "sha256:05fd6fce1ca89403d42ae961d1975def010e4168ec5ae9aadfd5b313e25ddb66",
+            "auditChain": "OK",
+            "auditEntries": []
+          }
+        },
+        "stepup": {
+          "status": "NOT_AVAILABLE_FROM_TOOL",
+          "reason": "no audit entry proved the call after 4 attempt(s): > build · openrouter/free | \u001b[0m⚙ \u001b[0mexecute {\"code\":\"return await tools.gwy6e7uq[\\\"writer__insert\\\"]({\\\"t\\\":\\\"c5-opencode-stepup-6qs1zb\\\"})\"}  | > build · openrouter/free",
+          "attempts": 4,
+          "proof": {
+            "nonce": "c5-opencode-stepup-6qs1zb",
+            "expectedArgsDigest": "sha256:5349164bbbaee545c7fa8f86ee6bc575fdf69e5807466f54d297462f33d9d77f",
+            "auditChain": "OK",
+            "auditEntries": []
+          }
+        }
+      }
+    }
+  },
+  "generatedAt": "2026-10-03T18:40:15.789Z",
+  "platformCommit": "f8e4c0c02121e9e15371d40ff112cb48ac61fcc2",
+  "method": "real CLI -> runtime/mcp-gateway/server.mjs (stdio) -> gateway.call; ground truth = the gateway's hash-chained audit, never the model's text",
+  "platform": "win32 node v26.7.0",
+  "c3": {
+    "status": "CONFIRMED",
+    "generatedConfig": "# GENERATED by runtime/adapters/codex.mjs from core/agents.json + mcp/catalog.json. Do not edit manually.\n# Repo-local Codex defaults. Use this directory as CODEX_HOME.\nmodel = \"gpt-5.5\"\nmodel_reasoning_effort = \"high\"\n\n[mcp_servers.ai-native-gateway]\ncommand = \"node\"\ndefault_tools_approval_mode = \"approve\"\n",
+    "trusted": {
+      "trusted": true,
+      "nonce": "c3-trusted-a1tbu9",
+      "reachedGateway": true,
+      "auditEntries": [
+        {
+          "schemaVersion": 1,
+          "timestamp": "2026-10-03T18:40:28.762Z",
+          "prevHash": "genesis",
+          "profile": "evidence",
+          "role": "builder",
+          "server": "notes",
+          "operation": "lookup",
+          "scope": "",
+          "argsDigest": "sha256:48196a2600fbd140f4bbf8cec944bc128779fa53015dfc71b3c4f8dd7fefb777",
+          "decision": "ALLOW",
+          "reason": "scoped_capability",
+          "outcome": "ok",
+          "result": {
+            "bytes": 107,
+            "truncated": false,
+            "injectionSuspected": true,
+            "findings": [
+              "override-instructions"
+            ]
+          }
+        }
+      ],
+      "stdoutTail": "fixture notes.lookup args={\"q\":\"c3-trusted-a1tbu9\"}"
+    },
+    "untrusted": {
+      "trusted": false,
+      "nonce": "c3-untrusted-ejkx0r",
+      "reachedGateway": false,
+      "auditEntries": [],
+      "stdoutTail": "I couldn’t call `notes__lookup` because the `ai-native-gateway` MCP tool isn’t available in this session."
+    }
+  }
+}

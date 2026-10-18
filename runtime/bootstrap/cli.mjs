@@ -1,0 +1,226 @@
+#!/usr/bin/env node
+// M4.1 bootstrap CLI: node runtime/bootstrap/cli.mjs <command> [options]
+//   init     --bundle <file> --repo github:o/r --profile <id>... [--mcp-profile <id>...] [--force]
+//   sync     [--from-file <bundle>] [--revocations <file>] [--offline] [--require-attestation]
+//            Without --from-file the pinned release is downloaded from the
+//            lock's GitHub Releases (digest-checked against the lock before
+//            caching; sigstore provenance via `gh attestation verify`).
+//            Revocations come from the repo's releases unless --offline.
+//   run      [-- <args for the release>]
+//   rollback [--force]
+//   status   [--offline] [--revocations <file>] [--check]   READY|NEEDS_SYNC|DEGRADED_READONLY|REVOKED|NOT_ADOPTED
+//            Online it consults the published revocations; the result says revocation CHECKED|NOT_CHECKED|REVOKED. With --check an
+//            unreadable source fails closed (REVOCATION_UNKNOWN); --offline runs without it and warns that revocation was NOT checked.
+//   doctor
+//   upgrade  --repo github:o/r --bundle <file> [--attestation-record <file>] [--offline]   the engine behind `ai-native upgrade`: the pinned release moves to the one in --bundle
+//   detach   [--keep-modified]   the engine behind `ai-native detach`: removes what the adoption journal says ai-native wrote
+//   (adopt/upgrade/detach also take --cli-version vX.Y.Z --cli-protocol N --cli-capabilities a,b: who is calling; none = a v3.2.0 launcher)
+//   adopt    --repo github:o/r (--bundle <file> --attestation-record <file> | --digest sha256:...) [--version vX.Y.Z] [--profile <id>]
+//            [--offline] [--keep-existing] [--revocations <file>]   the engine behind the public `ai-native init` (runtime/cli/ai-native.mjs): lock + cache +
+//            adapters + launcher + verification in one pass, fail closed without a verified attestation
+// Common: --project <dir> (default cwd), --cache <dir> (default $AI_NATIVE_CACHE
+// or ~/.ai-native/cache), --json.
+import { readFileSync, existsSync, mkdtempSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
+import { init, sync, run, rollback, doctor, status as bootstrapStatus, readLock } from "./install.mjs";
+import { defaultCacheRoot, verifyRelease } from "./cache.mjs";
+import { downloadRelease, fetchRevocations } from "./remote.mjs";
+import { parseRevocations } from "../release/revocations.mjs";
+import { renderOutput, exitCodeForReport, buildReport } from "../lib/json.mjs";
+import { adopt } from "./adopt.mjs";
+import { upgrade } from "./upgrade.mjs";
+import { detach } from "./detach.mjs";
+import { callerFrom } from "./compat.mjs";
+
+const argv = process.argv.slice(2);
+const command = argv.shift();
+const rest = argv.indexOf("--");
+const passthrough = rest === -1 ? [] : argv.splice(rest).slice(1);
+
+function flag(name) {
+  return argv.includes(name);
+}
+function value(name) {
+  const i = argv.indexOf(name);
+  return i === -1 ? null : argv[i + 1];
+}
+function values(name) {
+  return argv.flatMap((a, i) => (a === name ? [argv[i + 1]] : []));
+}
+
+const projectRoot = resolve(value("--project") ?? process.cwd());
+const cacheRoot = resolve(value("--cache") ?? defaultCacheRoot());
+
+let result;
+try {
+  switch (command) {
+    case "init":
+      result = init({ projectRoot, bundleFile: value("--bundle"), repo: value("--repo"), profiles: values("--profile"), mcpProfiles: values("--mcp-profile"), channel: value("--channel") ?? "stable", force: flag("--force") });
+      break;
+    case "sync":
+      result = await syncCommand();
+      break;
+    case "run":
+      result = run({ projectRoot, cacheRoot, args: passthrough });
+      break;
+    case "rollback":
+      result = rollback({ projectRoot, cacheRoot, force: flag("--force") });
+      break;
+    case "status":
+      result = await statusCommand();
+      break;
+    case "doctor":
+      result = doctor({ projectRoot, cacheRoot });
+      break;
+    case "adopt":
+      result = await adoptCommand();
+      break;
+    case "upgrade":
+      result = await upgradeCommand();
+      break;
+    case "detach":
+      result = detachCommand();
+      break;
+    default:
+      result = { status: "ERROR", errors: [`unknown command: ${command ?? "(none)"}`], warnings: [] };
+  }
+} catch (error) {
+  result = { status: "ERROR", errors: [error.message], warnings: [] };
+}
+
+/** Who is calling: a launcher from v3.3.0 says so; one from v3.2.0 says nothing, and that silence is how it is recognized. */
+function callerOfThisRun() {
+  return callerFrom({ version: value("--cli-version"), protocol: value("--cli-protocol"), capabilities: value("--cli-capabilities") });
+}
+
+function readRecord() {
+  const recordFile = value("--attestation-record");
+  if (!recordFile) return { attestationRecord: null };
+  try {
+    return { attestationRecord: JSON.parse(readFileSync(recordFile, "utf8")) };
+  } catch (error) {
+    return { error: { status: "ERROR", errors: [`--attestation-record unreadable: ${error.message}`], warnings: [] } };
+  }
+}
+
+/** --revocations <file>: a list obtained out of band instead of the published one (same flag as status/sync). */
+function revocationsSource() {
+  const revFile = value("--revocations");
+  if (!revFile) return {};
+  if (!existsSync(revFile)) return { error: { status: "ERROR", errors: [`--revocations not found: ${revFile}`], warnings: [] } };
+  const parsed = parseRevocations(readFileSync(revFile, "utf8"), null);
+  if (parsed.errors.length) return { error: { status: "ERROR", errors: parsed.errors, warnings: [] } };
+  return { fetchRevocationsImpl: async () => ({ list: parsed.list, errors: [], warnings: [] }) };
+}
+
+async function upgradeCommand() {
+  const { attestationRecord, error } = readRecord();
+  const rv = revocationsSource();
+  if (error || rv.error) return error ?? rv.error;
+  return upgrade({ fetchRevocationsImpl: rv.fetchRevocationsImpl, projectRoot, cacheRoot, bundleFile: value("--bundle"), attestationRecord, offline: flag("--offline"), caller: callerOfThisRun() });
+}
+
+function detachCommand() {
+  return detach({ projectRoot, keepModified: flag("--keep-modified"), offline: flag("--offline"), caller: callerOfThisRun() });
+}
+
+async function adoptCommand() {
+  const { attestationRecord, error } = readRecord();
+  if (error) return error;
+  const interactive = process.stdin.isTTY && process.stdout.isTTY && !flag("--json");
+  const ask = interactive ? async (offered) => {
+    const { createInterface } = await import("node:readline/promises");
+    const rl = createInterface({ input: process.stdin, output: process.stdout });
+    console.log("What kind of project is this?");
+    offered.forEach((id, i) => console.log(`  ${i + 1}) ${id}`));
+    const answer = (await rl.question(`Choose 1-${offered.length}: `)).trim();
+    rl.close();
+    return offered[Number(answer) - 1] ?? answer;
+  } : null;
+  // --revocations <file>: a list obtained out of band instead of the published one (same flag as status/sync)
+  const revFile = value("--revocations");
+  let fetchRevocationsImpl;
+  if (revFile) {
+    if (!existsSync(revFile)) return { status: "ERROR", errors: [`--revocations not found: ${revFile}`], warnings: [] };
+    const parsed = parseRevocations(readFileSync(revFile, "utf8"), null);
+    if (parsed.errors.length) return { status: "ERROR", errors: parsed.errors, warnings: [] };
+    fetchRevocationsImpl = async () => ({ list: parsed.list, errors: [], warnings: [] });
+  }
+  return adopt({ fetchRevocationsImpl, caller: callerOfThisRun(), projectRoot, cacheRoot, repo: value("--repo"), bundleFile: value("--bundle"), digest: value("--digest"), attestationRecord, version: value("--version"), profile: value("--profile"), offline: flag("--offline"), keepExisting: flag("--keep-existing"), ask });
+}
+
+async function statusCommand() {
+  const revFile = value("--revocations");
+  if (revFile && !existsSync(revFile)) return { status: "ERROR", errors: [`--revocations not found: ${revFile}`], warnings: [] }; // never report READY on a typo
+  const offline = flag("--offline");
+  let revocations = null;
+  if (revFile) {
+    // a file that is not a valid list is not "checked": it is an error, never READY
+    const parsed = parseRevocations(readFileSync(revFile, "utf8"), null);
+    if (parsed.errors.length) return { status: "ERROR", errors: parsed.errors, warnings: [] };
+    revocations = parsed.list;
+  }
+  const warnings = [];
+  let unreadable = false;
+  const { lock } = readLock(projectRoot);
+  if (!revFile && !offline && lock) {
+    // Online: consult the published revocations so a revoked version is never reported READY.
+    const f = await fetchRevocations({ repo: lock.platform.repo });
+    if (f.errors.length) return { status: "ERROR", errors: f.errors, warnings: f.warnings };
+    revocations = f.list;
+    unreadable = Boolean(f.unavailable);
+    warnings.push(...f.warnings);
+  }
+  const r = bootstrapStatus({ projectRoot, cacheRoot, revocations, offline });
+  if (r.state === "READY" && r.revocation === "NOT_CHECKED") warnings.push(offline ? "offline: revocation status NOT checked (READY is not a statement that this version is not revoked)" : "revocation status could not be determined (see warnings); READY is not a statement that this version is not revoked");
+  const out = warnings.length ? { ...r, warnings: [...(r.warnings ?? []), ...warnings] } : r;
+  // exit code: --check makes anything but READY non-zero; online, an undeterminable revocation status also fails
+  // closed (declare --offline to accept running without that information).
+  if (!flag("--check")) return out;
+  if (r.state !== "READY") return { ...out, status: "FAIL", errors: [`${r.state}: ${r.detail}`] };
+  if (unreadable && r.revocation === "NOT_CHECKED") return { ...out, status: "FAIL", errors: ["REVOCATION_UNKNOWN: the revocations list could not be read; use --offline to run without that information"] };
+  return out;
+}
+
+async function syncCommand() {
+  const { lock, errors: lockErrors } = readLock(projectRoot);
+  if (lockErrors.length) return { status: "ERROR", errors: lockErrors, warnings: [] };
+  const requireAttestation = flag("--require-attestation");
+  const offline = flag("--offline");
+  const warnings = [];
+  let revocations = null;
+  const revFile = value("--revocations");
+  if (revFile) {
+    if (!existsSync(revFile)) return { status: "ERROR", errors: [`--revocations not found: ${revFile}`], warnings };
+    revocations = JSON.parse(readFileSync(revFile, "utf8"));
+  } else if (!offline) {
+    const r = await fetchRevocations({ repo: lock.platform.repo, requireAttestation });
+    if (r.errors.length) return { status: "ERROR", errors: r.errors, warnings: r.warnings };
+    revocations = r.list;
+    warnings.push(...r.warnings);
+  }
+  let fromFile = value("--from-file");
+  if (!fromFile && !offline) {
+    let cached = true;
+    try {
+      verifyRelease(cacheRoot, lock.platform.digest);
+    } catch {
+      cached = false;
+    }
+    if (!cached) {
+      const d = await downloadRelease({ lock, requireAttestation });
+      warnings.push(...d.warnings);
+      if (d.errors.length) return { status: "ERROR", errors: d.errors, warnings };
+      fromFile = join(mkdtempSync(join(tmpdir(), "ai-native-dl-")), "bundle.tar.gz");
+      writeFileSync(fromFile, d.bytes);
+    }
+  }
+  const r = sync({ projectRoot, cacheRoot, fromFile, revocations });
+  return { ...r, warnings: [...warnings, ...r.warnings], status: r.status === "PASS" && warnings.length ? "PASS_WITH_WARNINGS" : r.status };
+}
+
+const { status, errors, warnings, text, ...data } = result;
+const out = buildReport({ status, errors, warnings, data });
+console.log(text && !flag("--json") ? text : renderOutput(out, { json: flag("--json") }));
+process.exit(exitCodeForReport(out, { strict: false }));

@@ -1,79 +1,58 @@
 # VALIDATION
 
-Validation evidence for P0-T2 implementation HITL approval.
+## Precheck
 
-## Scope And State
+* `git fetch origin`: PASS.
+* `git merge --ff-only origin/main`: PASS; local `main` fast-forwarded.
+* `git rev-parse HEAD` equals `git rev-parse origin/main` at baseline
+  `823b31976cfc255926a2e39a205b2c22472b8d85`: PASS.
+* Main working tree clean before this governance branch: PASS.
+* PR #132 is `MERGED` at the baseline SHA; PR #131 is also `MERGED`: PASS.
+* Local v3.3.0 tag absent, GitHub tag ref 404, release not found: PASS.
 
-* Instruction Gate: PASS.
-* Clean baseline across four repositories before writing: PASS.
-* Accepted spec commit `f077fe0` exists: PASS.
-* Specification approval commit `70fadaa` exists: PASS.
-* Implementation commit `78e3214` exists: PASS.
-* P0-T2 implementation scope: PASS.
-* P0-T2 implementation HITL approval scope: PASS.
-* Product repositories read-only: PASS.
-* Product scripts unchanged: PASS.
-* Package-level scripts not executed: PASS.
-* Lifecycle, setup, bootstrap, prepare and install commands not executed: PASS.
-* H1-H8 not reopened: PASS.
-* P0-T1 not reopened: PASS.
-* H9 not opened: PASS.
-* `ENTERPRISE-10-10-V2` not created: PASS.
-* First real application not started: PASS.
-* Push not executed: PASS.
+## Remote Security Configuration
 
-## Commands
+* Full trust environment/deployment-policy/secret-metadata GET saved before:
+  `TRUST-ENV-BEFORE.json`; initial bypass was `true`.
+* Environment PUT changed `can_admins_bypass` to `false`: PASS.
+* Fresh GET saved after in `TRUST-ENV-AFTER.json`: bypass is `false`.
+* Full before/after comparison: PASS. Only the requested boolean and
+  server-maintained `updated_at`/capture timestamps differ. The selected branch
+  remains `main`; protection type, secret names and secret metadata are
+  unchanged.
+* `ai-native-human-review`: bypass remains false; required reviewer and main
+  branch policy remain: PASS.
+* `ai-native-main`: strict remains true; active enforcement, default-branch
+  targeting, zero bypass actors, PR rule, six check contexts and app IDs match
+  the prior verified after snapshot: PASS.
 
-```text
-git branch --show-current
-git rev-parse --short HEAD
-git status --short
-git diff --stat
-git diff --check
-```
-
-Result: PASS in root/governance, `ai-foundation`, `ai-knowledge` and
-`ai-template` before approval changes.
+## Focused Gates/HITL Tests
 
 ```text
-git show --no-patch --oneline f077fe0
-git show --no-patch --oneline 70fadaa
-git show --no-patch --oneline 78e3214
+node --test runtime/gates/trust-gate.test.mjs runtime/gates/secret-exposure.test.mjs runtime/gates/gates.test.mjs
 ```
 
-Result: PASS.
+Result: 62 passed, 0 failed: PASS.
 
-```text
-node scripts\validate-audit-safe-script-mode.mjs
-```
+## Governance and Documentation
 
-Result: PASS.
+* `git diff --check`: PASS.
+* `node runtime/docs/validate-doc-drift.mjs`: PASS.
+* `node runtime/audit/cli.mjs check`: PASS (framework/report structure only; no release-gate).
+* `TRUST-ENV-BEFORE.json` and `TRUST-ENV-AFTER.json` parse and compare: PASS.
+  PowerShell `ConvertFrom-Json` comparison normalized only `can_admins_bypass`,
+  server `updated_at`, and capture timestamps; all other Environment fields,
+  branch-policy rules and secret metadata were identical.
+* P0-T2 archive unchanged: PASS (`git diff --name-only -- governance/execution/archive`
+  returned no paths).
+* Scope only `governance/execution/current/`: PASS (`git status --short`
+  showed only the five current records and two trust-environment snapshots).
 
-Covered by the validator:
+## Explicitly Not Run
 
-* approved specification contract JSON parse
-* implementation contract JSON parse
-* root/governance package inventory
-* `ai-foundation` package inventory
-* `ai-knowledge` no-root-`package.json` handling
-* `ai-template` package inventory
-* blocked install/lifecycle classification
-* allowlist metadata recorded without bypassing unsafe execution blocking
-* blocked package-level classification
-* generator dry-run classification
-* direct no-op execution with expected side effects `none`
-* working-tree mutation detection
-* repeatable inventory output
-* `git diff --check` in all four repositories
-* unchanged product repository working trees
+* New independent PLATFORM audit: `NOT_RUN` until this governance PR is merged.
+* Final release-gate: `NOT_RUN` until the new audit meets all thresholds.
+* Tag creation and release publication: `NOT_RUN` by instruction.
+* No product code or MINOR remediation was performed.
 
-```text
-git diff --check
-```
-
-Result: PASS in all four repositories.
-
-## Notes
-
-No `pnpm`, `npm`, package-level lifecycle, setup, bootstrap, prepare or install
-command was run.
+The local host is Windows / `CONTEXTUAL_NON_BLOCKING`; it was not investigated.

@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "id": "supabase-service",
+  "description": "Servicio respaldado por Supabase (Postgres + Auth + Storage).",
+  "tools": ["claude", "codex", "opencode"],
+  "gitModel": { "integrationBranch": "main", "branchNamePattern": "^(feature|milestone|maintenance)/" },
+  "governance": { "mode": "SingleMaintainer" },
+  "mergeMethod": "merge",
+  "mcpDefaultProfile": "db-readonly",
+  "docRelevantPaths": ["supabase/migrations/**", "docs/schema/**"],
+  "testingProfiles": ["smoke", "contract", "coverage"],
+  "productTestCommand": null
+}

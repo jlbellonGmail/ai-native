@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "roles": [
+    { "id": "coordinator", "runtimeRole": null, "writes": "state-only", "summary": "Classifies the request, picks work unit and level, routes phases, delegates, validates handoffs, manages convergence and tracks state. Never implements." },
+    { "id": "planner", "runtimeRole": "planner", "writes": "spec-artifacts", "summary": "Writes spec, clarification synthesis, plan and tasks. No production code." },
+    { "id": "implementer", "runtimeRole": "builder", "legacyIds": ["builder"], "writes": "code-and-tests", "summary": "Executes one task: tests first when applicable, implementation, evidence. The runtime id stays `builder` for 3.x (renaming it would change generated adapters in every consumer)." },
+    { "id": "reviewer", "runtimeRole": "reviewer", "writes": "nothing", "summary": "Independent read-only review against spec, plan, tasks, acceptance, tests and contracts. Findings go back through the Coordinator." }
+  ],
+  "workUnits": [
+    { "id": "task", "circuitMode": "Maintenance", "defaultLevel": "light", "specFolder": false, "summary": "Small, concrete change. No spec.md/plan.md/tasks.md unless the level asks for them." },
+    { "id": "feature", "circuitMode": "Feature", "defaultLevel": "normal", "specFolder": true, "summary": "One functional capability, specs/NNN-slug/{spec,plan,tasks}.md." },
+    { "id": "milestone", "circuitMode": "Milestone", "defaultLevel": "full", "specFolder": false, "contains": ["feature", "task"], "summary": "Coherent set of Features and Tasks, decomposed by the Coordinator. Never one mega-spec." }
+  ],
+  "levels": [
+    { "id": "light", "circuitLevel": "LIGHT" },
+    { "id": "normal", "circuitLevel": "STANDARD" },
+    { "id": "full", "circuitLevel": "FULL" }
+  ],
+  "modes": [
+    { "id": "manual", "driver": "user" },
+    { "id": "guided", "driver": "user-with-status" },
+    { "id": "automatic", "driver": "coordinator" }
+  ],
+  "commands": [
+    { "name": "feature", "phase": "route", "role": "coordinator", "usage": "/feature \"<goal>\"", "summary": "Single entry point: classify the goal (Task/Feature/Milestone), select the SDD level and run or prepare the flow for the active mode.", "body": "core/commands/feature.md", "mutatesCode": false, "readOnly": false },
+    { "name": "sdd-spec", "phase": "specify", "role": "planner", "usage": "/sdd-spec <NNN-slug> \"<idea>\"", "summary": "Create or update specs/<NNN-slug>/spec.md: WHAT and WHY, EARS requirements, acceptance, edge cases, non-goals.", "body": "core/commands/sdd-spec.md", "mutatesCode": false, "readOnly": false, "levels": ["normal", "full"] },
+    { "name": "sdd-clarify", "phase": "clarify", "role": "planner", "usage": "/sdd-clarify <NNN-slug>", "summary": "Detect ambiguities, contradictions, implicit requirements and missing decisions in the spec; resolve with evidence or documented assumptions.", "body": "core/commands/sdd-clarify.md", "mutatesCode": false, "readOnly": false, "levels": ["normal", "full"] },
+    { "name": "sdd-plan", "phase": "plan", "role": "planner", "usage": "/sdd-plan <NNN-slug>", "summary": "Generate plan.md (HOW) from the approved spec.", "body": "core/commands/sdd-plan.md", "mutatesCode": false, "readOnly": false, "levels": ["normal", "full"] },
+    { "name": "sdd-tasks", "phase": "tasks", "role": "planner", "usage": "/sdd-tasks <NNN-slug>", "summary": "Generate tasks.md: small, ordered, verifiable tasks with done-when criteria.", "body": "core/commands/sdd-tasks.md", "mutatesCode": false, "readOnly": false, "levels": ["normal", "full"] },
+    { "name": "sdd-implement", "phase": "implement", "role": "implementer", "usage": "/sdd-implement <NNN-slug> <Tn>", "summary": "Implement exactly one task (tests first when applicable), record evidence, update task state, then stop.", "body": "core/commands/sdd-implement.md", "mutatesCode": true, "readOnly": false },
+    { "name": "sdd-implement-all", "phase": "implement", "role": "coordinator", "usage": "/sdd-implement-all <NNN-slug>", "summary": "Implement every pending task in order without human intervention between tasks, with bounded convergence per task, full suite, independent review and validation at the end.", "body": "core/commands/sdd-implement-all.md", "mutatesCode": true, "readOnly": false, "orchestrates": true },
+    { "name": "sdd-validate", "phase": "validate", "role": "reviewer", "usage": "/sdd-validate <NNN-slug>", "summary": "Independent read-only validation of the implementation against spec, plan, tasks, acceptance, tests and contracts.", "body": "core/commands/sdd-validate.md", "mutatesCode": false, "readOnly": true },
+    { "name": "sdd-analyze", "phase": "analyze", "role": "reviewer", "usage": "/sdd-analyze <NNN-slug>", "summary": "Read-only cross-artifact consistency check of spec, plan and tasks (coverage of every requirement, orphan tasks, contradictions).", "body": "core/commands/sdd-analyze.md", "mutatesCode": false, "readOnly": true, "levels": ["normal", "full"] },
+    { "name": "sdd-change", "phase": "change", "role": "planner", "usage": "/sdd-change <NNN-slug> \"<new requirement>\"", "summary": "Requirement change: spec first, then plan and tasks, code last. Never touches code itself.", "body": "core/commands/sdd-change.md", "mutatesCode": false, "readOnly": false, "levels": ["normal", "full"] },
+    { "name": "sdd-status", "phase": "status", "role": "coordinator", "usage": "/sdd-status [<NNN-slug>]", "summary": "Read-only: current phase, task progress and the exact next command, derived from the artifacts (never from memory).", "body": "core/commands/sdd-status.md", "mutatesCode": false, "readOnly": true }
+  ],
+  "retiredNames": ["sdd-implementer", "sdd-implementer-all", "sdd-planner", "sdd-validator", "sdd-tasks-all"]
+}

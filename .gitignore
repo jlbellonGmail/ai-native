@@ -1,7 +1,5 @@
-# Child repositories - managed independently
-ai-foundation/
-ai-knowledge/
-ai-template/
+# foundation/, knowledge/ and template/ are consolidated in-tree since PR #2
+# (2026-09-29, git subtree) and are tracked, not ignored.
 
 # Node / tooling
 node_modules/
@@ -33,6 +31,9 @@ Thumbs.db
 .repomix/
 .repomixignore
 .claude/
+# M2.3 compat spike fixture: real, versioned reproduction input (not local tooling state)
+!evaluation/compat/fixtures/claude/.claude/
+!evaluation/compat/fixtures/claude/.claude/**
 
 # Local backup artifacts
 .backups/

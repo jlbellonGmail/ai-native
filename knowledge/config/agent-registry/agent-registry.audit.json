@@ -1,0 +1,70 @@
+{
+  "schemaVersion": "agent-registry-audit.v1",
+  "roadmapTask": "W5-T6",
+  "description": "Final ENTERPRISE-10-10 agent registry audit contract. This artifact validates W5 agent registry consistency and does not open or close W6 testing enterprise tasks.",
+  "scope": {
+    "workstream": "W5 Agent Registry",
+    "auditedTasks": ["W5-T1", "W5-T2", "W5-T3", "W5-T4", "W5-T5"],
+    "closedByThisTask": ["W5-T6"],
+    "doesNotClose": ["W6-T1", "W6-T2", "W6-T3", "W6-T4", "W6-T5", "W6-T6", "W6-T7"]
+  },
+  "auditInputs": {
+    "schema": "config/agent-registry.schema.json",
+    "schemaExample": "examples/agent-registry-entry.valid.json",
+    "storage": "registries/agents/registry.storage.json",
+    "capabilitySchema": "config/agent-registry.capability.schema.json",
+    "capabilityCatalog": "config/agent-registry/capabilities.catalog.json",
+    "ownership": "config/agent-registry/ownership.policy.json",
+    "evaluationLinkage": "config/agent-registry/evaluation-linkage.json",
+    "evaluationPolicy": "config/evaluation-policy.json",
+    "evaluationProgram": "evaluation/enterprise-10-10/evaluation-program.json",
+    "roadmapCoverage": "validation/roadmap-coverage.json",
+    "roadmapToFiles": "docs/ENTERPRISE-10-10/ROADMAP_TO_FILES.md"
+  },
+  "auditChecks": [
+    {
+      "id": "w5-task-state",
+      "description": "W5-T1 through W5-T6 are implemented in product coverage."
+    },
+    {
+      "id": "w6-not-opened",
+      "description": "W6 tasks are not added to product coverage or closed by W5-T6."
+    },
+    {
+      "id": "artifact-presence",
+      "description": "Agent registry documents, contracts and validators exist."
+    },
+    {
+      "id": "coordinate-consistency",
+      "description": "Agent id, storage entry and capability coordinates agree across schema example, storage, capability catalog, ownership and evaluation linkage."
+    },
+    {
+      "id": "traceability-integrity",
+      "description": "Evaluation linkage traceability paths exist and point to governed artifacts."
+    },
+    {
+      "id": "document-integrity",
+      "description": "README and roadmap-to-files matrix include W5-T6 audit artifacts."
+    }
+  ],
+  "validators": [
+    "scripts/validate-agent-registry-schema.mjs",
+    "scripts/validate-agent-registry-storage.mjs",
+    "scripts/validate-agent-registry-capabilities.mjs",
+    "scripts/validate-agent-registry-ownership.mjs",
+    "scripts/validate-agent-registry-evaluation-linkage.mjs",
+    "scripts/validate-agent-registry-audit.mjs"
+  ],
+  "governance": {
+    "roadmapTask": "W5-T6",
+    "closes": [
+      "auditoria final completada",
+      "consistencia del registry validada",
+      "trazabilidad completa validada",
+      "artefactos machine-readable validados"
+    ],
+    "nextEligibleTask": "W6-T1",
+    "doesNotOpen": ["W6-T1"],
+    "validation": "scripts/validate-agent-registry-audit.mjs"
+  }
+}

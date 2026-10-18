@@ -1,0 +1,72 @@
+{
+  "schemaVersion": "agent-registry-evaluation-linkage.v1",
+  "roadmapTask": "W5-T5",
+  "description": "Agent registry evaluation linkage contract for ENTERPRISE-10-10 W5-T5. This contract links agent registry records to evaluation assets without executing agents, creating evaluation runs, activating agents or producing score reports.",
+  "appliesTo": {
+    "entrySchema": "config/agent-registry.schema.json",
+    "storageContract": "registries/agents/registry.storage.json",
+    "capabilityCatalog": "config/agent-registry/capabilities.catalog.json",
+    "ownershipContract": "config/agent-registry/ownership.policy.json",
+    "evaluationPolicy": "config/evaluation-policy.json",
+    "evaluationProgram": "evaluation/enterprise-10-10/evaluation-program.json"
+  },
+  "linkageContract": {
+    "requiredBindingFields": [
+      "agentId",
+      "agentVersion",
+      "sourceStorageEntry",
+      "capabilityId",
+      "evaluationSuite",
+      "benchmarkId",
+      "datasetId",
+      "scoringModel",
+      "minimumScore",
+      "ownerTeam",
+      "traceability"
+    ],
+    "evidenceRequired": ["dataset", "benchmark", "rubric", "decision", "owner"],
+    "activationRule": "agent-evaluation-binding-required-before-active",
+    "runtimeRule": "no-agent-execution-or-evaluation-run-created-by-w5-t5"
+  },
+  "bindings": [
+    {
+      "agentId": "knowledge.reviewer",
+      "agentVersion": "1.0.0",
+      "sourceStorageEntry": "agent-skill-index",
+      "capabilityId": "knowledge-review",
+      "evaluationSuite": "enterprise-10-10-agent-evaluation",
+      "benchmarkId": "bench-agent-repair",
+      "datasetId": "ds-repair-tasks",
+      "scoringModel": "weighted-rubric-v1",
+      "minimumScore": 0.8,
+      "ownerTeam": "ai-knowledge",
+      "traceability": [
+        "config/agent-registry.schema.json",
+        "examples/agent-registry-entry.valid.json",
+        "registries/agents/registry.storage.json",
+        "config/agent-registry/capabilities.catalog.json",
+        "config/agent-registry/ownership.policy.json",
+        "config/evaluation-policy.json",
+        "evaluation/enterprise-10-10/evaluation-program.json",
+        "benchmarks/catalog.json",
+        "datasets/registry.json",
+        "scoring/rubric.json"
+      ],
+      "agentExecutionStatus": "not-executed",
+      "evaluationRunStatus": "not-created",
+      "pipelineStatus": "not-created",
+      "resultStatus": "not-produced",
+      "activationStatus": "not-approved"
+    }
+  ],
+  "governance": {
+    "roadmapTask": "W5-T5",
+    "closes": [
+      "evaluation binding",
+      "traceability model",
+      "linkage governance"
+    ],
+    "doesNotClose": ["W5-T6"],
+    "validation": "scripts/validate-agent-registry-evaluation-linkage.mjs"
+  }
+}

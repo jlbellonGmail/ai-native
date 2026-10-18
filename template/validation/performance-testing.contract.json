@@ -1,0 +1,162 @@
+{
+  "schemaVersion": "performance-testing.v1",
+  "roadmapTask": "W6-T4",
+  "description": "Reusable performance testing model, measurement contract and reporting schema for generated projects. This contract defines performance measurement readiness without running benchmarks, changing runtime code or closing W6-T5.",
+  "performanceModel": {
+    "targetCategories": [
+      "service-boundary",
+      "api-entrypoint",
+      "workflow-entrypoint",
+      "repository-boundary"
+    ],
+    "requiredTargetFields": [
+      "id",
+      "category",
+      "owner",
+      "sourceScenario",
+      "measuredBoundary",
+      "metrics",
+      "thresholds",
+      "samplePolicy",
+      "executionStatus",
+      "evidence"
+    ],
+    "metricDefinitions": [
+      {
+        "id": "latency-p50-ms",
+        "unit": "milliseconds",
+        "kind": "latency-distribution"
+      },
+      {
+        "id": "latency-p95-ms",
+        "unit": "milliseconds",
+        "kind": "latency-distribution"
+      },
+      {
+        "id": "throughput-per-minute",
+        "unit": "requests-per-minute",
+        "kind": "throughput"
+      },
+      {
+        "id": "error-rate",
+        "unit": "ratio",
+        "kind": "reliability"
+      }
+    ],
+    "runtimeExecution": "not-run-by-w6-t4",
+    "benchmarkExecution": "not-run-by-w6-t4",
+    "productRuntimeModification": "not-modified-by-w6-t4"
+  },
+  "measurementContract": {
+    "requiresSourceLoadScenario": true,
+    "requiresStableBoundary": true,
+    "requiresOwner": true,
+    "requiresEnvironmentLabel": true,
+    "requiresRuntimeVersion": true,
+    "requiresSampleWindow": true,
+    "requiresIterationCount": true,
+    "requiresDependencyAssumptions": true,
+    "allowedResultStatuses": [
+      "planned",
+      "measured",
+      "simulated",
+      "unavailable"
+    ],
+    "w6T4ResultStatus": "planned"
+  },
+  "reportingSchema": {
+    "schemaId": "performance-report.v1",
+    "requiredFields": [
+      "reportId",
+      "targetId",
+      "scenarioId",
+      "status",
+      "metricResults",
+      "environment",
+      "review"
+    ],
+    "forbiddenAsSoleEvidence": [
+      "manual-note",
+      "governance-archive",
+      "unlabeled-runtime-log"
+    ],
+    "requiredReviewFields": [
+      "owner",
+      "reviewStatus",
+      "reviewedOn"
+    ]
+  },
+  "performanceTargets": [
+    {
+      "id": "password-validator-service-performance",
+      "category": "service-boundary",
+      "owner": "template-validation",
+      "sourceScenario": "password-validator-service-burst",
+      "measuredBoundary": "examples/reference-app/services/domain/services/password-validator.ts",
+      "metrics": [
+        "latency-p50-ms",
+        "latency-p95-ms",
+        "throughput-per-minute",
+        "error-rate"
+      ],
+      "thresholds": {
+        "latency-p50-ms": {
+          "plannedMaximum": 25,
+          "status": "planned"
+        },
+        "latency-p95-ms": {
+          "plannedMaximum": 100,
+          "status": "planned"
+        },
+        "throughput-per-minute": {
+          "plannedMinimum": 120,
+          "status": "planned"
+        },
+        "error-rate": {
+          "plannedMaximum": 0.01,
+          "status": "planned"
+        }
+      },
+      "samplePolicy": {
+        "minimumIterations": 100,
+        "sampleWindowSeconds": 300,
+        "environmentLabelRequired": true,
+        "runtimeVersionRequired": true
+      },
+      "reportTemplate": {
+        "reportId": "password-validator-service-performance-report",
+        "targetId": "password-validator-service-performance",
+        "scenarioId": "password-validator-service-burst",
+        "status": "planned",
+        "metricResults": "not-measured-by-w6-t4",
+        "environment": "not-provisioned-by-w6-t4",
+        "review": {
+          "owner": "template-validation",
+          "reviewStatus": "not-reviewed-runtime-results",
+          "reviewedOn": "not-applicable-by-w6-t4"
+        }
+      },
+      "executionStatus": "not-run-by-w6-t4",
+      "evidence": [
+        "validation/load-testing.contract.json",
+        "validation/contract-testing.contract.json",
+        "validation/mutation-testing.contract.json",
+        "examples/reference-app/services/domain/services/password-validator.ts"
+      ]
+    }
+  ],
+  "governance": {
+    "roadmapTask": "W6-T4",
+    "closes": [
+      "performance model",
+      "measurement contract",
+      "reporting schema"
+    ],
+    "doesNotClose": [
+      "W6-T5",
+      "W6-T6",
+      "W6-T7"
+    ],
+    "validation": "scripts/validate-performance-testing.mjs"
+  }
+}

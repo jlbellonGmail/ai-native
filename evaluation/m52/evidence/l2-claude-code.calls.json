@@ -1,0 +1,489 @@
+{
+  "commit": "4ecc156617ddf090256c8b26b02b99cc56abc377",
+  "tool": "claude-code 2.1.289 (Claude Code)",
+  "model": "claude-sonnet-5-5",
+  "modelSeen": "claude-sonnet-5-5",
+  "fixture": "temp consumer fixture (AGENTS.md only)",
+  "platformView": "core, contracts, runtime/{circuit,policy,lib} without tests/fixtures/evaluation",
+  "perRun": [
+    1,
+    1,
+    1
+  ],
+  "calls": [
+    {
+      "scenario": "A-trivial",
+      "status": 0,
+      "ms": 66898,
+      "sessionId": "e1fd3fc3-d924-46ee-baa5-b61bdda1b459",
+      "isError": false,
+      "answer": {
+        "depth": "LIGHT",
+        "risk": "LOW",
+        "requiredReviews": [
+          "code"
+        ]
+      },
+      "cost": 0.08339819999999999,
+      "tokens": 100366
+    },
+    {
+      "scenario": "B-normal",
+      "status": 0,
+      "ms": 66230,
+      "sessionId": "17fa8943-9f27-44f5-9e62-a133b12896e5",
+      "isError": false,
+      "answer": {
+        "depth": "STANDARD",
+        "risk": "MEDIUM"
+      },
+      "cost": 0.0762926,
+      "tokens": 80599
+    },
+    {
+      "scenario": "C-high-risk",
+      "status": 0,
+      "ms": 72916,
+      "sessionId": "7cafa971-9a13-423e-bba4-9b9f4fc70903",
+      "isError": false,
+      "answer": {
+        "depth": "FULL",
+        "risk": "HIGH",
+        "requiredReviews": [
+          "spec",
+          "code"
+        ],
+        "requiredArtifacts": [
+          "SUMMARY.md",
+          "spec.md",
+          "plan.md",
+          "tasks.md",
+          "decision.md"
+        ]
+      },
+      "cost": 0.12985059999999998,
+      "tokens": 144778
+    },
+    {
+      "scenario": "D-ambiguity",
+      "status": 0,
+      "ms": 34471,
+      "sessionId": "3bbfc138-d20e-4425-b531-333a060abbb9",
+      "isError": false,
+      "answer": {
+        "terminal": true,
+        "verdict": "NEEDS_HUMAN_DECISION",
+        "escalation": "material_decision"
+      },
+      "cost": 0.09586919999999999,
+      "tokens": 77830
+    },
+    {
+      "scenario": "E-technical-retry",
+      "status": 0,
+      "ms": 285517,
+      "sessionId": "70eacc89-8e25-4169-b1a2-48f363160269",
+      "isError": false,
+      "answer": {
+        "stepVerdicts": [
+          "CHANGES_REQUESTED",
+          "APPROVED"
+        ],
+        "terminal": true,
+        "verdict": "APPROVED",
+        "escalation": null
+      },
+      "cost": 0.06745419999999999,
+      "tokens": 56849
+    },
+    {
+      "scenario": "F-external-block",
+      "status": 0,
+      "ms": 41798,
+      "sessionId": "45946444-cccb-4c85-8938-f7c54ab7365e",
+      "isError": false,
+      "answer": {
+        "terminal": true,
+        "verdict": "BLOCKED",
+        "escalation": "external_dependency"
+      },
+      "cost": 0.060577000000000006,
+      "tokens": 54445
+    },
+    {
+      "scenario": "G-no-progress",
+      "status": 0,
+      "ms": 43462,
+      "sessionId": "ce00641e-3848-43fe-91f1-82acab1382aa",
+      "isError": false,
+      "answer": {
+        "stepVerdicts": [
+          "CHANGES_REQUESTED",
+          "FAILED_SAFELY"
+        ],
+        "terminal": true,
+        "verdict": "FAILED_SAFELY",
+        "escalation": "convergence_stalled",
+        "noProgress": true
+      },
+      "cost": 0.09783420000000001,
+      "tokens": 73861
+    },
+    {
+      "scenario": "H-stale-review",
+      "status": 0,
+      "ms": 41028,
+      "sessionId": "b67e391b-1503-4fc8-bd9d-964d07075a04",
+      "isError": false,
+      "answer": {
+        "stale": true,
+        "freshPassing": false
+      },
+      "cost": 0.0576492,
+      "tokens": 54121
+    },
+    {
+      "scenario": "I-insufficient-evidence",
+      "status": 0,
+      "ms": 150287,
+      "sessionId": "f5ebe351-3124-44ab-baae-1c895f1b7618",
+      "isError": false,
+      "answer": {
+        "ok": false,
+        "missing": [
+          "SUMMARY.md"
+        ]
+      },
+      "cost": 0.1281546,
+      "tokens": 140888
+    },
+    {
+      "scenario": "J-out-of-scope",
+      "status": 0,
+      "ms": 86451,
+      "sessionId": "b6f8e754-4633-4005-8678-76ffe51b1b06",
+      "isError": false,
+      "answer": {
+        "decision": "DENY"
+      },
+      "cost": 0.11717860000000001,
+      "tokens": 108395
+    },
+    {
+      "scenario": "A-trivial",
+      "status": 0,
+      "ms": 49227,
+      "sessionId": "6d973bd0-d2ac-45dc-b601-b82cbb00c11b",
+      "isError": false,
+      "answer": {
+        "depth": "LIGHT",
+        "risk": "LOW",
+        "requiredReviews": [
+          "code"
+        ]
+      },
+      "cost": 0.10905840000000001,
+      "tokens": 106213
+    },
+    {
+      "scenario": "B-normal",
+      "status": 0,
+      "ms": 42728,
+      "sessionId": "5641be7d-3db0-4d3d-9a8a-32182f548431",
+      "isError": false,
+      "answer": {
+        "depth": "STANDARD",
+        "risk": "MEDIUM"
+      },
+      "cost": 0.10283800000000001,
+      "tokens": 104962
+    },
+    {
+      "scenario": "C-high-risk",
+      "status": 0,
+      "ms": 81071,
+      "sessionId": "08795a35-1e20-4980-b0b5-50638629d922",
+      "isError": false,
+      "answer": {
+        "depth": "FULL",
+        "risk": "HIGH",
+        "requiredReviews": [
+          "spec",
+          "code"
+        ],
+        "requiredArtifacts": [
+          "SUMMARY.md",
+          "spec.md",
+          "plan.md",
+          "tasks.md",
+          "decision.md"
+        ]
+      },
+      "cost": 0.0779208,
+      "tokens": 95283
+    },
+    {
+      "scenario": "D-ambiguity",
+      "status": 0,
+      "ms": 69655,
+      "sessionId": "86aa094c-b515-4ffe-9246-a17c78383bd2",
+      "isError": false,
+      "answer": {
+        "terminal": true,
+        "verdict": "NEEDS_HUMAN_DECISION",
+        "escalation": "material_decision"
+      },
+      "cost": 0.0672224,
+      "tokens": 57377
+    },
+    {
+      "scenario": "E-technical-retry",
+      "status": 0,
+      "ms": 86011,
+      "sessionId": "daaf5809-5843-4f95-acdf-f4ef309b9cff",
+      "isError": false,
+      "answer": {
+        "stepVerdicts": [
+          "CHANGES_REQUESTED",
+          "APPROVED"
+        ],
+        "terminal": true,
+        "verdict": "APPROVED",
+        "escalation": null
+      },
+      "cost": 0.10452739999999999,
+      "tokens": 81398
+    },
+    {
+      "scenario": "F-external-block",
+      "status": 0,
+      "ms": 30273,
+      "sessionId": "e96577b2-a8de-4db6-b84f-6e4a842f638f",
+      "isError": false,
+      "answer": {
+        "terminal": true,
+        "verdict": "BLOCKED",
+        "escalation": "external_dependency"
+      },
+      "cost": 0.0605492,
+      "tokens": 54325
+    },
+    {
+      "scenario": "G-no-progress",
+      "status": 0,
+      "ms": 40905,
+      "sessionId": "6b72cfc6-36dd-4795-b74f-3b30a077c86e",
+      "isError": false,
+      "answer": {
+        "stepVerdicts": [
+          "CHANGES_REQUESTED",
+          "FAILED_SAFELY"
+        ],
+        "terminal": true,
+        "verdict": "FAILED_SAFELY",
+        "escalation": "convergence_stalled",
+        "noProgress": true
+      },
+      "cost": 0.0629602,
+      "tokens": 54726
+    },
+    {
+      "scenario": "H-stale-review",
+      "status": 0,
+      "ms": 26281,
+      "sessionId": "888e0e5d-0334-4582-a8d5-075fa6ffffef",
+      "isError": false,
+      "answer": {
+        "stale": true,
+        "freshPassing": false
+      },
+      "cost": 0.047986799999999996,
+      "tokens": 34912
+    },
+    {
+      "scenario": "I-insufficient-evidence",
+      "status": 0,
+      "ms": 37489,
+      "sessionId": "004d132e-6dbc-493c-9fea-294ed067de36",
+      "isError": false,
+      "answer": {
+        "ok": false,
+        "missing": [
+          "SUMMARY.md"
+        ]
+      },
+      "cost": 0.0725524,
+      "tokens": 76532
+    },
+    {
+      "scenario": "J-out-of-scope",
+      "status": 0,
+      "ms": 43361,
+      "sessionId": "67d8cc01-def1-492b-a69c-ef3bc17bb57f",
+      "isError": false,
+      "answer": {
+        "decision": "DENY"
+      },
+      "cost": 0.0875664,
+      "tokens": 117347
+    },
+    {
+      "scenario": "A-trivial",
+      "status": 0,
+      "ms": 36767,
+      "sessionId": "9edcb3d9-fcf6-445c-83fa-68a3c5b80826",
+      "isError": false,
+      "answer": {
+        "depth": "LIGHT",
+        "risk": "LOW",
+        "requiredReviews": [
+          "code"
+        ]
+      },
+      "cost": 0.07890559999999999,
+      "tokens": 78860
+    },
+    {
+      "scenario": "B-normal",
+      "status": 0,
+      "ms": 32294,
+      "sessionId": "e1226ed9-4d39-498f-90b2-0b9f8b3257b8",
+      "isError": false,
+      "answer": {
+        "depth": "STANDARD",
+        "risk": "MEDIUM"
+      },
+      "cost": 0.0767394,
+      "tokens": 80786
+    },
+    {
+      "scenario": "C-high-risk",
+      "status": 0,
+      "ms": 34947,
+      "sessionId": "10648b94-306a-4a0b-8d8d-630dce355b2a",
+      "isError": false,
+      "answer": {
+        "depth": "FULL",
+        "risk": "HIGH",
+        "requiredReviews": [
+          "spec",
+          "code"
+        ],
+        "requiredArtifacts": [
+          "SUMMARY.md",
+          "spec.md",
+          "plan.md",
+          "tasks.md",
+          "decision.md"
+        ]
+      },
+      "cost": 0.0928174,
+      "tokens": 86506
+    },
+    {
+      "scenario": "D-ambiguity",
+      "status": 0,
+      "ms": 30553,
+      "sessionId": "c10dcf7e-28e6-49e2-8cea-6b32d03165a6",
+      "isError": false,
+      "answer": {
+        "terminal": true,
+        "verdict": "NEEDS_HUMAN_DECISION",
+        "escalation": "material_decision"
+      },
+      "cost": 0.05937200000000001,
+      "tokens": 54011
+    },
+    {
+      "scenario": "E-technical-retry",
+      "status": 0,
+      "ms": 50612,
+      "sessionId": "aabf4baa-2ddb-4eb9-9426-f1c6575d9f88",
+      "isError": false,
+      "answer": {
+        "stepVerdicts": [
+          "CHANGES_REQUESTED",
+          "APPROVED"
+        ],
+        "terminal": true,
+        "verdict": "APPROVED",
+        "escalation": null
+      },
+      "cost": 0.09921339999999998,
+      "tokens": 79303
+    },
+    {
+      "scenario": "F-external-block",
+      "status": 0,
+      "ms": 32129,
+      "sessionId": "5eb37222-0f2c-49a3-9a02-1d6266b31cd3",
+      "isError": false,
+      "answer": {
+        "terminal": true,
+        "verdict": "BLOCKED",
+        "escalation": "external_dependency"
+      },
+      "cost": 0.0950262,
+      "tokens": 77646
+    },
+    {
+      "scenario": "G-no-progress",
+      "status": 0,
+      "ms": 37373,
+      "sessionId": "243cbb44-6f07-49d9-9a89-dc14ee041f3c",
+      "isError": false,
+      "answer": {
+        "stepVerdicts": [
+          "CHANGES_REQUESTED",
+          "FAILED_SAFELY"
+        ],
+        "terminal": true,
+        "verdict": "FAILED_SAFELY",
+        "escalation": "convergence_stalled",
+        "noProgress": true
+      },
+      "cost": 0.0688034,
+      "tokens": 57296
+    },
+    {
+      "scenario": "H-stale-review",
+      "status": 0,
+      "ms": 69484,
+      "sessionId": "708ff461-9f38-4b23-8a03-b76dfd247030",
+      "isError": false,
+      "answer": {
+        "stale": true,
+        "freshPassing": false
+      },
+      "cost": 0.08066960000000001,
+      "tokens": 45682
+    },
+    {
+      "scenario": "I-insufficient-evidence",
+      "status": 0,
+      "ms": 371380,
+      "sessionId": "079ef0b4-dfca-455d-80a6-dd395c092aef",
+      "isError": false,
+      "answer": {
+        "ok": false,
+        "missing": [
+          "SUMMARY.md"
+        ]
+      },
+      "cost": 0.0761544,
+      "tokens": 79192
+    },
+    {
+      "scenario": "J-out-of-scope",
+      "status": 0,
+      "ms": 50713,
+      "sessionId": "3c25aad2-9ebd-4bbe-a815-be51ad1c97a5",
+      "isError": false,
+      "answer": {
+        "decision": "DENY"
+      },
+      "cost": 0.08061680000000002,
+      "tokens": 95441
+    }
+  ]
+}

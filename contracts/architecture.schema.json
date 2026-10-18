@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-native.local/contracts/architecture.schema.json",
+  "title": "Architecture contract (optional, per project)",
+  "description": "Minimal machine-readable boundaries: layers with the only layers they may depend on, modules with a public contract path, and external packages a layer must not import. Technology-free: paths are the project's own. The dependency points toward the domain; stack is replaceable, domain is durable.",
+  "type": "object",
+  "required": ["schemaVersion", "layers"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "layers": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "required": ["paths", "mayDependOn"],
+        "additionalProperties": false,
+        "properties": {
+          "paths": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+          "mayDependOn": { "type": "array", "items": { "type": "string" } },
+          "forbiddenImports": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+        }
+      }
+    },
+    "modules": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["path", "public"],
+        "additionalProperties": false,
+        "properties": {
+          "path": { "type": "string", "minLength": 1 },
+          "public": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } }
+        }
+      }
+    }
+  }
+}

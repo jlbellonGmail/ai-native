@@ -1,0 +1,103 @@
+name: pilot
+
+# M5.2 (matriz muestreada). ONLINE: a consumer is created from scratch with only
+# a lock pinned to the REAL published release v3.0.0-rc.2; `sync` downloads it
+# from GitHub Releases, checks sha256 against the lock BEFORE caching, and
+# verifies the sigstore attestation (--require-attestation); then doctor,
+# version and `status --check` (revocation CHECKED). OFFLINE with the network
+# really unavailable (evaluation/m52/offline-real.mjs): Ubuntu inside
+# `docker run --network none`; Windows with the in-process net-guard (no Linux
+# containers on that runner; weaker, labelled as such in the evidence). The
+# build-HEAD -> sync --from-file -> adapters path runs in ci.yml on Ubuntu and
+# Windows (runtime/pilot/fixture.test.mjs).
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "runtime/bootstrap/**"
+      - "runtime/pilot/**"
+      - "runtime/release/**"
+      - "evaluation/m52/**"
+      - ".github/workflows/pilot.yml"
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  online:
+    name: pilot online (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Online sync of the published release, then doctor/version
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          proj="$(mktemp -d)"
+          cache="$(mktemp -d)"
+          cat > "$proj/ai-native.lock.json" <<'EOF'
+          {
+            "schemaVersion": 1,
+            "platform": {
+              "repo": "github:jlbellonGmail/ai-native",
+              "version": "v3.0.0-rc.2",
+              "commit": "51ef1859fbb39af5f0c82547597faa54aa945457",
+              "digest": "sha256:55b9589f7f78f7f0acd15ccffb2b297fe199889206a8f04123cfc45e266f6e0f",
+              "channel": "rc"
+            },
+            "profiles": ["factory"]
+          }
+          EOF
+          cli=runtime/bootstrap/cli.mjs
+          node "$cli" sync --require-attestation --project "$proj" --cache "$cache"
+          node "$cli" doctor --project "$proj" --cache "$cache"
+          out="$(node "$cli" run --project "$proj" --cache "$cache" -- version)"
+          echo "$out"
+          case "$out" in "v3.0.0-rc.2 51ef1859fbb39af5f0c82547597faa54aa945457"*) ;; *) echo "unexpected version: $out"; exit 1;; esac
+          # status --check online: READY and the revocation list really consulted
+          st="$(node "$cli" status --check --json --project "$proj" --cache "$cache")"
+          echo "$st"
+          case "$st" in *'"state": "READY"'*'"revocation": "CHECKED"'*) ;; *) echo "status --check is not READY/CHECKED"; exit 1;; esac
+          # second sync must be served from the cache
+          node "$cli" sync --offline --project "$proj" --cache "$cache"
+
+  offline:
+    name: pilot offline, network really unavailable (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            mode: docker
+          - os: windows-latest
+            mode: guard
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Offline with cache, offline without cache (fail closed), online commands without network
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node evaluation/m52/offline-real.mjs --tag v3.0.0-rc.2 --mode "${{ matrix.mode }}" --out "$RUNNER_TEMP/offline-${{ matrix.mode }}.json"

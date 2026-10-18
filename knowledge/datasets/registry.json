@@ -1,0 +1,7 @@
+{
+  "datasets": [
+    { "id": "ds-grounded-qa", "classification": "synthetic", "path": "datasets/synthetic/grounded-qa.jsonl" },
+    { "id": "ds-repair-tasks", "classification": "synthetic", "path": "datasets/synthetic/repair-tasks.jsonl" },
+    { "id": "ds-template-validation", "classification": "synthetic", "path": "datasets/synthetic/template-validation.jsonl" }
+  ]
+}

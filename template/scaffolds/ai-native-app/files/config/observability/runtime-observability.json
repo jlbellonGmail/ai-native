@@ -1,0 +1,13 @@
+{
+  "enabled": false,
+  "mode": "noop",
+  "service_name": "__PROJECT_NAME__",
+  "exports_remotely_by_default": false,
+  "requires_endpoint": false,
+  "requires_token": false,
+  "signals": {
+    "traces": ["runtime.agent_task"],
+    "metrics": ["ai_runtime_operation_total", "ai_runtime_operation_duration_ms"],
+    "logs": ["runtime.operation.completed"]
+  }
+}

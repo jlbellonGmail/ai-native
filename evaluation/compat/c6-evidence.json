@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "C6",
+  "description": "C6 / P41: workflow_call ENTRE REPOS. A repository other than ai-native (template-starter, the v2 Starter that M5.4 will migrate) calls ai-native's reusable l3-consumer.yml pinned by full SHA. The call fetches the platform release asset, checks its sha256 against the lock, verifies the sigstore attestation (--require-attestation, fail closed) and runs the L3 gate. Real run on GitHub Actions, not simulated; the PR that triggered it was throwaway and closed unmerged. runtime/pilot/c6.test.mjs re-reads this run from the GitHub API.",
+  "caller": { "repo": "jlbellonGmail/template-starter", "runId": 37145520404, "event": "pull_request", "workflowPath": ".github/workflows/ai-native-l3.yml", "headSha": "6494c6d9b51f835355d90101b1fcc9bdd715ce08" },
+  "callee": { "repo": "jlbellonGmail/ai-native", "workflow": ".github/workflows/l3-consumer.yml", "pinnedSha": "99f23f440544bb22bac7179d34b7d5c4e6a1143e" },
+  "lockedRelease": { "version": "v3.0.0-alpha.1", "digest": "sha256:207bb0d71d76de479b722b106bd1c127ec31c9a8f36285f79578aa047db067a0" },
+  "expectedConclusion": "success",
+  "requiredSuccessfulSteps": [
+    "Resolve the base branch (required)",
+    "Read the locks and pick the trust root (base lock first, then the head lock)",
+    "Select the trusted platform commit (must be in the history of the default branch)",
+    "Bootstrap sync (download, sha256 vs lock, sigstore attestation)",
+    "L3 consumer gate"
+  ],
+  "visibility": { "caller": "public", "callee": "public", "note": "D1 resolved: ai-native is PUBLIC for now, so a public consumer can call it" },
+  "limits": [
+    "evidence run: `platform-ref` pointed the gate code at ai-native main because the pinned release (alpha.1) predates the L3 module; the workflow reports this as a warning. The release path without platform-ref is exercised by the rc.1 canary (M5.4).",
+    "first attempt (run 37139689695) reached the L3 gate and FAILED on integrity: detached HEAD compared the recorded branch with null. Fixed in ai-native PR #44 and re-run green; kept here because it is the reason the fix exists."
+  ]
+}

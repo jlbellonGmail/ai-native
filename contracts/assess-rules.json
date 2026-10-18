@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "pathSignals": [
+    {
+      "code": "sensitive-or-data",
+      "level": "high",
+      "weight": 5,
+      "forcesHigh": true,
+      "pattern": "(^|/)(security|auth|permissions?|secrets?)(/|\\.|$)|(^|/)(migrations?|schema|database|data)(/|\\.|$)",
+      "reason": "Sensitive path, permissions or data."
+    },
+    {
+      "code": "automation-or-governance",
+      "level": "high",
+      "weight": 4,
+      "forcesHigh": true,
+      "pattern": "(^|/)(\\.github/workflows|scripts)(/|\\.|$)|(^|/)(ci|cd|deploy|release)(/|\\.|$)",
+      "reason": "Automation or governance can affect gates."
+    },
+    {
+      "code": "agent-or-configuration",
+      "level": "medium",
+      "weight": 2,
+      "pattern": "(^|/)(\\.agentic|\\.claude|\\.opencode|\\.codex)(/|\\.|$)|(^|/)(config|configuration)(/|\\.|$)",
+      "reason": "Circuit configuration."
+    },
+    {
+      "code": "documentation-or-test",
+      "level": "low",
+      "weight": 0,
+      "pattern": "(^|/)(docs|tests?)(/|\\.|$)|\\.(md|rst|txt|json|ya?ml|toml)$",
+      "reason": "Documentation, tests or declarative configuration."
+    }
+  ],
+  "defaultSignal": {
+    "code": "implementation",
+    "level": "medium",
+    "weight": 2,
+    "reason": "Implementation change."
+  },
+  "breadthRules": [
+    { "minFiles": 10, "addScore": 3, "forcesHigh": true },
+    { "minFiles": 4, "addScore": 1 }
+  ],
+  "thresholds": {
+    "fullScore": 5,
+    "standardScore": 2
+  }
+}

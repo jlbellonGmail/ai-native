@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-native.local/contracts/profile.schema.json",
+  "title": "Platform profile",
+  "description": "A profile (profiles/*.json in this repo) selects which skills, MCP servers, gates and docRelevantPaths apply to a consumer. Layered under a pack's own additions, per the DAC precedence order: platform defaults -> profile -> pack -> lock overrides.",
+  "type": "object",
+  "required": ["schemaVersion", "id", "gitModel", "governance", "mergeMethod"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+    "description": { "type": "string" },
+    "tools": {
+      "type": "array",
+      "default": ["claude", "codex", "opencode"],
+      "items": { "type": "string", "enum": ["claude", "codex", "opencode", "cursor", "aider", "openclaw"] }
+    },
+    "gitModel": {
+      "type": "object",
+      "required": ["integrationBranch"],
+      "properties": {
+        "integrationBranch": { "type": "string", "default": "main" },
+        "branchNamePattern": { "type": "string", "default": "^(feature|milestone|maintenance)/" }
+      }
+    },
+    "governance": {
+      "type": "object",
+      "required": ["mode"],
+      "properties": {
+        "mode": { "type": "string", "enum": ["SingleMaintainer", "MultiMaintainer"] },
+        "allowNone": { "type": "boolean", "default": false, "description": "Repo policy for the human gate: when true, a low-risk work unit may declare human_gate none (runtime/policy/hitl.mjs). Set by the platform profile, never by the project." },
+        "humanMaintainers": { "type": "array", "items": { "type": "string" }, "description": "GitHub logins allowed to perform the HITL merge or dispatch merge-gate (route B)." }
+      }
+    },
+    "mergeMethod": { "type": "string", "enum": ["merge", "squash", "rebase"], "default": "merge" },
+    "mcpDefaultProfile": { "type": "string", "default": "none" },
+    "docRelevantPaths": {
+      "type": "array",
+      "default": [],
+      "items": { "type": "string" },
+      "description": "Glob-like path prefixes whose changes require docImpact != none (CIR-14 doc-drift check)."
+    },
+    "testingProfiles": {
+      "type": "array",
+      "default": ["smoke"],
+      "items": { "type": "string", "enum": ["smoke", "contract", "coverage", "mutation", "load", "performance", "chaos", "e2e"] },
+      "description": "Which risk-based testing profiles (H4/W6) this consumer's stack can actually run; selection by SDD level happens at runtime, this just bounds what's available."
+    },
+    "requiredFiles": { "type": "array", "default": [], "items": { "type": "string", "pattern": "^[A-Za-z0-9_][A-Za-z0-9_./-]*$" }, "description": "Platform-owned v2 files the profile's commands depend on implicitly (e.g. pytest.ini for `pytest`). `migrate` never retires them, even when identical to the Template." },
+    "productSetupCommand": { "type": ["string", "null"], "default": null, "description": "Command the L3 consumer gate runs (from the pinned platform profile, never from the consumer PR) before productTestCommand to install the consumer's dependencies on a clean runner; null means no setup." },
+    "productTestCommand": { "type": ["string", "null"], "default": null, "description": "Command pr-gate runs for CI-02; null means NOT_APPLICABLE, not FAIL." }
+  }
+}

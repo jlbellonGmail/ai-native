@@ -1,0 +1,110 @@
+// M5 prerequisite (PAR-BROWNFIELD-SAFETY, DIS-03; PAR-MIGRATION-REVERT).
+// Brownfield adoption into a repo that already has content:
+//   plan   : read-only; reports every path the adoption would create and which
+//            of them already exist (collisions). Nothing is written.
+//   apply  : creates ONLY non-colliding files and never overwrites. Collisions
+//            stop the run (BLOCKED) unless the caller passes `resolve[path] =
+//            "skip"` (leave the existing file untouched). Writes a journal
+//            with the sha256 of everything it created.
+//   revert : removes only files whose current hash still equals the journal;
+//            a file edited since adoption is kept and reported. Reverting is
+//            idempotent and a missing journal is an error, not a no-op.
+import { createHash } from "node:crypto";
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync, readdirSync, rmdirSync, realpathSync } from "node:fs";
+import { dirname, join, resolve, relative, isAbsolute } from "node:path";
+
+export const JOURNAL_PATH = ".ai-native/adoption-journal.json";
+export class AdoptError extends Error {}
+
+export const sha = (buf) => `sha256:${createHash("sha256").update(buf).digest("hex")}`;
+const isBinary = (buf) => buf.subarray(0, 8000).includes(0);
+/** sha of a TEXT file with CRLF read as LF: a checkout's core.autocrlf must not make a file look edited. Binary files are hashed as is. */
+export const normalizedSha = (buf) => sha(isBinary(buf) ? buf : Buffer.from(buf.toString("utf8").replaceAll("\r\n", "\n")));
+
+export function safeJoin(root, rel) {
+  if (isAbsolute(rel) || rel.split(/[\\/]/).includes("..")) throw new AdoptError(`unsafe path '${rel}'`);
+  const full = resolve(root, rel);
+  if (relative(root, full).startsWith("..")) throw new AdoptError(`path escapes target: '${rel}'`);
+  // a symlinked ancestor inside the project must not redirect a write outside it: check the deepest existing ancestor's real path
+  let probe = full;
+  while (!existsSync(probe) && dirname(probe) !== probe) probe = dirname(probe);
+  if (existsSync(probe)) {
+    const out = relative(realpathSync(root), realpathSync(probe));
+    if (out.startsWith("..") || isAbsolute(out)) throw new AdoptError(`path escapes target through a symlink: '${rel}'`);
+  }
+  return full;
+}
+
+/** incoming: { relPath: content }. Read-only. */
+export function planAdoption(targetRoot, incoming) {
+  const create = [];
+  const collisions = [];
+  for (const rel of Object.keys(incoming).sort()) {
+    const full = safeJoin(targetRoot, rel);
+    if (existsSync(full)) collisions.push({ path: rel, identical: sha(readFileSync(full)) === sha(Buffer.from(incoming[rel])) });
+    else create.push(rel);
+  }
+  return { create, collisions, blocked: collisions.some((c) => !c.identical) };
+}
+
+export function applyAdoption(targetRoot, incoming, { resolve: resolutions = {} } = {}) {
+  if (existsSync(join(targetRoot, JOURNAL_PATH))) throw new AdoptError("an adoption journal already exists; revert it first");
+  const plan = planAdoption(targetRoot, incoming);
+  const unresolved = plan.collisions.filter((c) => !c.identical && resolutions[c.path] !== "skip");
+  if (unresolved.length) return { status: "BLOCKED", written: [], skipped: [], collisions: unresolved.map((c) => c.path) };
+  const created = {};
+  for (const rel of plan.create) {
+    const full = safeJoin(targetRoot, rel);
+    mkdirSync(dirname(full), { recursive: true });
+    try {
+      writeFileSync(full, incoming[rel], { flag: "wx" }); // never overwrite, even if the file appeared after the plan
+    } catch (error) {
+      if (error.code === "EEXIST") throw new AdoptError(`'${rel}' appeared during adoption; nothing was overwritten`);
+      throw error;
+    }
+    created[rel] = sha(Buffer.from(incoming[rel]));
+  }
+  // an identical file that was already there (typically written by `migrate apply`) is still managed: it is recorded
+  // as `adopted` (covered by drift, upgrade and tracking, never removed by revert), not lost in `skipped`
+  const adopted = Object.fromEntries(plan.collisions.filter((c) => c.identical).map((c) => [c.path, sha(Buffer.from(incoming[c.path]))]));
+  const skipped = plan.collisions.filter((c) => !c.identical).map((c) => c.path);
+  const journal = { schemaVersion: 1, created, adopted, skipped };
+  mkdirSync(dirname(join(targetRoot, JOURNAL_PATH)), { recursive: true });
+  writeFileSync(join(targetRoot, JOURNAL_PATH), `${JSON.stringify(journal, null, 2)}\n`, { flag: "wx" });
+  return { status: "APPLIED", written: Object.keys(created), adopted: Object.keys(adopted), skipped, collisions: [] };
+}
+
+export function pruneEmptyDirs(root, rel) {
+  let dir = dirname(join(root, rel));
+  while (relative(root, dir) && !relative(root, dir).startsWith("..")) {
+    if (readdirSync(dir).length) break;
+    rmdirSync(dir);
+    dir = dirname(dir);
+  }
+}
+
+export function revertAdoption(targetRoot) {
+  const jp = join(targetRoot, JOURNAL_PATH);
+  if (!existsSync(jp)) throw new AdoptError("no adoption journal; nothing to revert");
+  const journal = JSON.parse(readFileSync(jp, "utf8"));
+  const removed = [];
+  const kept = [];
+  for (const [rel, hash] of Object.entries(journal.created)) {
+    const full = safeJoin(targetRoot, rel);
+    if (!existsSync(full)) continue;
+    const now = readFileSync(full);
+    // a checkout with core.autocrlf rewrites line endings: that alone is not an edit (revert must not report PARTIAL)
+    if (sha(now) !== hash && normalizedSha(now) !== hash) {
+      kept.push(rel);
+      continue;
+    }
+    rmSync(full);
+    removed.push(rel);
+    pruneEmptyDirs(targetRoot, rel);
+  }
+  if (!kept.length) {
+    rmSync(jp);
+    pruneEmptyDirs(targetRoot, JOURNAL_PATH);
+  }
+  return { status: kept.length ? "PARTIAL" : "REVERTED", removed, kept };
+}

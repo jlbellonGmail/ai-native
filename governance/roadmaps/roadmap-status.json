@@ -125,5 +125,543 @@
       "Product repositories were not modified",
       "Push status CONTEXTUAL_NON_BLOCKING due external unverified remote policy"
     ]
+  },
+  "REPAIR-REAL-IMPACT": {
+    "title": "REPAIR-REAL-IMPACT",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/ENTERPRISE-10-10-V1/REPAIR-REAL-IMPACT/",
+      "archive_files=[\"REAL_IMPACT_MATRIX.md\",\"REPAIR_CHANGES.md\",\"REPAIR_PLAN.md\",\"REPAIR_SUMMARY.md\",\"REPAIR_VALIDATION.md\"]"
+    ]
+  },
+  "REPO-REALIGNMENT-FINAL": {
+    "title": "Repo Realignment Final Summary",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/ENTERPRISE-10-10-V1/REPO-REALIGNMENT-FINAL/",
+      "archive_files=[\"COMMITS.md\",\"PRODUCT_STATE.md\",\"ROADMAP_TO_FILES_MATRIX.md\",\"SUMMARY.md\",\"VALIDATION.md\"]"
+    ]
+  },
+  "W1-T7": {
+    "title": "W1-T7 Changes",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/ENTERPRISE-10-10-V1/W1-T7/",
+      "archive_files=[\"CHANGES.md\",\"EVIDENCE.md\",\"README.md\",\"SUMMARY.md\",\"VALIDATION.md\",\"artifacts\"]"
+    ]
+  },
+  "W2-T1": {
+    "title": "W2-T1 Changes",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/ENTERPRISE-10-10-V1/W2-T1/",
+      "archive_files=[\"CHANGES.md\",\"EVIDENCE.md\",\"README.md\",\"SLI-DEFINITION.md\",\"SUMMARY.md\",\"VALIDATION.md\",\"artifacts\"]"
+    ]
+  },
+  "W2-T2": {
+    "title": "W2-T2 Changes",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/ENTERPRISE-10-10-V1/W2-T2/",
+      "archive_files=[\"CHANGES.md\",\"EVIDENCE.md\",\"README.md\",\"SUMMARY.md\",\"VALIDATION.md\",\"artifacts\"]"
+    ]
+  },
+  "W2-T3": {
+    "title": "W2-T3 Changes",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/ENTERPRISE-10-10-V1/W2-T3/",
+      "archive_files=[\"CHANGES.md\",\"EVIDENCE.md\",\"README.md\",\"SUMMARY.md\",\"VALIDATION.md\",\"artifacts\"]"
+    ]
+  },
+  "W2-T4": {
+    "title": "W2-T4 Changes",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/ENTERPRISE-10-10-V1/W2-T4/",
+      "archive_files=[\"CHANGES.md\",\"EVIDENCE.md\",\"README.md\",\"SUMMARY.md\",\"VALIDATION.md\",\"artifacts\"]"
+    ]
+  },
+  "W2-T5": {
+    "title": "W2-T5 Alerting Changes",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/ENTERPRISE-10-10-V1/W2-T5/",
+      "archive_files=[\"CHANGES.md\",\"EVIDENCE.md\",\"README.md\",\"SUMMARY.md\",\"VALIDATION.md\",\"artifacts\"]"
+    ]
+  },
+  "W2-T6": {
+    "title": "W2-T6 Changes",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/ENTERPRISE-10-10-V1/W2-T6/",
+      "archive_files=[\"CHANGES.md\",\"EVIDENCE.md\",\"README.md\",\"SUMMARY.md\",\"VALIDATION.md\",\"artifacts\"]"
+    ]
+  },
+  "W2-T7": {
+    "title": "W2-T7 Changes",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/ENTERPRISE-10-10-V1/W2-T7/",
+      "archive_files=[\"CHANGES.md\",\"EVIDENCE.md\",\"README.md\",\"SUMMARY.md\",\"VALIDATION.md\",\"artifacts\"]"
+    ]
+  },
+  "W2-T8": {
+    "title": "W2-T8 Changes",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/ENTERPRISE-10-10-V1/W2-T8/",
+      "archive_files=[\"CHANGES.md\",\"EVIDENCE.md\",\"README.md\",\"SUMMARY.md\",\"VALIDATION.md\",\"artifacts\"]"
+    ]
+  },
+  "W3-T1": {
+    "title": "CHANGES",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/ENTERPRISE-10-10-V1/W3-T1/",
+      "archive_files=[\"CHANGES.md\",\"EVIDENCE.md\",\"README.md\",\"SUMMARY.md\",\"VALIDATION.md\",\"artifacts\"]"
+    ]
+  },
+  "W3-T2": {
+    "title": "CHANGES",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/ENTERPRISE-10-10-V1/W3-T2/",
+      "archive_files=[\"CHANGES.md\",\"EVIDENCE.md\",\"README.md\",\"SUMMARY.md\",\"VALIDATION.md\",\"artifacts\"]"
+    ]
+  },
+  "W3-T3": {
+    "title": "CHANGES",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/ENTERPRISE-10-10-V1/W3-T3/",
+      "archive_files=[\"CHANGES.md\",\"EVIDENCE.md\",\"README.md\",\"SUMMARY.md\",\"VALIDATION.md\",\"artifacts\"]"
+    ]
+  },
+  "W3-T4": {
+    "title": "CHANGES",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/ENTERPRISE-10-10-V1/W3-T4/",
+      "archive_files=[\"CHANGES.md\",\"EVIDENCE.md\",\"README.md\",\"SUMMARY.md\",\"VALIDATION.md\",\"artifacts\"]"
+    ]
+  },
+  "W3-T5": {
+    "title": "CHANGES",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/ENTERPRISE-10-10-V1/W3-T5/",
+      "archive_files=[\"CHANGES.md\",\"EVIDENCE.md\",\"README.md\",\"SUMMARY.md\",\"VALIDATION.md\",\"artifacts\"]"
+    ]
+  },
+  "W3-T6": {
+    "title": "CHANGES",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/ENTERPRISE-10-10-V1/W3-T6/",
+      "archive_files=[\"CHANGES.md\",\"EVIDENCE.md\",\"README.md\",\"SUMMARY.md\",\"VALIDATION.md\",\"artifacts\"]"
+    ]
+  },
+  "W3-T7": {
+    "title": "CHANGES",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/ENTERPRISE-10-10-V1/W3-T7/",
+      "archive_files=[\"CHANGES.md\",\"EVIDENCE.md\",\"README.md\",\"SUMMARY.md\",\"VALIDATION.md\",\"artifacts\"]"
+    ]
+  },
+  "W4-T1": {
+    "title": "Changes",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/ENTERPRISE-10-10-V1/W4-T1/",
+      "archive_files=[\"CHANGES.md\",\"EVIDENCE.md\",\"README.md\",\"SUMMARY.md\",\"VALIDATION.md\"]"
+    ]
+  },
+  "W4-T2": {
+    "title": "Changes",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/ENTERPRISE-10-10-V1/W4-T2/",
+      "archive_files=[\"CHANGES.md\",\"EVIDENCE.md\",\"README.md\",\"SUMMARY.md\",\"VALIDATION.md\"]"
+    ]
+  },
+  "W4-T3": {
+    "title": "Changes",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/ENTERPRISE-10-10-V1/W4-T3/",
+      "archive_files=[\"CHANGES.md\",\"EVIDENCE.md\",\"README.md\",\"SUMMARY.md\",\"VALIDATION.md\"]"
+    ]
+  },
+  "W4-T4": {
+    "title": "Changes",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/ENTERPRISE-10-10-V1/W4-T4/",
+      "archive_files=[\"CHANGES.md\",\"EVIDENCE.md\",\"README.md\",\"SUMMARY.md\",\"VALIDATION.md\"]"
+    ]
+  },
+  "W4-T5": {
+    "title": "Changes",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/ENTERPRISE-10-10-V1/W4-T5/",
+      "archive_files=[\"CHANGES.md\",\"EVIDENCE.md\",\"README.md\",\"SUMMARY.md\",\"VALIDATION.md\"]"
+    ]
+  },
+  "W4-T6": {
+    "title": "Changes",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/ENTERPRISE-10-10-V1/W4-T6/",
+      "archive_files=[\"CHANGES.md\",\"EVIDENCE.md\",\"README.md\",\"SUMMARY.md\",\"VALIDATION.md\"]"
+    ]
+  },
+  "W5-T1": {
+    "title": "Changes",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/ENTERPRISE-10-10-V1/W5-T1/",
+      "archive_files=[\"CHANGES.md\",\"EVIDENCE.md\",\"README.md\",\"SUMMARY.md\",\"VALIDATION.md\"]"
+    ]
+  },
+  "W5-T2": {
+    "title": "Changes",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/ENTERPRISE-10-10-V1/W5-T2/",
+      "archive_files=[\"CHANGES.md\",\"EVIDENCE.md\",\"README.md\",\"SUMMARY.md\",\"VALIDATION.md\"]"
+    ]
+  },
+  "W5-T3": {
+    "title": "Changes",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/ENTERPRISE-10-10-V1/W5-T3/",
+      "archive_files=[\"CHANGES.md\",\"EVIDENCE.md\",\"README.md\",\"SUMMARY.md\",\"VALIDATION.md\"]"
+    ]
+  },
+  "W5-T4": {
+    "title": "Changes",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/ENTERPRISE-10-10-V1/W5-T4/",
+      "archive_files=[\"CHANGES.md\",\"EVIDENCE.md\",\"README.md\",\"SUMMARY.md\",\"VALIDATION.md\"]"
+    ]
+  },
+  "W5-T5": {
+    "title": "Changes",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/ENTERPRISE-10-10-V1/W5-T5/",
+      "archive_files=[\"CHANGES.md\",\"EVIDENCE.md\",\"README.md\",\"SUMMARY.md\",\"VALIDATION.md\"]"
+    ]
+  },
+  "W5-T6": {
+    "title": "Changes",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/ENTERPRISE-10-10-V1/W5-T6/",
+      "archive_files=[\"CHANGES.md\",\"EVIDENCE.md\",\"README.md\",\"SUMMARY.md\",\"VALIDATION.md\"]"
+    ]
+  },
+  "W6-T1": {
+    "title": "Changes",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/ENTERPRISE-10-10-V1/W6-T1/",
+      "archive_files=[\"CHANGES.md\",\"EVIDENCE.md\",\"README.md\",\"SUMMARY.md\",\"VALIDATION.md\"]"
+    ]
+  },
+  "W6-T2": {
+    "title": "Changes",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/ENTERPRISE-10-10-V1/W6-T2/",
+      "archive_files=[\"CHANGES.md\",\"EVIDENCE.md\",\"README.md\",\"SUMMARY.md\",\"VALIDATION.md\"]"
+    ]
+  },
+  "W6-T3": {
+    "title": "Changes",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/ENTERPRISE-10-10-V1/W6-T3/",
+      "archive_files=[\"CHANGES.md\",\"EVIDENCE.md\",\"README.md\",\"SUMMARY.md\",\"VALIDATION.md\"]"
+    ]
+  },
+  "W6-T4": {
+    "title": "Changes",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/ENTERPRISE-10-10-V1/W6-T4/",
+      "archive_files=[\"CHANGES.md\",\"EVIDENCE.md\",\"README.md\",\"SUMMARY.md\",\"VALIDATION.md\"]"
+    ]
+  },
+  "W6-T5": {
+    "title": "Changes",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/ENTERPRISE-10-10-V1/W6-T5/",
+      "archive_files=[\"CHANGES.md\",\"EVIDENCE.md\",\"README.md\",\"SUMMARY.md\",\"VALIDATION.md\"]"
+    ]
+  },
+  "W6-T6": {
+    "title": "Changes",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/ENTERPRISE-10-10-V1/W6-T6/",
+      "archive_files=[\"CHANGES.md\",\"EVIDENCE.md\",\"README.md\",\"SUMMARY.md\",\"VALIDATION.md\"]"
+    ]
+  },
+  "W6-T7": {
+    "title": "Changes",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/ENTERPRISE-10-10-V1/W6-T7/",
+      "archive_files=[\"CHANGES.md\",\"EVIDENCE.md\",\"README.md\",\"SUMMARY.md\",\"VALIDATION.md\"]"
+    ]
+  },
+  "W7-T1": {
+    "title": "Changes",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/ENTERPRISE-10-10-V1/W7-T1/",
+      "archive_files=[\"CHANGES.md\",\"EVIDENCE.md\",\"README.md\",\"SUMMARY.md\",\"VALIDATION.md\",\"artifacts\"]"
+    ]
+  },
+  "W7-T2": {
+    "title": "Changes",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/ENTERPRISE-10-10-V1/W7-T2/",
+      "archive_files=[\"CHANGES.md\",\"EVIDENCE.md\",\"README.md\",\"SUMMARY.md\",\"VALIDATION.md\",\"artifacts\"]"
+    ]
+  },
+  "W7-T3": {
+    "title": "Changes",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/ENTERPRISE-10-10-V1/W7-T3/",
+      "archive_files=[\"CHANGES.md\",\"EVIDENCE.md\",\"README.md\",\"SUMMARY.md\",\"VALIDATION.md\",\"artifacts\"]"
+    ]
+  },
+  "W7-T4": {
+    "title": "Changes",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/ENTERPRISE-10-10-V1/W7-T4/",
+      "archive_files=[\"CHANGES.md\",\"EVIDENCE.md\",\"README.md\",\"SUMMARY.md\",\"VALIDATION.md\",\"artifacts\"]"
+    ]
+  },
+  "W7-T5": {
+    "title": "Changes",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/ENTERPRISE-10-10-V1/W7-T5/",
+      "archive_files=[\"CHANGES.md\",\"EVIDENCE.md\",\"README.md\",\"SUMMARY.md\",\"VALIDATION.md\",\"artifacts\"]"
+    ]
+  },
+  "W7-T6": {
+    "title": "Changes",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/ENTERPRISE-10-10-V1/W7-T6/",
+      "archive_files=[\"CHANGES.md\",\"EVIDENCE.md\",\"README.md\",\"SUMMARY.md\",\"VALIDATION.md\",\"artifacts\"]"
+    ]
+  },
+  "W7-T7": {
+    "title": "Changes",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/ENTERPRISE-10-10-V1/W7-T7/",
+      "archive_files=[\"CHANGES.md\",\"EVIDENCE.md\",\"README.md\",\"SUMMARY.md\",\"VALIDATION.md\",\"artifacts\"]"
+    ]
+  },
+  "W8-T1": {
+    "title": "CHANGES",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/ENTERPRISE-10-10-V1/W8-T1/",
+      "archive_files=[\"CHANGES.md\",\"EVIDENCE.md\",\"README.md\",\"SUMMARY.md\",\"VALIDATION.md\"]"
+    ]
+  },
+  "W8-T2": {
+    "title": "CHANGES",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/ENTERPRISE-10-10-V1/W8-T2/",
+      "archive_files=[\"CHANGES.md\",\"EVIDENCE.md\",\"README.md\",\"SUMMARY.md\",\"VALIDATION.md\"]"
+    ]
+  },
+  "W8-T3": {
+    "title": "CHANGES",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/ENTERPRISE-10-10-V1/W8-T3/",
+      "archive_files=[\"CHANGES.md\",\"EVIDENCE.md\",\"README.md\",\"SUMMARY.md\",\"VALIDATION.md\"]"
+    ]
+  },
+  "W8-T4": {
+    "title": "CHANGES",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/ENTERPRISE-10-10-V1/W8-T4/",
+      "archive_files=[\"CHANGES.md\",\"EVIDENCE.md\",\"README.md\",\"SUMMARY.md\",\"VALIDATION.md\"]"
+    ]
+  },
+  "H1": {
+    "title": "SDD Package",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H1/",
+      "archive_files=[\"CHANGES.md\",\"EVIDENCE.md\",\"README.md\",\"SUMMARY.md\",\"VALIDATION.md\"]"
+    ]
+  },
+  "H2": {
+    "title": "Project Generator / create-ai-native-app",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H2/",
+      "archive_files=[\"CHANGES.md\",\"EVIDENCE.md\",\"README.md\",\"SUMMARY.md\",\"VALIDATION.md\"]"
+    ]
+  },
+  "H3": {
+    "title": "Runtime Observability Wiring",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H3/",
+      "archive_files=[\"CHANGES.md\",\"EVIDENCE.md\",\"README.md\",\"SUMMARY.md\",\"VALIDATION.md\",\"runtime-observability-wiring.contract.json\"]"
+    ]
+  },
+  "H4": {
+    "title": "Executable Testing Profiles",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H4/",
+      "archive_files=[\"CHANGES.md\",\"EVIDENCE.md\",\"README.md\",\"SUMMARY.md\",\"VALIDATION.md\",\"executable-testing-profiles.contract.json\"]"
+    ]
+  },
+  "H5": {
+    "title": "Real Evaluation Runs",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H5/",
+      "archive_files=[\"CHANGES.md\",\"EVIDENCE.md\",\"README.md\",\"SUMMARY.md\",\"VALIDATION.md\",\"real-evaluation-runs.contract.json\"]"
+    ],
+    "evidenceStatus": "HISTORICAL_UNVERIFIED",
+    "evidenceNote": "Product commit cba745a (ai-knowledge) not found after search; see governance/adr/ADR-003-evidencia-perdida-h5-h7.md"
+  },
+  "H6": {
+    "title": "Target Repo Security Validation",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H6/",
+      "archive_files=[\"CHANGES.md\",\"EVIDENCE.md\",\"README.md\",\"SUMMARY.md\",\"VALIDATION.md\",\"target-repo-security-validation.contract.json\"]"
+    ]
+  },
+  "H7": {
+    "title": "First Client Project Playbook",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H7/",
+      "archive_files=[\"CHANGES.md\",\"EVIDENCE.md\",\"README.md\",\"SUMMARY.md\",\"VALIDATION.md\",\"first-client-project-playbook.contract.json\"]"
+    ],
+    "evidenceStatus": "HISTORICAL_UNVERIFIED",
+    "evidenceNote": "Product commit 8582290 (ai-knowledge) not found after search; see governance/adr/ADR-003-evidencia-perdida-h5-h7.md"
+  },
+  "H8": {
+    "title": "Adoption Readiness Final Audit",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/AI-NATIVE-HARDENING-V1.1/H8/",
+      "archive_files=[\"CHANGES.md\",\"EVIDENCE.md\",\"INSPECTOR.md\",\"README.md\",\"SUMMARY.md\",\"VALIDATION.md\",\"adoption-readiness-final-audit.contract.json\",\"adoption-readiness-final-audit.md\"]"
+    ]
+  },
+  "P0-T2-IMPLEMENTATION": {
+    "title": "Audit-Safe Script Mode (Implementation)",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/AI-NATIVE-HARDENING-V1.1/P0-T2-IMPLEMENTATION/",
+      "archive_files=[\"CHANGES.md\",\"EVIDENCE.md\",\"INSPECTOR.md\",\"README.md\",\"SUMMARY.md\",\"VALIDATION.md\",\"audit-safe-script-mode.implementation-closure.contract.json\",\"p0-t2-implementation-approval.contract.json\"]"
+    ]
+  },
+  "P0-T2-SPEC": {
+    "title": "Audit-Safe Script Mode (Spec)",
+    "status": "completed",
+    "evidence": [
+      "reconciled_mechanically_from_archive=true",
+      "archive_path=governance/execution/archive/AI-NATIVE-HARDENING-V1.1/P0-T2-SPEC/",
+      "archive_files=[\"CHANGES.md\",\"EVIDENCE.md\",\"README.md\",\"SUMMARY.md\",\"VALIDATION.md\",\"audit-safe-script-mode.spec-closure.contract.json\",\"p0-t2-spec-approval.contract.json\"]"
+    ]
+  },
+  "P0-T1": {
+    "title": "AI-Native Pre-First-Project Readiness Cleanup",
+    "status": "completed",
+    "closed_at": "2026-07-13",
+    "result": "completed_governance_only",
+    "evidence": [
+      "commit cb151a5 verified present (git cat-file -t = commit)",
+      "governance-only change to AI-NATIVE-HARDENING-V1.1-ROADMAP.md",
+      "human approval explicit 2026-07-13 (SESSION-CONTEXT.md)",
+      "archive reconstructed at governance/execution/archive/AI-NATIVE-HARDENING-V1.1/P0-T1/ during 2026-09-30 governance reconciliation (ADR-001..004)"
+    ]
   }
 }

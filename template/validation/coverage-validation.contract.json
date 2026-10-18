@@ -1,0 +1,139 @@
+{
+  "schemaVersion": "coverage-validation.v1",
+  "roadmapTask": "W6-T6",
+  "description": "Reusable coverage validation governance, validation model and completeness contract for generated projects. This contract defines coverage-readiness without executing coverage, changing thresholds, modifying pipelines or closing W6-T7.",
+  "coverageGovernance": {
+    "sourceTasks": [
+      "W6-T1",
+      "W6-T2",
+      "W6-T3",
+      "W6-T4",
+      "W6-T5"
+    ],
+    "requiredCoverageSignals": [
+      "lines",
+      "functions",
+      "branches",
+      "statements"
+    ],
+    "minimumThresholds": {
+      "lines": 80,
+      "functions": 80,
+      "branches": 80,
+      "statements": 80
+    },
+    "thresholdSource": "vitest.config.ts",
+    "coverageExecution": "not-run-by-w6-t6",
+    "pipelineModification": "not-modified-by-w6-t6",
+    "productRuntimeModification": "not-modified-by-w6-t6"
+  },
+  "validationModel": {
+    "provider": "v8",
+    "reporters": [
+      "text",
+      "json",
+      "html"
+    ],
+    "requiresPriorTestingContracts": true,
+    "requiresRoadmapCoverageMapping": true,
+    "requiresMachineReadableCompleteness": true,
+    "requiresHumanReadableGovernance": true,
+    "allowedItemStatuses": [
+      "defined-not-executed-by-w6-t6",
+      "ready-for-future-coverage-run",
+      "blocked"
+    ],
+    "w6T6ExecutionStatus": "defined-not-executed-by-w6-t6"
+  },
+  "completenessContract": {
+    "requiredItemFields": [
+      "id",
+      "owner",
+      "sourceTask",
+      "coverageSignals",
+      "evidence",
+      "status"
+    ],
+    "requiredEvidenceTypes": [
+      "human-readable-governance",
+      "machine-readable-contract",
+      "validator",
+      "threshold-config",
+      "roadmap-coverage-map"
+    ],
+    "forbiddenAsSoleEvidence": [
+      "manual-note",
+      "governance-archive",
+      "unexecuted-runtime-report"
+    ]
+  },
+  "coverageItems": [
+    {
+      "id": "password-validator-coverage-readiness",
+      "owner": "template-validation",
+      "sourceTask": "W6-T5",
+      "coverageSignals": [
+        "lines",
+        "functions",
+        "branches",
+        "statements"
+      ],
+      "sourceBoundary": "examples/reference-app/services/domain/services/password-validator.ts",
+      "evidence": [
+        {
+          "type": "human-readable-governance",
+          "path": "validation/coverage-validation.md"
+        },
+        {
+          "type": "machine-readable-contract",
+          "path": "validation/coverage-validation.contract.json"
+        },
+        {
+          "type": "validator",
+          "path": "scripts/validate-coverage-validation.mjs"
+        },
+        {
+          "type": "threshold-config",
+          "path": "vitest.config.ts"
+        },
+        {
+          "type": "roadmap-coverage-map",
+          "path": "validation/roadmap-coverage.json"
+        },
+        {
+          "type": "machine-readable-contract",
+          "path": "validation/chaos-testing.contract.json"
+        },
+        {
+          "type": "machine-readable-contract",
+          "path": "validation/performance-testing.contract.json"
+        },
+        {
+          "type": "machine-readable-contract",
+          "path": "validation/load-testing.contract.json"
+        },
+        {
+          "type": "machine-readable-contract",
+          "path": "validation/mutation-testing.contract.json"
+        },
+        {
+          "type": "machine-readable-contract",
+          "path": "validation/contract-testing.contract.json"
+        }
+      ],
+      "status": "defined-not-executed-by-w6-t6"
+    }
+  ],
+  "governance": {
+    "roadmapTask": "W6-T6",
+    "closes": [
+      "coverage governance",
+      "validation model",
+      "completeness contract"
+    ],
+    "doesNotClose": [
+      "W6-T7"
+    ],
+    "validation": "scripts/validate-coverage-validation.mjs"
+  }
+}

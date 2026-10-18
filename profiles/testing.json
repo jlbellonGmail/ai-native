@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "id": "testing",
+  "description": "Perfil sintetico de fixture usado por los tests L2 perfil/pack (plan maestro SS 13.2) y fixtures de CI; ejercita cada testingProfile disponible.",
+  "tools": ["claude", "codex", "opencode"],
+  "gitModel": { "integrationBranch": "main", "branchNamePattern": "^(feature|milestone|maintenance)/" },
+  "governance": { "mode": "SingleMaintainer" },
+  "mergeMethod": "merge",
+  "mcpDefaultProfile": "none",
+  "docRelevantPaths": [],
+  "testingProfiles": ["smoke", "contract", "coverage", "mutation", "load", "performance", "chaos", "e2e"],
+  "productTestCommand": null
+}

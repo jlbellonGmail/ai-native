@@ -1,0 +1,106 @@
+{
+  "schemaVersion": "sdd-package.v1",
+  "packageId": "ai-native-sdd-package",
+  "roadmap": "AI-NATIVE-HARDENING-V1.1",
+  "roadmapTask": "H1",
+  "status": "implemented",
+  "purpose": "Provide a canonical, reusable and locally validatable Spec-Driven Development package for real AI-native projects.",
+  "flow": {
+    "name": "Spec-Driven Development",
+    "canonicalOrder": ["specify", "plan", "implement", "verify"],
+    "displayOrder": "Specify -> Plan -> Implement -> Verify",
+    "chatMemoryRequired": false
+  },
+  "phases": [
+    {
+      "id": "specify",
+      "name": "Specify",
+      "template": "sdd/templates/spec-template.md",
+      "requiredGate": "SPEC_READY",
+      "requiredOutputs": ["objective", "scope", "acceptanceCriteria", "nonGoals", "risks"]
+    },
+    {
+      "id": "plan",
+      "name": "Plan",
+      "template": "sdd/templates/plan-template.md",
+      "requiredGate": "PLAN_READY",
+      "requiredOutputs": ["implementationStrategy", "affectedAreas", "validationPlan", "rollbackOrContainment", "nonGoals"]
+    },
+    {
+      "id": "implement",
+      "name": "Implement",
+      "template": "sdd/templates/implementation-template.md",
+      "requiredGate": "IMPLEMENTATION_READY",
+      "requiredOutputs": ["implementationSummary", "filesChanged", "deviations", "verificationCommands"]
+    },
+    {
+      "id": "verify",
+      "name": "Verify",
+      "template": "sdd/templates/verification-template.md",
+      "requiredGate": "VERIFICATION_READY",
+      "requiredOutputs": ["commandResults", "acceptanceCriteriaReview", "scopeInspection", "residualRisk"]
+    }
+  ],
+  "gates": [
+    {
+      "id": "SPEC_READY",
+      "phase": "specify",
+      "criteria": ["objectiveExplicit", "acceptanceCriteriaTestable", "nonGoalsListed", "dependenciesKnown", "stopConditionsReviewed"]
+    },
+    {
+      "id": "PLAN_READY",
+      "phase": "plan",
+      "criteria": ["mapsToAcceptedSpec", "validationPlanned", "affectedFilesNamed", "futureTasksUnopened", "approvalsIdentified"]
+    },
+    {
+      "id": "IMPLEMENTATION_READY",
+      "phase": "implement",
+      "criteria": ["changesMatchPlan", "deviationsDocumented", "noFutureTaskLeakage", "validationCommandsAvailable", "workingTreeReviewed"]
+    },
+    {
+      "id": "VERIFICATION_READY",
+      "phase": "verify",
+      "criteria": ["plannedCommandsExecuted", "evidenceRecorded", "inspectorCompleted", "workingTreeReviewed"]
+    },
+    {
+      "id": "DONE",
+      "phase": "verify",
+      "criteria": ["allPriorGatesPassed", "acceptanceCriteriaSatisfied", "closureEvidenceComplete", "nextEligibleTaskNamedButUnopened"]
+    }
+  ],
+  "acceptancePolicy": {
+    "acceptanceCriteriaRequiredBeforeImplementation": true,
+    "verificationRequiredBeforeClosure": true,
+    "definitionOfReadyRequired": true,
+    "definitionOfDoneRequired": true,
+    "builderInspectorRequired": true,
+    "hitlAtClosureWhenRequired": true
+  },
+  "scopeBoundaries": {
+    "doesNotOpen": ["H2", "H3", "H4", "H5", "H6", "H7", "H8"],
+    "doesNotReopen": ["ENTERPRISE-10-10-V1"],
+    "doesNotCreate": ["ENTERPRISE-10-10-V2"],
+    "doesNotImplement": [
+      "project-generator",
+      "runtime-observability-wiring",
+      "executable-testing-profiles",
+      "real-evaluation-runs",
+      "target-repository-security-validation",
+      "first-client-project-playbook",
+      "adoption-readiness-final-audit"
+    ]
+  },
+  "validation": {
+    "validator": "sdd/validation/validate-sdd-package.mjs",
+    "requiresMarkdownFiles": [
+      "sdd/README.md",
+      "sdd/canonical-flow.md",
+      "sdd/gates.md",
+      "sdd/templates/spec-template.md",
+      "sdd/templates/plan-template.md",
+      "sdd/templates/implementation-template.md",
+      "sdd/templates/verification-template.md"
+    ],
+    "requiresContract": "sdd/contracts/sdd-package.contract.json"
+  }
+}

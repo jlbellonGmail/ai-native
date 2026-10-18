@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-native.local/contracts/knowledge-package.schema.json",
+  "title": "knowledge/<package>/KNOWLEDGE.json",
+  "description": "Version descriptor of a knowledge package shipped in the release. A consumer resolving it checks schemaVersion and requires; an unsupported value is an explicit INCOMPATIBLE_VERSION, never a silent best effort.",
+  "type": "object",
+  "required": ["schemaVersion", "package", "version", "requires", "entry"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "package": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+    "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+    "description": { "type": "string" },
+    "requires": {
+      "type": "object",
+      "required": ["workflowContract", "minPlatform"],
+      "additionalProperties": false,
+      "properties": {
+        "workflowContract": { "type": "integer", "minimum": 1 },
+        "minPlatform": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" }
+      }
+    },
+    "entry": { "type": "string" }
+  }
+}

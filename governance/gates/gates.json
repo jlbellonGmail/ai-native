@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "description": "M4.3 (P44 TRUSTED_CALLER_INTEGRITY, PAR-CONFIG-FROM-BASE). Configuracion de los gates de PR. SIEMPRE se lee desde el commit BASE de la PR, nunca desde el head: una PR que modifique este archivo no cambia como se la evalua.",
+  "trustGate": {
+    "checkName": "ai-native/trust-gate",
+    "appSlug": "ai-native-trust",
+    "callerWorkflow": ".github/workflows/trust-gate.yml"
+  },
+  "mergeGate": {
+    "checkName": "ai-native/merge-gate",
+    "callerWorkflow": ".github/workflows/merge-gate.yml"
+  },
+  "reservedCheckNames": ["ai-native/trust-gate", "ai-native/merge-gate"],
+  "requiredChecks": [
+    { "name": "validators (ubuntu-latest)", "appSlug": "github-actions" },
+    { "name": "validators (windows-latest)", "appSlug": "github-actions" },
+    { "name": "pin-check", "appSlug": "github-actions" },
+    { "name": "pr-gate", "appSlug": "github-actions" },
+    { "name": "ai-native/trust-gate", "appSlug": "ai-native-trust" }
+  ],
+  "controlPlane": [
+    ".github/**",
+    "governance/gates/**",
+    "governance/rulesets/**",
+    "runtime/gates/**",
+    "core/security-policy.json",
+    "contracts/**",
+    "AGENTS.md",
+    "CLAUDE.md"
+  ],
+  "worker": {
+    "appSlug": "ai-native-worker",
+    "botLogins": ["ai-native-worker[bot]"],
+    "permissions": { "contents": "write", "pull_requests": "write", "workflows": "write", "metadata": "read" }
+  },
+  "trustApp": {
+    "permissions": { "checks": "write", "pull_requests": "read", "actions": "read", "contents": "read", "metadata": "read" }
+  },
+  "governance": {
+    "mode": "SingleMaintainer",
+    "humanMergers": ["jlbellonGmail"]
+  },
+  "gatesByLevel": {
+    "LIGHT": ["ci", "trust-gate", "pr-gate"],
+    "STANDARD": ["ci", "trust-gate", "pr-gate", "spec-review"],
+    "FULL": ["ci", "trust-gate", "pr-gate", "spec-review", "security-scan", "spec-audit"]
+  },
+  "docGate": {
+    "relevantPaths": ["core/**", "contracts/**", "runtime/**", "governance/gates/**", ".github/workflows/**"],
+    "docPaths": ["governance/**", "README.md", "docs/**"]
+  }
+}

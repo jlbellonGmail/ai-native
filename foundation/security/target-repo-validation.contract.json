@@ -1,0 +1,43 @@
+{
+  "program": "AI-NATIVE-HARDENING-V1.1",
+  "task": "H6",
+  "name": "Target Repository Security Validation",
+  "ownerRepo": "ai-foundation",
+  "status": "IMPLEMENTED",
+  "procedure": "security/target-repo-validation.md",
+  "governanceChecklist": "../governance/security/TARGET-REPO-SECURITY-CHECKLIST.md",
+  "remoteControls": [
+    {
+      "id": "dependency_review",
+      "sourceControl": "ENTERPRISE-10-10/W1-T4",
+      "evidenceRequired": ["pull_request_url", "workflow_run_url", "commit_sha", "decision"],
+      "localFilePresenceIsPass": false
+    },
+    {
+      "id": "dependabot",
+      "sourceControl": "ENTERPRISE-10-10/W1-T5",
+      "evidenceRequired": ["configuration_path", "enablement_record", "observed_run_or_human_review"],
+      "localFilePresenceIsPass": false
+    },
+    {
+      "id": "sbom",
+      "sourceControl": "ENTERPRISE-10-10/W1-T3",
+      "evidenceRequired": ["command", "artifact_path_or_url", "checksum", "parser_result"],
+      "localFilePresenceIsPass": false
+    },
+    {
+      "id": "artifact_attestation",
+      "sourceControl": "ENTERPRISE-10-10/W1-T6",
+      "evidenceRequired": ["workflow_run_url", "subject_artifact", "verification_command", "verification_result"],
+      "localFilePresenceIsPass": false
+    }
+  ],
+  "allowedStatuses": ["PASS", "FAIL", "NOT_RUN", "NOT_APPLICABLE", "CONTEXTUAL_NON_BLOCKING"],
+  "closureRules": {
+    "remoteAssumptionAsPassAllowed": false,
+    "requiresAuditableEvidence": true,
+    "requiresHitlForAcceptedRemoteLimitation": true,
+    "doesNotModifyRemotes": true,
+    "doesNotRequireCredentials": true
+  }
+}

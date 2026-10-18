@@ -1,0 +1,1 @@
+{"id":"grounded-001","input":"Answer using only the supplied context.","context":"ENTERPRISE-10-10 requires product repo impact for closed tasks.","expected":"The answer must cite product files, not governance-only archives."}

@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "platform": {
+    "repo": "github:o/ai-native",
+    "version": "v3.0.1",
+    "commit": "1111111111111111111111111111111111111111",
+    "digest": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+    "channel": "stable"
+  },
+  "profiles": ["python-app"]
+}

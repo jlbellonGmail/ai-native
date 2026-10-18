@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-native.local/contracts/waiver.schema.json",
+  "title": "waivers.json entry",
+  "description": "A time-boxed exception to a control (Y28). Never 'ignore forever': expiresAt is mandatory and at most 90 days out; on expiry, pr-gate treats the control as FAIL or REVIEW_REQUIRED depending on criticality, never as silently still-waived.",
+  "type": "object",
+  "required": ["schemaVersion", "waivers"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "waivers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["control", "scope", "reason", "owner", "createdAt", "expiresAt"],
+        "properties": {
+          "control": { "type": "string" },
+          "scope": { "type": "string" },
+          "reason": { "type": "string" },
+          "owner": { "type": "string", "description": "GitHub login of a humanMaintainer." },
+          "evidence": { "type": "string" },
+          "createdAt": { "type": "string", "format": "date" },
+          "expiresAt": { "type": "string", "format": "date" },
+          "onExpiry": { "type": "string", "enum": ["FAIL", "REVIEW_REQUIRED"], "default": "FAIL" }
+        }
+      }
+    }
+  }
+}

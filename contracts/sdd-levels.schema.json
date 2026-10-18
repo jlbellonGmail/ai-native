@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-native.local/contracts/sdd-levels.schema.json",
+  "title": "SDD levels contract",
+  "description": "The single source for what LIGHT/STANDARD/FULL require (Contrato de Paridad SS 5.2, fixes B24: TEMPLATE v2.0.5 had sdd.json and feature-contract.ps1 disagree on required artifacts). ASSESS output (score/risk) selects one of these three keys; the level never downgrades after selection (PAR-SDD-NO-RECLASSIFY).",
+  "type": "object",
+  "required": ["schemaVersion", "levels"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "levels": {
+      "type": "object",
+      "required": ["LIGHT", "STANDARD", "FULL"],
+      "additionalProperties": false,
+      "properties": {
+        "LIGHT": { "$ref": "#/$defs/level" },
+        "STANDARD": { "$ref": "#/$defs/level" },
+        "FULL": { "$ref": "#/$defs/level" }
+      }
+    }
+  },
+  "$defs": {
+    "level": {
+      "type": "object",
+      "required": ["selection", "steps", "requiredArtifacts", "convergenceBudget"],
+      "properties": {
+        "selection": { "type": "string" },
+        "steps": { "type": "array", "items": { "type": "string" } },
+        "requiredArtifacts": { "type": "array", "items": { "type": "string" } },
+        "requiredReviews": { "type": "array", "items": { "type": "string", "enum": ["spec", "code"] } },
+        "convergenceBudget": { "type": "integer", "enum": [2, 4, 6] }
+      }
+    }
+  }
+}

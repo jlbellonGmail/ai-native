@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "prompt-registry-audit.v1",
+  "roadmapTask": "W4-T6",
+  "description": "Final ENTERPRISE-10-10 prompt registry audit contract. This artifact validates W4 prompt registry consistency and does not open or close W5 agent registry tasks.",
+  "scope": {
+    "workstream": "W4 Prompt Registry",
+    "auditedTasks": ["W4-T1", "W4-T2", "W4-T3", "W4-T4", "W4-T5"],
+    "closedByThisTask": ["W4-T6"],
+    "doesNotClose": ["W5-T1", "W5-T2", "W5-T3", "W5-T4", "W5-T5", "W5-T6"]
+  },
+  "auditInputs": {
+    "schema": "config/prompt-registry.schema.json",
+    "schemaExample": "examples/prompt-registry-entry.valid.json",
+    "storage": "registries/prompts/registry.storage.json",
+    "versioning": "config/prompt-registry/versioning.compatibility.json",
+    "ownership": "config/prompt-registry/ownership.policy.json",
+    "evaluationLinkage": "config/prompt-registry/evaluation-linkage.json",
+    "roadmapCoverage": "validation/roadmap-coverage.json",
+    "roadmapToFiles": "docs/ENTERPRISE-10-10/ROADMAP_TO_FILES.md"
+  },
+  "auditChecks": [
+    {
+      "id": "w4-task-state",
+      "description": "W4-T1 through W4-T6 are implemented in product coverage."
+    },
+    {
+      "id": "w5-not-closed",
+      "description": "W5 tasks remain unopened or baseline-only after W4 audit."
+    },
+    {
+      "id": "artifact-presence",
+      "description": "Prompt registry documents, contracts and validators exist."
+    },
+    {
+      "id": "coordinate-consistency",
+      "description": "Prompt id, version and storage slot coordinates agree across storage, versioning, ownership and evaluation linkage."
+    },
+    {
+      "id": "document-integrity",
+      "description": "README and roadmap-to-files matrix include W4-T6 audit artifacts."
+    }
+  ],
+  "validators": [
+    "scripts/validate-prompt-registry-schema.mjs",
+    "scripts/validate-prompt-registry-storage.mjs",
+    "scripts/validate-prompt-registry-versioning.mjs",
+    "scripts/validate-prompt-registry-ownership.mjs",
+    "scripts/validate-prompt-registry-evaluation-linkage.mjs",
+    "scripts/validate-prompt-registry-audit.mjs"
+  ],
+  "governance": {
+    "roadmapTask": "W4-T6",
+    "closes": [
+      "audit final completada",
+      "consistencia validada",
+      "integridad documental validada",
+      "artefactos machine-readable validados"
+    ],
+    "nextEligibleTask": "W5-T1",
+    "doesNotOpen": ["W5-T1"],
+    "validation": "scripts/validate-prompt-registry-audit.mjs"
+  }
+}

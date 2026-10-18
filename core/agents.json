@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "generatedNotice": "AUTHORED (not generated). Adapters per tool (runtime/adapters, M3.3) derive .claude/, .codex/, .opencode/ from this file; do not hand-edit the derived files.",
+  "opencodeInstructions": ["AGENTS.md", ".agents/skills-local/*.md"],
+  "roles": {
+    "planner": {
+      "description": "Convierte objetivo, contexto, ASSESS y profundidad SDD en una estrategia ejecutable proporcional al riesgo. Read-only.",
+      "capabilities": ["objective-interpretation", "context-analysis", "assess-consumption", "sdd-planning", "risk-analysis", "evidence-planning", "material-escalation"],
+      "prompt": "core/roles/planner.md",
+      "claude": { "tools": ["Read", "Grep", "Glob"], "model": "sonnet", "effort": "high" },
+      "codex": { "model": "gpt-5.5", "model_reasoning_effort": "high" },
+      "opencode": { "mode": "subagent", "model": "opencode-go/kimi-k2.7-code", "reasoningEffort": "high", "permission": { "edit": "deny", "bash": "deny", "webfetch": "deny" } }
+    },
+    "builder": {
+      "description": "Materializa el cambio dentro del alcance, ejecuta herramientas y tests, diagnostica fallos y produce evidencia técnica.",
+      "capabilities": ["editing", "implementation", "tool-use", "test-execution", "debugging", "feedback-iteration", "evidence-production"],
+      "prompt": "core/roles/builder.md",
+      "claude": { "tools": ["Read", "Write", "Edit", "Bash", "Grep", "Glob"], "model": "sonnet", "effort": "high" },
+      "codex": { "model": "gpt-5.5", "model_reasoning_effort": "high" },
+      "opencode": { "mode": "subagent", "model": "opencode-go/kimi-k2.7-code", "reasoningEffort": "high", "permission": { "edit": "allow", "bash": "allow" } }
+    },
+    "reviewer": {
+      "description": "Verifica independientemente intención, resultado, diff, tests, evidencia y criterios; emite APPROVED, CHANGES_REQUESTED o BLOCKED. Invocado solo via 'ai-native review run' (P45), nunca en el contexto del Builder.",
+      "capabilities": ["acceptance-check", "spec-review", "test-analysis", "code-review", "regression-analysis", "architecture-review", "security-review", "evidence-validation", "independent-judgment"],
+      "prompt": "core/roles/reviewer.md",
+      "reviewerIndependent": true,
+      "claude": { "tools": ["Read", "Grep", "Glob"], "model": "sonnet", "effort": "high" },
+      "codex": { "model": "gpt-5.5", "model_reasoning_effort": "high" },
+      "opencode": { "mode": "subagent", "model": "opencode-go/kimi-k2.7-code", "reasoningEffort": "high", "permission": { "edit": "deny", "bash": "deny", "webfetch": "deny" } }
+    }
+  }
+}

@@ -1,0 +1,95 @@
+{
+  "schemaVersion": 1,
+  "milestone": "M5.2",
+  "kind": "real-cli",
+  "source": {
+    "kind": "published-release",
+    "tag": "v3.0.0-rc.2"
+  },
+  "os": "win32",
+  "node": "v26.7.0",
+  "date": "2026-10-05T22:25:31.863Z",
+  "generatedFiles": 22,
+  "generatedSample": [
+    ".claude/agents/builder.md",
+    ".claude/agents/planner.md",
+    ".claude/agents/reviewer.md",
+    ".codex/config.toml",
+    "CLAUDE.md",
+    "opencode.json"
+  ],
+  "tools": [
+    {
+      "tool": "claude-code",
+      "version": "2.1.289 (Claude Code)",
+      "cases": [
+        {
+          "id": "context",
+          "title": "CLAUDE.md (generated) -> AGENTS.md answered",
+          "status": "PASS",
+          "answer": "FIXTURE_OK",
+          "exit": 0,
+          "model": "claude-sonnet-5-5",
+          "session": "686ef39a-986d-4661-a061-8f31ad66ca69"
+        },
+        {
+          "id": "role",
+          "title": "generated .claude/agents/planner.md loads (--agent planner)",
+          "status": "PASS",
+          "answer": "I'm the Planner: I turn the objective, context, constraints, ASSESS output and SDD depth into a risk-proportional, executable plan (spec, plan, tasks and decision docs), without implementing anything ",
+          "exit": 0,
+          "model": "claude-sonnet-5-5",
+          "session": "572bdb3d-0102-4a96-abdf-89d808e8b850"
+        }
+      ],
+      "status": "PASS"
+    },
+    {
+      "tool": "codex-cli",
+      "version": "codex-cli 0.158.0",
+      "cases": [
+        {
+          "id": "context",
+          "title": "AGENTS.md answered by the real CLI with the generated .codex/ present",
+          "status": "PASS",
+          "answer": "FIXTURE_OK",
+          "exit": 0
+        },
+        {
+          "id": "generated-config",
+          "title": "consumption of the generated .codex/config.toml (project trust)",
+          "status": "NOT_AVAILABLE_FROM_TOOL",
+          "detail": "M2.3 finding: a trust mechanism exists but its syntax was not verified; the file is generated and parsed structurally only"
+        }
+      ],
+      "status": "NOT_AVAILABLE_FROM_TOOL"
+    },
+    {
+      "tool": "opencode",
+      "version": "opencode v2.0.22",
+      "cases": [
+        {
+          "id": "context",
+          "title": "generated opencode.json loads and AGENTS.md is answered (no ERROR)",
+          "status": "FAIL",
+          "answer": "ERROR UnexpectedStatus: 500",
+          "exit": 1
+        },
+        {
+          "id": "role",
+          "title": "generated agent planner loads its prompt from .opencode/roles/planner.md",
+          "status": "FAIL",
+          "answer": "ERROR UnexpectedStatus: 500",
+          "exit": 1
+        },
+        {
+          "id": "mcp",
+          "title": "OpenCode MCP through the platform gateway",
+          "status": "NOT_AVAILABLE_FROM_TOOL",
+          "detail": "no reproducible run that observes the gateway from OpenCode (M2.3/C5); kept as NOT_AVAILABLE_FROM_TOOL, not promoted by documentation"
+        }
+      ],
+      "status": "FAIL"
+    }
+  ]
+}

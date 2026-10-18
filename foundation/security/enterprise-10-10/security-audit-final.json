@@ -1,0 +1,21 @@
+{
+  "program": "ENTERPRISE-10-10",
+  "workstream": "W1 Security",
+  "ownerRepo": "ai-foundation",
+  "status": "PRODUCT_REPAIRED",
+  "controls": [
+    { "task": "W1-T1", "control": "CodeQL", "productPath": ".github/workflows/codeql.yml", "state": "PRODUCTIVE_CHANGE" },
+    { "task": "W1-T2", "control": "Trivy", "productPath": ".github/workflows/trivy.yml", "state": "PRODUCTIVE_CHANGE" },
+    { "task": "W1-T3", "control": "SBOM", "productPath": ".github/workflows/sbom.yml", "state": "PRODUCTIVE_CHANGE" },
+    { "task": "W1-T4", "control": "Dependency Review", "productPath": ".github/workflows/dependency-review.yml", "state": "PRODUCTIVE_CHANGE" },
+    { "task": "W1-T5", "control": "Dependabot", "productPath": ".github/dependabot.yml", "state": "PRODUCTIVE_CHANGE" },
+    { "task": "W1-T6", "control": "Supply Chain Attestation", "productPath": ".github/workflows/supply-chain.yml", "state": "PRODUCTIVE_CHANGE" },
+    { "task": "W1-T7", "control": "Security Audit Final", "productPath": "security/enterprise-10-10/security-audit-final.json", "state": "PRODUCT_REPAIRED" }
+  ],
+  "validation": {
+    "requiredProductControls": 7,
+    "acceptedLimitations": [
+      "Remote attestation persistence depends on GitHub repository plan and ownership settings."
+    ]
+  }
+}

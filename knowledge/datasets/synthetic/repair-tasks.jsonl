@@ -1,0 +1,1 @@
+{"id":"repair-001","input":"Classify a closed task with governance evidence but no product diff.","expected":"NEEDS_REPAIR"}

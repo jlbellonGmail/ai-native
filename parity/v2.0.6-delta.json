@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "description": "Delta de paridad TEMPLATE v2.0.5 -> v2.0.6 (M0.0b, P39b/P43). v2.0.5 sigue siendo la baseline funcional de paridad (ADR-002); v2.0.6 solo corrige seguridad y no agrega capacidades. Los hashes salen de parity/hash-db/hash-db.json (tags v2.0.5 y v2.0.6).",
+  "from": { "tag": "v2.0.5", "commit": "92a797c29750d5c9f64cccf8896f58e6827445cf" },
+  "to": { "tag": "v2.0.6", "commit": "6a6c2dd15ae4bf1338bf950bd6533dfb3ab36750" },
+  "capabilitiesAdded": 0,
+  "capabilitiesChanged": ["CIR-17", "CI-06", "CI-07"],
+  "files": {
+    "added": ["tests/test_workflow_security_v206.py"],
+    "removed": [],
+    "changed": {
+      ".github/workflows/post-hitl-merge-gate.yml": "security: pull_request_target, checkout de la base sin credenciales, head.ref por env, sin autorizacion por archivo",
+      ".github/workflows/post-merge-close-feature.yml": "security: head.ref y outputs por env",
+      "scripts/complete-approved-pr.ps1": "security: invalida PreAuthorizedHumanMerge/AuthorizationPath/IndependentReviewPath/IntegrityEvidencePath y SingleMaintainer; merge con --match-head-commit",
+      "tests/test_complete_approved_pr_script.py": "tests: cubre la invalidacion y el merge ligado al SHA",
+      "ROADMAP.md": "docs: entrada v2.0.6",
+      "scripts/template-starter-manifest.json": "version: templateVersion v2.0.6",
+      ".github/workflows/ci.yml": "ci: concurrency (commit directo b94f419 a main); runner de local-reconciler-tests vuelve a windows-latest",
+      ".github/workflows/docs.yml": "ci: concurrency (commit directo b94f419 a main)"
+    }
+  },
+  "behaviourRemoved": [
+    { "id": "D-1", "what": "autorizacion de merge por archivo commiteado (human-authorization.md) y modo SingleMaintainer automatico", "why": "B02/B04: el autor de la PR controla esos archivos", "replacement": "merge ejecutado por una cuenta humana sobre el SHA verificado (CIR-17, ya registrado en ADR-002)" }
+  ],
+  "regression": "tests/test_workflow_security_v206.py + tests/test_complete_approved_pr_script.py en template; runtime/pilot/p39b.test.mjs en ai-native"
+}

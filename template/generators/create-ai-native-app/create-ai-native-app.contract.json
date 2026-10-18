@@ -1,0 +1,55 @@
+{
+  "id": "create-ai-native-app",
+  "roadmap": "AI-NATIVE-HARDENING-V1.1",
+  "task": "H2",
+  "status": "IMPLEMENTED",
+  "entrypoint": "generators/create-ai-native-app.mjs",
+  "scaffold": "scaffolds/ai-native-app/files",
+  "defaultPreset": "controlled-mvp",
+  "allowedPresets": ["controlled-mvp", "pilot"],
+  "requiredInputs": ["projectName"],
+  "optionalInputs": ["destination", "preset", "dryRun"],
+  "generatedProject": {
+    "requiredDirectories": [
+      "apps",
+      "services",
+      "services/application",
+      "services/domain",
+      "services/infrastructure",
+      "config",
+      "config/ai",
+      "docs",
+      "docs/security",
+      "docs/sdd",
+      "scripts",
+      "validation"
+    ],
+    "requiredFiles": [
+      "README.md",
+      "package.json",
+      "ai-native.project.json",
+      "config/ai/sdd-workflow.md",
+      "docs/setup.md",
+      "docs/security/SECURITY-BOOTSTRAP.md",
+      "docs/sdd/README.md",
+      "scripts/validate-ai-native-project.mjs",
+      "validation/README.md"
+    ],
+    "requiredSddFlow": ["Specify", "Plan", "Implement", "Verify"]
+  },
+  "validation": {
+    "localValidator": "scripts/validate-create-ai-native-app.mjs",
+    "generatedProjectValidator": "scripts/validate-generated-project.mjs",
+    "smokeCommand": "node generators/create-ai-native-app.mjs --name demo-ai-native --dest <temp-dir>/demo-ai-native"
+  },
+  "scope": {
+    "nonGoals": [
+      "runtime observability wiring",
+      "executable testing profile completion",
+      "real evaluation runs",
+      "target repository security validation",
+      "first client project playbook",
+      "adoption readiness final audit"
+    ]
+  }
+}

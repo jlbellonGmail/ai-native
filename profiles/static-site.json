@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "id": "static-site",
+  "description": "Sitio estatico o consumidor solo-docs (mkdocs, export estatico, etc.).",
+  "tools": ["claude", "codex", "opencode"],
+  "gitModel": { "integrationBranch": "main", "branchNamePattern": "^(feature|milestone|maintenance)/" },
+  "governance": { "mode": "SingleMaintainer" },
+  "mergeMethod": "squash",
+  "mcpDefaultProfile": "none",
+  "docRelevantPaths": ["docs/**", "mkdocs.yml"],
+  "testingProfiles": ["smoke"],
+  "productTestCommand": null
+}

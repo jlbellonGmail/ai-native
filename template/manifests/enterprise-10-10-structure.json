@@ -1,0 +1,65 @@
+{
+  "repo": "ai-template",
+  "requiredDirectories": ["docs", "scripts", "config", "validation", "scaffolds", "templates", "manifests", "examples", "generators"],
+  "requiredFiles": [
+    "README.md",
+    "docs/README.md",
+    "docs/ENTERPRISE-10-10/ROADMAP_TO_FILES.md",
+    "config/README.md",
+    "validation/README.md",
+    "validation/roadmap-coverage.json",
+    "validation/strategy.md",
+    "scaffolds/README.md",
+    "scaffolds/ai-native-app/README.md",
+    "scaffolds/ai-native-app/files/README.md",
+    "scaffolds/ai-native-app/files/config/observability/runtime-observability.json",
+    "scaffolds/ai-native-app/files/docs/observability/runtime-observability.md",
+    "scaffolds/ai-native-app/files/docs/testing/executable-testing-profiles.md",
+    "scaffolds/ai-native-app/files/services/infrastructure/observability/runtime-observability.mjs",
+    "scaffolds/ai-native-app/files/scripts/validate-testing-profiles.mjs",
+    "scaffolds/ai-native-app/files/testing/profiles/testing-profiles.json",
+    "scaffolds/ai-native-app/files/testing/smoke/testing-smoke.mjs",
+    "templates/README.md",
+    "templates/project/docs/testing/executable-testing-profiles.md",
+    "templates/project/scripts/validate-testing-profiles.mjs",
+    "templates/project/testing/profiles/testing-profiles.json",
+    "templates/project/testing/smoke/testing-smoke.mjs",
+    "manifests/enterprise-10-10-structure.json",
+    "examples/README.md",
+    "generators/README.md",
+    "generators/create-ai-native-app.mjs",
+    "generators/create-ai-native-app/create-ai-native-app.contract.json",
+    "docs/setup/PROJECT_BOOTSTRAP.md",
+    "scripts/validate-runtime-observability-wiring.mjs",
+    "scripts/validate-testing-profiles.mjs",
+    "scripts/validate-create-ai-native-app.mjs",
+    "scripts/validate-generated-project.mjs",
+    "testing/profiles/testing-profiles.json",
+    "testing/smoke/testing-smoke.mjs",
+    "validation/testing-profiles.md"
+  ],
+  "scaffolds": [
+    {
+      "id": "ai-native-app",
+      "readme": "scaffolds/ai-native-app/README.md",
+      "files": "scaffolds/ai-native-app/files",
+      "reference": "examples/reference-app"
+    }
+  ],
+  "generators": [
+    {
+      "id": "create-ai-native-app",
+      "entrypoint": "generators/create-ai-native-app.mjs",
+      "contract": "generators/create-ai-native-app/create-ai-native-app.contract.json",
+      "validator": "scripts/validate-create-ai-native-app.mjs",
+      "generatedProjectValidator": "scripts/validate-generated-project.mjs"
+    }
+  ],
+  "validation": [
+    "scripts/validate-enterprise-template.mjs",
+    "scripts/validate-structure.mjs",
+    "scripts/validate-create-ai-native-app.mjs",
+    "scripts/validate-generated-project.mjs",
+    "validation/roadmap-coverage.json"
+  ]
+}

@@ -1,0 +1,24 @@
+# Project Specs
+
+This directory contains Spec-Driven Development artifacts for this generated project.
+
+Do not use this directory as a roadmap.
+
+Roadmap and task state belong in project governance.
+
+A task or feature spec should be created only when governance confirms the task is active or when the user explicitly requests a planning artifact.
+
+Recommended structure:
+
+specs/<task-or-feature-id>/
+├── spec.md
+├── plan.md
+├── tasks.md
+├── verification.md
+└── inspector.md
+
+Use templates from:
+
+`ai-native run -- knowledge sdd/feature-templates/<name>-template.md` (a copy in `.specify/templates/` overrides it)
+
+Constitution: the ai-native constitution applies as is (`ai-native run -- knowledge` resolves it); local additions, only if truly needed, go in `.specify/memory/constitution.md` as `- [ADD] LOCAL-n: ...` lines.
