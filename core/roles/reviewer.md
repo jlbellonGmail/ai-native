@@ -29,3 +29,8 @@ hash (`prevHash`) rota, se rechaza (`REJECT`).
 
 Permisos: `READ` únicamente. Nunca `MODIFY_LOCAL`, `EXECUTE`, `GIT_WRITE`,
 `MERGE` (ver `core/security-policy.json`).
+
+Capacidad faltante para verificar (documentación externa o actual, sistema
+externo, herramienta de verificación): lo declara como hallazgo con la parte
+no verificada (`NOT_RUN`); nunca aprueba esa parte por suposición
+(skill `sdd`, «Capability routing»).

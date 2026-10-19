@@ -4,7 +4,7 @@
 > `governance/history/SESSION-CONTEXT-HISTORY-2026-10-04.md`. Fuente de verdad del estado: este archivo, `governance/roadmaps/AI-NATIVE-V3-ROADMAP.md` y Git/GitHub.
 > Política del merge humano: `governance/security/HITL-MERGE-POLICY.md`. Frontera de secretos: `governance/security/SECRETS-BOUNDARY.md`.
 
-Actualizado: 2026-10-17 (v3.3.0 publicada y verificada desde la release pública).
+Actualizado: 2026-10-18 (candidata v3.3.1 preparada; v3.3.0 sigue siendo la release vigente).
 
 ```text
 STATUS: V3.3.0_RELEASED_AND_VERIFIED
@@ -12,6 +12,12 @@ INITIATIVE: CLOSED (N-02b); CLI_LIFECYCLE: CLOSED (v3.3.0)
 STABLE_BASELINE: v3.3.0 (tag sobre ae6d50b; digest sha256:0c21bbae2ff0b809bdc29cc5fc57ad9802312aac812476ce1d955551ff631f1d)
 PREVIOUS_BASELINE: v3.2.0 (inmutable). Los 9 consumidores seguían en v3.1.2 el 2026-10-12; no re-verificado desde entonces
 ```
+
+**Candidata `v3.3.1` (PATCH), sin tag ni release (encargo explícito del humano, 2026-10-18):** rama `release/v3.3.1` desde `develop` (`3c9fe11`, con #137 y #138); incluye los dos cambios siguientes y `CLI_VERSION = "v3.3.1"`, que el build exige para el tag. Detalle, delta de consumidor y SemVer: `governance/versioning/V3.3.1-PATCH.md`; auditoría del SHA final en `.audit/reports/`. Promoción `develop` → `main` por PR humana con merge commit; tag y release después del `release-gate`.
+
+**Capability Routing (#137, en `develop`).** Comprobación silenciosa y provider-agnostic de capacidades al empezar una fase SDD o cambiar el tipo de trabajo; fuente única: sección «Capability routing» de `.agents/skills/sdd/SKILL.md`, con una línea de referencia en `core/roles/{planner,builder,reviewer}.md` para los subagentes. Sin comando, estado, artefacto, gate ni HITL nuevos; `AGENTS.md` y `contracts/**` sin cambios. Semver propuesto: `v3.3.1` (PATCH). Sin tag ni release; los consumidores fijados a `v3.3.0` no cambian hasta un upgrade explícito. Merge y release: decisión humana.
+
+**CI en PR hacia `develop` (#138, encargo explícito del humano, 2026-10-18):** `develop` es la rama de integración y `main` la de release. `ci`, `pr-gate`, `codeql`, `dependency-review`, `security-scan`, `supply-chain`, `trivy` y `sbom` añaden `develop` a `pull_request.branches`; solo cambia ese trigger (jobs, permisos y nombres de checks intactos; la base del diff ya sale de `github.base_ref`). Siguen exclusivos de `main`: `merge-gate`, `trust-gate`, `post-merge`, `release` (el dry-run de `release` en PR se ejercita en la PR `develop` → `main`) y `pilot` (su job offline en `ubuntu-latest` falló dos veces seguidas con Docker exit 125 en la PR hacia `develop`, y GitHub anuncia la migración de `ubuntu-latest` a Ubuntu 26; se ejercita en la PR `develop` → `main`), y los triggers `push`/`schedule`. `develop` no tiene ruleset: los checks nuevos en sus PR son informativos, sin HITL nuevo.
 
 **`v3.3.0` publicada** el 2026-10-17T15:30:43Z: tag anotado sobre `ae6d50b` (merge de #134; difiere del SHA auditado `d98a89e` solo en `.audit/**`; auditoría 93.00/100, 0 BLOCKER/CRITICAL/MAJOR, 10 MINOR no bloqueantes), `release-gate` PASS_WITH_WARNINGS (21 avisos STALE), workflow `Release` run 39045212338 con build/publish/verify en success, release inmutable, `verify-release` PASS (33 checks) y aceptación A–N desde la release publicada en PASS: `governance/versioning/V3.3.0-POST-RELEASE-VERIFICATION.md`. El pilot #171 sobre `ae6d50b` falló en el intento 1 por un fallo transitorio del daemon Docker (exit 125, `CONTEXTUAL_NON_BLOCKING`) y pasó 10/10 al reintentar; sin scope abierto.
 

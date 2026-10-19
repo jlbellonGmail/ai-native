@@ -36,6 +36,8 @@ writeFileSync(revocations, JSON.stringify({ schemaVersion: 1, n: 1, publishedAt:
 
 const CLI_SOURCE = readFileSync(new URL("./ai-native.mjs", import.meta.url), "utf8");
 const MARKER = `export const CLI_VERSION = "${CLI_VERSION}";`;
+/** This tree's CLI version as a regex fragment, so the assertions about it do not have to change with every release. */
+const THIS_CLI = CLI_VERSION.replaceAll(".", "\\.");
 /** The CLI as another release would publish it: this program declaring `v`. */
 const cliAsset = (v) => Buffer.from(CLI_SOURCE.replace(MARKER, `export const CLI_VERSION = "${v}";`));
 
@@ -449,7 +451,7 @@ test("SELF-UPDATE: a revoked CLI release is refused; a revoked CLI is told to up
   const project = gitInit();
   const w2 = world({ releases: [mine], home: m.home });
   assert.equal(await w2.run(["init", "--profile", "python-service"], { cwd: project }), 1);
-  assert.match(w2.err.join("\n"), /CLI_REVOKED: this ai-native CLI \(v3\.3\.0\) is revoked.*self-update.*CLI-RECOVERY\.md/);
+  assert.match(w2.err.join("\n"), new RegExp(`CLI_REVOKED: this ai-native CLI \\(${THIS_CLI}\\) is revoked.*self-update.*CLI-RECOVERY\\.md`));
   assert.equal(w2.log.engine.length, 0);
   assert.deepEqual(files(project), []);
   // ... but the recovery commands still run
@@ -465,8 +467,8 @@ test("SELF-UPDATE never downgrades: an older latest release changes nothing, `in
   assert.equal(m.version(), "v9.9.9");
   assert.deepEqual(w.log.gh, []);
   const err = [];
-  assert.equal(await main(["install"], { env: { ...process.env, AI_NATIVE_HOME: m.home }, out() {}, err: (e) => err.push(e) }), 1); // this tree's CLI is v3.3.0
-  assert.match(err.join("\n"), /INSTALL_DOWNGRADE_REFUSED: v9\.9\.9 is installed and this file is v3\.3\.0/);
+  assert.equal(await main(["install"], { env: { ...process.env, AI_NATIVE_HOME: m.home }, out() {}, err: (e) => err.push(e) }), 1); // this tree's CLI is CLI_VERSION, older than v9.9.9
+  assert.match(err.join("\n"), new RegExp(`INSTALL_DOWNGRADE_REFUSED: v9\\.9\\.9 is installed and this file is ${THIS_CLI}`));
   assert.equal(m.version(), "v9.9.9");
   // the one historical exception: a v3.2.0 CLI (no marker) is updated by hand with `install` of the attested asset
   const legacy = tmp("legacy-home");
@@ -474,7 +476,7 @@ test("SELF-UPDATE never downgrades: an older latest release changes nothing, `in
   writeFileSync(join(legacy, "bin", "ai-native.mjs"), readFileSync(join(REPO_ROOT, "evaluation", "fixtures", "cli", "ai-native-v3.2.0.mjs")));
   const out = [];
   assert.equal(await main(["install"], { env: { ...process.env, AI_NATIVE_HOME: legacy }, out: (o) => out.push(o), err() {} }), 0);
-  assert.match(out[0], /Updated ai-native CLI \(older\) -> v3\.3\.0/);
+  assert.match(out[0], new RegExp(`Updated ai-native CLI \\(older\\) -> ${THIS_CLI}`));
   assert.equal(declaredVersion(join(legacy, "bin", "ai-native.mjs")), CLI_VERSION);
 });
 
@@ -519,11 +521,11 @@ test("INSTALL is idempotent, writes shims that quote paths with spaces, never to
   const env = { ...process.env, AI_NATIVE_HOME: home };
   const out = [];
   assert.equal(await main(["install"], { env, out: (o) => out.push(o), err() {} }), 0);
-  assert.match(out[0], /^Installed ai-native CLI v3\.3\.0 in /);
+  assert.match(out[0], new RegExp(`^Installed ai-native CLI ${THIS_CLI} in `));
   const snapshot = snap(join(home, "bin"));
   out.length = 0;
   assert.equal(await main(["install"], { env, out: (o) => out.push(o), err() {} }), 0);
-  assert.match(out[0], /^ai-native CLI v3\.3\.0 is installed in /);
+  assert.match(out[0], new RegExp(`^ai-native CLI ${THIS_CLI} is installed in `));
   assert.deepEqual(snap(join(home, "bin")), snapshot, "a second install changes nothing");
   assert.deepEqual(readdirSync(join(home, "bin")).sort(), ["ai-native", "ai-native.cmd", "ai-native.mjs"]);
   const bin = join(home, "bin");
