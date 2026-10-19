@@ -1,4 +1,25 @@
-# AI-NATIVE v3.3.1 candidate — prepared, pending human promotion
+# AI-NATIVE v3.3.1 — Released and Verified
+
+v3.3.1 is published and verified against the public release. Facts and
+evidence: `governance/versioning/V3.3.1-POST-RELEASE-VERIFICATION.md`.
+
+```text
+ROADMAP: AI-NATIVE V3 / v3.3.1 (PATCH)
+STATE: V3.3.1_RELEASED_AND_VERIFIED
+FINAL CANDIDATE / RELEASE SHA: 4974fa6641d415fdaca93150c45b2e1e960ce796 (merge of #140, develop -> main)
+AUDITED SHA: 65fc5628d6e567d5771a83be5ef962c771c8e5d7 (differs only in .audit/**)
+PLATFORM AUDIT: independent, 90.75/100; 0 BLOCKER, 0 CRITICAL, 0 MAJOR, 16 MINOR
+RELEASE-GATE (AUDIT-PLATFORM-65fc562.md): PASS; errors [], warnings []
+v3.3.1 TAG: annotated, on 4974fa6
+v3.3.1 RELEASE: published, immutable; digest sha256:1fc1f9b72e88170e25475f5e547d85e63c9616082d787e9f7a0286e96db1c646
+RELEASE WORKFLOW: run 39186071891; build PASS, publish PASS, verify PASS
+verify-release: PASS (33 checks, public assets)
+BOOTSTRAP (remote, --require-attestation): PASS
+INIT (empty repository, published asset): READY
+NON-BLOCKING FOLLOW-UPS: listed in the verification file, no scope opened
+```
+
+Previous snapshot (candidate preparation), kept as history:
 
 ```text
 CANDIDATE: v3.3.1 (PATCH) on release/v3.3.1, from develop 3c9fe11 (#137, #138)
@@ -9,7 +30,7 @@ v3.3.1 TAG / RELEASE: NOT CREATED / NOT PUBLISHED
 NEXT: human PR develop -> main (merge commit), release-gate, tag
 ```
 
-Current release: v3.3.0, below.
+Previous release: v3.3.0, below.
 
 # AI-NATIVE v3.3.0 — Released and Verified
 
