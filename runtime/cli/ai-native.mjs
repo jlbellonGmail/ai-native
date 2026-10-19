@@ -20,7 +20,7 @@ import { basename, delimiter, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { gunzipSync } from "node:zlib";
 
-export const CLI_VERSION = "v3.3.0"; // the tag of the release that publishes this file, prereleases included (the release build refuses a mismatch)
+export const CLI_VERSION = "v3.3.1"; // the tag of the release that publishes this file, prereleases included (the release build refuses a mismatch)
 export const CLI_PROTOCOL = 1; // launcher -> engine interface; platform.json `bootstrap.protocol` is what a release needs of it
 export const CLI_CAPABILITIES = ["adopt", "upgrade", "detach"]; // what this CLI can do before trust exists; platform.json `bootstrap.requiredCapabilities`
 export const OFFICIAL_REPO = "jlbellonGmail/ai-native";
