@@ -130,26 +130,17 @@ export function allowNoneFromLock(lock, platformRoot = PLATFORM_ROOT) {
   return lock?.governance?.allowNone === true || allowNoneFor(lock?.profiles?.[0], platformRoot);
 }
 
-if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1])) {
-  // node hitl.mjs --base <ref> [--project .] [--environment development|release|production] [--profile <id>]
-  // (in a consumer: `ai-native run -- hitl --base <ref>`; the policy is read from the lock on <ref>)
-  // The diff and the base gate config are read from git; risk and protected areas are never taken from flags.
-  const a = process.argv.slice(2);
-  const val = (n) => { const i = a.indexOf(n); return i >= 0 ? a[i + 1] : undefined; };
-  const project = resolve(val("--project") ?? ".");
-  const base = val("--base");
-  if (!base) {
-    console.error("FAIL: --base <ref> is required: the change must be assessed from git");
-    process.exit(1);
-  }
+/**
+ * The gate check of the real change of `project` against `base`, read from git (the `hitl` command; also
+ * used by `sdd review status`). Throws when git cannot evaluate the change.
+ */
+export function checkChangeAgainstBase({ project, base, environment = "development", profile = "factory" }) {
+  if (!base) throw new Error("--base <ref> is required: the change must be assessed from git");
   // the real change = base..working tree (committed, staged and unstaged) plus untracked files: work in progress counts, so
   // an agent that has not committed yet cannot get a lighter gate than the commit would
   const out = git(project, ["diff", "--name-only", "--no-renames", base]);
   const untracked = git(project, ["ls-files", "--others", "--exclude-standard"]);
-  if (out === null || untracked === null) {
-    console.error(`FAIL: cannot diff ${base} against the working tree`);
-    process.exit(1);
-  }
+  if (out === null || untracked === null) throw new Error(`cannot diff ${base} against the working tree`);
   // policy comes from the lock on the BASE ref (never from the working tree or a flag); --profile only applies without a base lock (factory)
   let baseLock = null;
   const lockText = git(project, ["show", `${base}:ai-native.lock.json`]);
@@ -157,18 +148,32 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1
     try {
       baseLock = JSON.parse(lockText);
     } catch {
-      console.error("FAIL: the lock on the base ref is not valid JSON");
-      process.exit(1);
+      throw new Error("the lock on the base ref is not valid JSON");
     }
   }
-  const result = checkHumanGate({
+  return checkHumanGate({
     project,
     base,
     changedPaths: [...new Set(`${out}\n${untracked}`.split(/\r?\n/).filter(Boolean))],
-    environment: val("--environment") ?? "development",
-    allowNone: allowNoneFromLock(baseLock, undefined) || (baseLock === null && allowNoneFor(val("--profile") ?? "factory")),
+    environment,
+    allowNone: allowNoneFromLock(baseLock, undefined) || (baseLock === null && allowNoneFor(profile)),
     requireGateConfig: existsSync(join(project, "governance", "gates", "gates.json")),
   });
+}
+
+if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1])) {
+  // node hitl.mjs --base <ref> [--project .] [--environment development|release|production] [--profile <id>]
+  // (in a consumer: `ai-native run -- hitl --base <ref>`; the policy is read from the lock on <ref>)
+  // The diff and the base gate config are read from git; risk and protected areas are never taken from flags.
+  const a = process.argv.slice(2);
+  const val = (n) => { const i = a.indexOf(n); return i >= 0 ? a[i + 1] : undefined; };
+  let result;
+  try {
+    result = checkChangeAgainstBase({ project: resolve(val("--project") ?? "."), base: val("--base"), environment: val("--environment") ?? "development", profile: val("--profile") ?? "factory" });
+  } catch (error) {
+    console.error(`FAIL: ${error.message}`);
+    process.exit(1);
+  }
   for (const u of result.units) console.log(`${u.ok ? "PASS" : "FAIL"} ${u.unit}: risk ${u.risk}, human_gate ${u.gate}${u.reasons.length ? ` (${u.reasons.join("; ")})` : ""}`);
   process.exit(result.ok ? 0 : 1);
 }

@@ -13,6 +13,8 @@ import { fileURLToPath } from "node:url";
 import { governedCatalog, DEFAULT_GATEWAY_SCRIPT } from "./gateway.mjs";
 import { checkEntryPoints, loadAgents, loadMcpCatalog, loadRolePrompt } from "./sources.mjs";
 import { buildClaudeBridge, buildClaudeMcpJson, buildClaudeAgentFile } from "./claude.mjs";
+import { buildClaudeSettings } from "./claude-review.mjs";
+import { reviewDelegationNote } from "./review-evidence.mjs";
 import { buildCodexConfigToml, buildCodexRoleProfileToml, buildCodexReadme } from "./codex.mjs";
 import { buildOpenCodeConfig } from "./opencode.mjs";
 import { buildCommandFiles, findObsoleteCommands } from "./commands.mjs";
@@ -46,10 +48,12 @@ export function buildToolFiles(root, { tools = ALL_TOOLS, mcpProfile = "none", g
   if (tools.includes("claude")) {
     files["CLAUDE.md"] = buildClaudeBridge();
     files[".mcp.json"] = buildClaudeMcpJson(mcp);
+    // the SubagentStop hook that captures the runtime receipt of a finished reviewer (independent review)
+    files[".claude/settings.json"] = buildClaudeSettings();
   }
   if (tools.includes("codex")) {
     files[".codex/config.toml"] = buildCodexConfigToml(agents, mcp);
-    files[".codex/README.md"] = buildCodexReadme();
+    files[".codex/README.md"] = buildCodexReadme({ reviewCapability: reviewDelegationNote(agents.runtimes, "codex") });
   }
   if (tools.includes("opencode")) {
     files["opencode.json"] = buildOpenCodeConfig(agents, mcp, { rolesDir: opencodeRolesDir });

@@ -4,7 +4,7 @@
 > `governance/history/SESSION-CONTEXT-HISTORY-2026-10-04.md`. Fuente de verdad del estado: este archivo, `governance/roadmaps/AI-NATIVE-V3-ROADMAP.md` y Git/GitHub.
 > Política del merge humano: `governance/security/HITL-MERGE-POLICY.md`. Frontera de secretos: `governance/security/SECRETS-BOUNDARY.md`.
 
-Actualizado: 2026-10-18 (v3.3.1 publicada y verificada desde la release pública).
+Actualizado: 2026-10-22 (#146 integrada en `main`; reconciliación `main` → `develop`).
 
 ```text
 STATUS: V3.3.1_RELEASED_AND_VERIFIED
@@ -14,6 +14,8 @@ PREVIOUS_BASELINE: v3.3.0 (inmutable). Los 9 consumidores seguían en v3.1.2 el 
 ```
 
 **`v3.3.1` publicada** el 2026-10-19T01:37:38Z (2026-10-18 hora local): tag anotado sobre `4974fa6` (merge de #140 `develop` → `main`; difiere del SHA auditado `65fc562` solo en `.audit/**`; auditoría independiente 90.75/100, 0 BLOCKER/CRITICAL/MAJOR, 16 MINOR no bloqueantes), `release-gate` sobre `AUDIT-PLATFORM-65fc562.md` PASS sin errores ni avisos, workflow `Release` run 39186071891 con build/publish/verify en PASS, release inmutable, `verify-release` PASS (33 checks) desde los assets públicos, bootstrap remoto con `--require-attestation` PASS e `init` en repo vacío → READY: `governance/versioning/V3.3.1-POST-RELEASE-VERIFICATION.md`. Pendientes no bloqueantes posteriores (attest-sbom → attest, Ubuntu 26, CI Linux-first, Docker exit 125 del pilot, ruleset de `develop`) registrados allí, separados del cierre y sin scope abierto. Los consumidores no se actualizan sin encargo explícito.
+
+**Runtime-attested independent SDD review (#146, en `main`, sin release).** Mergeada por el humano el 2026-10-22 (merge commit `fefd4b3`, árbol idéntico al contenido revisado `8553349`; HITL `required`, risk `high`). `CLI_VERSION` sigue en `v3.3.1`; sin tag ni release ni candidata. Reconciliación `main` → `develop` desde el SHA fijo `fefd4b3`, sin #147 ni otras PRs posteriores. Cadena de review, CI y hallazgo del `docs-gate` (no cuenta `specs/**` ni `knowledge/**`; deuda sin scope abierto): `governance/execution/current/SDD-INDEPENDENT-REVIEW-INTEGRATION.md`.
 
 Historia de la candidata (cerrado con la publicación de `v3.3.1`). **Candidata `v3.3.1` (PATCH), sin tag ni release (encargo explícito del humano, 2026-10-18):** rama `release/v3.3.1` desde `develop` (`3c9fe11`, con #137 y #138); incluye los dos cambios siguientes y `CLI_VERSION = "v3.3.1"`, que el build exige para el tag. Detalle, delta de consumidor y SemVer: `governance/versioning/V3.3.1-PATCH.md`; auditoría del SHA final en `.audit/reports/`. Promoción `develop` → `main` por PR humana con merge commit; tag y release después del `release-gate`.
 

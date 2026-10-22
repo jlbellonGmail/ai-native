@@ -16,6 +16,7 @@ function makeWorkRoot() {
   cpSync(join(repoRoot, "profiles"), join(workRoot, "profiles"), { recursive: true });
   cpSync(join(repoRoot, "contracts"), join(workRoot, "contracts"), { recursive: true });
   cpSync(join(repoRoot, "runtime"), join(workRoot, "runtime"), { recursive: true });
+  cpSync(join(repoRoot, "evaluation", "compat"), join(workRoot, "evaluation", "compat"), { recursive: true });
   return workRoot;
 }
 
@@ -86,5 +87,31 @@ test("regression: an mcp profile referencing an unregistered server is rejected"
     assert.ok(threw, "an mcp profile referencing an unknown server must make validate-core.mjs exit non-zero");
   } finally {
     rmSync(workRoot, { recursive: true, force: true });
+  }
+});
+
+test("regression: independent review cannot be declared verified without evidence, and no runtime may be left undeclared", () => {
+  for (const [label, mutate, expected] of [
+    ["verified without evidence", (agents) => { agents.runtimes.opencode = { ...agents.runtimes.opencode, independentReview: "verified", evidence: "evaluation/compat/missing.md" }; }, /runtimes\.opencode is verified but its evidence/],
+    ["undeclared runtime", (agents) => { delete agents.runtimes.codex; }, /runtimes\.codex is missing/],
+    ["unknown support value", (agents) => { agents.runtimes.claude.independentReview = "yes"; }, /runtimes\.claude\.independentReview must be one of/],
+  ]) {
+    const workRoot = makeWorkRoot();
+    try {
+      const agentsPath = join(workRoot, "core", "agents.json");
+      const agents = JSON.parse(readFileSync(agentsPath, "utf8"));
+      mutate(agents);
+      writeFileSync(agentsPath, JSON.stringify(agents, null, 2));
+      let threw = false;
+      try {
+        execFileSync(process.execPath, [join(workRoot, "core", "validate-core.mjs")], { encoding: "utf8" });
+      } catch (error) {
+        threw = true;
+        assert.match(error.stdout, expected, label);
+      }
+      assert.ok(threw, `${label} must make validate-core.mjs exit non-zero`);
+    } finally {
+      rmSync(workRoot, { recursive: true, force: true });
+    }
   }
 });

@@ -4,8 +4,15 @@ import { implementAll } from "./implement-all.mjs";
 import { runCoordinator, validateHandoff, phasesFor } from "./coordinator.mjs";
 
 const task = (id, state = "pending") => ({ id, title: id, state, requirements: [], doneWhen: "ok" });
-const approve = () => ({ verdict: "APPROVED", findings: [] });
+// a runtime that can run the Reviewer isolated, and the evidence such a review leaves (no reasoning, only who/how/what)
+const REV = "sha256:rev-1";
+// what core/agents.json would say about a runtime the platform verified, and what its adapter attests for a review
+const RUNTIMES = { "test-runtime": { independentReview: "verified", evidence: "x", executions: { "delegated-fresh-context": "verified", "separate-process": "unavailable" } } };
+const ISOLATED = { runtime: "test-runtime", agentDelegation: "available", contextIsolation: "available" };
+const evidence = (verdict = "APPROVED", reviewedRevision = REV) => ({ runtime: "test-runtime", agent: "reviewer", execution: "delegated-fresh-context", isolation: "fresh-context", reviewId: "review-1", reviewedRevision, verdict, attestation: { source: "runtime", adapter: "test-runtime", agentId: "agent-1" } });
+const approve = () => ({ verdict: "APPROVED", findings: [], evidence: evidence() });
 const pass = () => ({ passed: true, output: "ok" });
+const coordinate = (args) => runCoordinator({ capability: ISOLATED, runtimes: RUNTIMES, ...args });
 
 function harness(overrides = {}) {
   const calls = [];
@@ -16,6 +23,9 @@ function harness(overrides = {}) {
     fullSuite: async () => { calls.push(["suite"]); return pass(); },
     review: async () => { calls.push(["review"]); return approve(); },
     fix: async () => { calls.push(["fix"]); },
+    revision: async () => REV,
+    capability: ISOLATED,
+    runtimes: RUNTIMES,
     ...overrides,
   };
   return { calls, agents };
@@ -78,19 +88,46 @@ test("implement-all: an already blocked task stops the run immediately", async (
 
 test("implement-all: review findings are fixed through the loop until approved", async () => {
   let round = 0;
+  let rev = REV;
   const { calls, agents } = harness({
     review: async () => (++round === 1
-      ? { verdict: "CHANGES_REQUESTED", findings: [{ id: "F1", severity: "HIGH", description: "missing edge case", status: "OPEN" }] }
-      : { verdict: "APPROVED", findings: [{ id: "F1", severity: "HIGH", description: "missing edge case", status: "RESOLVED" }] }),
+      ? { verdict: "CHANGES_REQUESTED", findings: [{ id: "F1", severity: "HIGH", description: "missing edge case", status: "OPEN" }], evidence: evidence("CHANGES_REQUESTED") }
+      : { verdict: "APPROVED", findings: [{ id: "F1", severity: "HIGH", description: "missing edge case", status: "RESOLVED" }], evidence: evidence("APPROVED", "sha256:rev-2") }),
+    fix: async () => { calls.push(["fix"]); rev = "sha256:rev-2"; },
+    revision: async () => rev,
   });
   const run = await implementAll({ tasks: [task("T1")], level: "normal", ...agents });
   assert.equal(run.status, "DONE");
+  assert.equal(run.outcome.finalReviewStatus, "APPROVED");
   assert.equal(calls.filter((c) => c[0] === "fix").length, 1);
   assert.equal(calls.filter((c) => c[0] === "suite").length, 2, "suite re-run after the fix");
 });
 
+test("implement-all (F2, L1): a fix that changes nothing cannot be approved over the adverse review of the same revision", async () => {
+  let round = 0;
+  const { agents } = harness({
+    review: async () => (++round === 1
+      ? { verdict: "CHANGES_REQUESTED", findings: [{ id: "F1", severity: "HIGH", description: "missing edge case", status: "OPEN" }], evidence: evidence("CHANGES_REQUESTED") }
+      : approve()),
+  });
+  const run = await implementAll({ tasks: [task("T1")], level: "normal", ...agents, humanGate: { ok: true, gate: "none" } });
+  assert.equal(run.status, "NEEDS_HUMAN_DECISION");
+  assert.equal(run.reason, "adverse_review_stands");
+  assert.equal(run.outcome.finalReviewStatus, "CHANGES_REQUESTED");
+  assert.equal(run.outcome.humanGate, "required");
+  // and the Coordinator does not report it ready
+  const trace = [];
+  const unchanged = coordinatorAgents(trace);
+  let rounds = 0;
+  unchanged.reviewer.review = async () => (++rounds === 1 ? { verdict: "CHANGES_REQUESTED", findings: [{ id: "F1", severity: "HIGH", description: "x", status: "OPEN" }], evidence: evidence("CHANGES_REQUESTED") } : approve());
+  const coordinated = await coordinate({ goal: "fix balance rounding", signals: { scope: 1 }, agents: unchanged });
+  assert.equal(coordinated.status, "NEEDS_HUMAN_DECISION");
+  assert.equal(coordinated.gate.gate, "required");
+  assert.ok(!trace.includes("validate"));
+});
+
 test("implement-all: review that never improves stops (no infinite loop) and is not DONE", async () => {
-  const stuck = { verdict: "CHANGES_REQUESTED", findings: [{ id: "F1", severity: "HIGH", description: "same", status: "OPEN" }] };
+  const stuck = { verdict: "CHANGES_REQUESTED", findings: [{ id: "F1", severity: "HIGH", description: "same", status: "OPEN" }], evidence: evidence("CHANGES_REQUESTED") };
   const { calls, agents } = harness({ review: async () => stuck });
   const run = await implementAll({ tasks: [task("T1")], level: "normal", ...agents });
   assert.equal(run.status, "BLOCKED");
@@ -136,20 +173,21 @@ function coordinatorAgents(trace) {
       fix: async () => { trace.push("fix"); },
     },
     verify: {
+      revision: async () => REV,
       test: async () => pass(),
       accept: async () => ({ accepted: true }),
       fullSuite: async () => { trace.push("suite"); return pass(); },
     },
     reviewer: {
       review: async () => { trace.push("review"); return approve(); },
-      validate: async () => { trace.push("validate"); return { verdict: "APPROVED" }; },
+      validate: async () => { trace.push("validate"); return { verdict: "APPROVED", evidence: evidence() }; },
     },
   };
 }
 
 test("E2E automatic Task+light: minimal artifacts, no spec/plan/tasks phases", async () => {
   const trace = [];
-  const out = await runCoordinator({ goal: "fix balance rounding", signals: { scope: 1 }, agents: coordinatorAgents(trace) });
+  const out = await coordinate({ goal: "fix balance rounding", signals: { scope: 1 }, agents: coordinatorAgents(trace) });
   assert.equal(out.status, "READY_FOR_HITL");
   assert.equal(out.classification.workUnit, "task");
   assert.equal(out.classification.level, "light");
@@ -158,7 +196,7 @@ test("E2E automatic Task+light: minimal artifacts, no spec/plan/tasks phases", a
 
 test("E2E automatic Feature+normal: classify -> plan -> implement -> test -> review -> validate", async () => {
   const trace = [];
-  const out = await runCoordinator({ goal: "weekly goal", signals: { newCapability: true, scope: 1, complexity: 1 }, agents: coordinatorAgents(trace) });
+  const out = await coordinate({ goal: "weekly goal", signals: { newCapability: true, scope: 1, complexity: 1 }, agents: coordinatorAgents(trace) });
   assert.equal(out.status, "READY_FOR_HITL");
   assert.equal(out.classification.level, "normal");
   assert.deepEqual(trace, ["spec", "plan", "tasks", "implement:T1", "implement:T2", "suite", "review", "validate"]);
@@ -167,7 +205,7 @@ test("E2E automatic Feature+normal: classify -> plan -> implement -> test -> rev
 
 test("E2E automatic Feature+full adds the formal clarify phase", async () => {
   const trace = [];
-  const out = await runCoordinator({ goal: "payments migration", signals: { newCapability: true, migration: true }, agents: coordinatorAgents(trace) });
+  const out = await coordinate({ goal: "payments migration", signals: { newCapability: true, migration: true }, agents: coordinatorAgents(trace) });
   assert.equal(out.classification.level, "full");
   assert.deepEqual(trace.slice(0, 4), ["spec", "clarify", "plan", "tasks"]);
   assert.equal(out.status, "READY_FOR_HITL");
@@ -175,7 +213,7 @@ test("E2E automatic Feature+full adds the formal clarify phase", async () => {
 
 test("E2E Milestone is decomposed into work units, never run as one mega-spec", async () => {
   const trace = [];
-  const out = await runCoordinator({ goal: "billing overhaul", signals: { capabilities: 3 }, agents: coordinatorAgents(trace) });
+  const out = await coordinate({ goal: "billing overhaul", signals: { capabilities: 3 }, agents: coordinatorAgents(trace) });
   assert.equal(out.status, "DECOMPOSED");
   assert.deepEqual(out.workUnits.map((w) => w.workUnit), ["feature", "task"]);
   assert.deepEqual(trace, ["decompose"]);
@@ -185,20 +223,20 @@ test("E2E coordinator never reports ready when the work unit is blocked or the r
   const blockedTrace = [];
   const blocked = coordinatorAgents(blockedTrace);
   blocked.verify.test = async () => ({ passed: false, output: "red" });
-  const a = await runCoordinator({ goal: "x", signals: { newCapability: true }, agents: blocked });
+  const a = await coordinate({ goal: "x", signals: { newCapability: true }, agents: blocked });
   assert.equal(a.status, "BLOCKED");
   assert.ok(!blockedTrace.includes("validate"));
 
   const rejected = coordinatorAgents([]);
   rejected.reviewer.validate = async () => ({ verdict: "CHANGES_REQUESTED" });
-  const b = await runCoordinator({ goal: "x", signals: { newCapability: true }, agents: rejected });
+  const b = await coordinate({ goal: "x", signals: { newCapability: true }, agents: rejected });
   assert.equal(b.status, "CHANGES_REQUESTED");
 });
 
 test("E2E coordinator refuses to run on an invalid workflow contract", async () => {
   const bad = structuredClone((await import("./sdd-workflow.mjs")).loadWorkflow());
   bad.commands.push({ ...bad.commands[0] });
-  const out = await runCoordinator({ goal: "x", agents: coordinatorAgents([]), workflow: bad });
+  const out = await coordinate({ goal: "x", agents: coordinatorAgents([]), workflow: bad });
   assert.equal(out.status, "BLOCKED");
   assert.match(out.reason, /invalid workflow contract/);
 });
@@ -248,35 +286,35 @@ test("gate wiring: a low-risk Task with human_gate none, allowed by the repo, co
   const trace = [];
   const agents = coordinatorAgents(trace);
   agents.verify.changedPaths = async () => ["docs/guide.md"];
-  const out = await runCoordinator({ goal: "fix typo", signals: { scope: 1, changedPaths: ["docs/guide.md"] }, agents, policy: { declared: NONE, allowNone: true } });
+  const out = await coordinate({ goal: "fix typo", signals: { scope: 1, changedPaths: ["docs/guide.md"] }, agents, policy: { declared: NONE, allowNone: true } });
   assert.equal(out.status, "DONE");
   assert.equal(out.gate.gate, "none");
 });
 
 test("gate wiring: the same declaration is refused when the repo does not allow none, before any work", async () => {
   const trace = [];
-  const out = await runCoordinator({ goal: "fix typo", signals: { scope: 1, changedPaths: ["docs/guide.md"] }, agents: coordinatorAgents(trace), policy: { declared: NONE } });
+  const out = await coordinate({ goal: "fix typo", signals: { scope: 1, changedPaths: ["docs/guide.md"] }, agents: coordinatorAgents(trace), policy: { declared: NONE } });
   assert.equal(out.status, "BLOCKED");
   assert.match(out.reason, /human gate refused.*repository's policy/);
   assert.deepEqual(trace, []);
 });
 
 test("gate wiring: high risk announced -> none refused; high risk only discovered after the work -> blocked, not DONE", async () => {
-  const early = await runCoordinator({ goal: "g", signals: { scope: 1, changedPaths: ["scripts/deploy.sh"] }, agents: coordinatorAgents([]), policy: { declared: NONE, allowNone: true } });
+  const early = await coordinate({ goal: "g", signals: { scope: 1, changedPaths: ["scripts/deploy.sh"] }, agents: coordinatorAgents([]), policy: { declared: NONE, allowNone: true } });
   assert.equal(early.status, "BLOCKED");
   const agents = coordinatorAgents([]);
   agents.verify.changedPaths = async () => ["docs/a.md", "src/auth/login.js"];
-  const late = await runCoordinator({ goal: "g", signals: { scope: 1, changedPaths: ["docs/a.md"] }, agents, policy: { declared: NONE, allowNone: true } });
+  const late = await coordinate({ goal: "g", signals: { scope: 1, changedPaths: ["docs/a.md"] }, agents, policy: { declared: NONE, allowNone: true } });
   assert.equal(late.status, "BLOCKED");
   assert.match(late.reason, /not allowed for high risk/);
 });
 
 test("gate wiring: required stops before implementation; default final-only ends READY_FOR_HITL", async () => {
   const trace = [];
-  const req = await runCoordinator({ goal: "g", signals: { scope: 1, changedPaths: ["docs/a.md"] }, agents: coordinatorAgents(trace), policy: { declared: { humanGate: "required" } } });
+  const req = await coordinate({ goal: "g", signals: { scope: 1, changedPaths: ["docs/a.md"] }, agents: coordinatorAgents(trace), policy: { declared: { humanGate: "required" } } });
   assert.equal(req.status, "AWAITING_HUMAN_APPROVAL");
   assert.ok(!trace.some((t) => t.startsWith("implement")));
-  const out = await runCoordinator({ goal: "g", signals: { scope: 1 }, agents: coordinatorAgents([]) });
+  const out = await coordinate({ goal: "g", signals: { scope: 1 }, agents: coordinatorAgents([]) });
   assert.equal(out.status, "READY_FOR_HITL");
 });
 
@@ -289,12 +327,12 @@ test("implementAll refuses to start with a refused gate", async () => {
 });
 
 test("review: human_gate none without the changedPaths evidence is refused; final-only does not need it", async () => {
-  const none = await runCoordinator({ goal: "g", signals: { scope: 1, changedPaths: ["docs/a.md"] }, agents: coordinatorAgents([]), policy: { declared: NONE, allowNone: true } });
+  const none = await coordinate({ goal: "g", signals: { scope: 1, changedPaths: ["docs/a.md"] }, agents: coordinatorAgents([]), policy: { declared: NONE, allowNone: true } });
   assert.equal(none.status, "BLOCKED");
   assert.match(none.reason, /changedPaths/);
   const empty = coordinatorAgents([]);
   empty.verify.changedPaths = async () => [];
-  assert.equal((await runCoordinator({ goal: "g", signals: { scope: 1, changedPaths: ["docs/a.md"] }, agents: empty, policy: { declared: NONE, allowNone: true } })).status, "BLOCKED");
-  const fo = await runCoordinator({ goal: "g", signals: { scope: 1, changedPaths: ["docs/a.md"] }, agents: coordinatorAgents([]) });
+  assert.equal((await coordinate({ goal: "g", signals: { scope: 1, changedPaths: ["docs/a.md"] }, agents: empty, policy: { declared: NONE, allowNone: true } })).status, "BLOCKED");
+  const fo = await coordinate({ goal: "g", signals: { scope: 1, changedPaths: ["docs/a.md"] }, agents: coordinatorAgents([]) });
   assert.equal(fo.status, "READY_FOR_HITL");
 });
