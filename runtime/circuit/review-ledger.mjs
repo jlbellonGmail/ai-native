@@ -37,7 +37,7 @@
 // runtime/adapters/review-evidence.mjs); without one nothing is independent.
 import { spawnSync } from "node:child_process";
 import { createHash, randomBytes } from "node:crypto";
-import { appendFileSync, closeSync, existsSync, fstatSync, mkdirSync, openSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { appendFileSync, closeSync, constants, existsSync, fstatSync, mkdirSync, openSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { ADVERSE_VERDICTS, REVIEW_VERDICTS, checkOutcomeCoherence, checkReviewEvidence, deriveReviewOutcome, loadRuntimeCapabilities } from "./independent-review.mjs";
 import { parseTasks, validateSpecFolder } from "./sdd-workflow.mjs";
@@ -65,13 +65,18 @@ const fenced = (lang, text) => {
   return [`${ticks}${lang}`, text, ticks];
 };
 
+// O_NONBLOCK so a FIFO cannot hold the open waiting for a writer; Windows has no FIFOs and no such flag
+const READ_FLAGS = constants.O_RDONLY | (constants.O_NONBLOCK ?? 0);
+// a path that resolves to nothing: missing, a broken or looping symlink, a parent that is no longer a directory
+const GONE = new Set(["ENOENT", "ENOTDIR", "ELOOP"]);
+
 /** Content identity of one changed path, read through a single descriptor so what is checked is what is hashed. */
 function contentOf(file) {
   let fd;
   try {
-    fd = openSync(file, "r");
+    fd = openSync(file, READ_FLAGS);
   } catch (e) {
-    if (e.code === "ENOENT") return "deleted";
+    if (GONE.has(e.code)) return "deleted";
     throw e;
   }
   try {

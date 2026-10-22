@@ -2,10 +2,10 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { appendFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
+import { appendFileSync, chmodSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { beginReview, changeRevision, readLedger, recordReview, reviewStateDir, reviewStatus, runValidation } from "./review-ledger.mjs";
 import { REVIEW_ATTESTERS } from "../adapters/review-evidence.mjs";
 import { parseReviewerAnswer } from "../adapters/claude-review.mjs";
@@ -461,6 +461,105 @@ test("the revision ignores staging, committing and the ledger itself, but not th
     assert.equal(changeRevision(c.project, "develop").revision, before, "the ledger is evidence, not part of the change");
     put(c.project, `specs/${SLUG}/tasks.md`, "- [ ] **T1. List locales.** RF-1\n  - Done when: the list test passes.\n");
     assert.notEqual(changeRevision(c.project, "develop").revision, before, "artifacts in scope count");
+  } finally {
+    c.cleanup();
+  }
+});
+
+// the revision as the ledger defines it, rebuilt from what each changed path is expected to read as
+const fileHash = (c, rel) => createHash("sha256").update(readFileSync(join(c.project, rel))).digest("hex");
+function expectedRevision(c, { baseSha, paths }, over = {}) {
+  const hash = createHash("sha256").update(`base ${baseSha}\n`);
+  for (const p of paths) hash.update(`${p}\0${over[p] ?? fileHash(c, p)}\n`);
+  return `sha256:${hash.digest("hex")}`;
+}
+// replace a changed path of the fixture with something else (a link, a FIFO, a directory)
+const replace = (c, rel, make) => {
+  rmSync(join(c.project, rel), { recursive: true, force: true });
+  make(join(c.project, rel));
+};
+const canSymlink = (() => {
+  const dir = mkdtempSync(join(tmpdir(), "review-ledger-link-"));
+  try {
+    symlinkSync("target", join(dir, "link"));
+    return true;
+  } catch {
+    return false;
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+})();
+const noSymlinks = !canSymlink && "this platform does not let an unprivileged user create symlinks";
+
+test("revision: a regular file is its bytes, a directory is not-a-file", () => {
+  const c = consumer();
+  try {
+    const rev = changeRevision(c.project, "develop");
+    assert.deepEqual(rev.paths, ["docs/guide.md", "docs/locales.md", `specs/${SLUG}/plan.md`, `specs/${SLUG}/spec.md`, `specs/${SLUG}/tasks.md`]);
+    assert.equal(rev.revision, expectedRevision(c, rev), "regular files hash as before");
+    replace(c, "docs/guide.md", (f) => mkdirSync(f));
+    const dir = changeRevision(c.project, "develop");
+    assert.equal(dir.revision, expectedRevision(c, dir, { "docs/guide.md": "not-a-file" }));
+  } finally {
+    c.cleanup();
+  }
+});
+
+test("revision: a changed file under a directory that became a file is deleted (ENOTDIR), never an error", () => {
+  const c = consumer();
+  try {
+    put(c.project, "docs/nested/bar.txt", "nested\n");
+    g(c.project, "add", "-A");
+    g(c.project, "commit", "-q", "-m", "nested");
+    replace(c, "docs/nested", (f) => writeFileSync(f, "now a file\n"));
+    // against HEAD, where docs/nested/bar.txt is tracked
+    const rev = changeRevision(c.project, "HEAD");
+    assert.ok(rev.paths.includes("docs/nested/bar.txt") && rev.paths.includes("docs/nested"), rev.paths.join(", "));
+    assert.equal(rev.revision, expectedRevision(c, rev, { "docs/nested/bar.txt": "deleted" }));
+  } finally {
+    c.cleanup();
+  }
+});
+
+test("revision: a broken or looping symlink is deleted; a symlink reads as its target", { skip: noSymlinks }, () => {
+  const c = consumer();
+  try {
+    const as = (target, label) => {
+      replace(c, "docs/guide.md", (f) => symlinkSync(target, f));
+      const rev = changeRevision(c.project, "develop");
+      assert.equal(rev.revision, expectedRevision(c, rev, label === undefined ? {} : { "docs/guide.md": label }), target);
+    };
+    as("missing.md", "deleted");
+    as("guide.md", "deleted"); // points at itself: ELOOP on POSIX
+    as("locales.md"); // a regular file: its bytes, as before
+    as("../specs", "not-a-file");
+  } finally {
+    c.cleanup();
+  }
+});
+
+test("revision: a FIFO is not-a-file and never blocks waiting for a writer", { skip: process.platform === "win32" && "Windows has no FIFOs" }, () => {
+  const c = consumer();
+  try {
+    replace(c, "docs/guide.md", (f) => assert.equal(spawnSync("mkfifo", [f]).status, 0, "mkfifo"));
+    // in a child: a blocked open would hang this process; the bound only turns a hang into a failure
+    const ledger = pathToFileURL(join(dirname(fileURLToPath(import.meta.url)), "review-ledger.mjs")).href;
+    const code = `import { changeRevision } from ${JSON.stringify(ledger)}; process.stdout.write(JSON.stringify(changeRevision(process.argv[1], "develop")));`;
+    const r = spawnSync(process.execPath, ["--input-type=module", "-e", code, c.project], { encoding: "utf8", timeout: 60_000 });
+    assert.equal(r.error, undefined, "changeRevision blocked on the FIFO");
+    assert.equal(r.status, 0, r.stderr);
+    const rev = JSON.parse(r.stdout);
+    assert.equal(rev.revision, expectedRevision(c, rev, { "docs/guide.md": "not-a-file" }));
+  } finally {
+    c.cleanup();
+  }
+});
+
+test("revision: any other failure to read a changed path is an error, never deleted", { skip: (process.platform === "win32" || process.getuid() === 0) && "needs a POSIX user that permissions apply to" }, () => {
+  const c = consumer();
+  try {
+    chmodSync(join(c.project, "docs/locales.md"), 0o000);
+    assert.throws(() => changeRevision(c.project, "develop"), { code: "EACCES" });
   } finally {
     c.cleanup();
   }
