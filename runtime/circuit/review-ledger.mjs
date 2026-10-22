@@ -37,7 +37,7 @@
 // runtime/adapters/review-evidence.mjs); without one nothing is independent.
 import { spawnSync } from "node:child_process";
 import { createHash, randomBytes } from "node:crypto";
-import { appendFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { appendFileSync, closeSync, existsSync, fstatSync, mkdirSync, openSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { ADVERSE_VERDICTS, REVIEW_VERDICTS, checkOutcomeCoherence, checkReviewEvidence, deriveReviewOutcome, loadRuntimeCapabilities } from "./independent-review.mjs";
 import { parseTasks, validateSpecFolder } from "./sdd-workflow.mjs";
@@ -65,6 +65,22 @@ const fenced = (lang, text) => {
   return [`${ticks}${lang}`, text, ticks];
 };
 
+/** Content identity of one changed path, read through a single descriptor so what is checked is what is hashed. */
+function contentOf(file) {
+  let fd;
+  try {
+    fd = openSync(file, "r");
+  } catch (e) {
+    if (e.code === "ENOENT") return "deleted";
+    throw e;
+  }
+  try {
+    return fstatSync(fd).isFile() ? sha256(readFileSync(fd)) : "not-a-file";
+  } finally {
+    closeSync(fd);
+  }
+}
+
 /** Identity of the change under review; the ledger itself never counts. */
 export function changeRevision(project, base) {
   const top = git(project, ["rev-parse", "--show-toplevel"]).trim();
@@ -74,10 +90,7 @@ export function changeRevision(project, base) {
   const paths = [...new Set([...tracked, ...untracked].filter(Boolean))].filter((p) => !LEDGER_PATH.test(p)).sort();
   const hash = createHash("sha256").update(`base ${baseSha}\n`);
   for (const p of paths) {
-    const file = join(top, p);
-    let content = "deleted";
-    if (existsSync(file)) content = statSync(file).isFile() ? sha256(readFileSync(file)) : "not-a-file";
-    hash.update(`${p}\0${content}\n`);
+    hash.update(`${p}\0${contentOf(join(top, p))}\n`);
   }
   return { revision: `sha256:${hash.digest("hex")}`, baseSha, paths, top };
 }
@@ -183,9 +196,13 @@ export function captureReceipt(project, runtime, input, { attesters = {} } = {})
   // keyed by content, never replaced: another receipt of the same run (a resumed run stops again, a hand-made one
   // may come first) is stored next to it and verified on its own; only the very same receipt is refused
   const file = join(dir, `${sha256(JSON.stringify([runtime, runId, hook])).slice(0, 24)}.json`);
-  if (existsSync(file)) throw new Error(`this receipt of run ${runId} is already stored`);
   const receipt = { schemaVersion: 1, runtime, nonce, runId, capturedAt: new Date().toISOString(), hook };
-  writeFileSync(file, `${JSON.stringify(receipt, null, 2)}\n`, { flag: "wx" });
+  try {
+    writeFileSync(file, `${JSON.stringify(receipt, null, 2)}\n`, { flag: "wx" });
+  } catch (e) {
+    if (e.code === "EEXIST") throw new Error(`this receipt of run ${runId} is already stored`);
+    throw e;
+  }
   return { slug: found.slug, nonce };
 }
 
