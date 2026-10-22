@@ -81,6 +81,42 @@ if (agents) {
   }
 }
 
+// --- 5b. core/agents.json runtimes: every tool states its independent-review support and which execution classes
+// it can run a Reviewer in; `verified` needs its evidence and at least one verified execution. Runtime-neutral: how a
+// runtime satisfies a capability (tools, hooks, agent types) lives in runtime/adapters, never here. ---
+const RUNTIME_TOOLS = ["claude", "codex", "opencode"];
+const RUNTIME_SUPPORT = ["verified", "unverified", "unsupported"];
+const EXECUTION_CLASSES = ["delegated-fresh-context", "separate-process"];
+const EXECUTION_SUPPORT = ["verified", "unverified", "unavailable"];
+if (agents) {
+  const runtimes = agents.runtimes ?? {};
+  for (const tool of RUNTIME_TOOLS) {
+    const runtime = runtimes[tool];
+    if (!runtime) {
+      fail(`core/agents.json: runtimes.${tool} is missing (state its independent-review support, even if unverified)`);
+      continue;
+    }
+    if (!RUNTIME_SUPPORT.includes(runtime.independentReview)) fail(`core/agents.json: runtimes.${tool}.independentReview must be one of ${RUNTIME_SUPPORT.join(", ")}`);
+    const executions = runtime.executions ?? {};
+    for (const [execution, support] of Object.entries(executions)) {
+      if (!EXECUTION_CLASSES.includes(execution)) fail(`core/agents.json: runtimes.${tool}.executions.${execution} is not an execution class (${EXECUTION_CLASSES.join(", ")})`);
+      if (!EXECUTION_SUPPORT.includes(support)) fail(`core/agents.json: runtimes.${tool}.executions.${execution} must be one of ${EXECUTION_SUPPORT.join(", ")}`);
+    }
+    const verifiedExecutions = Object.values(executions).filter((s) => s === "verified").length;
+    if (runtime.independentReview === "verified") {
+      const evidenceFile = String(runtime.evidence ?? "").split("#")[0];
+      if (!evidenceFile || !existsSync(join(repoRoot, evidenceFile))) fail(`core/agents.json: runtimes.${tool} is verified but its evidence "${runtime.evidence}" does not exist`);
+      if (!verifiedExecutions) fail(`core/agents.json: runtimes.${tool} is verified but no execution class is verified for it`);
+    } else if (verifiedExecutions) {
+      fail(`core/agents.json: runtimes.${tool} has a verified execution class but its independent review is ${runtime.independentReview}`);
+    }
+    for (const key of Object.keys(runtime)) {
+      if (!["independentReview", "evidence", "executions"].includes(key)) fail(`core/agents.json: runtimes.${tool}.${key} is not a core field (runtime mechanics belong to runtime/adapters)`);
+    }
+  }
+  for (const tool of Object.keys(runtimes)) if (!RUNTIME_TOOLS.includes(tool)) fail(`core/agents.json: runtimes.${tool} is not a projected tool (${RUNTIME_TOOLS.join(", ")})`);
+}
+
 // --- 6. mcp/profiles/*.json only reference servers that exist in mcp/catalog.json ---
 const mcpDir = join(repoRoot, "mcp");
 const catalogPath = join(mcpDir, "catalog.json");

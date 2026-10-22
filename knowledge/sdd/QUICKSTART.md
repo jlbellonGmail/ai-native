@@ -20,7 +20,7 @@ Large initiative                Milestone: the Coordinator splits it into Featur
 
 ## The four roles
 
-Coordinator routes and tracks state. Planner writes spec, plan, tasks. Implementer builds one task at a time, tests first. Reviewer checks independently and never edits. You always keep the final merge.
+Coordinator routes and tracks state. Planner writes spec, plan, tasks. Implementer builds one task at a time, tests first. Reviewer checks independently and never edits; when the tool cannot run it isolated, the result says `REVIEW_PENDING` instead of approving. You always keep the final merge.
 
 ## Other commands
 

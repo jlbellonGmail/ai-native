@@ -74,3 +74,60 @@ test("buildToolFiles includes the commands; sync writes them and check detects d
   assert.ok(!existsSync(join(root, ".claude/commands/sdd-old.md")));
   assert.equal(readFileSync(join(root, ".claude/commands/mine.md"), "utf8"), "my own command");
 });
+
+test("the review capability is projected per runtime: Claude says how to reach its isolated reviewer, the others fall back", () => {
+  const files = buildCommandFiles(platform, { tools: ["claude", "opencode"] });
+  for (const content of Object.values(files)) assert.doesNotMatch(content, /\{\{[A-Z_]+\}\}/, "no unfilled slot reaches a projection");
+  for (const name of ["sdd-implement-all", "sdd-validate"]) {
+    const claude = files[`.claude/commands/${name}.md`];
+    assert.match(claude, /ToolSearch `select:Agent`/);
+    assert.match(claude, /subagent_type: \\"reviewer\\"|subagent_type: "reviewer"/);
+    assert.match(claude, /never `subagent_type: "fork"`/);
+    // F6: the slash command itself is the user's request to delegate the review (Claude projection only)
+    assert.match(claude, /The user running `\/sdd-implement-all <NNN-slug>` \(or `\/sdd-validate <NNN-slug>`\) is the user's explicit request that you, the Coordinator, invoke the `reviewer` agent/);
+    const opencode = files[`.opencode/commands/${name}.md`];
+    assert.match(opencode, /Independent review is UNAVAILABLE/);
+    assert.match(opencode, /--kind self --verdict <verdict>/);
+    assert.doesNotMatch(opencode, /ToolSearch|subagent_type|SubagentStop|`Agent` tool|\bfork\b/, "a Claude-specific detail never leaks into another runtime's projection");
+  }
+});
+
+test("a defined reviewer is not the capability: OpenCode projects a reviewer agent and still declares independent review unavailable", () => {
+  const root = mkdtempSync(join(tmpdir(), "cmd-cap-"));
+  for (const dir of ["core", "contracts", "mcp", ".agents"]) cpSync(join(platform, dir), join(root, dir), { recursive: true });
+  const files = buildToolFiles(root, { tools: ["claude", "opencode"], opencodeRolesDir: ".opencode/roles" });
+  assert.ok(files[".opencode/roles/reviewer.md"] && JSON.parse(files["opencode.json"]).agent.reviewer, "the reviewer role is defined for OpenCode");
+  assert.match(files[".opencode/commands/sdd-implement-all.md"], /Independent review is UNAVAILABLE/);
+  // a runtime the platform knows nothing about gets the fail-closed note, never a claim of independence
+  const agentsPath = join(root, "core", "agents.json");
+  const agents = JSON.parse(readFileSync(agentsPath, "utf8"));
+  delete agents.runtimes.claude;
+  writeFileSync(agentsPath, JSON.stringify(agents));
+  const unknown = buildCommandFiles(root, { tools: ["claude"] })[".claude/commands/sdd-implement-all.md"];
+  assert.match(unknown, /no verified way for this runtime to run the Reviewer in a context isolated from this session/);
+  assert.doesNotMatch(unknown, /select:Agent/);
+});
+
+test("the projected reviewer agent no longer points to a command that does not exist", () => {
+  const files = buildToolFiles(platform, { tools: ["claude"] });
+  assert.doesNotMatch(files[".claude/agents/reviewer.md"], /review run/);
+  assert.match(files[".claude/agents/reviewer.md"], /REVIEW_NONCE/);
+});
+
+test("F3: Claude-specific review mechanics live only in the Claude projection; Codex and OpenCode stay UNAVAILABLE", () => {
+  const files = buildToolFiles(platform, { tools: ["claude", "codex", "opencode"] });
+  // the core sources the projections come from never name the Claude mechanics
+  const core = ["core/commands/sdd-implement-all.md", "core/commands/sdd-validate.md", "core/roles/reviewer.md", "core/agents.json", "contracts/sdd-workflow.json"].map((p) => readFileSync(join(platform, p), "utf8")).join("\n");
+  assert.doesNotMatch(core, /ToolSearch|subagent_type|SubagentSt(art|op)|select:Agent|\bfork\b|agent_transcript_path/);
+  // Claude: the SubagentStop hook on the reviewer agent type hands the runtime's record to the receipt command (exec form)
+  const settings = JSON.parse(files[".claude/settings.json"]);
+  const [entry] = settings.hooks.SubagentStop;
+  assert.equal(entry.matcher, "reviewer");
+  assert.deepEqual(entry.hooks[0].args.slice(1), ["sdd", "review", "receipt", "claude"]);
+  assert.equal(entry.hooks[0].command, "node");
+  // Codex: no command surface, the README states the fallback; OpenCode commands state it too
+  assert.match(files[".codex/README.md"], /Independent review is UNAVAILABLE/);
+  assert.doesNotMatch(files[".codex/README.md"], /ToolSearch|subagent_type|SubagentStop/);
+  assert.ok(!Object.keys(files).some((p) => p.startsWith(".codex/") && /settings|hook/i.test(p)), "no review hook is projected for Codex");
+  assert.ok(!files["opencode.json"].includes("SubagentStop"));
+});

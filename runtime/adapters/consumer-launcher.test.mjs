@@ -116,10 +116,22 @@ test("F-17 every command line the projected commands give an agent actually runs
     for (const m of content.toString().matchAll(/`node \.ai-native\/ai-native\.mjs ([^`]+)`/g)) calls.add(m[1]);
   }
   assert.ok(calls.size >= 7, [...calls].join("\n"));
+  assert.ok(["sdd review begin", "sdd review record", "sdd review status"].every((c) => [...calls].some((call) => call.startsWith(c))), "the review loop is reachable from the commands");
+  // a choice `a|b` takes its first option; the nonce is the one the preceding `review begin` printed
+  let nonce = "<nonce>";
   for (const call of calls) {
-    const argv = call.replace("done|blocked", "done").replaceAll("<NNN-slug>", "001-demo").replaceAll("<Tn>", "T1").replaceAll("<base-ref>", base).replaceAll("<level>", "normal").split(/\s+/).filter(Boolean);
+    const argv = call.replace("done|blocked", "done").replaceAll("<NNN-slug>", "001-demo").replaceAll("<Tn>", "T1").replaceAll("<base-ref>", base).replaceAll("<level>", "normal")
+      .replaceAll("<nonce>", nonce).replaceAll("<verdict>", "APPROVED").replaceAll("<runtime>", "claude").replaceAll("<n>", "0").replace(/\b([\w-]+)\|[\w|-]+/g, "$1")
+      .replaceAll('"<test-command>"', "<test-command>").split(/\s+/).filter(Boolean).map((a) => (a === "<test-command>" ? "git --version" : a));
     const r = run(dir, ...argv);
+    // fail-closed by design: no reviewer ran here, so the runtime left no evidence and an independent record is refused
+    if (call.includes("--kind independent")) {
+      assert.equal(r.status, 1, `${call} must be refused without runtime evidence`);
+      assert.match(r.stderr, /not an independent review: no runtime receipt/);
+      continue;
+    }
     assert.equal(r.status, 0, `${call} -> exit ${r.status}\n${r.stdout}\n${r.stderr}`);
+    nonce = /REVIEW_NONCE: (\w+)/.exec(r.stdout)?.[1] ?? nonce;
   }
 });
 
