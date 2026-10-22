@@ -269,6 +269,33 @@
       "status": "NOT_AVAILABLE_FROM_TOOL",
       "evidence": null,
       "notes": "OpenCode: no se obtuvo una corrida reproducible en este entorno (servicio compartido de OpenCode, modelo gratuito); no se declara soporte. Fallback del plan: perfil none. Detalle en findings.md#c5-gateway-mcp."
+    },
+    {
+      "id": "C6b",
+      "tool": "claude",
+      "cliVersion": "2.1.305",
+      "capability": "delegacion-revisor-aislado",
+      "status": "CONFIRMED",
+      "evidence": "evaluation/compat/findings.md#c1-delegacion-revisor",
+      "notes": "Agent con subagent_type distinto de fork arranca con contexto nuevo (sonda: canario del padre no visible). Desde 2.1.299 Agent no figura en las listas de herramientas: hay que cargarlo con ToolSearch select:Agent. Delegacion anidada no verificada."
+    },
+    {
+      "id": "C6b",
+      "tool": "codex",
+      "cliVersion": "0.158.0",
+      "capability": "delegacion-revisor-aislado",
+      "status": "NOT_AVAILABLE_FROM_TOOL",
+      "evidence": null,
+      "notes": "Sin roles delegados verificados (C2 comportamiento-roles). Fallback: self-review, REVIEW_PENDING, gate humano requerido."
+    },
+    {
+      "id": "C6b",
+      "tool": "opencode",
+      "cliVersion": "v2.0.20",
+      "capability": "delegacion-revisor-aislado",
+      "status": "NOT_AVAILABLE_FROM_TOOL",
+      "evidence": null,
+      "notes": "Roles proyectados como mode subagent, pero el aislamiento de contexto del subagente delegado no esta verificado. Fallback: self-review, REVIEW_PENDING, gate humano requerido."
     }
   ]
 }

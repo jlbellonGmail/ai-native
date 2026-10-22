@@ -70,9 +70,18 @@ export function validateWorkflow(workflow = loadWorkflow(), root = PLATFORM_ROOT
     if (command.mutatesCode && writer?.writes === "state-only" && !command.orchestrates) {
       errors.push(`command ${command.name}: only an orchestrating command may mutate code through a coordinator`);
     }
+    if (command.writes === "review-state") {
+      // least privilege: its one write is the review state, through a coordinator that delegates the review
+      if (command.readOnly || command.mutatesCode) errors.push(`command ${command.name}: writes review-state, so it is neither readOnly nor mutatesCode`);
+      if (writer?.writes !== "state-only") errors.push(`command ${command.name}: only a state-only role (coordinator) may write the review state`);
+    }
     if (!existsSync(join(root, command.body))) errors.push(`command ${command.name}: body ${command.body} does not exist`);
     else {
       const body = readFileSync(join(root, command.body), "utf8");
+      // a command that records a review writes: it cannot be declared read-only, nor write without saying what
+      if (/sdd review record/.test(body) && (command.readOnly || (!command.mutatesCode && command.writes !== "review-state"))) {
+        errors.push(`command ${command.name}: records a review, so it must declare writes: "review-state" (or mutate code) and not be readOnly`);
+      }
       if (!body.includes("$ARGUMENTS")) errors.push(`command ${command.name}: body does not use $ARGUMENTS`);
       for (const name of retired) {
         if (new RegExp(`(^|[^a-z-])/?${name}([^a-z-]|$)`).test(body)) errors.push(`command ${command.name}: body mentions retired name ${name}`);

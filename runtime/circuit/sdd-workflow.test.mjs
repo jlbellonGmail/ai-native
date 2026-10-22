@@ -64,12 +64,26 @@ test("validateWorkflow rejects a role mapped to nothing, duplicates and retired 
 
 test("a read-only command cannot mutate code and a planner cannot write code", () => {
   const workflow = structuredClone(loadWorkflow());
-  const validate = workflow.commands.find((c) => c.name === "sdd-validate");
-  validate.mutatesCode = true;
+  const analyze = workflow.commands.find((c) => c.name === "sdd-analyze");
+  analyze.mutatesCode = true;
   workflow.commands.find((c) => c.name === "sdd-spec").mutatesCode = true;
   const errors = validateWorkflow(workflow);
-  assert.ok(errors.some((e) => e.includes("sdd-validate: cannot be both readOnly and mutatesCode")));
+  assert.ok(errors.some((e) => e.includes("sdd-analyze: cannot be both readOnly and mutatesCode")));
   assert.ok(errors.some((e) => e.includes("sdd-spec: role 'planner' is not allowed to write code")));
+});
+
+test("F4: sdd-validate coordinates and records a review: a coordinator command whose only write is the review state", () => {
+  const validate = loadWorkflow().commands.find((c) => c.name === "sdd-validate");
+  assert.deepEqual({ role: validate.role, readOnly: validate.readOnly, mutatesCode: validate.mutatesCode, writes: validate.writes }, { role: "coordinator", readOnly: false, mutatesCode: false, writes: "review-state" });
+  for (const [label, mutate, expected] of [
+    ["declared read-only again", (c) => { c.readOnly = true; }, /sdd-validate: writes review-state, so it is neither readOnly nor mutatesCode/],
+    ["owned by the reviewer again", (c) => { c.role = "reviewer"; }, /sdd-validate: only a state-only role \(coordinator\) may write the review state/],
+    ["write left undeclared", (c) => { delete c.writes; }, /sdd-validate: records a review, so it must declare writes/],
+  ]) {
+    const workflow = structuredClone(loadWorkflow());
+    mutate(workflow.commands.find((c) => c.name === "sdd-validate"));
+    assert.match(validateWorkflow(workflow).join("\n"), expected, label);
+  }
 });
 
 test("level selection: small reversible work is light, file count alone never decides", () => {

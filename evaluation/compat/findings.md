@@ -352,3 +352,60 @@ Hallazgos reales:
    una herramienta MCP sin modelo. Se registra `NOT_AVAILABLE_FROM_TOOL` con el motivo capturado y **no se declara soporte**.
    Fallback del plan para C5: perfil `none` (sin MCP). Es además el valor por defecto de los adaptadores.
 6. Un `node --test` anidado hereda `NODE_TEST_CONTEXT` y no imprime nada (afectó a los tests que lanzan el runner de node).
+
+## C6b — Delegación a un Reviewer aislado (review independiente)
+
+Fecha: 2026-10-20. Origen: `/sdd-implement-all 001-locales` en un consumidor terminó con self-review y `VERDICT: APPROVED`
+emitido por el mismo agente que implementó. Distinción que exige este hallazgo: que el rol `reviewer` esté **definido**
+(`core/agents.json`, `.claude/agents/reviewer.md`) no es que el runtime pueda **ejecutarlo aislado**. Se registra solo lo
+observado; lo no observado queda sin verificar y la plataforma lo trata como no disponible (fail-closed).
+
+### c1-delegacion-revisor
+
+Claude Code, Windows 11, evidencia de transcripts locales (`~/.claude/projects/**.jsonl`) y de una sonda real:
+
+* **El agente estaba registrado.** En la sesión del consumidor (Claude Code 2.1.304) el sistema listaba `builder`,
+  `planner` y `reviewer` entre "Available agent types for the Agent tool". Causa A (no registrado) descartada.
+* **La herramienta de delegación no figuraba en ninguna lista.** `Agent` no estaba entre las herramientas cargadas ni entre
+  las diferidas, y el agente nunca ejecutó `ToolSearch select:Agent`; concluyó "esta sesión no tiene herramienta de
+  subagentes". Sin `permissions.deny` ni `disallowedTools` que la bloqueen (settings de usuario y proyecto revisados).
+* **Cambio de versión.** Hasta 2.1.296 `Agent` se usó 44 veces sin `ToolSearch` (estaba en la lista directa); desde 2.1.299
+  hasta 2.1.305 no hay ningún uso. En 2.1.305 `ToolSearch select:Agent` la carga y es invocable: la capacidad existe, pero
+  descubrirla exige un paso que el comando proyectado no pedía.
+* **Aislamiento observado (sonda, 2.1.305).** Un subagente no-`fork` lanzado con `Agent` recibió como primer mensaje solo el
+  prompt de la sonda, no vio un canario presente únicamente en el contexto del padre (`CANARY: NONE`) ni el trabajo previo
+  (`PRIOR_WORK: NO`). La descripción de la herramienta lo confirma: cualquier tipo distinto de `fork` "starts a fresh
+  agent"; `fork` hereda el contexto completo y nunca sirve para un review.
+* **Delegación anidada no verificada.** El subagente de la sonda tampoco tenía `Agent` en su lista. Un Coordinator que corre
+  dentro de un subagente se trata como sin delegación.
+* Los subagentes corren en segundo plano y el padre recibe un aviso al terminar: el Coordinator espera ese aviso.
+
+* **Evidencia de runtime (hook `SubagentStop`).** Campos de entrada documentados por Claude Code
+  (`code.claude.com/docs/en/hooks`, consultado 2026-10-20): `session_id`, `transcript_path` (transcript de la sesión
+  principal), `hook_event_name`, `agent_id`, `agent_type` (el `name` del frontmatter del agente; es lo que filtra el
+  `matcher`), `agent_transcript_path` (en `<sesión>/subagents/`), `last_assistant_message`, `stop_hook_active`. La forma
+  exec (`args`) no usa shell y sustituye `${CLAUDE_PROJECT_DIR}`. Los hooks del frontmatter de un subagente se omiten en
+  sesiones `-p` y en carpetas no confiadas, por eso el hook se proyecta en `.claude/settings.json`. La entrada del hook
+  solo dice dónde mirar: el `REVIEW_NONCE` sale de la delegación (primer mensaje del subagente) y el veredicto, el nonce
+  y la revisión de la respuesta final del Reviewer tal como la registró el transcript, nunca de `last_assistant_message`.
+  Si el subagente entrega su informe con `SubagentHandback` (2.1.271+) y ese informe no queda como texto del asistente,
+  no hay veredicto legible: la corrida no aprueba y cuenta como `NEEDS_HUMAN_DECISION` (fail-closed; no verificado E2E).
+* **Transcripts comprimidos.** En un host con un proxy de compresión de contexto (p. ej. headroom) el primer mensaje del
+  subagente puede quedar en el transcript como una referencia (`<<ccr:…>>`) en vez del prompt literal: la verificación del
+  adaptador falla cerrada (no prueba contexto nuevo) y el review queda `NOT_PROVEN`/rechazado, nunca aprobado.
+
+Proyección resultante, solo en el adaptador (`runtime/adapters/claude-review.mjs`; el core no conoce estas mecánicas):
+cargar `Agent` con `ToolSearch select:Agent` antes de concluir que falta, `subagent_type: "reviewer"`, nunca `fork`, y
+el hook `SubagentStop` con `matcher: "reviewer"` que entrega el registro del runtime a `sdd review receipt claude`.
+Ejecuciones verificadas para Claude: solo `delegated-fresh-context` (`core/agents.json` `runtimes.claude.executions`);
+`separate-process` queda `unavailable` hasta que haya evidencia.
+
+### c2-c4-delegacion-revisor (NOT_AVAILABLE_FROM_TOOL)
+
+* **Codex:** sin equivalente verificado a roles delegados (`comportamiento-roles` NOT_AVAILABLE_FROM_TOOL en C2). Un
+  `codex exec` separado tiene identidad propia, pero no se verificó un review de solo lectura aislado con él (y en Windows su
+  sandbox no aísla procesos, c2-permisos). Independiente: no disponible.
+* **OpenCode:** `--agent` selecciona un rol en `opencode run` y los roles se proyectan como `mode: subagent`, pero no se
+  verificó que un subagente delegado corra con un contexto aislado de la sesión. Independiente: no disponible.
+
+En ambos el flujo sigue (implementación, validación, self-review) y termina `REVIEW_PENDING` con el gate humano requerido.

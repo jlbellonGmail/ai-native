@@ -25,6 +25,7 @@ Where it is enforced (one implementation, `runtime/policy/hitl.mjs`):
 | factory CI | `node runtime/policy/hitl.mjs --base origin/<base>` on every PR (diff without rename detection; an unreadable base gate config fails) |
 | consumer CI (L3) | `human-gate` check, from the pinned platform, against the PR diff |
 | merge and release | unchanged: branch protection, `merge-gate` and human merge always apply; `none` never lifts them |
+| review outcome | a work unit without an independent review PASS of its final revision (capability unavailable, self-review only, stale, not proven) keeps the gate `required` whatever the policy allowed; an independent approval never lowers the gate below the policy (`runtime/circuit/independent-review.mjs`) |
 
 Manual check: `node runtime/policy/hitl.mjs --base <ref> [--environment release|production] [--profile <id>]`. There are no flags for risk or protected areas on purpose.
 

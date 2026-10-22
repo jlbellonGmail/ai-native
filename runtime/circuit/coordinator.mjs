@@ -3,10 +3,12 @@
 // it only calls injected agents and validates every handoff between phases
 // (a handoff is the contract between roles: no hidden chat context).
 //   planner.spec/clarify/plan/tasks(ctx) -> { artifact }
-//   implementer: consumed through implementAll (see implement-all.mjs)
-//   reviewer.validate(ctx) -> { verdict }
+//   implementer: consumed through implementAll (see implement-all.mjs); implementer.selfReview is optional
+//   reviewer.review/validate(ctx) -> { verdict, evidence }
+//   verify.revision() -> identity of the current change; capability -> runtime facts (independent-review.mjs)
 import { classifyWorkUnit, loadWorkflow, parseTasks, validateWorkflow } from "./sdd-workflow.mjs";
 import { implementAll } from "./implement-all.mjs";
+import { checkReviewEvidence, loadRuntimeCapabilities } from "./independent-review.mjs";
 import { deriveHumanGate } from "../policy/hitl.mjs";
 
 const HANDOFF_FIELDS = ["from", "to", "phase", "workUnit", "level", "artifacts"];
@@ -40,7 +42,7 @@ export function phasesFor(workUnit, level) {
 
 // `policy` = { declared, environment, allowNone, controlPlanePatterns }: facts for the human gate. Risk is never taken
 // from it: it is derived from signals.changedPaths and, after the work, from agents.verify.changedPaths().
-export async function runCoordinator({ goal, signals = {}, agents, workflow = loadWorkflow(), policy = {} }) {
+export async function runCoordinator({ goal, signals = {}, agents, workflow = loadWorkflow(), policy = {}, capability = null, runtimes = loadRuntimeCapabilities() }) {
   const problems = validateWorkflow(workflow);
   if (problems.length) return { status: "BLOCKED", reason: `invalid workflow contract: ${problems[0]}`, log: [] };
 
@@ -75,9 +77,10 @@ export async function runCoordinator({ goal, signals = {}, agents, workflow = lo
     if (gate.gate === "required") return { status: "AWAITING_HUMAN_APPROVAL", reason: "human_gate required: a human approves the plan before implementation", gate, classification, log };
     hand("implementer", "implement");
     const tasks = phases[0] === "implement" ? [{ id: "T1", title: goal, state: "pending", requirements: [], doneWhen: "acceptance met" }] : parseTasks(await agents.planner.readTasks());
-    const run = await implementAll({ tasks, level, workflow, humanGate: gate, ...agents.implementer, ...agents.verify, review: agents.reviewer.review, fix: agents.implementer.fix });
-    log.push({ phase: "implement", status: run.status, completed: run.completed });
-    if (run.status !== "DONE") return { status: run.status, classification, run, log };
+    const run = await implementAll({ tasks, level, workflow, humanGate: gate, capability, runtimes, ...agents.implementer, ...agents.verify, review: agents.reviewer?.review, fix: agents.implementer.fix });
+    log.push({ phase: "implement", status: run.status, completed: run.completed, review: run.outcome?.finalReviewStatus });
+    // without an independent approval the work unit is never ready, and the human gate stays required
+    if (run.status !== "DONE") return { status: run.status, classification, run, outcome: run.outcome, ...(run.outcome ? { gate: { ...gate, gate: run.outcome.humanGate } } : {}), log };
     // the gate is re-derived from what actually changed: a bigger change than announced cannot keep a lighter gate
     const actual = await agents.verify?.changedPaths?.();
     // `none` is the only gate that completes with no human step, so it needs this evidence: without it, refuse
@@ -90,11 +93,17 @@ export async function runCoordinator({ goal, signals = {}, agents, workflow = lo
       if (!gate.ok) return { status: "BLOCKED", reason: `human gate refused: ${gate.reasons.join("; ")}`, classification, run, log };
     }
     hand("reviewer", "validate");
-    const validation = await agents.reviewer.validate({ goal, level, artifacts: [...artifacts] });
-    log.push({ phase: "validate", verdict: validation.verdict });
+    const revision = await agents.verify?.revision?.();
+    const validation = await agents.reviewer.validate({ goal, level, artifacts: [...artifacts], revision });
+    // the final validation is a review too: it approves only with its own isolation evidence on this revision
+    const isolation = validation.verdict === "APPROVED" ? checkReviewEvidence(validation.evidence, { runtimes, revision, verdict: validation.verdict }) : [];
+    log.push({ phase: "validate", verdict: validation.verdict, ...(isolation.length ? { notIndependent: isolation } : {}) });
+    if (isolation.length) {
+      return { status: "REVIEW_PENDING", reason: `final validation not independent: ${isolation.join("; ")}`, gate: { ...gate, gate: "required" }, classification, run, log };
+    }
     const approved = validation.verdict === "APPROVED";
     // merge and release stay protected by the repository whatever the gate says; `none` only means no work-unit step
-    return { status: approved ? (gate.gate === "none" ? "DONE" : "READY_FOR_HITL") : "CHANGES_REQUESTED", gate, classification, run, log };
+    return { status: approved ? (gate.gate === "none" ? "DONE" : "READY_FOR_HITL") : "CHANGES_REQUESTED", gate: approved ? gate : { ...gate, gate: "required" }, classification, run, outcome: run.outcome, log };
   } catch (error) {
     return { status: "BLOCKED", reason: error.message, classification, log };
   }

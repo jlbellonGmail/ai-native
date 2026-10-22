@@ -2,6 +2,11 @@
   "schemaVersion": 1,
   "generatedNotice": "AUTHORED (not generated). Adapters per tool (runtime/adapters, M3.3) derive .claude/, .codex/, .opencode/ from this file; do not hand-edit the derived files.",
   "opencodeInstructions": ["AGENTS.md", ".agents/skills-local/*.md"],
+  "runtimes": {
+    "claude": { "independentReview": "verified", "evidence": "evaluation/compat/findings.md#c1-delegacion-revisor", "executions": { "delegated-fresh-context": "verified", "separate-process": "unavailable" } },
+    "codex": { "independentReview": "unverified", "evidence": null, "executions": { "delegated-fresh-context": "unavailable", "separate-process": "unavailable" } },
+    "opencode": { "independentReview": "unverified", "evidence": null, "executions": { "delegated-fresh-context": "unavailable", "separate-process": "unavailable" } }
+  },
   "roles": {
     "planner": {
       "description": "Convierte objetivo, contexto, ASSESS y profundidad SDD en una estrategia ejecutable proporcional al riesgo. Read-only.",
@@ -20,7 +25,7 @@
       "opencode": { "mode": "subagent", "model": "opencode-go/kimi-k2.7-code", "reasoningEffort": "high", "permission": { "edit": "allow", "bash": "allow" } }
     },
     "reviewer": {
-      "description": "Verifica independientemente intención, resultado, diff, tests, evidencia y criterios; emite APPROVED, CHANGES_REQUESTED o BLOCKED. Invocado solo via 'ai-native review run' (P45), nunca en el contexto del Builder.",
+      "description": "Revisor independiente de solo lectura: verifica intención, resultado, diff, tests, evidencia y criterios contra spec, plan y tasks; emite APPROVED, CHANGES_REQUESTED o BLOCKED. Lo invoca el Coordinator con contexto aislado (/sdd-implement-all, /sdd-validate); nunca corre en el contexto del Builder.",
       "capabilities": ["acceptance-check", "spec-review", "test-analysis", "code-review", "regression-analysis", "architecture-review", "security-review", "evidence-validation", "independent-judgment"],
       "prompt": "core/roles/reviewer.md",
       "reviewerIndependent": true,
