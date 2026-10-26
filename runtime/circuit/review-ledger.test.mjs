@@ -8,7 +8,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { beginReview, changeRevision, readLedger, recordReview, reviewStateDir, reviewStatus, runValidation } from "./review-ledger.mjs";
 import { REVIEW_ATTESTERS } from "../adapters/review-evidence.mjs";
-import { parseReviewerAnswer } from "../adapters/claude-review.mjs";
+import { parseReviewerAnswer, reviewerModel } from "../adapters/claude-review.mjs";
 
 const cli = join(dirname(fileURLToPath(import.meta.url)), "sdd-cli.mjs");
 const SLUG = "001-locales";
@@ -85,7 +85,8 @@ function reviewerRun(c, review, over = {}) {
         // `impostor: "mentions"`: its report names this run's agent_id in its text, the harness line names another agent (C)
         { type: "user", message: { role: "user", content: [{ type: "tool_result", tool_use_id: "toolu_0", content: [{ type: "text", text: `VERDICT: CHANGES_REQUESTED\n${o.impostor === "mentions" ? `agentId: ${agentId} agreed with me\nsee ${agentId}\nagentId: ${agentId}\n` : ""}agentId: b0therrun` }] }] } },
       ] : []),
-      { type: "assistant", message: { role: "assistant", content: [{ type: "tool_use", id: "toolu_1", name: "Agent", input: { description: "independent review", subagent_type: o.impostor ? "general-purpose" : o.subagentType, prompt } }] } },
+      // `delegation`: more inputs of the Agent tool call (`model`, `isolation`)
+      { type: "assistant", message: { role: "assistant", content: [{ type: "tool_use", id: "toolu_1", name: "Agent", input: { description: "independent review", subagent_type: o.impostor ? "general-purpose" : o.subagentType, prompt, ...o.delegation } }] } },
       { type: "user", message: { role: "user", content: [{ type: "tool_result", tool_use_id: "toolu_1", content: [{ type: "text", text: `${answer}\nagentId: ${agentId}` }] }] } },
     ]));
     writeFileSync(agentPath, jsonl([
@@ -309,7 +310,68 @@ test("M9: the run must be the `reviewer` agent type in a fresh context, delegate
   }
 });
 
-test("M10: an execution class the platform did not verify for the runtime is refused by the core, whatever the adapter says", () => {
+test("N-30 (M-1): the delegation runs the projected reviewer: its model (core/agents.json) and no isolation, or it never approves", () => {
+  const projected = JSON.parse(readFileSync(join(dirname(fileURLToPath(import.meta.url)), "..", "..", "core", "agents.json"), "utf8")).roles.reviewer.claude.model;
+  assert.equal(reviewerModel(), projected, "the allowed model is derived from core/agents.json, never hardcoded");
+  assert.notEqual(projected, "haiku", "the N-30 probe needs a model other than the projected one");
+  // without `model` the agent runs its own projected model; naming that same model is the same delegation
+  for (const [label, delegation] of [["no model, no isolation", {}], ["the projected model", { model: projected }]]) {
+    const c = consumer();
+    try {
+      ok(validate(c));
+      const review = begin(c);
+      reviewerRun(c, review, { delegation });
+      assert.match(ok(recordIndependent(c, review.nonce)), /recorded independent review APPROVED/, label);
+      assert.deepEqual([statusOf(c).outcome.independentReview, statusOf(c).outcome.finalReviewStatus], ["PASS", "APPROVED"], label);
+    } finally {
+      c.cleanup();
+    }
+  }
+  for (const [label, delegation, expected] of [
+    // the N-30 probe: everything else canonical
+    ["model haiku", { model: "haiku" }, /overrides the reviewer's projected model '\w+' with "haiku"/],
+    ["another model", { model: "opus" }, /overrides the reviewer's projected model '\w+' with "opus"/],
+    ["a full model id", { model: `claude-${projected}-4-5` }, /overrides the reviewer's projected model/],
+    ["a model present but empty", { model: "" }, /overrides the reviewer's projected model '\w+' with ""/],
+    ["a model present but null", { model: null }, /overrides the reviewer's projected model '\w+' with null/],
+    ["isolation worktree", { isolation: "worktree" }, /sets isolation "worktree"/],
+    ["isolation present but null", { isolation: null }, /sets isolation null/],
+    ["the projected model in a worktree", { model: projected, isolation: "worktree" }, /sets isolation "worktree"/],
+  ]) {
+    const c = consumer();
+    try {
+      ok(validate(c));
+      const review = begin(c);
+      reviewerRun(c, review, { delegation });
+      const r = recordIndependent(c, review.nonce);
+      assert.equal(r.status, 1, label);
+      assert.match(r.stderr, expected, label);
+      const outcome = statusOf(c).outcome;
+      assert.deepEqual([outcome.independentReview, outcome.finalReviewStatus, outcome.humanGate], ["NOT_PROVEN", "REVIEW_PENDING", "required"], label);
+      assert.match(outcome.reasons.join(";"), expected, label);
+      assert.deepEqual(readLedger(c.project, SLUG), [], `${label}: nothing is written on a refusal`);
+    } finally {
+      c.cleanup();
+    }
+  }
+  // a reviewer without a projected model attests nothing; and an adverse run on another model still stands
+  const c = consumer();
+  try {
+    ok(validate(c));
+    const review = begin(c);
+    const run = reviewerRun(c, review);
+    const verified = REVIEW_ATTESTERS.claude.verify(run.hook, { nonce: review.nonce, packet: review.packet, prompt: review.prompt, env: c.env, model: null });
+    assert.equal(verified.evidence, null);
+    assert.match(verified.errors.join(";"), /no projected model/);
+    ok(recordIndependent(c, review.nonce));
+    reviewerRun(c, review, { verdict: "CHANGES_REQUESTED", delegation: { model: "haiku" } });
+    assert.equal(statusOf(c).outcome.finalReviewStatus, "CHANGES_REQUESTED", "an adverse run is its verdict whatever model it ran on");
+  } finally {
+    c.cleanup();
+  }
+});
+
+test("M10:an execution class the platform did not verify for the runtime is refused by the core, whatever the adapter says", () => {
   const c = consumer();
   try {
     ok(validate(c));

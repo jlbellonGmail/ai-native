@@ -48,8 +48,9 @@ produced only by an adapter. Claude: the projected `SubagentStop` hook (`matcher
 hook input (`session_id`, `transcript_path`, `agent_id`, `agent_type`, `agent_transcript_path`,
 `last_assistant_message`) to `sdd review receipt claude`; the hook input only says where to look.
 `verifyClaudeReceipt` checks the transcript store (delegation to `subagent_type: reviewer` that is exactly the
-prompt `sdd review begin` issued, fresh context, packet read, read-only tools) and takes verdict, nonce and revision
-from the reviewer's final answer as the transcript recorded it.
+prompt `sdd review begin` issued, with no `model` other than the projected reviewer's in `core/agents.json` and no
+`isolation`, fresh context, packet read, read-only tools) and takes verdict, nonce and revision from the reviewer's
+final answer as the transcript recorded it.
 
 ## Requirements
 

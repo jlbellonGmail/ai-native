@@ -1,3 +1,19 @@
+# AI-NATIVE v3.4.0 candidate — prepared locally, pending PLATFORM audit
+
+```text
+CANDIDATE: v3.4.0 (MINOR) on release/v3.4.0, from develop a00e1683318e6696a320182de507e5d2274a7345 (#148)
+CONTENT: runtime-attested independent SDD review (#146: 323dd4c, db6e99f, 8553349); CLI_VERSION v3.4.0
+DETAIL: governance/versioning/V3.4.0-RELEASE.md
+EXCLUDED: Dependabot PRs #142-#147; no dependency changes
+PUSH / PR: NOT DONE (local candidate)
+PLATFORM AUDIT: NOT STARTED; runs on the final frozen SHA
+RELEASE-GATE: pending that audit
+v3.4.0 TAG / RELEASE: NOT CREATED / NOT PUBLISHED
+NEXT: independent PLATFORM audit of the frozen SHA; then human promotion develop -> main (merge commit), release-gate, tag
+```
+
+Current release: v3.3.1, below.
+
 # AI-NATIVE v3.3.1 — Released and Verified
 
 v3.3.1 is published and verified against the public release. Facts and
