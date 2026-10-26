@@ -4,7 +4,7 @@
 CANDIDATE: v3.4.0 (MINOR) on release/v3.4.0, from develop a00e1683318e6696a320182de507e5d2274a7345 (#148)
 CONTENT: runtime-attested independent SDD review (#146: 323dd4c, db6e99f, 8553349); CLI_VERSION v3.4.0
 DETAIL: governance/versioning/V3.4.0-RELEASE.md
-EXCLUDED: Dependabot PRs #142-#147; no dependency changes
+EXCLUDED: Dependabot PRs #142-#147; only dependency change: Trivy remediation 7d5d0f7 (next, body-parser), after AUDIT-PLATFORM-9678acb
 PUSH / PR: NOT DONE (local candidate)
 PLATFORM AUDIT: NOT STARTED; runs on the final frozen SHA
 RELEASE-GATE: pending that audit
