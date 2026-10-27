@@ -1,15 +1,18 @@
-# AI-NATIVE v3.4.0 candidate — prepared locally, pending PLATFORM audit
+# AI-NATIVE v3.4.0 candidate — published on release/v3.4.0, pending PLATFORM audit
 
 ```text
 CANDIDATE: v3.4.0 (MINOR) on release/v3.4.0, from develop a00e1683318e6696a320182de507e5d2274a7345 (#148)
-CONTENT: runtime-attested independent SDD review (#146: 323dd4c, db6e99f, 8553349); CLI_VERSION v3.4.0
+CONTENT: runtime-attested independent SDD review (#146: 323dd4c, db6e99f, 8553349); CLI_VERSION v3.4.0; N-30 fix ef103e9; Trivy remediation 7d5d0f7
 DETAIL: governance/versioning/V3.4.0-RELEASE.md
 EXCLUDED: Dependabot PRs #142-#147; only dependency change: Trivy remediation 7d5d0f7 (next, body-parser), after AUDIT-PLATFORM-9678acb
-PUSH / PR: NOT DONE (local candidate)
-PLATFORM AUDIT: NOT STARTED; runs on the final frozen SHA
+BRANCH: release/v3.4.0 published on origin
+PR #149 release/v3.4.0 -> develop: MERGED by the human; develop = aebb832 (merge commit)
+PR #151 release/v3.4.0 -> develop: OPEN, NOT MERGED (7d5d0f7, governance 16d08f8 and later reconciliation)
+PR #150 develop -> main: OPEN, NOT MERGED; main does not contain v3.4.0
+PLATFORM AUDIT: AUDIT-PLATFORM-9678acb (90.25) exists, STALE for the current candidate; new audit PENDING on the final frozen SHA
 RELEASE-GATE: pending that audit
 v3.4.0 TAG / RELEASE: NOT CREATED / NOT PUBLISHED
-NEXT: independent PLATFORM audit of the frozen SHA; then human promotion develop -> main (merge commit), release-gate, tag
+NEXT: independent PLATFORM audit of the frozen SHA; then human merge of #151, promotion develop -> main via #150 (merge commit), release-gate, tag
 ```
 
 Current release: v3.3.1, below.
