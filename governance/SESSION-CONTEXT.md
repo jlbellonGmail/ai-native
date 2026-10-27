@@ -4,14 +4,16 @@
 > `governance/history/SESSION-CONTEXT-HISTORY-2026-10-04.md`. Fuente de verdad del estado: este archivo, `governance/roadmaps/AI-NATIVE-V3-ROADMAP.md` y Git/GitHub.
 > Política del merge humano: `governance/security/HITL-MERGE-POLICY.md`. Frontera de secretos: `governance/security/SECRETS-BOUNDARY.md`.
 
-Actualizado: 2026-10-27 (v3.4.0 publicada y verificada desde la release pública; sin candidata ni promoción pendientes).
+Actualizado: 2026-10-27 (candidata `v3.4.1` PATCH en `release/v3.4.1`, sin tag ni release; `v3.4.0` sigue siendo la release vigente).
 
 ```text
-STATUS: V3.4.0_RELEASED_AND_VERIFIED
+STATUS: V3.4.1_CANDIDATE (PATCH), sin tag ni release; publicación sujeta a decisión humana
 INITIATIVE: CLOSED (N-02b); CLI_LIFECYCLE: CLOSED (v3.3.0)
 STABLE_BASELINE: v3.4.0 (tag sobre 15f35ff; digest sha256:dfecc9746a951a59fe5b1e9d8337823cb2af39091122333d5297d02b52d635ad)
 PREVIOUS_BASELINE: v3.3.1 (inmutable). Los 9 consumidores seguían en v3.1.2 el 2026-10-12; no re-verificado desde entonces
 ```
+
+**Candidata `v3.4.1` (PATCH) (encargo explícito del humano, 2026-10-27):** rama `release/v3.4.1` desde `develop` `036e6f8` (merge de #153, reconciliación `main` → `develop`, árbol idéntico). Corrige el frontmatter YAML inválido de `.claude/agents/reviewer.md` (`buildClaudeAgentFile` escribía `description` como escalar plano; expuesto por `323dd4c`) con regresión RED/GREEN, y declara `CLI_VERSION = "v3.4.1"`. E2E real con Claude Code 2.1.311: `reviewer` registrado e invocado en `v3.4.0` y en la candidata; el error «Agent type 'reviewer' not found» **no se reprodujo**, así que el parche no lo declara resuelto y publicar requiere decisión humana. Defecto aparte, sin scope abierto: con 2.1.311 la revisión independiente atestada termina `NOT_PROVEN` en ambas versiones (`SubagentHandback`). Detalle, delta de consumidor y SemVer: `governance/versioning/V3.4.1-PATCH.md`.
 
 **`v3.4.0` publicada** el 2026-10-27T03:50:16Z: tag anotado sobre `15f35ff` (merge de #150 `develop` → `main`, tras el merge humano de #151 en `develop`; difiere del SHA auditado `9f0f9a4` solo en `.audit/**`; auditoría independiente 90.25/100, 0 BLOCKER/CRITICAL/MAJOR, 17 MINOR no bloqueantes), remediación Trivy `7d5d0f7` incluida con `trivy-fs` PASS sobre `15f35ff`, `release-gate` PASS_WITH_WARNINGS (26 avisos STALE), workflow `Release` run 40446182779 con build/publish/verify en PASS (provenance, SBOM y attestation verificados), release inmutable, bootstrap remoto con `--require-attestation` PASS e `init` en repo vacío → READY: `governance/versioning/V3.4.0-POST-RELEASE-VERIFICATION.md`. `CLI_VERSION` = `v3.4.0`; `VERSION` sigue en `3.0.0-dev`. No queda candidata ni promoción pendiente. Deuda posterior, sin scope abierto (N-31, N-29 ambiental de Windows, N-32 con 7 alertas Dependabot de desarrollo abiertas, N-25 y demás MINOR/SUGGESTION de `AUDIT-PLATFORM-9f0f9a4.md`): registrada allí, no bloquea la release publicada.
 
