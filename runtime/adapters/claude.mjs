@@ -39,8 +39,9 @@ export function buildClaudeMcpJson(mcpCatalog) {
 }
 
 // A JSON string is a valid YAML double-quoted scalar (as in commands.mjs), on one line and exact; JSON leaves raw the
-// characters YAML 1.1 reads as line breaks or rejects as non-printable (DEL, C1, U+2028/2029), so they are escaped too
-const yamlQuoted = (text) => JSON.stringify(text).replace(/[\u007f-\u009f\u2028\u2029]/g, (c) => `\\u${c.charCodeAt(0).toString(16).padStart(4, "0")}`);
+// characters YAML 1.1 reads as line breaks or rejects as non-printable (DEL, C1, U+2028/2029, U+FFFE/FFFF), so they are
+// escaped too
+const yamlQuoted = (text) => JSON.stringify(text).replace(/[\u007f-\u009f\u2028\u2029\ufffe\uffff]/g, (c) => `\\u${c.charCodeAt(0).toString(16).padStart(4, "0")}`);
 
 export function buildClaudeAgentFile(name, role, prompt, notice) {
   const tools = (role.claude.tools ?? []).join(", ");

@@ -57,7 +57,8 @@ function frontmatterFields(content) {
   assert.deepEqual(lines.map((l) => l.slice(0, l.indexOf(":"))), ["name", "description", "tools", "model", "effort"]);
   const quoted = /^description: (".*")$/.exec(lines[1]);
   assert.ok(quoted, `description is not a double-quoted scalar: ${lines[1]}`);
-  assert.doesNotMatch(lines[1], /[\u007f-\u009f\u2028\u2029]/, "raw characters that YAML 1.1 folds or rejects");
+  // YAML 1.1 printable characters minus its line breaks (NEL, LS, PS), from the spec rather than from the generator
+  assert.doesNotMatch(quoted[1], /[^\u0020-\u007e\u00a0-\u2027\u202a-\ud7ff\ue000-\ufffd\u{10000}-\u{10ffff}]/u, "raw characters that YAML 1.1 folds or rejects");
   return { lines, description: JSON.parse(quoted[1]) };
 }
 
@@ -68,7 +69,7 @@ for (const description of [
   "line one\nline two\r\n\ttabbed",
   "- & * ! | > % @ ` { } [ ] , ? leading YAML indicators",
   ": starts with a colon",
-  "DEL \u007f NEL \u0085 LS \u2028 PS \u2029 kept",
+  "DEL \u007f NEL \u0085 LS \u2028 PS \u2029 FFFE \ufffe FFFF \uffff kept",
 ]) {
   test(`buildClaudeAgentFile keeps a YAML-sensitive description intact: ${JSON.stringify(description)}`, () => {
     const role = { description, claude: { tools: ["Read", "Grep"], model: "sonnet", effort: "high" } };
