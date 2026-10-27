@@ -7,12 +7,13 @@ Candidate prepared on `release/v3.4.1`; not tagged, not released. Detail:
 ROADMAP: AI-NATIVE V3 / v3.4.1 (PATCH)
 STATE: V3.4.1_CANDIDATE
 BASE: develop 036e6f8b2045d51ec43aad91fdbb599668588ca0 (merge of #153; origin/main 15f35ff is an ancestor)
-CONTENT: fix(adapters) f3955c9 (Claude agent YAML description escaped; RED 8 failed / GREEN 15/15); CLI_VERSION v3.4.1 7e8fea1
+CONTENT: fix(adapters) f3955c9 (Claude agent YAML description escaped; RED 8 failed / GREEN 15/15) + U+FFFE/U+FFFF follow-up from the independent review of 4ad607a; CLI_VERSION v3.4.1 7e8fea1
+INDEPENDENT CODE REVIEW (4ad607a): APPROVED, 5 LOW (1-4 addressed, 5 informational); not an attested SDD review receipt
 CONSUMER DELTA: 2 of 229 bundle files; 3 projections (.claude/agents/*.md description line)
 E2E (Claude Code 2.1.311): reviewer registered and invoked in v3.4.0 and the candidate; "Agent type 'reviewer' not found" NOT REPRODUCED
 SEPARATE DEFECT (no scope opened): attested independent review NOT_PROVEN in both versions (SubagentHandback)
 PUBLICATION: subject to a human decision (structural YAML fix only)
-INDEPENDENT REVIEW / PLATFORM AUDIT: on the final SHA, recorded in .audit/reports/
+PLATFORM AUDIT: on the final SHA, recorded in .audit/reports/
 v3.4.1 TAG / RELEASE: NOT CREATED / NOT PUBLISHED
 ```
 
