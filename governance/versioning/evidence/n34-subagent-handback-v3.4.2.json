@@ -49,7 +49,8 @@
       "parent cross-check: SendMessage 'to' or 'recipient' the run, or Agent/Task 'resume' of the run -> cannot approve"
     ],
     "localTranscriptsSurveyed": { "runs": 11, "claudeCode": ["2.1.305", "2.1.311", "2.1.312"], "reminder": "first user turn after the prompt, at most once per run, exactly R1 or R2", "enforce": "exactly E, always directly after an assistant plain-text message", "delegationKeys": ["description", "prompt", "run_in_background", "subagent_type"], "sendMessageInput": "to; 2.1.296+ also recipient (same id), recipient_kind 'agent', type 'message'" },
-    "unchanged": "independent-review.mjs, review-ledger.mjs, core/agents.json, gates, skills, projections"
+    "unchanged": "independent-review.mjs, review-ledger.mjs, core/agents.json, gates, skills",
+    "projectionDelta": "the CLAUDE_REVIEW_DELEGATION note in .claude/commands/sdd-validate.md and sdd-implement-all.md also asks for no name or team_name (now refused)"
   },
   "regression": {
     "test": "runtime/circuit/review-ledger.test.mjs",
