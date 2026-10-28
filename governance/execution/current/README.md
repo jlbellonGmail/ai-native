@@ -1,23 +1,44 @@
-# AI-NATIVE v3.4.1 — PATCH Candidate
+# AI-NATIVE v3.4.1 — Released and Verified
 
-Candidate prepared on `release/v3.4.1`; not tagged, not released. Detail:
-`governance/versioning/V3.4.1-PATCH.md`.
+v3.4.1 is published and verified against the public release. Facts and
+evidence: `governance/versioning/V3.4.1-POST-RELEASE-VERIFICATION.md`.
+
+```text
+ROADMAP: AI-NATIVE V3 / v3.4.1 (PATCH, structural YAML fix only; "reviewer not found" not claimed as resolved)
+STATE: V3.4.1_RELEASED_AND_VERIFIED
+FINAL CANDIDATE / RELEASE SHA: 635a60c15e77a543a31e5e1af5ef73c052932b04 (merge of #158, develop -> main)
+AUDITED SHA: 247b28414b8341425c33ba748f49af65009655cf (differs only in .audit/**)
+PLATFORM AUDIT: independent, 89.50/100; 0 BLOCKER, 0 CRITICAL, 0 MAJOR, 18 MINOR; below 90 by 0.50, accepted as an exception by human decision under the release-gate tolerance
+RELEASE-GATE (build job): PASS_WITH_WARNINGS (27 STALE historical reports + score within tolerance)
+v3.4.1 TAG: annotated, on 635a60c, created by the human
+v3.4.1 RELEASE: published, immutable; digest sha256:ab7617d241a4ec0e5418d30baba31f6d36e4fe8e984683bbc2541e908bde95e7
+RELEASE WORKFLOW: run 40621778120; build PASS, publish PASS, verify PASS
+verify-release: PASS (33 checks, public assets)
+INIT (empty repository) / UPGRADE (v3.4.0 -> v3.4.1): READY / READY (disposable consumers)
+CLI_VERSION: v3.4.1; VERSION: 3.0.0-dev (unchanged)
+PENDING CANDIDATE / PROMOTION: none
+NON-BLOCKING FOLLOW-UPS (no scope opened): N-34 (NOT_PROVEN on Claude Code 2.1.311), pilot offline Ubuntu red on 635a60c (Docker exit 125, 3 attempts, cause not demonstrated), deferred review LOW S-12..S-16, S-17, S-18; listed in the verification file
+```
+
+Previous snapshot (candidate preparation), kept as history:
 
 ```text
 ROADMAP: AI-NATIVE V3 / v3.4.1 (PATCH)
 STATE: V3.4.1_CANDIDATE
-BASE: develop 036e6f8b2045d51ec43aad91fdbb599668588ca0 (merge of #153; origin/main 15f35ff is an ancestor)
+BASE: develop 036e6f8b2045d51ec43aad91fdbb599668588ca0 (merge of #153; origin/main 15f35ff is an ancestor; tree = previous develop d8192c6, not main: S-18)
 CONTENT: fix(adapters) f3955c9 (Claude agent YAML description escaped; RED 8 failed / GREEN 15/15) + U+FFFE/U+FFFF follow-up from the independent review of 4ad607a; CLI_VERSION v3.4.1 7e8fea1
 INDEPENDENT CODE REVIEW (4ad607a): APPROVED, 5 LOW (1-4 addressed, 5 informational); not an attested SDD review receipt
 CONSUMER DELTA: 2 of 229 bundle files; 3 projections (.claude/agents/*.md description line)
 E2E (Claude Code 2.1.311): reviewer registered and invoked in v3.4.0 and the candidate; "Agent type 'reviewer' not found" NOT REPRODUCED
 SEPARATE DEFECT (no scope opened): attested independent review NOT_PROVEN in both versions (SubagentHandback)
 PUBLICATION: subject to a human decision (structural YAML fix only)
-PLATFORM AUDIT: on the final SHA, recorded in .audit/reports/
-v3.4.1 TAG / RELEASE: NOT CREATED / NOT PUBLISHED
+PLATFORM AUDIT: then pending (S-13); later AUDIT-PLATFORM-247b284.md, commit 3e0f83d
+v3.4.1 TAG / RELEASE: then NOT CREATED / NOT PUBLISHED
+PR #157 release/v3.4.1 -> develop: MERGED by the human; develop = 77cc87b (merge commit)
+PR #158 develop -> main: MERGED by the human; main = 635a60c (merge commit)
 ```
 
-Current release: v3.4.0, below.
+Previous release: v3.4.0, below.
 
 # AI-NATIVE v3.4.0 — Released and Verified
 
