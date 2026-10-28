@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "kind": "subagent-handback-attestation",
+  "release": "v3.4.2 (PATCH candidate)",
+  "date": "2026-10-28",
+  "host": { "os": "win32 (Windows 11 Pro 10.0.26200)", "node": "v26.12.1", "claudeCode": "2.1.312", "notCovered": "Claude Code 2.1.311 (not available on this host)" },
+  "defect": {
+    "id": "N-34",
+    "file": "runtime/adapters/claude-review.mjs",
+    "cause": "a reviewer report delivered by the SubagentHandback tool was never read as the answer; the harness handback instruction counted as a follow-up and SubagentHandback as a tool outside the read-only set",
+    "harnessShapes": [
+      "one <system-reminder> user turn 'Your final report is delivered through SubagentHandback: ...' right after the prompt",
+      "when the agent answered in plain text: a '[handback-send-enforce] Your report has not been delivered. Call SubagentHandback(...)' user turn, then the SubagentHandback call"
+    ],
+    "observedIn": "all 7 local SubagentHandback transcripts (Claude Code 2.1.305, 2.1.311, 2.1.312), including the v3.4.0 and v3.4.1 E2E",
+    "reproduction": {
+      "receipt": "gi-common-reference incident, review nonce ff8fee1fc5234ee4806bc111, reviewer agent a92f6f354a30b13e3, Claude Code 2.1.312",
+      "adapter": "v3.4.1 runtime/adapters/claude-review.mjs",
+      "readReviewerRun": { "answers": 0, "followUps": 1 },
+      "verifyClaudeReceiptErrors": 5,
+      "errors": [
+        "the reviewer was sent 1 message(s) after its delegation ...",
+        "the reviewer used tools outside its read-only set: SubagentHandback",
+        "the reviewer's answer does not start with VERDICT: <verdict>",
+        "the reviewer's answer carries no REVIEW_NONCE",
+        "the reviewer's answer carries no REVISION"
+      ],
+      "observedVerdict": null,
+      "handedBack": "VERDICT: CHANGES_REQUESTED",
+      "effect": "the adverse verdict was lost (NEEDS_HUMAN_DECISION)"
+    },
+    "notN34": "legitimate, consumer side, unchanged: VALIDATION FAIL (l3 architecture without --cache exit 2; with --cache python-lib productSetupCommand 'pip install . -r requirements-dev.txt' exit 1, file missing in the consumer), SELF_REVIEW STALE, spec/plan draft (HITL); the first delegation (nonce 56ec48...) hit 'Agent type reviewer not found' on the invalid YAML of v3.4.0, fixed by v3.4.1"
+  },
+  "fix": {
+    "branch": "fix/n34-subagent-handback-v3.4.2",
+    "base": "4260fa8",
+    "fixCommit": "a446488",
+    "versionCommit": "dc80f17 (CLI_VERSION v3.4.2)",
+    "files": ["runtime/adapters/claude-review.mjs", "runtime/circuit/review-ledger.test.mjs"],
+    "rules": [
+      "SubagentHandback input.message is an answer; same-message text with another verdict is a second answer",
+      "only the exact harness instruction (one system-reminder block opening with the handback sentence, or one '[handback-send-enforce] ' line naming SubagentHandback) is not a follow-up; never decided by isMeta",
+      "a plain-text answer followed by the exact enforce turn and a handback with the same VERDICT, REVIEW_NONCE and REVISION counts once; otherwise two answers (cannot approve; adverse stands)",
+      "SubagentHandback excluded from the read-only tool check; every other tool still refused",
+      "parent cross-check: SendMessage 'to' the run or Agent/Task 'resume' of the run -> cannot approve"
+    ],
+    "unchanged": "independent-review.mjs, review-ledger.mjs, core/agents.json, gates, skills, projections"
+  },
+  "regression": {
+    "test": "runtime/circuit/review-ledger.test.mjs",
+    "red": { "adapter": "v3.4.1", "tests": 10, "pass": 1, "fail": 9, "passed": "the negative lookalike test" },
+    "redEnforceReconciliation": { "adapter": "first fix (before the enforce reconciliation)", "affectedTests": 2, "pass": 0, "fail": 2 },
+    "green": { "command": "node --test runtime/circuit/review-ledger.test.mjs", "tests": 53, "pass": 51, "fail": 0, "skipped": 2, "skippedReason": "Windows: no FIFOs / POSIX permissions" },
+    "validatorsPass": ["scripts/validate-ci-tests-listed.mjs (99 files)", "runtime/docs/validate-doc-drift.mjs", "parity/validate-parity.mjs", "runtime/adapters/validate-entrypoints.mjs (first fix)", "git diff --check"],
+    "knownHostFlake": "git 'unable to write file .git/objects/... Permission denied' while creating temp repos; reproduced on the untouched tree (ai-native-sync-main-v342); affected tests pass when repeated alone"
+  },
+  "e2e": {
+    "procedure": "claude -p \"/sdd-validate 001-demo\" headless, Claude Code 2.1.312; disposable consumers outside every repository; profile python-lib; feature 001-demo",
+    "bundle": { "source": "commit object 2babe5a (first fix; not a branch commit)", "version": "v3.4.2", "digest": "sha256:30686db5eef03c0ac37bd4db3527d3dba43c131acb5628ea1920d79ea79a385e" },
+    "approve": {
+      "reviewerAgentId": "aff3449825dcb2603",
+      "subagentType": "reviewer",
+      "transcript": ["prompt", "system-reminder", "Read(packet)", "SubagentHandback"],
+      "status": { "IMPLEMENTATION": "PASS", "VALIDATION": "PASS (node --test src/)", "INDEPENDENT_REVIEW": "PASS", "FINAL_REVIEW_STATUS": "APPROVED", "HUMAN_GATE": "required" },
+      "lastReview": "independent APPROVED attested by claude/reviewer (delegated-fresh-context)",
+      "revision": "sha256:c57981ef..."
+    },
+    "adverse": {
+      "reviewerAgentId": "a4ac7baf00ebc277b",
+      "change": "contradicts RF-1 (20% vs 10%) and RF-2 (no negative check); its own tests pass",
+      "transcript": ["prompt", "system-reminder", "Read(packet)", "plain-text VERDICT: CHANGES_REQUESTED ...", "[handback-send-enforce]", "SubagentHandback with a reworded report (same VERDICT/NONCE/REVISION)"],
+      "firstFixAdapter": { "INDEPENDENT_REVIEW": "NOT_PROVEN (2 final answers)", "FINAL_REVIEW_STATUS": "CHANGES_REQUESTED (verdict kept)" },
+      "finalAdapter_a446488": { "INDEPENDENT_REVIEW": "CHANGES_REQUESTED", "FINAL_REVIEW_STATUS": "CHANGES_REQUESTED", "HUMAN_GATE": "required" }
+    },
+    "receiptReverification": {
+      "from": "v3.4.1 adapter",
+      "to": "fixed adapter",
+      "giIncident": { "before": "5 errors, verdict null", "after": "0 errors, CHANGES_REQUESTED" },
+      "approve": { "before": "5 errors, verdict null", "after": "0 errors, APPROVED" },
+      "adverse": { "before": "2 errors, no evidence", "after": "0 errors, CHANGES_REQUESTED" }
+    },
+    "caveat": "both claude -p processes were stopped by Claude Code for host memory pressure after the reviewer runs had finished and their receipts were stored; the statuses are re-derived from those receipts (sdd review status)"
+  },
+  "pending": ["independent review of the candidate on its final SHA", "PLATFORM audit of the final SHA", "remote CI"],
+  "outOfScopeUnchanged": {
+    "consumerValidation": "VALIDATION FAIL / productSetupCommand in the consumer",
+    "pilotUbuntu": "Docker exit 125 (deferred; stderr not logged)",
+    "deferredReviewFindings": "S-14..S-17",
+    "opencode": "not verified: the local CLI 2.2.0 install is broken"
+  }
+}

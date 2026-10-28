@@ -388,8 +388,11 @@ Claude Code, Windows 11, evidencia de transcripts locales (`~/.claude/projects/*
   sesiones `-p` y en carpetas no confiadas, por eso el hook se proyecta en `.claude/settings.json`. La entrada del hook
   solo dice dónde mirar: el `REVIEW_NONCE` sale de la delegación (primer mensaje del subagente) y el veredicto, el nonce
   y la revisión de la respuesta final del Reviewer tal como la registró el transcript, nunca de `last_assistant_message`.
-  Si el subagente entrega su informe con `SubagentHandback` (2.1.271+) y ese informe no queda como texto del asistente,
-  no hay veredicto legible: la corrida no aprueba y cuenta como `NEEDS_HUMAN_DECISION` (fail-closed; no verificado E2E).
+  Si el subagente entrega su informe con `SubagentHandback` (2.1.271+), el `message` de esa llamada es la respuesta y la
+  instrucción de entrega del arnés (turno `<system-reminder>` o `[handback-send-enforce]` exacto) no es un follow-up
+  (v3.4.2, N-34; verificado E2E con 2.1.312, no con 2.1.311: `governance/versioning/V3.4.2-PATCH.md`). Si el informe no
+  queda registrado de ninguna de las dos formas, no hay veredicto legible: la corrida no aprueba y cuenta como
+  `NEEDS_HUMAN_DECISION` (fail-closed).
 * **Transcripts comprimidos.** En un host con un proxy de compresión de contexto (p. ej. headroom) el primer mensaje del
   subagente puede quedar en el transcript como una referencia (`<<ccr:…>>`) en vez del prompt literal: la verificación del
   adaptador falla cerrada (no prueba contexto nuevo) y el review queda `NOT_PROVEN`/rechazado, nunca aprobado.

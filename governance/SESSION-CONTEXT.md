@@ -4,14 +4,16 @@
 > `governance/history/SESSION-CONTEXT-HISTORY-2026-10-04.md`. Fuente de verdad del estado: este archivo, `governance/roadmaps/AI-NATIVE-V3-ROADMAP.md` y Git/GitHub.
 > Política del merge humano: `governance/security/HITL-MERGE-POLICY.md`. Frontera de secretos: `governance/security/SECRETS-BOUNDARY.md`.
 
-Actualizado: 2026-10-28 (`v3.4.1` PATCH publicada y verificada contra la release publicada).
+Actualizado: 2026-10-28 (candidata `v3.4.2` PATCH en `fix/n34-subagent-handback-v3.4.2`, sin tag ni release; `v3.4.1` sigue siendo la release vigente).
 
 ```text
-STATUS: V3.4.1_RELEASED_AND_VERIFIED (PATCH estructural YAML; no declara resuelto «reviewer not found»)
+STATUS: V3.4.2_CANDIDATE (PATCH, N-34), sin tag ni release; baseline vigente V3.4.1_RELEASED_AND_VERIFIED (PATCH estructural YAML; no declara resuelto «reviewer not found»)
 INITIATIVE: CLOSED (N-02b); CLI_LIFECYCLE: CLOSED (v3.3.0)
 STABLE_BASELINE: v3.4.1 (tag sobre 635a60c; digest sha256:ab7617d241a4ec0e5418d30baba31f6d36e4fe8e984683bbc2541e908bde95e7)
 PREVIOUS_BASELINE: v3.4.0 (inmutable). Los 9 consumidores seguían en v3.1.2 el 2026-10-12; no re-verificado desde entonces
 ```
+
+**Candidata `v3.4.2` (PATCH), N-34 (2026-10-28):** rama `fix/n34-subagent-handback-v3.4.2` sobre `develop` `4260fa8`; corrección `a446488` (solo `runtime/adapters/claude-review.mjs` y su regresión en `runtime/circuit/review-ledger.test.mjs`) y `CLI_VERSION = "v3.4.2"` en `dc80f17`. El adaptador de Claude ahora lee como respuesta el `message` de `SubagentHandback` y no cuenta como follow-up la instrucción exacta de entrega del arnés (falla cerrada ante cualquier otra cosa, con contraverificación del registro de la sesión padre); antes el veredicto adverso entregado así se perdía (`NEEDS_HUMAN_DECISION`). Regresión RED (10 tests, 9 FAIL) / GREEN (53 tests, 51 PASS, 2 skips de SO) y E2E real con Claude Code 2.1.312 (aprobado y adverso; 2.1.311 no cubierto). **Pendiente:** revisión independiente de la candidata, auditoría PLATFORM del SHA final y CI remota. Sin cambios en `core/**` ni en proyecciones. Fuera de alcance y sin cambios: `VALIDATION` FAIL / `productSetupCommand` del consumidor, pilot Ubuntu (Docker exit 125, diferido), S-14..S-17 (diferidos); OpenCode no verificado (la instalación local del CLI 2.2.0 está rota). Detalle, delta de consumidor y SemVer: `governance/versioning/V3.4.2-PATCH.md`; evidencia: `governance/versioning/evidence/n34-subagent-handback-v3.4.2.json`.
 
 **`v3.4.1` publicada** el 2026-10-28T02:37:00Z: tag anotado (creado por el humano) sobre `635a60c` (merge de #158 `develop` → `main`, tras el merge humano de #157 en `develop`; difiere del SHA auditado `247b284` solo en `.audit/**`; auditoría independiente 89.50/100, 0 BLOCKER/CRITICAL/MAJOR, 18 MINOR, aceptada de forma excepcional por decisión humana bajo la tolerancia de `release-gate`), `release-gate` PASS_WITH_WARNINGS, workflow `Release` run 40621778120 con build/publish/verify en PASS, release inmutable, `verify-release` PASS (33 checks), `init` → READY y `upgrade` v3.4.0 → v3.4.1 → READY en consumidores temporales: `governance/versioning/V3.4.1-POST-RELEASE-VERIFICATION.md`. `CLI_VERSION` = `v3.4.1`; `VERSION` sigue en `3.0.0-dev`. No queda candidata ni promoción pendiente. Pendientes sin scope abierto, registrados allí: N-34 (`NOT_PROVEN` con Claude Code 2.1.311), el pilot offline Ubuntu en rojo en `635a60c` (Docker exit 125, 3 intentos, causa no demostrada), los LOW diferidos de la revisión independiente (S-12..S-16), S-17 y S-18.
 
