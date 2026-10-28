@@ -1,4 +1,30 @@
-# AI-NATIVE v3.4.2 — PATCH Candidate
+# AI-NATIVE v3.4.2 — Released and Verified
+
+v3.4.2 is published and verified against the public release. Facts and
+evidence: `governance/versioning/V3.4.2-POST-RELEASE-VERIFICATION.md`.
+
+```text
+ROADMAP: AI-NATIVE V3 / v3.4.2 (PATCH, N-34)
+STATE: V3.4.2_RELEASED_AND_VERIFIED
+FINAL CANDIDATE / RELEASE SHA: 30119d5d51c4420de3a327560c166109f6bdde76 (merge of #162, develop -> main)
+AUDITED SHA: d6c5d4a6d4cd909b2ae7eaa938214e708cddab9d (differs only in .audit/**)
+PLATFORM AUDIT: independent, 90.25/100; 0 BLOCKER, 0 CRITICAL, 0 MAJOR, 17 MINOR (inherited); N-34 closed; threshold reached without tolerance
+RELEASE-GATE (build job): PASS_WITH_WARNINGS (28 STALE historical reports)
+v3.4.2 TAG: annotated, on 30119d5, created by the human
+v3.4.2 RELEASE: published, immutable; digest sha256:97da1195a68456d2c8d3ce669e80de0863b82863b75891e720757ac027bdd76f
+RELEASE WORKFLOW: run 40746605663; build PASS, publish PASS, verify PASS
+verify-release: PASS (33 checks, public assets)
+INIT (empty repository) / UPGRADE (v3.4.1 -> v3.4.2): READY / READY (disposable consumers; upgrade +0 ~2 -0, consumer files preserved)
+N-34 IN THE PUBLISHED BUNDLE: 4 real Claude Code 2.1.312 receipts re-verified with the published adapter: 0 errors, verdicts kept (v3.4.1 adapter: 5/5/2/2); Claude Code 2.1.311 NOT E2E-covered
+INDEPENDENT REVIEWS: f877b2c APPROVED; delta f4ec7d5 and d6c5d4a APPROVED (recorded in #161)
+CLI_VERSION: v3.4.2; VERSION: 3.0.0-dev (unchanged)
+PENDING CANDIDATE / PROMOTION: none
+NON-BLOCKING FOLLOW-UPS (no scope opened): Claude Code 2.1.311 E2E, OpenCode real CLI, pilot offline Ubuntu (Docker exit 125 on 635a60c, 4/4 on 30119d5, cause not demonstrated), S-14..S-17, S-19..S-23, F-04 tag ruleset, actions/attest-sbom deprecation, ubuntu-latest migration, main -> develop sync, Lenovo global CLI, worktree inventory and authorized cleanup; listed in the verification file
+```
+
+Previous snapshot (candidate preparation), kept as history:
+
+# AI-NATIVE v3.4.2 — PATCH Candidate (history)
 
 Candidate prepared on `fix/n34-subagent-handback-v3.4.2`; not tagged, not released. Detail:
 `governance/versioning/V3.4.2-PATCH.md`; evidence:
@@ -21,7 +47,7 @@ PENDING: delta review of the docs commit / PLATFORM AUDIT of the final SHA / REM
 v3.4.2 TAG / RELEASE: NOT CREATED / NOT PUBLISHED
 ```
 
-Current release: v3.4.1, below.
+Current release at that time: v3.4.1, below.
 
 # AI-NATIVE v3.4.1 — Released and Verified
 
