@@ -49,7 +49,8 @@ protection, CI and the human merge do not depend on the local host and stay in f
 ## Security By Design
 
 * Fail-closed everywhere: unknown capability, unknown runtime, missing field, unreadable receipt, compressed
-  transcript, `SubagentHandback` report: not independent.
+  transcript: not independent. A `SubagentHandback` report is the reviewer's answer only after the harness's exact
+  handback instruction; any other message to the run, a second answer or a tool outside the read-only set still is not.
 * The receipt hook never blocks the runtime (always exit 0) and trusts nothing it stores.
 * No new permission is granted: `sdd-validate` keeps the restricted projection (Claude pre-approves only
   `Read, Grep, Glob`; OpenCode `plan` agent); its write goes through `sdd review` commands and normal prompts.

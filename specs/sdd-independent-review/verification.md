@@ -252,8 +252,14 @@ no separate lint or typecheck step in the repository (`package.json` defines non
   the cache can forge evidence (`security.md`).
 * Context-compression proxies (e.g. headroom) can rewrite the subagent transcript. Verification then fails closed
   (NOT_PROVEN), never a false PASS. It would block a real approval on such a host.
-* `SubagentHandback` (Claude Code 2.1.271+): if the report is not recorded as assistant text, no verdict is readable:
-  the run cannot approve and counts as NEEDS_HUMAN_DECISION (fail-closed, not verified E2E).
+* `SubagentHandback` (Claude Code 2.1.271+): the `message` of the handback call is the reviewer's answer, and the
+  harness handback instruction (an exact allowlist of texts and positions: the two known `<system-reminder>` texts as the
+  first turn after the prompt, the exact `[handback-send-enforce]` line right after a plain-text answer) is not a
+  follow-up; any other text or position is, so unknown future wording fails closed (v3.4.2, N-34; verified E2E on Claude
+  Code 2.1.312, not on 2.1.311). The E2E ran the first-fix bundle (commit object `2babe5a`); the final adapter was
+  verified on the stored real receipts and by the regression tests. A report that is not recorded either way leaves no
+  readable verdict: the run cannot approve and counts as NEEDS_HUMAN_DECISION (fail-closed). Evidence:
+  `governance/versioning/V3.4.2-PATCH.md`.
 * A reviewer run whose hook never fired (missing, colliding `.claude/settings.json`, timeout) leaves no receipt: its
   adverse verdict is invisible to `status`, which reports `NOT_RUN`. It cannot approve either.
 * Reviews issued before this fix round carry no delegation prompt and can no longer approve: begin a new review.
