@@ -12,7 +12,7 @@
 // Hook input fields are the documented SubagentStop schema (session_id,
 // transcript_path, hook_event_name, agent_id, agent_type, agent_transcript_path,
 // last_assistant_message); transcript files are read only for API-shaped content
-// (message.role, message.id, text, tool_use name/input), never for undocumented
+// (message.role, message.id, text, tool_use id/name/input, tool_result tool_use_id/is_error/content), never for undocumented
 // metadata. The hook input only says where to look: the review a run answers is
 // the one its delegation carried, and its verdict, nonce and revision are the
 // answer the transcript recorded, never the hook's copy of it.
@@ -154,6 +154,23 @@ const HANDBACK_REMINDER = `Your final report is delivered through ${HANDBACK_TOO
 const HANDBACK_REMINDERS = [HANDBACK_REMINDER, `${HANDBACK_REMINDER} Do not also send the report with SendMessage: your caller would get it twice.`].map((body) => `<system-reminder>\n${body}\n</system-reminder>`);
 const HANDBACK_ENFORCE = `[handback-send-enforce] Your report has not been delivered. Call ${HANDBACK_TOOL}({message: <your full report>}) now; the call ends your run.`;
 const exactText = (content) => textOf(content).replace(/\r\n/g, "\n").trim();
+// N-35: a call to a tool the agent does not have never runs: Claude Code answers it with an is_error tool_result whose whole
+// text is exactly one of these, naming the tool called (2.1.288 wrote the first, 2.1.312 the second). That pair is the only
+// proof that a call did not run; any other result (a call that ran and failed, "Exit code N", a hook or permission block,
+// other wording), none, a second one, one written before the call or a call id used twice is a call that may have run
+const REFUSALS = [(name) => `Error: No such tool available: ${name}`, (name) => `Error: No such tool available: ${name}. ${name} is not among the tools available here. Continue with the tools you have.`];
+const isRefusal = (result, name) => result?.is_error === true && (typeof result.content === "string" || (Array.isArray(result.content) && result.content.every((b) => b?.type === "text"))) && REFUSALS.some((body) => exactText(result.content) === `<tool_use_error>${body(name)}</tool_use_error>`);
+/** The run's tool calls (id -> tool name) that the harness refused before they ran, read from its turns, never from request blobs (N-35). */
+function refusedCalls(records) {
+  const blocks = turnsOf(records).flatMap((turn, at) => (Array.isArray(turn.message.content) ? turn.message.content.map((block) => ({ at, role: turn.message.role, block })) : []));
+  const uses = blocks.filter((b) => b.role === "assistant" && b.block?.type === "tool_use");
+  const results = blocks.filter((b) => b.role === "user" && b.block?.type === "tool_result");
+  const refused = uses.filter(({ at, block }) => {
+    const answered = results.filter((r) => r.block.tool_use_id === block.id);
+    return typeof block.id === "string" && Boolean(block.id) && uses.filter((u) => u.block.id === block.id).length === 1 && answered.length === 1 && answered[0].at > at && isRefusal(answered[0].block, block.name);
+  });
+  return new Map(refused.map(({ block }) => [block.id, block.name]));
+}
 /** The agent a delegation started, as the harness names it in its own result line `agentId: <id>` (the last one: the harness writes it after the report). */
 const agentIdOf = (resultText) => [...String(resultText).matchAll(/^agentId: ([A-Za-z0-9_-]+)(?: \(.*)?$/gm)].at(-1)?.[1] ?? null;
 
@@ -301,8 +318,10 @@ export function verifyClaudeReceipt(hook, { nonce, packet = null, prompt = null,
   if (Object.hasOwn(delegation.input, "isolation")) errors.push(`the delegation sets isolation ${JSON.stringify(delegation.input.isolation)}: the reviewer runs in a fresh context on this working tree, never in another`);
   // nor make it addressable by a name: a named or team agent receives messages the parent's record does not tie to its agent_id
   for (const key of ["name", "team_name"]) if (Object.hasOwn(delegation.input, key)) errors.push(`the delegation sets ${key} ${JSON.stringify(delegation.input[key])}: a review run is addressed only by its agent_id, a named or team agent can be messaged by that name`);
-  // read-only: the reviewer used only its projected tools (SubagentHandback is the runtime's delivery of its answer)
-  const used = [...new Set(toolUses(agentRecords).map((t) => t.name))].filter((name) => name !== HANDBACK_TOOL && !allowedTools.includes(name));
+  // read-only: the reviewer used only its projected tools (SubagentHandback is the runtime's delivery of its answer);
+  // a call the harness provably refused before it ran used nothing (N-35), wherever else the store repeats it
+  const refused = refusedCalls(agentRecords);
+  const used = [...new Set(toolUses(agentRecords).filter((t) => refused.get(t.id) !== t.name).map((t) => t.name))].filter((name) => name !== HANDBACK_TOOL && !allowedTools.includes(name));
   if (used.length) errors.push(`the reviewer used tools outside its read-only set: ${used.join(", ")}`);
   // it judged the evidence the platform generated: the packet of this review was read by the reviewer itself
   if (packet && !toolUses(agentRecords).some((t) => t.name === "Read" && typeof t.input?.file_path === "string" && samePath(t.input.file_path, packet))) errors.push("the reviewer never read the review packet");
