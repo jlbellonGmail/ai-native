@@ -12,7 +12,7 @@
       "one <system-reminder> user turn 'Your final report is delivered through SubagentHandback: ...' right after the prompt",
       "when the agent answered in plain text: a '[handback-send-enforce] Your report has not been delivered. Call SubagentHandback(...)' user turn, then the SubagentHandback call"
     ],
-    "observedIn": "all 7 local SubagentHandback transcripts (Claude Code 2.1.305, 2.1.311, 2.1.312), including the v3.4.0 and v3.4.1 E2E",
+    "observedIn": "all 11 local SubagentHandback transcripts (Claude Code 2.1.305, 2.1.311, 2.1.312), including the v3.4.0 and v3.4.1 E2E",
     "reproduction": {
       "receipt": "gi-common-reference incident, review nonce ff8fee1fc5234ee4806bc111, reviewer agent a92f6f354a30b13e3, Claude Code 2.1.312",
       "adapter": "v3.4.1 runtime/adapters/claude-review.mjs",
@@ -36,22 +36,31 @@
     "base": "4260fa8",
     "fixCommit": "a446488",
     "versionCommit": "dc80f17 (CLI_VERSION v3.4.2)",
+    "reviewFixCommit": "14d6a87 (fix(adapters): accept only the exact harness handback instruction), after the independent review of bb96611 returned CHANGES_REQUESTED (MEDIUM 1-3, LOW 4)",
     "files": ["runtime/adapters/claude-review.mjs", "runtime/circuit/review-ledger.test.mjs"],
     "rules": [
-      "SubagentHandback input.message is an answer; same-message text with another verdict is a second answer",
-      "only the exact harness instruction (one system-reminder block opening with the handback sentence, or one '[handback-send-enforce] ' line naming SubagentHandback) is not a follow-up; never decided by isMeta",
-      "a plain-text answer followed by the exact enforce turn and a handback with the same VERDICT, REVIEW_NONCE and REVISION counts once; otherwise two answers (cannot approve; adverse stands)",
+      "SubagentHandback input.message is an answer; same-message text with another verdict is a second answer; two handback calls are two answers",
+      "a handback message that is not a non-empty string is an unreadable answer: it counts, never approves, and no earlier plain-text answer stands in for it",
+      "harness instructions are an exact allowlist, compared after CRLF -> LF and trim: the two reminder texts R1 (2.1.312, with the SendMessage sentence) and R2 (2.1.305 and 2.1.311, without it), and the one enforce text E; never decided by prefix, isMeta or origin",
+      "position: a reminder is a harness turn only as the turn right after the prompt (at most once); E only right after an assistant message that has text and no tool_use; any other text, repeat or position is a follow-up, so unknown future wording fails closed (NOT_PROVEN)",
+      "a plain-text answer followed by the exact E turn (only E and tool results in between) and a handback with the same VERDICT, REVIEW_NONCE and REVISION counts once; otherwise two answers (cannot approve; adverse stands)",
       "SubagentHandback excluded from the read-only tool check; every other tool still refused",
-      "parent cross-check: SendMessage 'to' the run or Agent/Task 'resume' of the run -> cannot approve"
+      "a delegation input with name or team_name is refused like isolation",
+      "parent cross-check: SendMessage 'to' or 'recipient' the run, or Agent/Task 'resume' of the run -> cannot approve"
     ],
+    "localTranscriptsSurveyed": { "runs": 11, "claudeCode": ["2.1.305", "2.1.311", "2.1.312"], "reminder": "first user turn after the prompt, at most once per run, exactly R1 or R2", "enforce": "exactly E, always directly after an assistant plain-text message", "delegationKeys": ["description", "prompt", "run_in_background", "subagent_type"], "sendMessageInput": "to; 2.1.296+ also recipient (same id), recipient_kind 'agent', type 'message'" },
     "unchanged": "independent-review.mjs, review-ledger.mjs, core/agents.json, gates, skills, projections"
   },
   "regression": {
     "test": "runtime/circuit/review-ledger.test.mjs",
     "red": { "adapter": "v3.4.1", "tests": 10, "pass": 1, "fail": 9, "passed": "the negative lookalike test" },
     "redEnforceReconciliation": { "adapter": "first fix (before the enforce reconciliation)", "affectedTests": 2, "pass": 0, "fail": 2 },
-    "green": { "command": "node --test runtime/circuit/review-ledger.test.mjs", "tests": 53, "pass": 51, "fail": 0, "skipped": 2, "skippedReason": "Windows: no FIFOs / POSIX permissions" },
-    "validatorsPass": ["scripts/validate-ci-tests-listed.mjs (99 files)", "runtime/docs/validate-doc-drift.mjs", "parity/validate-parity.mjs", "runtime/adapters/validate-entrypoints.mjs (first fix)", "git diff --check"],
+    "redReviewFixes": { "adapter": "bb96611 (copy of the tree in the scratchpad, adapter from git show bb96611)", "command": "node --test --test-name-pattern=N-34 runtime/circuit/review-ledger.test.mjs", "tests": 15, "pass": 8, "fail": 7, "note": "one of the 7 first appeared as the git Permission denied flake; repeated alone it failed on its assertion" },
+    "greenReviewFixesN34": { "tests": 15, "pass": 15, "fail": 0 },
+    "green": { "command": "node --test runtime/circuit/review-ledger.test.mjs", "tests": 58, "pass": 56, "fail": 0, "skipped": 2, "skippedReason": "Windows: no FIFOs / POSIX permissions" },
+    "greenBeforeReviewFixes": { "tests": 53, "pass": 51, "fail": 0, "skipped": 2 },
+    "realRunsReadReviewerRun": "final adapter over the 11 local SubagentHandback runs: 9 give 1 answer and 0 follow-ups; one gives 2 answers and 0 follow-ups; one gives 9 answers and 5 follow-ups (not analysed further)",
+    "validatorsPass": ["scripts/validate-ci-tests-listed.mjs (99 files)", "runtime/docs/validate-doc-drift.mjs", "parity/validate-parity.mjs", "runtime/adapters/validate-entrypoints.mjs", "git diff --check"],
     "knownHostFlake": "git 'unable to write file .git/objects/... Permission denied' while creating temp repos; reproduced on the untouched tree (ai-native-sync-main-v342); affected tests pass when repeated alone"
   },
   "e2e": {
@@ -79,9 +88,10 @@
       "approve": { "before": "5 errors, verdict null", "after": "0 errors, APPROVED" },
       "adverse": { "before": "2 errors, no evidence", "after": "0 errors, CHANGES_REQUESTED" }
     },
-    "caveat": "both claude -p processes were stopped by Claude Code for host memory pressure after the reviewer runs had finished and their receipts were stored; the statuses are re-derived from those receipts (sdd review status)"
+    "caveat": "both claude -p processes were stopped by Claude Code for host memory pressure after the reviewer runs had finished and their receipts were stored; the statuses are re-derived from those receipts (sdd review status)",
+    "adapterVerified": "the E2E ran the first-fix bundle (commit object 2babe5a); later adapters (a446488, 14d6a87) were verified by the regression tests and on the stored real receipts (a446488), not by a new E2E; Claude Code 2.1.305 and 2.1.311 are not E2E-covered"
   },
-  "pending": ["independent review of the candidate on its final SHA", "PLATFORM audit of the final SHA", "remote CI"],
+  "pending": ["new independent review of the candidate on its final SHA", "PLATFORM audit of the final SHA", "remote CI"],
   "outOfScopeUnchanged": {
     "consumerValidation": "VALIDATION FAIL / productSetupCommand in the consumer",
     "pilotUbuntu": "Docker exit 125 (deferred; stderr not logged)",

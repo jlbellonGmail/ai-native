@@ -389,10 +389,13 @@ Claude Code, Windows 11, evidencia de transcripts locales (`~/.claude/projects/*
   solo dice dónde mirar: el `REVIEW_NONCE` sale de la delegación (primer mensaje del subagente) y el veredicto, el nonce
   y la revisión de la respuesta final del Reviewer tal como la registró el transcript, nunca de `last_assistant_message`.
   Si el subagente entrega su informe con `SubagentHandback` (2.1.271+), el `message` de esa llamada es la respuesta y la
-  instrucción de entrega del arnés (turno `<system-reminder>` o `[handback-send-enforce]` exacto) no es un follow-up
-  (v3.4.2, N-34; verificado E2E con 2.1.312, no con 2.1.311: `governance/versioning/V3.4.2-PATCH.md`). Si el informe no
-  queda registrado de ninguna de las dos formas, no hay veredicto legible: la corrida no aprueba y cuenta como
-  `NEEDS_HUMAN_DECISION` (fail-closed).
+  instrucción de entrega del arnés (lista exacta de textos y posiciones: los dos `<system-reminder>` conocidos como primer
+  turno tras el prompt, la línea `[handback-send-enforce]` exacta justo tras una respuesta en texto plano) no es un
+  follow-up; cualquier otro texto o posición sí lo es, y un texto futuro desconocido falla cerrado (v3.4.2, N-34;
+  verificado E2E con 2.1.312, no con 2.1.311: `governance/versioning/V3.4.2-PATCH.md`). El E2E ejecutó el bundle de la
+  primera corrección (objeto de commit `2babe5a`); el adaptador final se verificó sobre los receipts reales almacenados y
+  con las pruebas de regresión. Si el informe no queda registrado de ninguna de las dos formas, no hay veredicto legible:
+  la corrida no aprueba y cuenta como `NEEDS_HUMAN_DECISION` (fail-closed).
 * **Transcripts comprimidos.** En un host con un proxy de compresión de contexto (p. ej. headroom) el primer mensaje del
   subagente puede quedar en el transcript como una referencia (`<<ccr:…>>`) en vez del prompt literal: la verificación del
   adaptador falla cerrada (no prueba contexto nuevo) y el review queda `NOT_PROVEN`/rechazado, nunca aprobado.
