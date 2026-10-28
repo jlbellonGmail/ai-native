@@ -9,7 +9,7 @@ ROADMAP: AI-NATIVE V3 / v3.4.2 (PATCH, N-34)
 STATE: V3.4.2_CANDIDATE
 BASE: develop 4260fa8 (chore(sync): merge main into develop after v3.4.1)
 CONTENT: fix(adapters) a446488 (reviewer reports delivered by SubagentHandback are attested; only runtime/adapters/claude-review.mjs + runtime/circuit/review-ledger.test.mjs); CLI_VERSION v3.4.2 dc80f17; fix(adapters) 14d6a87 (exact harness instruction allowlist and position, name/team_name refused, recipient cross-check, unreadable handback) after the independent review of bb96611 returned CHANGES_REQUESTED
-REGRESSION: RED 10 N-34 tests, 9 FAIL (v3.4.1 adapter); RED review fixes 15 N-34 tests, 7 FAIL (bb96611 adapter); GREEN review-ledger.test.mjs 58 tests, 56 PASS, 0 FAIL, 2 OS skips
+REGRESSION: RED 10 N-34 tests, 9 FAIL (v3.4.1 adapter); RED review fixes 15 N-34 tests, 7 FAIL (bb96611 adapter); GREEN review-ledger.test.mjs 59 tests, 52 PASS, 5 FAIL = git "Permission denied" host flake (all 5 pass when repeated alone), 2 OS skips
 E2E (Claude Code 2.1.312; 2.1.311 NOT covered): approve -> INDEPENDENT_REVIEW PASS / FINAL APPROVED; adverse -> INDEPENDENT_REVIEW CHANGES_REQUESTED / FINAL CHANGES_REQUESTED
 RECEIPT RE-VERIFICATION (v3.4.1 adapter -> fixed): gi incident 5 errors/null -> 0 errors/CHANGES_REQUESTED; approve 5/null -> 0/APPROVED; adverse 2/no evidence -> 0/CHANGES_REQUESTED
 OUT OF SCOPE, UNCHANGED: consumer VALIDATION FAIL / productSetupCommand; pilot Ubuntu Docker exit 125 (deferred); S-14..S-17 (deferred); OpenCode not verified (local CLI 2.2.0 install broken)
