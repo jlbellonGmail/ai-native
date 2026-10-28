@@ -21,10 +21,11 @@
 // Since Claude Code 2.1.271 a subagent delivers its answer with a SubagentHandback
 // tool call (the message is the answer, not a text-only turn) after a harness
 // instruction in a user turn of its own; both are the runtime's delivery channel,
-// neither a follow-up nor a tool of the reviewer, and the instruction is only
-// that exact harness text. A message sent to the reviewer after its delegation
-// (SendMessage, a resume, a second prompt, also read from the session's own
-// record) or a second answer makes the run unable to approve, and any
+// neither a follow-up nor a tool of the reviewer. The instructions are an exact
+// allowlist of texts and positions; unknown wording fails closed (NOT_PROVEN).
+// A message sent to the reviewer after its delegation
+// (SendMessage by `to` or `recipient`, a resume, a second prompt, also read from the
+// session's own record) or a second answer makes the run unable to approve, and any
 // adverse answer the run gave stays its verdict: asking again cannot replace it.
 // Not a cryptographic proof: whoever can write Claude Code's transcript store or
 // the project's .claude/ configuration can forge it (threat model:
@@ -146,17 +147,13 @@ const turnsOf = (records) => records.filter((r) => (r?.type === "user" || r?.typ
 const firstUserText = (records) => textOf(turnsOf(records).find((r) => r.message.role === "user")?.message?.content).trim();
 // a user turn of a running agent is either the results of its own tool calls, the harness telling it how to deliver its report, or a message sent to it
 const isToolResults = (content) => Array.isArray(content) && content.length > 0 && content.every((b) => b?.type === "tool_result");
-// the harness instruction is exactly one <system-reminder> block that opens with the handback sentence, or one
-// [handback-send-enforce] line naming the tool; anything else (more text, a second block, the coordinator's wording) is a message
-const isEnforceInstruction = (content) => {
-  const text = textOf(content).trim();
-  return /^\[handback-send-enforce\] [^\r\n]*$/.test(text) && text.includes(HANDBACK_TOOL);
-};
-const isHandbackInstruction = (content) => {
-  const block = /^<system-reminder>([\s\S]*)<\/system-reminder>$/.exec(textOf(content).trim())?.[1];
-  if (block !== undefined) return !/<\/?system-reminder>/.test(block) && block.trim().startsWith(`Your final report is delivered through ${HANDBACK_TOOL}`);
-  return isEnforceInstruction(content);
-};
+// the harness's handback instructions are exact texts (Claude Code 2.1.305 to 2.1.312), compared after CRLF -> LF and trim:
+// the reminder is the turn right after the prompt, the enforce line comes right after a plain-text answer; any other text,
+// repeat or position (the coordinator's wording, added instructions, a reminder later on) is a message sent to the agent
+const HANDBACK_REMINDER = `Your final report is delivered through ${HANDBACK_TOOL}: when your work is complete, call ${HANDBACK_TOOL}({message: <your full report>}). The call ends your run, so make it your last step. Only a ${HANDBACK_TOOL} call reaches your caller as your result; plain text you write at the end is not delivered.`;
+const HANDBACK_REMINDERS = [HANDBACK_REMINDER, `${HANDBACK_REMINDER} Do not also send the report with SendMessage: your caller would get it twice.`].map((body) => `<system-reminder>\n${body}\n</system-reminder>`);
+const HANDBACK_ENFORCE = `[handback-send-enforce] Your report has not been delivered. Call ${HANDBACK_TOOL}({message: <your full report>}) now; the call ends your run.`;
+const exactText = (content) => textOf(content).replace(/\r\n/g, "\n").trim();
 /** The agent a delegation started, as the harness names it in its own result line `agentId: <id>` (the last one: the harness writes it after the report). */
 const agentIdOf = (resultText) => [...String(resultText).matchAll(/^agentId: ([A-Za-z0-9_-]+)(?: \(.*)?$/gm)].at(-1)?.[1] ?? null;
 
@@ -175,9 +172,11 @@ function delegatedNonce(agentTranscriptPath) {
  * with no tool call, or the `message` of each SubagentHandback call, plus the message's own text when that states
  * another verdict; one API message may span several records); `followUps` counts every message sent to it after
  * the delegation (SendMessage, a resume, a second prompt), which is what lets a session ask again. The harness's
- * own handback instructions (isHandbackInstruction) are not messages sent to it. A plain-text answer followed by
- * the harness's [handback-send-enforce] turn (only that and tool results in between) was never delivered: the next
- * handback that restates it (same VERDICT, REVIEW_NONCE and REVISION, any body) is that one answer, otherwise both count.
+ * own handback instructions (HANDBACK_REMINDERS right after the prompt, HANDBACK_ENFORCE right after a plain-text
+ * answer, nothing else) are not messages sent to it. A plain-text answer followed by that enforce turn (only it and
+ * tool results in between) was never delivered: the next handback that restates it (same VERDICT, REVIEW_NONCE and
+ * REVISION, any body) is that one answer, otherwise both count. A handback whose `message` is not a non-empty string
+ * is an unreadable answer (""): it counts, never approves and no earlier answer stands in for it.
  */
 export function readReviewerRun(records) {
   const turns = turnsOf(records);
@@ -186,8 +185,12 @@ export function readReviewerRun(records) {
   for (const turn of turns.slice(1)) {
     if (turn.message.role === "user") {
       const results = isToolResults(turn.message.content);
-      if (!results && !isHandbackInstruction(turn.message.content)) followUps += 1;
-      messages.push(results ? null : { enforce: isEnforceInstruction(turn.message.content) });
+      const text = exactText(turn.message.content);
+      const last = messages.at(-1);
+      const reminder = !results && messages.length === 0 && HANDBACK_REMINDERS.includes(text);
+      const enforce = !results && text === HANDBACK_ENFORCE && Boolean(last?.blocks) && !last.blocks.some((b) => b?.type === "tool_use") && Boolean(textOf(last.blocks).trim());
+      if (!results && !reminder && !enforce) followUps += 1;
+      messages.push(results ? null : { enforce });
       continue;
     }
     const last = messages.at(-1);
@@ -209,7 +212,7 @@ export function readReviewerRun(records) {
       undelivered = text ? { index: answers.push(text) - 1, told: false } : null;
       continue;
     }
-    const handed = uses.filter((u) => u.name === HANDBACK_TOOL).map((u) => (typeof u.input?.message === "string" ? u.input.message.trim() : "")).filter(Boolean);
+    const handed = uses.filter((u) => u.name === HANDBACK_TOOL).map((u) => (typeof u.input?.message === "string" ? u.input.message.trim() : ""));
     if (undelivered?.told && handed.length) {
       const [was, now] = [parseReviewerAnswer(answers[undelivered.index]), parseReviewerAnswer(handed[0])];
       if (was.verdict && was.nonce && was.revision && now.verdict === was.verdict && now.nonce === was.nonce && now.revision === was.revision) answers.splice(undelivered.index, 1);
@@ -284,7 +287,7 @@ export function verifyClaudeReceipt(hook, { nonce, packet = null, prompt = null,
   const answer = parseReviewerAnswer(run.answers[0] ?? "");
   const runId = runIdOf(hook.agent_id);
   const sentToRun = (id) => typeof id === "string" && runIdOf(id) === runId;
-  const sessionSent = toolUses(parentRecords).filter((t) => (t.name === "SendMessage" && sentToRun(t.input?.to)) || (DELEGATION_TOOLS.includes(t.name) && sentToRun(t.input?.resume))).length;
+  const sessionSent = toolUses(parentRecords).filter((t) => (t.name === "SendMessage" && (sentToRun(t.input?.to) || sentToRun(t.input?.recipient))) || (DELEGATION_TOOLS.includes(t.name) && sentToRun(t.input?.resume))).length;
   if (run.followUps) errors.push(`the reviewer was sent ${run.followUps} message(s) after its delegation (SendMessage, resume or a second prompt): a review run is one prompt and one answer, a continued run cannot approve`);
   if (sessionSent) errors.push(`the session sent ${sessionSent} message(s) to the reviewer after its delegation (SendMessage or resume): a review run is one prompt and one answer, a continued run cannot approve`);
   if (run.answers.length > 1) errors.push(`the reviewer gave ${run.answers.length} final answers: a review run has exactly one`);
@@ -296,6 +299,8 @@ export function verifyClaudeReceipt(hook, { nonce, packet = null, prompt = null,
   if (!model) errors.push("the reviewer has no projected model to verify the delegation against");
   else if (Object.hasOwn(delegation.input, "model") && delegation.input.model !== model) errors.push(`the delegation overrides the reviewer's projected model '${model}' with ${JSON.stringify(delegation.input.model)}`);
   if (Object.hasOwn(delegation.input, "isolation")) errors.push(`the delegation sets isolation ${JSON.stringify(delegation.input.isolation)}: the reviewer runs in a fresh context on this working tree, never in another`);
+  // nor make it addressable by a name: a named or team agent receives messages the parent's record does not tie to its agent_id
+  for (const key of ["name", "team_name"]) if (Object.hasOwn(delegation.input, key)) errors.push(`the delegation sets ${key} ${JSON.stringify(delegation.input[key])}: a review run is addressed only by its agent_id, a named or team agent can be messaged by that name`);
   // read-only: the reviewer used only its projected tools (SubagentHandback is the runtime's delivery of its answer)
   const used = [...new Set(toolUses(agentRecords).map((t) => t.name))].filter((name) => name !== HANDBACK_TOOL && !allowedTools.includes(name));
   if (used.length) errors.push(`the reviewer used tools outside its read-only set: ${used.join(", ")}`);
