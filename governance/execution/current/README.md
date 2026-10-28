@@ -1,4 +1,48 @@
-# AI-NATIVE v3.4.0 candidate — published on release/v3.4.0, pending PLATFORM audit
+# AI-NATIVE v3.4.1 — PATCH Candidate
+
+Candidate prepared on `release/v3.4.1`; not tagged, not released. Detail:
+`governance/versioning/V3.4.1-PATCH.md`.
+
+```text
+ROADMAP: AI-NATIVE V3 / v3.4.1 (PATCH)
+STATE: V3.4.1_CANDIDATE
+BASE: develop 036e6f8b2045d51ec43aad91fdbb599668588ca0 (merge of #153; origin/main 15f35ff is an ancestor)
+CONTENT: fix(adapters) f3955c9 (Claude agent YAML description escaped; RED 8 failed / GREEN 15/15) + U+FFFE/U+FFFF follow-up from the independent review of 4ad607a; CLI_VERSION v3.4.1 7e8fea1
+INDEPENDENT CODE REVIEW (4ad607a): APPROVED, 5 LOW (1-4 addressed, 5 informational); not an attested SDD review receipt
+CONSUMER DELTA: 2 of 229 bundle files; 3 projections (.claude/agents/*.md description line)
+E2E (Claude Code 2.1.311): reviewer registered and invoked in v3.4.0 and the candidate; "Agent type 'reviewer' not found" NOT REPRODUCED
+SEPARATE DEFECT (no scope opened): attested independent review NOT_PROVEN in both versions (SubagentHandback)
+PUBLICATION: subject to a human decision (structural YAML fix only)
+PLATFORM AUDIT: on the final SHA, recorded in .audit/reports/
+v3.4.1 TAG / RELEASE: NOT CREATED / NOT PUBLISHED
+```
+
+Current release: v3.4.0, below.
+
+# AI-NATIVE v3.4.0 — Released and Verified
+
+v3.4.0 is published and verified against the public release. Facts and
+evidence: `governance/versioning/V3.4.0-POST-RELEASE-VERIFICATION.md`.
+
+```text
+ROADMAP: AI-NATIVE V3 / v3.4.0 (MINOR)
+STATE: V3.4.0_RELEASED_AND_VERIFIED
+FINAL CANDIDATE / RELEASE SHA: 15f35ff440baad8edcead949169cfe640df6a7e6 (merge of #150, develop -> main)
+AUDITED SHA: 9f0f9a4f760c9f2891036daf5df9c1389184e53f (differs only in .audit/**)
+PLATFORM AUDIT: independent, 90.25/100; 0 BLOCKER, 0 CRITICAL, 0 MAJOR, 17 MINOR
+TRIVY REMEDIATION: 7d5d0f7 included; trivy-fs PASS on 15f35ff
+RELEASE-GATE (build job): PASS_WITH_WARNINGS (26 STALE historical reports)
+v3.4.0 TAG: annotated, on 15f35ff
+v3.4.0 RELEASE: published, immutable; digest sha256:dfecc9746a951a59fe5b1e9d8337823cb2af39091122333d5297d02b52d635ad
+RELEASE WORKFLOW: run 40446182779; build PASS, publish PASS, verify PASS (provenance, SBOM, attestation)
+BOOTSTRAP (remote, --require-attestation): PASS
+INIT (empty repository, published asset): READY
+CLI_VERSION: v3.4.0; VERSION: 3.0.0-dev (unchanged)
+PENDING CANDIDATE / PROMOTION: none
+NON-BLOCKING FOLLOW-UPS: N-31, N-29 (Windows, environmental), N-32 (7 open development Dependabot alerts) and the other audit MINOR/SUGGESTION items; listed in the verification file, no scope opened
+```
+
+Previous snapshot (candidate preparation), kept as history:
 
 ```text
 CANDIDATE: v3.4.0 (MINOR) on release/v3.4.0, from develop a00e1683318e6696a320182de507e5d2274a7345 (#148)
@@ -7,15 +51,11 @@ DETAIL: governance/versioning/V3.4.0-RELEASE.md
 EXCLUDED: Dependabot PRs #142-#147; only dependency change: Trivy remediation 7d5d0f7 (next, body-parser), after AUDIT-PLATFORM-9678acb
 BRANCH: release/v3.4.0 published on origin
 PR #149 release/v3.4.0 -> develop: MERGED by the human; develop = aebb832 (merge commit)
-PR #151 release/v3.4.0 -> develop: OPEN, NOT MERGED (7d5d0f7, governance 16d08f8 and later reconciliation)
-PR #150 develop -> main: OPEN, NOT MERGED; main does not contain v3.4.0
-PLATFORM AUDIT: AUDIT-PLATFORM-9678acb (90.25) exists, STALE for the current candidate; new audit PENDING on the final frozen SHA
-RELEASE-GATE: pending that audit
-v3.4.0 TAG / RELEASE: NOT CREATED / NOT PUBLISHED
-NEXT: independent PLATFORM audit of the frozen SHA; then human merge of #151, promotion develop -> main via #150 (merge commit), release-gate, tag
+PR #151 release/v3.4.0 -> develop: MERGED by the human; develop = 3be07c9 (merge commit)
+PR #150 develop -> main: MERGED by the human; main = 15f35ff (merge commit)
 ```
 
-Current release: v3.3.1, below.
+Previous release: v3.3.1, below.
 
 # AI-NATIVE v3.3.1 — Released and Verified
 
