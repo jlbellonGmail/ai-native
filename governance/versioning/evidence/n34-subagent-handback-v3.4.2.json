@@ -81,7 +81,7 @@
         "rerunAlone": { "tests": 6, "pass": 6, "fail": 0 },
         "validatorsExit0": ["foundation/knowledge/template validators", "audit-safe-script-mode", "parity", "contracts", "core", "compat matrix", "status integrity", "m52 evidence", "validate-ci-tests-listed", "validate-entrypoints", "constitution-extension + hitl --base origin/develop", "validate-doc-drift", "audit cli check", "evals l1", "git diff --check origin/develop...HEAD"]
       },
-      "flakeCharacterization": "a bare git init/add loop (no product code) in %TEMP% on the idle host: 0 failures in 100 runs; the flake appears under load and is not reproduced in isolation; cause not demonstrated; remote CI is the confirmation of a clean full run",
+      "flakeCharacterization": "a bare git init/add loop (no product code) in %TEMP% on the idle host: 0 failures in 100 runs; the flake appears in full suite runs, not in the minimal isolated loop; cause not demonstrated; remote CI is the confirmation of a clean full run",
       "receiptsReverified": {
         "adapterBlob": "38a911e8181d1a8536c6327a10bda7c032f5dd6d",
         "giIncident": { "errors": 0, "verdict": "CHANGES_REQUESTED" },
@@ -126,7 +126,7 @@
   "independentReviews": [
     { "n": 1, "sha": "bb96611", "verdict": "CHANGES_REQUESTED", "findings": "MEDIUM 1-3, LOW 4", "addressedIn": "14d6a87 / 3b9f2e6" },
     { "n": 2, "sha": "3b9f2e6", "verdict": "CHANGES_REQUESTED", "findings": "no implementation defect; documentation, evidence and label errors", "addressedIn": "f877b2c (docs + tests; adapter logic unchanged)" },
-    { "n": 3, "sha": "f877b2cc9c3c895521c4926d1e4eebb51d372463", "verdict": "APPROVED", "reviewer": "reviewer subagent, isolated context, read-only tools", "findings": "0 BLOCKER/HIGH/MEDIUM; LOW-1 stale test counts; LOW-2 incomplete review history; INFO-1 reminder/enforce wording; INFO-2 plain-text APPROVED + E + no handback is attested (documented, test-pinned); INFO-3 flake is load-dependent; INFO-4 validators not in the packet (run in the CI replay); INFO-5 deferred items agreed", "addressedIn": "docs(v3.4.2): record final validation and third review (LOW-1, LOW-2, INFO-1); the APPROVED is bound to f877b2c, so a delta review of that docs commit is pending" }
+    { "n": 3, "sha": "f877b2cc9c3c895521c4926d1e4eebb51d372463", "verdict": "APPROVED", "reviewer": "reviewer subagent, isolated context, read-only tools", "findings": "0 BLOCKER/HIGH/MEDIUM; LOW-1 stale test counts; LOW-2 incomplete review history; INFO-1 reminder/enforce wording; INFO-2 plain-text APPROVED + E + no handback is attested (documented, test-pinned); INFO-3 the flake appears in full suite runs, not in the minimal loop; cause not demonstrated; remote CI is the confirmation; INFO-4 validators not in the packet (run in the CI replay); INFO-5 deferred items agreed", "addressedIn": "docs(v3.4.2): record final validation and third review (LOW-1, LOW-2, INFO-1); the APPROVED is bound to f877b2c, so a delta review of that docs commit is pending" }
   ],
   "pending": ["delta review of the docs commit that applies LOW-1/LOW-2 (the independent review of f877b2c is done: APPROVED)", "PLATFORM audit of the final SHA", "remote CI (confirmation of a clean full run)", "PR to develop (base origin/develop = 49868e4)", "promotion develop -> main", "tag / release"],
   "outOfScopeUnchanged": {
