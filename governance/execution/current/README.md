@@ -1,23 +1,69 @@
-# AI-NATIVE v3.4.1 — PATCH Candidate
+# AI-NATIVE v3.4.2 — PATCH Candidate
 
-Candidate prepared on `release/v3.4.1`; not tagged, not released. Detail:
-`governance/versioning/V3.4.1-PATCH.md`.
+Candidate prepared on `fix/n34-subagent-handback-v3.4.2`; not tagged, not released. Detail:
+`governance/versioning/V3.4.2-PATCH.md`; evidence:
+`governance/versioning/evidence/n34-subagent-handback-v3.4.2.json`.
+
+```text
+ROADMAP: AI-NATIVE V3 / v3.4.2 (PATCH, N-34)
+STATE: V3.4.2_CANDIDATE
+BASE: develop 4260fa8 (chore(sync): merge main into develop after v3.4.1); PR #160 merged into develop as 49868e4 with the same tree (42f603fd2c47c7f110a019fa07914679a84a70e5), so no integration is needed; origin/develop = 49868e4 is the PR base
+CONTENT: fix(adapters) a446488 (reviewer reports delivered by SubagentHandback are attested; only runtime/adapters/claude-review.mjs + runtime/circuit/review-ledger.test.mjs); CLI_VERSION v3.4.2 dc80f17; fix(adapters) 14d6a87 (exact harness instruction allowlist and position, name/team_name refused, recipient cross-check, unreadable handback) after the independent review of bb96611 returned CHANGES_REQUESTED; 3b9f2e6 (delegation note: no name/team_name); f877b2c (docs + tests after the second review returned CHANGES_REQUESTED on 3b9f2e6 for documentation/evidence/label errors; adapter logic unchanged)
+REGRESSION: RED 10 N-34 tests, 9 FAIL (v3.4.1 adapter); RED review fixes 15 N-34 tests, 7 FAIL (bb96611 adapter); GREEN review-ledger.test.mjs (history) 59 tests, 52 PASS, 5 FAIL = git "Permission denied" host flake (all 5 pass when repeated alone), 2 OS skips; the 15 N-34 tests were 15 PASS at that time, there are now 16
+FINAL RUNS at f877b2c (16 N-34 tests): review-ledger.test.mjs 59 tests, 49 PASS, 8 FAIL, 2 OS skips; the 8 FAIL = git "Permission denied" (exit 128) in the consumer() fixture before product code, 8/8 PASS re-run alone. Local sequential replay of the ci.yml validators job (review-ledger excluded): 50 steps, 45 exit 0, 5 exit 1; 1016 tests PASS, 6 FAIL = the same git flake in files N-34 does not touch (git, reconcile, consumer-launcher, audit fixtures, lifecycle), 6/6 PASS re-run alone; all validators exit 0 (parity, contracts, core, compat matrix, status integrity, m52, ci-tests-listed, entrypoints, constitution-extension, hitl, doc-drift, audit cli check, evals l1, git diff --check)
+FLAKE: bare git init/add loop (no product code) on the idle host: 0 failures in 100 runs; appears in full suite runs, not in the minimal isolated loop; cause not demonstrated; remote CI is the confirmation of a clean full run
+E2E (Claude Code 2.1.312; 2.1.311 NOT covered): approve -> INDEPENDENT_REVIEW PASS / FINAL APPROVED; adverse -> INDEPENDENT_REVIEW CHANGES_REQUESTED / FINAL CHANGES_REQUESTED
+RECEIPT RE-VERIFICATION (v3.4.1 adapter -> fixed): gi incident 5 errors/null -> 0 errors/CHANGES_REQUESTED; approve 5/null -> 0/APPROVED; adverse 2/no evidence -> 0/CHANGES_REQUESTED; re-verified at f877b2c (adapter blob 38a911e8181d1a8536c6327a10bda7c032f5dd6d): gi incident 0 errors CHANGES_REQUESTED, approve 0 errors APPROVED, adverse both SubagentStop receipts 0 errors CHANGES_REQUESTED, readReviewerRun 1 answer / 0 follow-ups each
+OUT OF SCOPE, UNCHANGED: consumer VALIDATION FAIL / productSetupCommand; pilot Ubuntu Docker exit 125 (deferred); S-14..S-17 (deferred); OpenCode not verified (local CLI 2.2.0 install broken)
+INDEPENDENT REVIEWS: 1 on bb96611 CHANGES_REQUESTED (MEDIUM 1-3, LOW 4); 2 on 3b9f2e6 CHANGES_REQUESTED (documentation/evidence/label errors); 3 on f877b2c APPROVED (reviewer subagent, isolated context, read-only tools): 0 BLOCKER/HIGH/MEDIUM, LOW-1 stale counts, LOW-2 incomplete history, INFO-1..5
+DOCS COMMIT (docs(v3.4.2): record final validation and third review): applies LOW-1/LOW-2 and the INFO-1 wording; the APPROVED is bound to f877b2c, so its DELTA REVIEW is PENDING
+PENDING: delta review of the docs commit / PLATFORM AUDIT of the final SHA / REMOTE CI / PR to develop / promotion / tag and release
+v3.4.2 TAG / RELEASE: NOT CREATED / NOT PUBLISHED
+```
+
+Current release: v3.4.1, below.
+
+# AI-NATIVE v3.4.1 — Released and Verified
+
+v3.4.1 is published and verified against the public release. Facts and
+evidence: `governance/versioning/V3.4.1-POST-RELEASE-VERIFICATION.md`.
+
+```text
+ROADMAP: AI-NATIVE V3 / v3.4.1 (PATCH, structural YAML fix only; "reviewer not found" not claimed as resolved)
+STATE: V3.4.1_RELEASED_AND_VERIFIED
+FINAL CANDIDATE / RELEASE SHA: 635a60c15e77a543a31e5e1af5ef73c052932b04 (merge of #158, develop -> main)
+AUDITED SHA: 247b28414b8341425c33ba748f49af65009655cf (differs only in .audit/**)
+PLATFORM AUDIT: independent, 89.50/100; 0 BLOCKER, 0 CRITICAL, 0 MAJOR, 18 MINOR; below 90 by 0.50, accepted as an exception by human decision under the release-gate tolerance
+RELEASE-GATE (build job): PASS_WITH_WARNINGS (27 STALE historical reports + score within tolerance)
+v3.4.1 TAG: annotated, on 635a60c, created by the human
+v3.4.1 RELEASE: published, immutable; digest sha256:ab7617d241a4ec0e5418d30baba31f6d36e4fe8e984683bbc2541e908bde95e7
+RELEASE WORKFLOW: run 40621778120; build PASS, publish PASS, verify PASS
+verify-release: PASS (33 checks, public assets)
+INIT (empty repository) / UPGRADE (v3.4.0 -> v3.4.1): READY / READY (disposable consumers)
+CLI_VERSION: v3.4.1; VERSION: 3.0.0-dev (unchanged)
+PENDING CANDIDATE / PROMOTION: none
+NON-BLOCKING FOLLOW-UPS (no scope opened): N-34 (NOT_PROVEN on Claude Code 2.1.311), pilot offline Ubuntu red on 635a60c (Docker exit 125, 3 attempts, cause not demonstrated), deferred review LOW S-12..S-16, S-17, S-18; listed in the verification file
+```
+
+Previous snapshot (candidate preparation), kept as history:
 
 ```text
 ROADMAP: AI-NATIVE V3 / v3.4.1 (PATCH)
 STATE: V3.4.1_CANDIDATE
-BASE: develop 036e6f8b2045d51ec43aad91fdbb599668588ca0 (merge of #153; origin/main 15f35ff is an ancestor)
+BASE: develop 036e6f8b2045d51ec43aad91fdbb599668588ca0 (merge of #153; origin/main 15f35ff is an ancestor; tree = previous develop d8192c6, not main: S-18)
 CONTENT: fix(adapters) f3955c9 (Claude agent YAML description escaped; RED 8 failed / GREEN 15/15) + U+FFFE/U+FFFF follow-up from the independent review of 4ad607a; CLI_VERSION v3.4.1 7e8fea1
 INDEPENDENT CODE REVIEW (4ad607a): APPROVED, 5 LOW (1-4 addressed, 5 informational); not an attested SDD review receipt
 CONSUMER DELTA: 2 of 229 bundle files; 3 projections (.claude/agents/*.md description line)
 E2E (Claude Code 2.1.311): reviewer registered and invoked in v3.4.0 and the candidate; "Agent type 'reviewer' not found" NOT REPRODUCED
 SEPARATE DEFECT (no scope opened): attested independent review NOT_PROVEN in both versions (SubagentHandback)
 PUBLICATION: subject to a human decision (structural YAML fix only)
-PLATFORM AUDIT: on the final SHA, recorded in .audit/reports/
-v3.4.1 TAG / RELEASE: NOT CREATED / NOT PUBLISHED
+PLATFORM AUDIT: then pending (S-13); later AUDIT-PLATFORM-247b284.md, commit 3e0f83d
+v3.4.1 TAG / RELEASE: then NOT CREATED / NOT PUBLISHED
+PR #157 release/v3.4.1 -> develop: MERGED by the human; develop = 77cc87b (merge commit)
+PR #158 develop -> main: MERGED by the human; main = 635a60c (merge commit)
 ```
 
-Current release: v3.4.0, below.
+Previous release: v3.4.0, below.
 
 # AI-NATIVE v3.4.0 — Released and Verified
 

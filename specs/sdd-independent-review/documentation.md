@@ -6,7 +6,7 @@
   threat model.
 * `knowledge/sdd/methodology/{implementation,validation,autonomy}.md`, `knowledge/sdd/QUICKSTART.md`.
 * `evaluation/compat/findings.md` C6b and `compat-matrix.json`: per-runtime evidence (Claude CONFIRMED, Codex and
-  OpenCode NOT_AVAILABLE_FROM_TOOL), documented hook fields, compressed-transcript and SubagentHandback limits.
+  OpenCode NOT_AVAILABLE_FROM_TOOL), documented hook fields, compressed-transcript limit and SubagentHandback delivery (v3.4.2).
 * Module headers: `independent-review.mjs`, `review-ledger.mjs`, `review-evidence.mjs`, `claude-review.mjs`,
   `sdd-cli.mjs`.
 
