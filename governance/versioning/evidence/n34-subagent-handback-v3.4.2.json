@@ -9,8 +9,8 @@
     "file": "runtime/adapters/claude-review.mjs",
     "cause": "a reviewer report delivered by the SubagentHandback tool was never read as the answer; the harness handback instruction counted as a follow-up and SubagentHandback as a tool outside the read-only set",
     "harnessShapes": [
-      "one <system-reminder> user turn 'Your final report is delivered through SubagentHandback: ...' right after the prompt",
-      "when the agent answered in plain text: a '[handback-send-enforce] Your report has not been delivered. Call SubagentHandback(...)' user turn, then the SubagentHandback call"
+      "one <system-reminder> user turn 'Your final report is delivered through SubagentHandback: ...' as the first turn of any role right after the prompt",
+      "when the agent answered in plain text: a '[handback-send-enforce] Your report has not been delivered. Call SubagentHandback(...)' user turn, then the SubagentHandback call (the code tolerates tool results and the reviewer's own tool calls between E and the handback)"
     ],
     "observedIn": "all 11 local SubagentHandback transcripts (Claude Code 2.1.305, 2.1.311, 2.1.312), including the v3.4.0 and v3.4.1 E2E",
     "reproduction": {
@@ -34,6 +34,7 @@
   "fix": {
     "branch": "fix/n34-subagent-handback-v3.4.2",
     "base": "4260fa8",
+    "prBase": "PR #160 (sync main -> develop after v3.4.1) merged into develop as 49868e4; its tree equals the tree of 4260fa8 (42f603fd2c47c7f110a019fa07914679a84a70e5), so the candidate needed no integration; origin/develop = 49868e4 is the base for the PR",
     "fixCommit": "a446488",
     "versionCommit": "dc80f17 (CLI_VERSION v3.4.2)",
     "reviewFixCommit": "14d6a87 (fix(adapters): accept only the exact harness handback instruction), after the independent review of bb96611 returned CHANGES_REQUESTED (MEDIUM 1-3, LOW 4)",
@@ -42,15 +43,15 @@
       "SubagentHandback input.message is an answer; same-message text with another verdict is a second answer; two handback calls are two answers",
       "a handback message that is not a non-empty string is an unreadable answer: it counts, never approves, and no earlier plain-text answer stands in for it",
       "harness instructions are an exact allowlist, compared after CRLF -> LF and trim: the two reminder texts R1 (long form, with the SendMessage sentence; Claude Code 2.1.305 and 2.1.311) and R2 (short form, without it; 2.1.311 and 2.1.312, the one of the gi incident and both E2E runs), and the one enforce text E; never decided by prefix, isMeta or origin",
-      "position: a reminder is a harness turn only as the turn right after the prompt (at most once); E only right after an assistant message that has text and no tool_use; any other text, repeat or position is a follow-up, so unknown future wording fails closed (NOT_PROVEN)",
-      "a plain-text answer followed by the exact E turn (only E and tool results in between) and a handback with the same VERDICT, REVIEW_NONCE and REVISION counts once; otherwise two answers (cannot approve; adverse stands)",
+      "position: a reminder is a harness turn only as the first turn of any role right after the prompt (at most once); E only right after an assistant message that has text and no tool_use; any other text, repeat or position is a follow-up, so unknown future wording fails closed (NOT_PROVEN)",
+      "a plain-text answer followed by the exact E turn (only E, tool results and the reviewer's own tool calls in between) and a handback with the same VERDICT, REVIEW_NONCE and REVISION counts once; otherwise two answers (cannot approve; adverse stands)",
       "SubagentHandback excluded from the read-only tool check; every other tool still refused",
       "decision pinned by a test: a plain-text answer followed by the exact E turn and no handback (the run ends) stays one answer; an APPROVED one with valid VERDICT/REVIEW_NONCE/REVISION is attested (the transcript holds the reviewer's own answer, E carries no content), a CHANGES_REQUESTED one stands",
       "in the real 2.1.312 enforce flow SubagentStop fires twice (two receipts of the same run) and both verify",
       "a delegation input with name or team_name is refused like isolation (behaviour change: earlier releases accepted those delegations; now they cannot approve)",
       "parent cross-check: SendMessage 'to' or 'recipient' the run, or Agent/Task 'resume' of the run -> cannot approve"
     ],
-    "localTranscriptsSurveyed": { "runs": 11, "claudeCode": ["2.1.305", "2.1.311", "2.1.312"], "reminder": "first user turn after the prompt, at most once per run, exactly R1 or R2", "enforce": "exactly E, always directly after an assistant plain-text message", "delegationKeys": ["description", "prompt", "run_in_background", "subagent_type"], "sendMessageInput": "to; 2.1.296+ also recipient (same id), recipient_kind 'agent', type 'message'" },
+    "localTranscriptsSurveyed": { "runs": 11, "claudeCode": ["2.1.305", "2.1.311", "2.1.312"], "reminder": "first turn (of any role) after the prompt, at most once per run, exactly R1 or R2", "enforce": "exactly E, always directly after an assistant plain-text message", "delegationKeys": ["description", "prompt", "run_in_background", "subagent_type"], "sendMessageInput": "to; 2.1.296+ also recipient (same id), recipient_kind 'agent', type 'message'" },
     "unchanged": "independent-review.mjs, review-ledger.mjs, core/agents.json, gates, skills",
     "projectionDelta": "the CLAUDE_REVIEW_DELEGATION note in .claude/commands/sdd-validate.md and sdd-implement-all.md also asks for no name or team_name (now refused)"
   },
@@ -59,9 +60,36 @@
     "red": { "adapter": "v3.4.1", "tests": 10, "pass": 1, "fail": 9, "passed": "the negative lookalike test" },
     "redEnforceReconciliation": { "adapter": "first fix (before the enforce reconciliation)", "affectedTests": 2, "pass": 0, "fail": 2 },
     "redReviewFixes": { "adapter": "bb96611 (copy of the tree in the scratchpad, adapter from git show bb96611)", "command": "node --test --test-name-pattern=N-34 runtime/circuit/review-ledger.test.mjs", "tests": 15, "pass": 8, "fail": 7, "note": "one of the 7 first appeared as the git Permission denied flake; repeated alone it failed on its assertion" },
-    "greenReviewFixesN34": { "tests": 15, "pass": 15, "fail": 0 },
+    "greenReviewFixesN34": { "tests": 15, "pass": 15, "fail": 0, "note": "15 N-34 tests at that time (adapter of 14d6a87); there are now 16 N-34 tests, see greenFinalF877b2c" },
     "green": { "command": "node --test runtime/circuit/review-ledger.test.mjs", "tests": 58, "pass": 56, "fail": 0, "skipped": 2, "skippedReason": "Windows: no FIFOs / POSIX permissions" },
     "greenAfterSecondReview": { "command": "node --test runtime/circuit/review-ledger.test.mjs", "tests": 59, "pass": 52, "fail": 5, "skipped": 2, "failNote": "all 5 are the git 'Permission denied' host flake (M1 and four N-34 tests); repeated alone, 5 of 5 pass", "n34Tests": 16 },
+    "greenFinalF877b2c": {
+      "sha": "f877b2cc9c3c895521c4926d1e4eebb51d372463",
+      "n34Tests": 16,
+      "reviewLedger": {
+        "command": "node --test --test-concurrency=1 runtime/circuit/review-ledger.test.mjs",
+        "tests": 59, "pass": 49, "fail": 8, "skipped": 2, "skippedReason": "Windows: no FIFOs / POSIX permissions",
+        "failNote": "all 8 are git 'unable to write file .git/objects/... Permission denied' (exit 128) inside the consumer() fixture before product code: M9, worktree common git dir, CLI review --base, M1 in-process, H1 x2, N-34 two SubagentHandback calls, N-34 delivery channel / other tools",
+        "rerunAlone": { "command": "node --test --test-concurrency=1 --test-name-pattern=<the 8 tests> runtime/circuit/review-ledger.test.mjs", "tests": 8, "pass": 8, "fail": 0 }
+      },
+      "ciValidatorsReplay": {
+        "what": "sequential local replay of the ci.yml validators job (review-ledger excluded, run separately)",
+        "host": "Windows, node v26.12.1, --test-concurrency=1",
+        "steps": 50, "stepsExit0": 45, "stepsExit1": 5,
+        "tests": { "pass": 1016, "fail": 6, "skip": 0 },
+        "failNote": "all 6 are the same git 'Permission denied' flake in files N-34 does not touch: runtime/lib/git.test.mjs (workingTreeStatus), runtime/circuit/reconcile.test.mjs (reconcile merges...), runtime/adapters/consumer-launcher.test.mjs (F-17), runtime/audit/fixtures.test.mjs (LIBRARY), runtime/cli/ai-native-lifecycle.test.mjs (MULTI-REPO, UNINSTALL --purge-cache)",
+        "rerunAlone": { "tests": 6, "pass": 6, "fail": 0 },
+        "validatorsExit0": ["foundation/knowledge/template validators", "audit-safe-script-mode", "parity", "contracts", "core", "compat matrix", "status integrity", "m52 evidence", "validate-ci-tests-listed", "validate-entrypoints", "constitution-extension + hitl --base origin/develop", "validate-doc-drift", "audit cli check", "evals l1", "git diff --check origin/develop...HEAD"]
+      },
+      "flakeCharacterization": "a bare git init/add loop (no product code) in %TEMP% on the idle host: 0 failures in 100 runs; the flake appears under load and is not reproduced in isolation; cause not demonstrated; remote CI is the confirmation of a clean full run",
+      "receiptsReverified": {
+        "adapterBlob": "38a911e8181d1a8536c6327a10bda7c032f5dd6d",
+        "giIncident": { "errors": 0, "verdict": "CHANGES_REQUESTED" },
+        "e2eApprove": { "errors": 0, "verdict": "APPROVED" },
+        "e2eAdverse": { "receipts": 2, "errors": 0, "verdict": "CHANGES_REQUESTED", "receiptsNote": "both SubagentStop receipts" },
+        "readReviewerRun": "1 answer and 0 follow-ups each"
+      }
+    },
     "greenBeforeReviewFixes": { "tests": 53, "pass": 51, "fail": 0, "skipped": 2 },
     "realRunsReadReviewerRun": "final adapter over the 11 local SubagentHandback runs: 9 give 1 answer and 0 follow-ups; one gives 2 answers and 0 follow-ups; one gives 9 answers and 5 follow-ups (not analysed further)",
     "validatorsPass": ["scripts/validate-ci-tests-listed.mjs (99 files)", "runtime/docs/validate-doc-drift.mjs", "parity/validate-parity.mjs", "runtime/adapters/validate-entrypoints.mjs", "git diff --check"],
@@ -95,7 +123,12 @@
     "caveat": "both claude -p processes were stopped by Claude Code for host memory pressure after the reviewer runs had finished and their receipts were stored; the statuses are re-derived from those receipts (sdd review status)",
     "adapterVerified": "the E2E ran the first-fix bundle (commit object 2babe5a); later adapters (a446488, 14d6a87) were verified by the regression tests and on the stored real receipts (a446488 and 14d6a87), not by a new E2E; Claude Code 2.1.305 and 2.1.311 are not E2E-covered"
   },
-  "pending": ["new independent review of the candidate on its final SHA", "PLATFORM audit of the final SHA", "remote CI"],
+  "independentReviews": [
+    { "n": 1, "sha": "bb96611", "verdict": "CHANGES_REQUESTED", "findings": "MEDIUM 1-3, LOW 4", "addressedIn": "14d6a87 / 3b9f2e6" },
+    { "n": 2, "sha": "3b9f2e6", "verdict": "CHANGES_REQUESTED", "findings": "no implementation defect; documentation, evidence and label errors", "addressedIn": "f877b2c (docs + tests; adapter logic unchanged)" },
+    { "n": 3, "sha": "f877b2cc9c3c895521c4926d1e4eebb51d372463", "verdict": "APPROVED", "reviewer": "reviewer subagent, isolated context, read-only tools", "findings": "0 BLOCKER/HIGH/MEDIUM; LOW-1 stale test counts; LOW-2 incomplete review history; INFO-1 reminder/enforce wording; INFO-2 plain-text APPROVED + E + no handback is attested (documented, test-pinned); INFO-3 flake is load-dependent; INFO-4 validators not in the packet (run in the CI replay); INFO-5 deferred items agreed", "addressedIn": "docs(v3.4.2): record final validation and third review (LOW-1, LOW-2, INFO-1); the APPROVED is bound to f877b2c, so a delta review of that docs commit is pending" }
+  ],
+  "pending": ["delta review of the docs commit that applies LOW-1/LOW-2 (the independent review of f877b2c is done: APPROVED)", "PLATFORM audit of the final SHA", "remote CI (confirmation of a clean full run)", "PR to develop (base origin/develop = 49868e4)", "promotion develop -> main", "tag / release"],
   "outOfScopeUnchanged": {
     "consumerValidation": "VALIDATION FAIL / productSetupCommand in the consumer",
     "pilotUbuntu": "Docker exit 125 (deferred; stderr not logged)",
