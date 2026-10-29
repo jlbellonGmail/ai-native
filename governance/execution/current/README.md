@@ -1,4 +1,53 @@
-# AI-NATIVE v3.4.2 — PATCH Candidate
+# AI-NATIVE v3.4.3 — PATCH Candidate
+
+Candidate prepared on `feature/fix-independent-review-rejected-tools-v343`; not tagged, not released. Detail:
+`governance/versioning/V3.4.3-PATCH.md`; evidence:
+`governance/versioning/evidence/n35-refused-tool-calls-v3.4.3.json`.
+
+```text
+ROADMAP: AI-NATIVE V3 / v3.4.3 (PATCH, N-35)
+STATE: V3.4.3_CANDIDATE
+BASE: develop 3f4351d (merge of #163, v3.4.2 post-release docs) = origin/develop; no integration needed
+CONTENT: fix(adapters) 7707e93 (a reviewer call Claude Code refused before it ran is not a tool used; exact refusal pair read from the turns); docs b61e3cd; CLI_VERSION v3.4.3 4a4765a; fix(adapters) bf885e4 (an mcp__ call is never excused; LOW-2 tests) after the independent review of 4a4765a
+REGRESSION: RED 3 N-35 tests vs v3.4.2: 3 FAIL by assertion; GREEN 7707e93: 3 PASS (TMP outside %TEMP%; with the default %TEMP% test 2 hit the git "Permission denied" flake twice); RED review fixes vs 4a4765a: MCP case FAIL by assertion; GREEN bf885e4: 3 PASS
+CI REPLICA (local, 4a4765a): 51 steps, 1084 tests, 1073 PASS, 9 FAIL, 2 skips; the 9 FAIL are attributed from their logs to the git host flake in files N-35 does not touch (adapters consumer-launcher 5, bootstrap adopt 4), not re-run for this candidate; the replica was not repeated after bf885e4 (memory pressure); remote CI is the confirmation
+RECEIPT RE-VERIFICATION (v3.4.2 -> bf885e4): gi bc6845 1 error -> 0/APPROVED; gi 4bf803 1 error -> 0/CHANGES_REQUESTED; gi 10cb00 (follow-up) and ff8fee (N-34) unchanged; E2E A 1 error -> 0/APPROVED; E2E B (2) and C still "tools outside its read-only set: Bash"
+E2E (Claude Code 2.1.312, bundle of 4a4765a, digest sha256:09a36ec7...): A Bash refused -> INDEPENDENT_REVIEW PASS / FINAL APPROVED; B Bash ran -> NOT_PROVEN / REVIEW_PENDING; C Bash ran, exit 3 -> NOT_PROVEN / REVIEW_PENDING; HUMAN_GATE required in all
+INDEPENDENT REVIEWS: 1 on 4a4765a APPROVED (general-purpose subagent, isolated context, read-only instructions): LOW-1 MCP imitation of the short refusal, LOW-2 unpinned negative cases -> bf885e4; INFO-3 wording -> V3.4.3-PATCH.md; INFO-5 pre-existing (packet Read not checked by result) deferred; 2 delta 4a4765a..b9e513d APPROVED: LOW-3 (275/273 is the circuit step), LOW-4 (9 local FAIL not re-run) -> docs
+REMOTE CI (PR #164, d7a2ee5, run 40807651307): validators windows 1110 tests / 1108 PASS / 0 FAIL / 2 skips, ubuntu 1110 / 1110 PASS; the 9 local FAIL do not reproduce; security checks PASS except CodeQL: 1 new high alert (js/useless-regexp-character-escape in the N-35 test assertion, a real test defect) fixed in a4165b3
+PENDING: REMOTE CI of the final SHA / PLATFORM AUDIT of the final SHA / REMOTE CI / PR to develop / promotion / tag and release / gi-common-reference upgrade and new independent review
+v3.4.3 TAG / RELEASE: NOT CREATED / NOT PUBLISHED
+```
+
+Current release: v3.4.2, below.
+
+# AI-NATIVE v3.4.2 — Released and Verified
+
+v3.4.2 is published and verified against the public release. Facts and
+evidence: `governance/versioning/V3.4.2-POST-RELEASE-VERIFICATION.md`.
+
+```text
+ROADMAP: AI-NATIVE V3 / v3.4.2 (PATCH, N-34)
+STATE: V3.4.2_RELEASED_AND_VERIFIED
+FINAL CANDIDATE / RELEASE SHA: 30119d5d51c4420de3a327560c166109f6bdde76 (merge of #162, develop -> main)
+AUDITED SHA: d6c5d4a6d4cd909b2ae7eaa938214e708cddab9d (differs only in .audit/**)
+PLATFORM AUDIT: independent, 90.25/100; 0 BLOCKER, 0 CRITICAL, 0 MAJOR, 17 MINOR (inherited); N-34 closed; threshold reached without tolerance
+RELEASE-GATE (build job): PASS_WITH_WARNINGS (28 STALE historical reports)
+v3.4.2 TAG: annotated, on 30119d5, created by the human
+v3.4.2 RELEASE: published, immutable; digest sha256:97da1195a68456d2c8d3ce669e80de0863b82863b75891e720757ac027bdd76f
+RELEASE WORKFLOW: run 40746605663; build PASS, publish PASS, verify PASS
+verify-release: PASS (33 checks, public assets)
+INIT (empty repository) / UPGRADE (v3.4.1 -> v3.4.2): READY / READY (disposable consumers; upgrade +0 ~2 -0, consumer files preserved)
+N-34 IN THE PUBLISHED BUNDLE: 4 real Claude Code 2.1.312 receipts re-verified with the published adapter: 0 errors, verdicts kept (v3.4.1 adapter: 5/5/2/2); Claude Code 2.1.311 NOT E2E-covered
+INDEPENDENT REVIEWS: f877b2c APPROVED; delta f4ec7d5 and d6c5d4a APPROVED (recorded in #161)
+CLI_VERSION: v3.4.2; VERSION: 3.0.0-dev (unchanged)
+PENDING CANDIDATE / PROMOTION: none
+NON-BLOCKING FOLLOW-UPS (no scope opened): Claude Code 2.1.311 E2E, OpenCode real CLI, pilot offline Ubuntu (Docker exit 125 on 635a60c, 4/4 on 30119d5, cause not demonstrated), S-14..S-17, S-19..S-23, F-04 tag ruleset, actions/attest-sbom deprecation, ubuntu-latest migration, main -> develop sync, Lenovo global CLI, worktree inventory and authorized cleanup; listed in the verification file
+```
+
+Previous snapshot (candidate preparation), kept as history:
+
+# AI-NATIVE v3.4.2 — PATCH Candidate (history)
 
 Candidate prepared on `fix/n34-subagent-handback-v3.4.2`; not tagged, not released. Detail:
 `governance/versioning/V3.4.2-PATCH.md`; evidence:
@@ -21,7 +70,7 @@ PENDING: delta review of the docs commit / PLATFORM AUDIT of the final SHA / REM
 v3.4.2 TAG / RELEASE: NOT CREATED / NOT PUBLISHED
 ```
 
-Current release: v3.4.1, below.
+Current release at that time: v3.4.1, below.
 
 # AI-NATIVE v3.4.1 — Released and Verified
 

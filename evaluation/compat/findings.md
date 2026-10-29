@@ -396,6 +396,14 @@ Claude Code, Windows 11, evidencia de transcripts locales (`~/.claude/projects/*
   primera corrección (objeto de commit `2babe5a`); el adaptador final se verificó sobre los receipts reales almacenados y
   con las pruebas de regresión. Si el informe no queda registrado de ninguna de las dos formas, no hay veredicto legible:
   la corrida no aprueba y cuenta como `NEEDS_HUMAN_DECISION` (fail-closed).
+  Una llamada a una herramienta que el agente no tiene no se ejecuta: el arnés la responde con un `tool_result`
+  `is_error: true` cuyo texto entero es `<tool_use_error>Error: No such tool available: <tool></tool_use_error>` (2.1.288)
+  o esa frase seguida de `. <tool> is not among the tools available here. Continue with the tools you have.` (2.1.312).
+  Solo ese par exacto (una llamada con ese id, un resultado posterior, la misma herramienta, leído de los turnos y no de
+  los `api-request-blob`, que repiten los bloques) deja la llamada fuera de la comprobación de solo lectura; cualquier
+  otro resultado (`Exit code N` de una llamada que corrió, bloqueo de hook o de permisos, otro texto), ninguno, uno
+  duplicado o anterior a la llamada cuenta como herramienta usada (fail-closed; v3.4.3, N-35). Una llamada a una
+  herramienta MCP (`mcp__…`) cuenta siempre: el texto de su error lo escribe su servidor.
 * **Transcripts comprimidos.** En un host con un proxy de compresión de contexto (p. ej. headroom) el primer mensaje del
   subagente puede quedar en el transcript como una referencia (`<<ccr:…>>`) en vez del prompt literal: la verificación del
   adaptador falla cerrada (no prueba contexto nuevo) y el review queda `NOT_PROVEN`/rechazado, nunca aprobado.
