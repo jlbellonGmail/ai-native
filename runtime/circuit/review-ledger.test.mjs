@@ -68,6 +68,26 @@ const HANDBACK_REMINDER = HANDBACK_REMINDER_LONG.replace(" Do not also send the 
 const HANDBACK_ENFORCE = "[handback-send-enforce] Your report has not been delivered. Call SubagentHandback({message: <your full report>}) now; the call ends your run.";
 const metaTurn = (text) => ({ type: "user", isMeta: true, message: { role: "user", content: text } });
 const toolResultTurn = (id, text) => ({ type: "user", message: { role: "user", content: [{ type: "tool_result", tool_use_id: id, content: [{ type: "text", text }] }] } });
+// N-35: what Claude Code writes as the result of a call to a tool the agent does not have; the call never ran
+// (2.1.312, copied from the gi-common-reference reviewer transcript; 2.1.288 wrote only the first sentence)
+const REFUSED = (name) => `<tool_use_error>Error: No such tool available: ${name}. ${name} is not among the tools available here. Continue with the tools you have.</tool_use_error>`;
+const REFUSED_SHORT = (name) => `<tool_use_error>Error: No such tool available: ${name}</tool_use_error>`;
+/**
+ * The records of one reviewer tool call (`tools` of reviewerRun): a name, or `{ name, content, isError, uses, results, resultFirst, echo, resultRole }`
+ * where `content` is the tool_result Claude Code wrote (default: the tool ran and said "done"; null: no result), `isError` its
+ * is_error flag, `uses`/`results` how many turns carry the call's id, `resultFirst` writes the result before the call,
+ * `echo` repeats both in the next request blob, as 2.1.312 does (a record, not a turn; a string: the echoed call names that
+ * tool instead) and `resultRole` is the role of the turn holding the result (default: user).
+ */
+function toolCall(tool, id, withResult) {
+  const { name, content = [{ type: "text", text: "done" }], isError, uses = 1, results = 1, resultFirst = false, echo = false, resultRole = "user" } = typeof tool === "string" ? { name: tool } : tool;
+  const useBlock = { type: "tool_use", id, name, input: {} };
+  const resultBlock = { type: "tool_result", tool_use_id: id, content, ...(isError === undefined ? {} : { is_error: isError }) };
+  const use = { type: "assistant", message: { role: "assistant", content: [useBlock] } };
+  const written = withResult && content !== null ? Array(results).fill({ type: resultRole, message: { role: resultRole, content: [resultBlock] } }) : [];
+  const echoed = echo ? [{ type: "api-request-blob", message: { role: "assistant", content: [typeof echo === "string" ? { ...useBlock, name: echo } : useBlock] } }, { type: "api-request-blob", message: { role: "user", content: [resultBlock] } }] : [];
+  return [...(resultFirst ? [...written, ...Array(uses).fill(use)] : [...Array(uses).fill(use), ...written]), ...echoed];
+}
 /**
  * What Claude Code leaves behind when the session delegates to the `reviewer` subagent (documented layout:
  * <session>.jsonl + <session>/subagents/agent-<id>.jsonl) and the SubagentStop hook input it hands to the hook.
@@ -111,7 +131,7 @@ function reviewerRun(c, review, over = {}) {
       { type: "attachment", attachment: { type: "date", date: "2026-10-21" } },
       { type: "api-request-blob", message: { role: "user", content: [{ type: "text", text: "<system-reminder>context</system-reminder>" }, { type: "text", text: prompt }] } },
       ...(o.readPacket ? [{ type: "assistant", message: { role: "assistant", content: [{ type: "tool_use", id: "toolu_r", name: "Read", input: { file_path: review.packet } }] } }, ...(o.handback ? [toolResultTurn("toolu_r", "packet")] : [])] : []),
-      ...o.tools.flatMap((name, i) => [{ type: "assistant", message: { role: "assistant", content: [{ type: "tool_use", id: `toolu_${i}`, name, input: {} }] } }, ...(o.handback ? [toolResultTurn(`toolu_${i}`, "done")] : [])]),
+      ...o.tools.flatMap((tool, i) => toolCall(tool, `toolu_${i}`, o.handback)),
       ...(o.midTurn === undefined ? [] : [metaTurn(o.midTurn)]),
       ...(!o.handback || o.enforce || o.plainFirst ? [{ type: "assistant", message: { role: "assistant", content: [{ type: "text", text: answer }] } }] : []),
       ...(o.handback && o.enforce ? [metaTurn(typeof o.enforce === "string" ? o.enforce : HANDBACK_ENFORCE)] : []),
@@ -1586,4 +1606,123 @@ test("N-34: readReviewerRun reads a Claude Code 2.1.312 transcript as one prompt
   // a message that holds other tool calls next to its text is not an answer, and a coordinator follow-up is one
   const chatty = [records[0], assistant("msg_c", { type: "text", text: "Reading." }, { type: "tool_use", id: "toolu_c", name: "Read", input: {} }), result("toolu_c", "x"), user("The coordinator sent a message while you were working: hi", { isMeta: true }), ...records.slice(6)];
   assert.deepEqual(readReviewerRun(chatty), { prompt, answers: [report], followUps: 1 });
+});
+
+// N-35: a reviewer that calls a tool it does not have (Bash in gi-common-reference, Claude Code 2.1.312) is refused by the
+// harness before anything runs; only that exact refusal, paired with that call, keeps the call out of the read-only check.
+// Any call that ran, ran and failed, or whose fate the transcript does not prove, still makes the run unable to approve
+const refusedBash = { name: "Bash", content: REFUSED("Bash"), isError: true };
+
+test("N-35: a forbidden tool call the harness refused before it ran is not a tool the reviewer used: the review is attested", () => {
+  for (const [label, tools] of [
+    ["2.1.312 refusal, echoed in the request blob (the gi-common-reference run)", [{ ...refusedBash, echo: true }]],
+    ["2.1.288 refusal", [{ ...refusedBash, content: REFUSED_SHORT("Bash") }]],
+    ["the refusal as one text block", [{ ...refusedBash, content: [{ type: "text", text: REFUSED("Bash") }] }]],
+    ["the refusal with CRLF and surrounding whitespace (compared after CRLF -> LF and trim)", [{ ...refusedBash, content: `\r\n  ${REFUSED("Bash")}\r\n` }]],
+    ["several refused calls of several tools, next to allowed tools that ran", [refusedBash, "Grep", { name: "Write", content: REFUSED("Write"), isError: true }, "Glob", refusedBash]],
+  ]) {
+    const c = consumer();
+    try {
+      const { review } = handbackRun(c, { tools });
+      assert.match(ok(recordIndependent(c, review.nonce)), /recorded independent review APPROVED .*runtime evidence: claude\/reviewer, delegated-fresh-context/, label);
+      assert.match(ok(status(c)), /INDEPENDENT_REVIEW: PASS\nFINAL_REVIEW_STATUS: APPROVED\n/, label);
+      assert.equal(readLedger(c.project, SLUG)[0].evidence.reviewId, review.nonce, label);
+    } finally {
+      c.cleanup();
+    }
+  }
+});
+
+test("N-35: a forbidden tool call that ran, failed, or whose refusal the transcript does not prove still cannot approve", () => {
+  const bash = (over) => ({ name: "Bash", ...over });
+  for (const [label, tools, used] of [
+    ["ran", [bash({})], "Bash"],
+    ["ran and printed the refusal (is_error false)", [bash({ content: REFUSED("Bash"), isError: false })], "Bash"],
+    ["the refusal text without is_error", [bash({ content: REFUSED("Bash") })], "Bash"],
+    ["ran with a non-zero exit code", [bash({ content: "Exit code 1\nboom", isError: true })], "Bash"],
+    ["ran, failed and printed the refusal", [bash({ content: `Exit code 1\n${REFUSED("Bash")}`, isError: true })], "Bash"],
+    ["an error that does not say the tool is unavailable (a hook block)", [bash({ content: "<tool_use_error>Blocked: rm -rf build</tool_use_error>", isError: true })], "Bash"],
+    ["a permission denial", [bash({ content: "Permission to use Bash has been denied.", isError: true })], "Bash"],
+    ["the refusal without its tag", [bash({ content: "Error: No such tool available: Bash", isError: true })], "Bash"],
+    ["the refusal with more text", [bash({ content: `${REFUSED("Bash")}\nok`, isError: true })], "Bash"],
+    ["the refusal of another tool", [bash({ content: REFUSED("Read"), isError: true })], "Bash"],
+    ["the refusal next to another block", [bash({ content: [{ type: "text", text: REFUSED("Bash") }, { type: "image", source: { type: "base64", media_type: "image/png", data: "" } }], isError: true })], "Bash"],
+    ["no result (the transcript ends on the call)", [bash({ content: null })], "Bash"],
+    ["the result written before the call", [bash({ content: REFUSED("Bash"), isError: true, resultFirst: true })], "Bash"],
+    ["two calls with one id", [bash({ content: REFUSED("Bash"), isError: true, uses: 2 })], "Bash"],
+    ["two results for one call", [bash({ content: REFUSED("Bash"), isError: true, results: 2 })], "Bash"],
+    ["a refused call, then the same tool ran", [refusedBash, bash({})], "Bash"],
+    ["the refusal only in a request blob, never in the turns", [bash({ content: REFUSED("Bash"), isError: true, results: 0, echo: true })], "Bash"],
+    ["a refused Bash whose id a request blob reuses for Write", [{ ...refusedBash, echo: "Write" }], "Write"],
+    ["the refusal written in an assistant turn", [bash({ content: REFUSED("Bash"), isError: true, resultRole: "assistant" })], "Bash"],
+    ["an MCP tool error with the refusal text (its server writes it)", [{ name: "mcp__srv__run", content: REFUSED("mcp__srv__run"), isError: true }], "mcp__srv__run"],
+    ["an MCP tool error with the 2.1.288 refusal text", [{ name: "mcp__srv__run", content: REFUSED_SHORT("mcp__srv__run"), isError: true }], "mcp__srv__run"],
+    ["Write and Edit ran", ["Write", "Edit"], "Write, Edit"],
+    ["a refused Bash next to a Write that ran: only Write counts", [refusedBash, "Write"], "Write"],
+  ]) {
+    const c = consumer();
+    try {
+      const { review } = handbackRun(c, { tools });
+      const r = recordIndependent(c, review.nonce);
+      assert.equal(r.status, 1, label);
+      assert.match(r.stderr, new RegExp(`tools outside its read-only set: ${used}\\. Record it as --kind self`), label);
+      assert.notEqual(statusOf(c).outcome.finalReviewStatus, "APPROVED", label);
+      assert.equal(statusOf(c).outcome.independentReview, "NOT_PROVEN", label);
+    } finally {
+      c.cleanup();
+    }
+  }
+});
+
+test("N-35: a refused call excuses nothing else: verdict, nonce, agent, receipt, follow-ups and the answer are still checked", () => {
+  // an adverse run with a refused call is attested as adverse, never turned into APPROVED
+  for (const verdict of ["CHANGES_REQUESTED", "BLOCKED"]) {
+    const c = consumer();
+    try {
+      const { review } = handbackRun(c, { verdict, tools: [refusedBash] });
+      assert.match(ok(recordIndependent(c, review.nonce)), new RegExp(`recorded independent review ${verdict}`));
+      assert.deepEqual([statusOf(c).outcome.independentReview, statusOf(c).outcome.finalReviewStatus], [verdict, verdict], verdict);
+    } finally {
+      c.cleanup();
+    }
+  }
+  for (const [label, over, expected] of [
+    ["another REVIEW_NONCE", { answerNonce: "f".repeat(24) }, /REVIEW_NONCE differs/],
+    ["another agent_id", { hook: { agent_id: "a999f00d" } }, /not that session's transcript of agent_id/],
+    ["no answer (the transcript stops before the handback)", { noHandback: true }, /does not start with VERDICT/],
+  ]) {
+    const c = consumer();
+    try {
+      const { review } = handbackRun(c, { tools: [refusedBash], ...over });
+      const r = recordIndependent(c, review.nonce);
+      assert.equal(r.status, 1, label);
+      assert.match(r.stderr, expected, label);
+      assert.notEqual(statusOf(c).outcome.finalReviewStatus, "APPROVED", label);
+    } finally {
+      c.cleanup();
+    }
+  }
+  const c = consumer();
+  try {
+    // a continued run cannot approve, whatever it answered
+    const { review, run } = handbackRun(c, { tools: [refusedBash] });
+    continueRun(c, run, { answer: answerOf(review, "APPROVED") });
+    const r = recordIndependent(c, review.nonce);
+    assert.equal(r.status, 1);
+    assert.match(r.stderr, /message\(s\) after its delegation/);
+    // a receipt changed after the approval was recorded is not proof
+    const d = consumer();
+    try {
+      const approved = handbackRun(d, { tools: [refusedBash] }).review;
+      ok(recordIndependent(d, approved.nonce));
+      const [file] = receiptsOf(d, approved.nonce);
+      writeFileSync(file, readFileSync(file, "utf8").replace(/"capturedAt": "[^"]+"/, '"capturedAt": "2000-01-01T00:00:00.000Z"'));
+      assert.equal(statusOf(d).outcome.independentReview, "NOT_PROVEN");
+      assert.match(statusOf(d).unattested[0].errors.join(";"), /receipt changed after the review was recorded/);
+    } finally {
+      d.cleanup();
+    }
+  } finally {
+    c.cleanup();
+  }
 });

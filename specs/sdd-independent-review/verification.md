@@ -260,6 +260,12 @@ no separate lint or typecheck step in the repository (`package.json` defines non
   verified on the stored real receipts and by the regression tests. A report that is not recorded either way leaves no
   readable verdict: the run cannot approve and counts as NEEDS_HUMAN_DECISION (fail-closed). Evidence:
   `governance/versioning/V3.4.2-PATCH.md`.
+* A reviewer call to a tool it does not have (e.g. `Bash`) is refused by Claude Code before it runs. It does not count
+  as a tool used only when the transcript proves it: exactly one call with that id, then exactly one `is_error` result
+  whose whole text is the harness's "No such tool available" text for that tool (2.1.288 and 2.1.312 forms), read from
+  the turns. Any other result (a call that ran, even with an error or a non-zero exit code), no result, a duplicate or
+  a result before the call still counts and the run cannot approve (v3.4.3, N-35). A call to an MCP tool (`mcp__…`)
+  always counts: its server writes its error text. Unknown future wording fails closed.
 * A reviewer run whose hook never fired (missing, colliding `.claude/settings.json`, timeout) leaves no receipt: its
   adverse verdict is invisible to `status`, which reports `NOT_RUN`. It cannot approve either.
 * Reviews issued before this fix round carry no delegation prompt and can no longer approve: begin a new review.

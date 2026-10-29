@@ -1,0 +1,294 @@
+{
+ "schemaVersion": 1,
+ "kind": "refused-tool-calls-attestation",
+ "release": "v3.4.3 (PATCH candidate)",
+ "date": "2026-10-28",
+ "host": {
+  "os": "win32 (Windows 11 Pro 10.0.26200)",
+  "node": "v26.12.1",
+  "claudeCode": "2.1.312",
+  "notCovered": "Claude Code 2.1.288 E2E (its short refusal form seen only in a local transcript, memory_search); MCP tool error format not verified"
+ },
+ "defect": {
+  "id": "N-35",
+  "file": "runtime/adapters/claude-review.mjs",
+  "function": "verifyClaudeReceipt",
+  "cause": "the read-only check counted every tool_use outside Read/Grep/Glob, including calls Claude Code refused before they ran (is_error tool_result with the exact 'No such tool available' text)",
+  "refusalTexts": {
+   "2.1.288": "<tool_use_error>Error: No such tool available: <tool></tool_use_error>",
+   "2.1.312": "<tool_use_error>Error: No such tool available: <tool>. <tool> is not among the tools available here. Continue with the tools you have.</tool_use_error>"
+  },
+  "incident": {
+   "consumer": "gi-common-reference",
+   "feature": "002-regions-subregions",
+   "claudeCode": "2.1.312",
+   "runs": [
+    {
+     "nonce": "bc6845e5d54059de39eea4dc",
+     "agentId": "a2122fed2624843d3",
+     "answer": "APPROVED (SubagentHandback)",
+     "v342": "1 error: the reviewer used tools outside its read-only set: Bash -> NOT_PROVEN"
+    },
+    {
+     "nonce": "4bf80324ff492be8ef55b206",
+     "agentId": "a17a8655baaabb4b7",
+     "answer": "CHANGES_REQUESTED (SubagentHandback)",
+     "v342": "same error; not attestable; its observed adverse verdict still counted as an unverified run (not lost)"
+    }
+   ]
+  },
+  "precision": "INFO-3 of the independent review: the 7707e93 commit message says another run 'lost its CHANGES_REQUESTED'; under v3.4.2 it could not be attested or recorded, but review-ledger still counted its observed adverse verdict (unverified-run)"
+ },
+ "fix": {
+  "branch": "feature/fix-independent-review-rejected-tools-v343",
+  "base": "3f4351d (origin/develop, merge of #163)",
+  "commits": {
+   "fix": "7707e93",
+   "docs": "b61e3cd",
+   "version": "4a4765a (CLI_VERSION v3.4.3)",
+   "reviewFix": "bf885e4 (never excuse an mcp__ call; LOW-2 tests)"
+  },
+  "files": [
+   "runtime/adapters/claude-review.mjs",
+   "runtime/circuit/review-ledger.test.mjs"
+  ],
+  "adapterBlobs": {
+   "v342": "38a911e8181d1a8536c6327a10bda7c032f5dd6d",
+   "7707e93": "3d3f2f6f53be84afa001c5ac3520f40ee6f5357f",
+   "bf885e4": "f40f92f76c0b5f7d8accf1290fcbf4e54c1ff341"
+  },
+  "rules": [
+   "read from turns only (type user/assistant with matching role), never api-request-blob",
+   "excused only when: non-empty string id used by exactly one assistant tool_use; exactly one later user tool_result with that id; is_error === true; content a string or only text blocks; whole text (CRLF -> LF, trim) equals one of the two refusal texts for that same tool name",
+   "an mcp__ tool call is never excused (its server writes its error text)",
+   "excused by id and name: the same id under another name (e.g. in a request blob) still counts",
+   "anything else counts as used: ran (with or without error, Exit code N), hook or permission block, other text, no result, two results, duplicate id, result first, another tool's refusal, refusal only in a blob or in an assistant turn",
+   "a refused call excuses nothing else: nonce, agent_id, revision, packet read, follow-ups, answer count, delegation prompt, model/isolation/name/team_name and the N-34 rules are unchanged"
+  ],
+  "unchanged": "independent-review.mjs, review-ledger.mjs, core/** (core/agents.json), gates, skills, reviewer tools policy (Read, Grep, Glob)"
+ },
+ "regression": {
+  "tests": "3 'N-35: ...' tests in runtime/circuit/review-ledger.test.mjs (table-driven)",
+  "runs": [
+   {
+    "run": "RED, 3 tests vs the v3.4.2 adapter",
+    "result": "3 FAIL by assertion (tools outside its read-only set: Bash)",
+    "tap": "red.tap",
+    "digest": "sha256:3d72372ac2840742a7be1291bce4b8ce08687ad90f529480f9f213ad7c5e330a"
+   },
+   {
+    "run": "GREEN at 7707e93, default %TEMP%",
+    "result": "2 PASS, 1 FAIL: test 2 failed twice in the consumer() fixture git add -A (Permission denied), before product code",
+    "tap": "green-n35.tap",
+    "digest": "sha256:37b11654c15e4f4822637e035c6f5d6a2f958029540b836851cbdf0f2b8dea54"
+   },
+   {
+    "run": "GREEN at 7707e93, TMP/TEMP outside %TEMP%",
+    "result": "3 PASS",
+    "tap": "green-n35-alt-tmp.tap",
+    "digest": "sha256:c4913b6f3b05312dc0afb02a28dfc11c5d85afbdcd8d445d12cded66fa9de1ab"
+   },
+   {
+    "run": "RED of the review fixes: bf885e4 tests vs the 4a4765a adapter",
+    "result": "test 1 PASS; test 2 FAIL by assertion (MCP case recorded, 0 !== 1); test 3 FAIL by the git flake with TMP outside %TEMP%",
+    "tap": "red-review-fixes.tap",
+    "digest": "sha256:e78ca3162db62726bb030d8d96f8aed2f84c6c99e7d9706f06d14fac0c75f034"
+   },
+   {
+    "run": "GREEN at bf885e4, TMP/TEMP outside %TEMP%",
+    "result": "3 PASS",
+    "tap": "green-review-fixes.tap",
+    "digest": "sha256:fc61832f023ae51139f7d615b3f156749deee3fea00a82d485028210fe1ad035"
+   }
+  ],
+  "ciReplica": {
+   "sha": "4a4765a",
+   "steps": 51,
+   "tests": 1084,
+   "pass": 1073,
+   "fail": 9,
+   "skipped": 2,
+   "failures": "runtime/adapters (consumer-launcher F-17 x2, launcher without lock, F-19, F-20: git Permission denied) 5; runtime/bootstrap/adopt.test.mjs (N-10 x3, P-07: git init -q failed / git state could not be read) 4; none in files N-35 touches",
+   "circuitStep": "runtime/circuit/*.test.mjs (20 files, review-ledger included): 275 tests, 273 PASS, 0 FAIL, 2 OS skips",
+   "failuresNotRerun": "the 9 FAIL were not re-run for this candidate; their attribution to the git host flake comes from their logs (git add Permission denied in consumer-launcher.test.mjs; git init -q / git state could not be read in adopt.test.mjs)",
+   "notRepeatedAfter": "bf885e4 (host memory pressure); remote CI is the confirmation"
+  },
+  "validatorsAtBf885e4": [
+   "runtime/docs/validate-doc-drift.mjs",
+   "scripts/validate-ci-tests-listed.mjs",
+   "runtime/adapters/validate-entrypoints.mjs",
+   "parity/validate-parity.mjs",
+   "git diff --check"
+  ],
+  "remoteCi": {
+   "pr": 164,
+   "sha": "d7a2ee5",
+   "run": 40807651307,
+   "windows": "validators (windows-latest): 1110 tests, 1108 PASS, 0 FAIL, 2 skips",
+   "ubuntu": "validators (ubuntu-latest): 1110 tests, 1110 PASS",
+   "localFailuresReproduced": false,
+   "note": "the 3 N-35 tests and the tests that failed in the local replica (consumer-launcher F-17, adopt N-10) pass on both",
+   "security": "dependency-review, pin-check, pr-gate, sbom, security-scan, trivy-fs, analyze (actions, javascript-typescript) PASS; CodeQL check FAIL: 1 new high alert js/useless-regexp-character-escape at runtime/circuit/review-ledger.test.mjs:1668",
+   "codeqlFix": "a4165b3: the backslash before the dot in the N-35 assertion was lost in the template literal, so the RegExp got an unescaped dot (any character); the backslash is now doubled (literal dot); 3 N-35 tests PASS locally with the stricter assertion",
+   "digest": "sha256:e10a585600d93d406038f96292273653d5d947305a35f60228b17b49fb360dc4"
+  },
+  "hostFlake": "git fails to write objects or to init temp repos during long runs; in v3.4.2 the affected tests passed when repeated alone; for this candidate only the N-35 tests were repeated (they passed), not the 9 replica failures; not tied to %TEMP% (reproduced outside it); cause not demonstrated"
+ },
+ "receiptReverification": {
+  "method": "read-only verifyClaudeReceipt on each stored receipt (replay.mjs); v3.4.2 adapter -> bf885e4 adapter (the 7707e93 adapter gave the same results)",
+  "results": [
+   {
+    "receipt": "gi bc6845e5d54059de39eea4dc",
+    "v342": "1 error (Bash)",
+    "fixed": "0 errors, APPROVED, revision = issued"
+   },
+   {
+    "receipt": "gi 4bf80324ff492be8ef55b206",
+    "v342": "1 error (Bash)",
+    "fixed": "0 errors, CHANGES_REQUESTED"
+   },
+   {
+    "receipt": "gi 10cb00804dc2e6781cee70ba",
+    "v342": "1 error (follow-up)",
+    "fixed": "same error"
+   },
+   {
+    "receipt": "gi ff8fee1fc5234ee4806bc111",
+    "v342": "0 errors, CHANGES_REQUESTED",
+    "fixed": "same"
+   },
+   {
+    "receipt": "E2E A b11e597ae6535ccba1529b43",
+    "v342": "1 error (Bash)",
+    "fixed": "0 errors, APPROVED"
+   },
+   {
+    "receipt": "E2E A first attempt b87323b8d3ddcc50f90a6b5f",
+    "v342": "0 errors, CHANGES_REQUESTED",
+    "fixed": "same"
+   },
+   {
+    "receipt": "E2E B 44b549fd92a27fbe8391999e, edcb95399f8d765464731551",
+    "v342": "1 error (Bash) each",
+    "fixed": "same"
+   },
+   {
+    "receipt": "E2E C 29a78825e5ad873f49bea3d7",
+    "v342": "1 error (Bash)",
+    "fixed": "same"
+   }
+  ]
+ },
+ "e2e": {
+  "procedure": "claude -p \"/sdd-validate 001-demo\" --model sonnet --permission-mode default --allowedTools \"Bash(node:*) Bash(git:*) Read Grep Glob Agent ToolSearch\" --max-budget-usd 3; one process at a time; disposable consumers outside every repository; profile testing; feature 001-demo",
+  "bundle": {
+   "source": "4a4765a",
+   "version": "v3.4.3",
+   "digest": "sha256:09a36ec750e00b433d7a472b60592118c321c3b4ca0a5b747339f838058fb822",
+   "adapterBlob": "3d3f2f6f53be84afa001c5ac3520f40ee6f5357f"
+  },
+  "probe": "an instruction in the consumer's own .claude/agents/reviewer.md on its develop branch (outside the reviewed diff) to call Bash before reading the packet; B and C also project tools Read, Grep, Glob, Bash in that disposable consumer only; the production reviewer policy is unchanged",
+  "rawEvidence": "~/.ai-native/evidence/v3.4.3-n35/ (local, not versioned: transcripts hold host data); bundle/ holds the consumer lock, the bundle platform.json (commit 4a4765a) and SHA256SUMS; the bundle tarball sha256 equals the lock digest",
+  "caseA": {
+   "nonce": "b11e597ae6535ccba1529b43",
+   "receipt": "7cc0fddb2273e442a1992233.json",
+   "receiptDigest": "sha256:f5dfdbd786f9f9d877bdee22804bd9b7d5b7f5f7ba7369a2e3c891c27dedd3e8",
+   "agentId": "a3d189b5db31c3b64",
+   "transcriptDigest": "sha256:e050397a0c3a76e2e20663744fc65e0920054af9ba2dd042a02ceacb291f9f89",
+   "call": "Bash git status --short",
+   "harness": "is_error true, exact 2.1.312 refusal",
+   "answer": "VERDICT: APPROVED (plain text), revision = issued sha256:7fee32c5c2c50ce9612ab884414eca73c226a8c91a2bdaac5c0bbe6d6b8d80d2",
+   "status": {
+    "INDEPENDENT_REVIEW": "PASS",
+    "FINAL_REVIEW_STATUS": "APPROVED",
+    "HUMAN_GATE": "required",
+    "LAST_REVIEW": "independent APPROVED attested by claude/reviewer (delegated-fresh-context) on this revision"
+   },
+   "costUsd": 0.227
+  },
+  "caseAFirstAttempt": {
+   "nonce": "b87323b8d3ddcc50f90a6b5f",
+   "receipt": "647a752aa4a760d3b8219ad6.json",
+   "receiptDigest": "sha256:a229eb05ef18c6faf1cdd33cb8c6c85928b883b9d1462b6aef05b347ec73eb92",
+   "agentId": "a7c114f7aa3caa4a8",
+   "transcriptDigest": "sha256:025a4bc5f5af38245122055144fbb491653bb3b51678df430001640ff031bff9",
+   "note": "probe in the feature diff and weaker wording; the reviewer did not call Bash (proves nothing about N-35) and requested changes for the probe hunk (CHANGES_REQUESTED attested); kept as history"
+  },
+  "caseB": {
+   "runs": [
+    {
+     "nonce": "44b549fd92a27fbe8391999e",
+     "receipt": "25d5ed485330007e5a485339.json",
+     "receiptDigest": "sha256:157f7884fcff17018eb64e8f8b68424dd262c97e0dc4822552e2c9866be8a329",
+     "agentId": "a1116ad92738acb4a",
+     "transcriptDigest": "sha256:480bb6609179444de876f4dc9afe1904d4c7907307a767d21910cdaa39fb347c"
+    },
+    {
+     "nonce": "edcb95399f8d765464731551",
+     "receipt": "beb3c325381be908daa3194d.json",
+     "receiptDigest": "sha256:3d17f583c0ff46c035f29e98aaac112aafd59cee44dc0ad67c3b13867940ad90",
+     "agentId": "a809988f156f9a6e8",
+     "transcriptDigest": "sha256:0ad0da664d88a0c4b27218caf0000d67893c6bcc9e186cc48622a74388bbdb91"
+    }
+   ],
+   "call": "Bash git status --short",
+   "harness": "is_error false, (Bash completed with no output)",
+   "answer": "APPROVED in both",
+   "status": {
+    "INDEPENDENT_REVIEW": "NOT_PROVEN",
+    "FINAL_REVIEW_STATUS": "REVIEW_PENDING",
+    "HUMAN_GATE": "required",
+    "LAST_REVIEW": "none"
+   },
+   "costUsd": 0.352
+  },
+  "caseC": {
+   "nonce": "29a78825e5ad873f49bea3d7",
+   "receipt": "3bc531601b312f550c948593.json",
+   "receiptDigest": "sha256:7fac6821a296e392bfe6e6642224a3017d220717f02f565758f6dee36de94577",
+   "agentId": "accc0a6a3863285eb",
+   "transcriptDigest": "sha256:89a9abb8f1b5144dbfbb15197ff55a2724218195f10b1343a0f642e88ba7a74f",
+   "call": "Bash node -e \"process.exit(3)\"",
+   "harness": "is_error true, Exit code 3",
+   "answer": "APPROVED",
+   "status": {
+    "SELF_REVIEW": "PASS",
+    "INDEPENDENT_REVIEW": "NOT_PROVEN",
+    "FINAL_REVIEW_STATUS": "REVIEW_PENDING",
+    "HUMAN_GATE": "required",
+    "LAST_REVIEW": "self APPROVED on this revision (not independent)"
+   },
+   "costUsd": 0.271
+  }
+ },
+ "independentReviews": [
+  {
+   "n": 1,
+   "sha": "4a4765a",
+   "verdict": "APPROVED",
+   "reviewer": "general-purpose subagent, isolated context, read-only instructions (the factory repository does not project the reviewer agent: not a platform-attested run); it declared one write outside the allowed directory (a TAP file in /tmp, deleted)",
+   "findings": "LOW-1 the short 2.1.288 refusal could be imitated by an MCP tool error; LOW-2 negative cases not pinned (refusal only in a blob, id reused under another name, result in an assistant turn, CRLF); INFO-3 '7707e93 lost' wording; INFO-4 fail-closed review, N-34 unchanged; INFO-5 pre-existing: packet read checked by the Read call, not its result; INFO-6 E2E A tests the refusal mechanism, not a packet injection; INFO-7 docs match code, scope clean",
+   "addressedIn": "bf885e4 (LOW-1, LOW-2); V3.4.3-PATCH.md (INFO-3)"
+  },
+  {
+   "n": 2,
+   "sha": "4a4765a..b9e513d (delta)",
+   "verdict": "APPROVED",
+   "reviewer": "another general-purpose subagent, isolated context, read-only instructions (not a platform-attested run)",
+   "findings": "0 BLOCKER/HIGH/MEDIUM; verified TAP/transcript/receipt digests, adapter blobs, the 9-receipt replay with three adapters and that the new tests exercise their code paths; ran the 3 N-35 tests at b9e513d (3 PASS, default TMP); LOW-3 the 275/273 count is the whole circuit step, not review-ledger; LOW-4 the 9 local FAIL were not re-run for this candidate; INFO-5 bundle evidence location",
+   "addressedIn": "the following docs commit (documentation and evidence only)"
+  }
+ ],
+ "pending": [
+  "PLATFORM audit of the final SHA",
+  "remote CI of the final SHA (after a4165b3)",
+  "PR to develop (base origin/develop = 3f4351d)",
+  "promotion develop -> main",
+  "tag / release",
+  "gi-common-reference upgrade and a new independent review"
+ ],
+ "outOfScopeUnchanged": {
+  "info5": "packet read checked by the Read call, not by its result (pre-existing; deferred, no scope opened)",
+  "fromV342": "Claude Code 2.1.311 E2E, OpenCode not verified, pilot offline Ubuntu (Docker exit 125), S-14..S-17"
+ }
+}
