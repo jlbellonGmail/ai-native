@@ -1665,7 +1665,7 @@ test("N-35: a forbidden tool call that ran, failed, or whose refusal the transcr
       const { review } = handbackRun(c, { tools });
       const r = recordIndependent(c, review.nonce);
       assert.equal(r.status, 1, label);
-      assert.match(r.stderr, new RegExp(`tools outside its read-only set: ${used}\. Record it as --kind self`), label);
+      assert.match(r.stderr, new RegExp(`tools outside its read-only set: ${used}\\. Record it as --kind self`), label);
       assert.notEqual(statusOf(c).outcome.finalReviewStatus, "APPROVED", label);
       assert.equal(statusOf(c).outcome.independentReview, "NOT_PROVEN", label);
     } finally {
