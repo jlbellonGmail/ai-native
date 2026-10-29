@@ -1,12 +1,12 @@
-# AI-NATIVE v3.4.3 — PATCH Candidate
+# AI-NATIVE v3.4.3 — Released and Verified
 
-Candidate prepared on `feature/fix-independent-review-rejected-tools-v343`; not tagged, not released. Detail:
-`governance/versioning/V3.4.3-PATCH.md`; evidence:
-`governance/versioning/evidence/n35-refused-tool-calls-v3.4.3.json`.
+`v3.4.3` is published and verified. Release and consumer evidence:
+`governance/versioning/V3.4.3-POST-RELEASE-VERIFICATION.md`. Candidate detail:
+`governance/versioning/V3.4.3-PATCH.md`.
 
 ```text
 ROADMAP: AI-NATIVE V3 / v3.4.3 (PATCH, N-35)
-STATE: V3.4.3_CANDIDATE
+STATE: V3.4.3_RELEASED_AND_VERIFIED
 BASE: develop 3f4351d (merge of #163, v3.4.2 post-release docs) = origin/develop; no integration needed
 CONTENT: fix(adapters) 7707e93 (a reviewer call Claude Code refused before it ran is not a tool used; exact refusal pair read from the turns); docs b61e3cd; CLI_VERSION v3.4.3 4a4765a; fix(adapters) bf885e4 (an mcp__ call is never excused; LOW-2 tests) after the independent review of 4a4765a
 REGRESSION: RED 3 N-35 tests vs v3.4.2: 3 FAIL by assertion; GREEN 7707e93: 3 PASS (TMP outside %TEMP%; with the default %TEMP% test 2 hit the git "Permission denied" flake twice); RED review fixes vs 4a4765a: MCP case FAIL by assertion; GREEN bf885e4: 3 PASS
@@ -15,8 +15,14 @@ RECEIPT RE-VERIFICATION (v3.4.2 -> bf885e4): gi bc6845 1 error -> 0/APPROVED; gi
 E2E (Claude Code 2.1.312, bundle of 4a4765a, digest sha256:09a36ec7...): A Bash refused -> INDEPENDENT_REVIEW PASS / FINAL APPROVED; B Bash ran -> NOT_PROVEN / REVIEW_PENDING; C Bash ran, exit 3 -> NOT_PROVEN / REVIEW_PENDING; HUMAN_GATE required in all
 INDEPENDENT REVIEWS: 1 on 4a4765a APPROVED (general-purpose subagent, isolated context, read-only instructions): LOW-1 MCP imitation of the short refusal, LOW-2 unpinned negative cases -> bf885e4; INFO-3 wording -> V3.4.3-PATCH.md; INFO-5 pre-existing (packet Read not checked by result) deferred; 2 delta 4a4765a..b9e513d APPROVED: LOW-3 (275/273 is the circuit step), LOW-4 (9 local FAIL not re-run) -> docs
 REMOTE CI (PR #164, d7a2ee5, run 40807651307): validators windows 1110 tests / 1108 PASS / 0 FAIL / 2 skips, ubuntu 1110 / 1110 PASS; the 9 local FAIL do not reproduce; security checks PASS except CodeQL: 1 new high alert (js/useless-regexp-character-escape in the N-35 test assertion, a real test defect) fixed in a4165b3
-PENDING: REMOTE CI of the final SHA / PLATFORM AUDIT of the final SHA / REMOTE CI / PR to develop / promotion / tag and release / gi-common-reference upgrade and new independent review
-v3.4.3 TAG / RELEASE: NOT CREATED / NOT PUBLISHED
+FINAL CANDIDATE / RELEASE SHA: 7bfa2f063303ce48af90a024283625856d74e8cb (merge of #165, develop -> main)
+PLATFORM AUDIT: 90.25/100 APTO; 0 BLOCKER, 0 CRITICAL, 0 MAJOR; 17 inherited MINOR
+RELEASE WORKFLOW: 40820318690 attempt 2; build PASS, publish PASS, public verify PASS
+v3.4.3 TAG / RELEASE: annotated tag on 7bfa2f0 / PUBLISHED AND VERIFIED
+PUBLIC BUNDLE: sha256:12c15adc8db3d30559eb72e075eedc16b620b522dd9235696cb83617446cea7b
+CONSUMER: gi-common-reference PR #6 merged as 42ec2dc; lock, doctor, tests and 4 stored receipt replays verified
+RESIDUAL: pilot offline Ubuntu fails before product execution with Docker exit 125; online Windows/Ubuntu and offline Windows PASS
+PENDING CANDIDATE / PROMOTION: none
 ```
 
 Current release: v3.4.2, below.
