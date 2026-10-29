@@ -1,3 +1,25 @@
+# AI-NATIVE v3.4.3 — PATCH Candidate
+
+Candidate prepared on `feature/fix-independent-review-rejected-tools-v343`; not tagged, not released. Detail:
+`governance/versioning/V3.4.3-PATCH.md`; evidence:
+`governance/versioning/evidence/n35-refused-tool-calls-v3.4.3.json`.
+
+```text
+ROADMAP: AI-NATIVE V3 / v3.4.3 (PATCH, N-35)
+STATE: V3.4.3_CANDIDATE
+BASE: develop 3f4351d (merge of #163, v3.4.2 post-release docs) = origin/develop; no integration needed
+CONTENT: fix(adapters) 7707e93 (a reviewer call Claude Code refused before it ran is not a tool used; exact refusal pair read from the turns); docs b61e3cd; CLI_VERSION v3.4.3 4a4765a; fix(adapters) bf885e4 (an mcp__ call is never excused; LOW-2 tests) after the independent review of 4a4765a
+REGRESSION: RED 3 N-35 tests vs v3.4.2: 3 FAIL by assertion; GREEN 7707e93: 3 PASS (TMP outside %TEMP%; with the default %TEMP% test 2 hit the git "Permission denied" flake twice); RED review fixes vs 4a4765a: MCP case FAIL by assertion; GREEN bf885e4: 3 PASS
+CI REPLICA (local, 4a4765a): 51 steps, 1084 tests, 1073 PASS, 9 FAIL, 2 skips; the 9 FAIL = git host flake in files N-35 does not touch (adapters consumer-launcher 5, bootstrap adopt 4); not repeated after bf885e4 (memory pressure); remote CI is the confirmation
+RECEIPT RE-VERIFICATION (v3.4.2 -> bf885e4): gi bc6845 1 error -> 0/APPROVED; gi 4bf803 1 error -> 0/CHANGES_REQUESTED; gi 10cb00 (follow-up) and ff8fee (N-34) unchanged; E2E A 1 error -> 0/APPROVED; E2E B (2) and C still "tools outside its read-only set: Bash"
+E2E (Claude Code 2.1.312, bundle of 4a4765a, digest sha256:09a36ec7...): A Bash refused -> INDEPENDENT_REVIEW PASS / FINAL APPROVED; B Bash ran -> NOT_PROVEN / REVIEW_PENDING; C Bash ran, exit 3 -> NOT_PROVEN / REVIEW_PENDING; HUMAN_GATE required in all
+INDEPENDENT REVIEWS: 1 on 4a4765a APPROVED (general-purpose subagent, isolated context, read-only instructions): LOW-1 MCP imitation of the short refusal, LOW-2 unpinned negative cases -> bf885e4; INFO-3 wording -> V3.4.3-PATCH.md; INFO-5 pre-existing (packet Read not checked by result) deferred
+PENDING: delta review of bf885e4 + docs / PLATFORM AUDIT of the final SHA / REMOTE CI / PR to develop / promotion / tag and release / gi-common-reference upgrade and new independent review
+v3.4.3 TAG / RELEASE: NOT CREATED / NOT PUBLISHED
+```
+
+Current release: v3.4.2, below.
+
 # AI-NATIVE v3.4.2 — Released and Verified
 
 v3.4.2 is published and verified against the public release. Facts and
