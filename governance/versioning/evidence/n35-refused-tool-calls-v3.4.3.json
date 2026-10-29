@@ -120,6 +120,18 @@
    "parity/validate-parity.mjs",
    "git diff --check"
   ],
+  "remoteCi": {
+   "pr": 164,
+   "sha": "d7a2ee5",
+   "run": 40807651307,
+   "windows": "validators (windows-latest): 1110 tests, 1108 PASS, 0 FAIL, 2 skips",
+   "ubuntu": "validators (ubuntu-latest): 1110 tests, 1110 PASS",
+   "localFailuresReproduced": false,
+   "note": "the 3 N-35 tests and the tests that failed in the local replica (consumer-launcher F-17, adopt N-10) pass on both",
+   "security": "dependency-review, pin-check, pr-gate, sbom, security-scan, trivy-fs, analyze (actions, javascript-typescript) PASS; CodeQL check FAIL: 1 new high alert js/useless-regexp-character-escape at runtime/circuit/review-ledger.test.mjs:1668",
+   "codeqlFix": "a4165b3: the backslash before the dot in the N-35 assertion was lost in the template literal, so the RegExp got an unescaped dot (any character); the backslash is now doubled (literal dot); 3 N-35 tests PASS locally with the stricter assertion",
+   "digest": "sha256:e10a585600d93d406038f96292273653d5d947305a35f60228b17b49fb360dc4"
+  },
   "hostFlake": "git fails to write objects or to init temp repos during long runs; in v3.4.2 the affected tests passed when repeated alone; for this candidate only the N-35 tests were repeated (they passed), not the 9 replica failures; not tied to %TEMP% (reproduced outside it); cause not demonstrated"
  },
  "receiptReverification": {
@@ -269,7 +281,7 @@
  ],
  "pending": [
   "PLATFORM audit of the final SHA",
-  "remote CI (clean full run, including the 9 local git failures)",
+  "remote CI of the final SHA (after a4165b3)",
   "PR to develop (base origin/develop = 3f4351d)",
   "promotion develop -> main",
   "tag / release",

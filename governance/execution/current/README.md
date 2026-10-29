@@ -14,7 +14,8 @@ CI REPLICA (local, 4a4765a): 51 steps, 1084 tests, 1073 PASS, 9 FAIL, 2 skips; t
 RECEIPT RE-VERIFICATION (v3.4.2 -> bf885e4): gi bc6845 1 error -> 0/APPROVED; gi 4bf803 1 error -> 0/CHANGES_REQUESTED; gi 10cb00 (follow-up) and ff8fee (N-34) unchanged; E2E A 1 error -> 0/APPROVED; E2E B (2) and C still "tools outside its read-only set: Bash"
 E2E (Claude Code 2.1.312, bundle of 4a4765a, digest sha256:09a36ec7...): A Bash refused -> INDEPENDENT_REVIEW PASS / FINAL APPROVED; B Bash ran -> NOT_PROVEN / REVIEW_PENDING; C Bash ran, exit 3 -> NOT_PROVEN / REVIEW_PENDING; HUMAN_GATE required in all
 INDEPENDENT REVIEWS: 1 on 4a4765a APPROVED (general-purpose subagent, isolated context, read-only instructions): LOW-1 MCP imitation of the short refusal, LOW-2 unpinned negative cases -> bf885e4; INFO-3 wording -> V3.4.3-PATCH.md; INFO-5 pre-existing (packet Read not checked by result) deferred; 2 delta 4a4765a..b9e513d APPROVED: LOW-3 (275/273 is the circuit step), LOW-4 (9 local FAIL not re-run) -> docs
-PENDING: PLATFORM AUDIT of the final SHA / REMOTE CI / PR to develop / promotion / tag and release / gi-common-reference upgrade and new independent review
+REMOTE CI (PR #164, d7a2ee5, run 40807651307): validators windows 1110 tests / 1108 PASS / 0 FAIL / 2 skips, ubuntu 1110 / 1110 PASS; the 9 local FAIL do not reproduce; security checks PASS except CodeQL: 1 new high alert (js/useless-regexp-character-escape in the N-35 test assertion, a real test defect) fixed in a4165b3
+PENDING: REMOTE CI of the final SHA / PLATFORM AUDIT of the final SHA / REMOTE CI / PR to develop / promotion / tag and release / gi-common-reference upgrade and new independent review
 v3.4.3 TAG / RELEASE: NOT CREATED / NOT PUBLISHED
 ```
 
