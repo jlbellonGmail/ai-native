@@ -73,18 +73,19 @@ const toolResultTurn = (id, text) => ({ type: "user", message: { role: "user", c
 const REFUSED = (name) => `<tool_use_error>Error: No such tool available: ${name}. ${name} is not among the tools available here. Continue with the tools you have.</tool_use_error>`;
 const REFUSED_SHORT = (name) => `<tool_use_error>Error: No such tool available: ${name}</tool_use_error>`;
 /**
- * The records of one reviewer tool call (`tools` of reviewerRun): a name, or `{ name, content, isError, uses, results, resultFirst, echo }`
+ * The records of one reviewer tool call (`tools` of reviewerRun): a name, or `{ name, content, isError, uses, results, resultFirst, echo, resultRole }`
  * where `content` is the tool_result Claude Code wrote (default: the tool ran and said "done"; null: no result), `isError` its
- * is_error flag, `uses`/`results` how many turns carry the call's id, `resultFirst` writes the result before the call and
- * `echo` repeats both in the next request blob, as 2.1.312 does (a record, not a turn).
+ * is_error flag, `uses`/`results` how many turns carry the call's id, `resultFirst` writes the result before the call,
+ * `echo` repeats both in the next request blob, as 2.1.312 does (a record, not a turn; a string: the echoed call names that
+ * tool instead) and `resultRole` is the role of the turn holding the result (default: user).
  */
 function toolCall(tool, id, withResult) {
-  const { name, content = [{ type: "text", text: "done" }], isError, uses = 1, results = 1, resultFirst = false, echo = false } = typeof tool === "string" ? { name: tool } : tool;
+  const { name, content = [{ type: "text", text: "done" }], isError, uses = 1, results = 1, resultFirst = false, echo = false, resultRole = "user" } = typeof tool === "string" ? { name: tool } : tool;
   const useBlock = { type: "tool_use", id, name, input: {} };
   const resultBlock = { type: "tool_result", tool_use_id: id, content, ...(isError === undefined ? {} : { is_error: isError }) };
   const use = { type: "assistant", message: { role: "assistant", content: [useBlock] } };
-  const written = withResult && content !== null ? Array(results).fill({ type: "user", message: { role: "user", content: [resultBlock] } }) : [];
-  const echoed = echo ? [{ type: "api-request-blob", message: { role: "assistant", content: [useBlock] } }, { type: "api-request-blob", message: { role: "user", content: [resultBlock] } }] : [];
+  const written = withResult && content !== null ? Array(results).fill({ type: resultRole, message: { role: resultRole, content: [resultBlock] } }) : [];
+  const echoed = echo ? [{ type: "api-request-blob", message: { role: "assistant", content: [typeof echo === "string" ? { ...useBlock, name: echo } : useBlock] } }, { type: "api-request-blob", message: { role: "user", content: [resultBlock] } }] : [];
   return [...(resultFirst ? [...written, ...Array(uses).fill(use)] : [...Array(uses).fill(use), ...written]), ...echoed];
 }
 /**
@@ -1617,6 +1618,7 @@ test("N-35: a forbidden tool call the harness refused before it ran is not a too
     ["2.1.312 refusal, echoed in the request blob (the gi-common-reference run)", [{ ...refusedBash, echo: true }]],
     ["2.1.288 refusal", [{ ...refusedBash, content: REFUSED_SHORT("Bash") }]],
     ["the refusal as one text block", [{ ...refusedBash, content: [{ type: "text", text: REFUSED("Bash") }] }]],
+    ["the refusal with CRLF and surrounding whitespace (compared after CRLF -> LF and trim)", [{ ...refusedBash, content: `\r\n  ${REFUSED("Bash")}\r\n` }]],
     ["several refused calls of several tools, next to allowed tools that ran", [refusedBash, "Grep", { name: "Write", content: REFUSED("Write"), isError: true }, "Glob", refusedBash]],
   ]) {
     const c = consumer();
@@ -1650,6 +1652,11 @@ test("N-35: a forbidden tool call that ran, failed, or whose refusal the transcr
     ["two calls with one id", [bash({ content: REFUSED("Bash"), isError: true, uses: 2 })], "Bash"],
     ["two results for one call", [bash({ content: REFUSED("Bash"), isError: true, results: 2 })], "Bash"],
     ["a refused call, then the same tool ran", [refusedBash, bash({})], "Bash"],
+    ["the refusal only in a request blob, never in the turns", [bash({ content: REFUSED("Bash"), isError: true, results: 0, echo: true })], "Bash"],
+    ["a refused Bash whose id a request blob reuses for Write", [{ ...refusedBash, echo: "Write" }], "Write"],
+    ["the refusal written in an assistant turn", [bash({ content: REFUSED("Bash"), isError: true, resultRole: "assistant" })], "Bash"],
+    ["an MCP tool error with the refusal text (its server writes it)", [{ name: "mcp__srv__run", content: REFUSED("mcp__srv__run"), isError: true }], "mcp__srv__run"],
+    ["an MCP tool error with the 2.1.288 refusal text", [{ name: "mcp__srv__run", content: REFUSED_SHORT("mcp__srv__run"), isError: true }], "mcp__srv__run"],
     ["Write and Edit ran", ["Write", "Edit"], "Write, Edit"],
     ["a refused Bash next to a Write that ran: only Write counts", [refusedBash, "Write"], "Write"],
   ]) {

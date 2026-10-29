@@ -402,7 +402,8 @@ Claude Code, Windows 11, evidencia de transcripts locales (`~/.claude/projects/*
   Solo ese par exacto (una llamada con ese id, un resultado posterior, la misma herramienta, leído de los turnos y no de
   los `api-request-blob`, que repiten los bloques) deja la llamada fuera de la comprobación de solo lectura; cualquier
   otro resultado (`Exit code N` de una llamada que corrió, bloqueo de hook o de permisos, otro texto), ninguno, uno
-  duplicado o anterior a la llamada cuenta como herramienta usada (fail-closed; v3.4.3, N-35).
+  duplicado o anterior a la llamada cuenta como herramienta usada (fail-closed; v3.4.3, N-35). Una llamada a una
+  herramienta MCP (`mcp__…`) cuenta siempre: el texto de su error lo escribe su servidor.
 * **Transcripts comprimidos.** En un host con un proxy de compresión de contexto (p. ej. headroom) el primer mensaje del
   subagente puede quedar en el transcript como una referencia (`<<ccr:…>>`) en vez del prompt literal: la verificación del
   adaptador falla cerrada (no prueba contexto nuevo) y el review queda `NOT_PROVEN`/rechazado, nunca aprobado.

@@ -157,7 +157,8 @@ const exactText = (content) => textOf(content).replace(/\r\n/g, "\n").trim();
 // N-35: a call to a tool the agent does not have never runs: Claude Code answers it with an is_error tool_result whose whole
 // text is exactly one of these, naming the tool called (2.1.288 wrote the first, 2.1.312 the second). That pair is the only
 // proof that a call did not run; any other result (a call that ran and failed, "Exit code N", a hook or permission block,
-// other wording), none, a second one, one written before the call or a call id used twice is a call that may have run
+// other wording), none, a second one, one written before the call or a call id used twice is a call that may have run.
+// An MCP tool's error text is written by its server, so a call to an `mcp__` tool is never taken as refused
 const REFUSALS = [(name) => `Error: No such tool available: ${name}`, (name) => `Error: No such tool available: ${name}. ${name} is not among the tools available here. Continue with the tools you have.`];
 const isRefusal = (result, name) => result?.is_error === true && (typeof result.content === "string" || (Array.isArray(result.content) && result.content.every((b) => b?.type === "text"))) && REFUSALS.some((body) => exactText(result.content) === `<tool_use_error>${body(name)}</tool_use_error>`);
 /** The run's tool calls (id -> tool name) that the harness refused before they ran, read from its turns, never from request blobs (N-35). */
@@ -167,7 +168,7 @@ function refusedCalls(records) {
   const results = blocks.filter((b) => b.role === "user" && b.block?.type === "tool_result");
   const refused = uses.filter(({ at, block }) => {
     const answered = results.filter((r) => r.block.tool_use_id === block.id);
-    return typeof block.id === "string" && Boolean(block.id) && uses.filter((u) => u.block.id === block.id).length === 1 && answered.length === 1 && answered[0].at > at && isRefusal(answered[0].block, block.name);
+    return typeof block.id === "string" && Boolean(block.id) && typeof block.name === "string" && !block.name.startsWith("mcp__") && uses.filter((u) => u.block.id === block.id).length === 1 && answered.length === 1 && answered[0].at > at && isRefusal(answered[0].block, block.name);
   });
   return new Map(refused.map(({ block }) => [block.id, block.name]));
 }

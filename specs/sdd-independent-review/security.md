@@ -52,7 +52,7 @@ protection, CI and the human merge do not depend on the local host and stay in f
   transcript: not independent. A `SubagentHandback` report is the reviewer's answer only after the harness's exact
   handback instruction; any other message to the run, a second answer or a tool outside the read-only set still is not.
   A call outside that set is excused only when the runtime's exact refusal proves it never ran (N-35); an error alone
-  never is.
+  never is, nor a call to an MCP tool, whose server writes its error text.
 * The receipt hook never blocks the runtime (always exit 0) and trusts nothing it stores.
 * No new permission is granted: `sdd-validate` keeps the restricted projection (Claude pre-approves only
   `Read, Grep, Glob`; OpenCode `plan` agent); its write goes through `sdd review` commands and normal prompts.
