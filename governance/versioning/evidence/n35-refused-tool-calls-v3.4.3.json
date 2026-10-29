@@ -109,7 +109,8 @@
    "fail": 9,
    "skipped": 2,
    "failures": "runtime/adapters (consumer-launcher F-17 x2, launcher without lock, F-19, F-20: git Permission denied) 5; runtime/bootstrap/adopt.test.mjs (N-10 x3, P-07: git init -q failed / git state could not be read) 4; none in files N-35 touches",
-   "reviewLedger": "275 tests, 273 PASS, 2 OS skips (circuit step)",
+   "circuitStep": "runtime/circuit/*.test.mjs (20 files, review-ledger included): 275 tests, 273 PASS, 0 FAIL, 2 OS skips",
+   "failuresNotRerun": "the 9 FAIL were not re-run for this candidate; their attribution to the git host flake comes from their logs (git add Permission denied in consumer-launcher.test.mjs; git init -q / git state could not be read in adopt.test.mjs)",
    "notRepeatedAfter": "bf885e4 (host memory pressure); remote CI is the confirmation"
   },
   "validatorsAtBf885e4": [
@@ -119,7 +120,7 @@
    "parity/validate-parity.mjs",
    "git diff --check"
   ],
-  "hostFlake": "git fails to write objects or to init temp repos during long runs; affected tests pass when repeated; not tied to %TEMP% (reproduced outside it); cause not demonstrated"
+  "hostFlake": "git fails to write objects or to init temp repos during long runs; in v3.4.2 the affected tests passed when repeated alone; for this candidate only the N-35 tests were repeated (they passed), not the 9 replica failures; not tied to %TEMP% (reproduced outside it); cause not demonstrated"
  },
  "receiptReverification": {
   "method": "read-only verifyClaudeReceipt on each stored receipt (replay.mjs); v3.4.2 adapter -> bf885e4 adapter (the 7707e93 adapter gave the same results)",
@@ -175,7 +176,7 @@
    "adapterBlob": "3d3f2f6f53be84afa001c5ac3520f40ee6f5357f"
   },
   "probe": "an instruction in the consumer's own .claude/agents/reviewer.md on its develop branch (outside the reviewed diff) to call Bash before reading the packet; B and C also project tools Read, Grep, Glob, Bash in that disposable consumer only; the production reviewer policy is unchanged",
-  "rawEvidence": "~/.ai-native/evidence/v3.4.3-n35/ (local, not versioned: transcripts hold host data)",
+  "rawEvidence": "~/.ai-native/evidence/v3.4.3-n35/ (local, not versioned: transcripts hold host data); bundle/ holds the consumer lock, the bundle platform.json (commit 4a4765a) and SHA256SUMS; the bundle tarball sha256 equals the lock digest",
   "caseA": {
    "nonce": "b11e597ae6535ccba1529b43",
    "receipt": "7cc0fddb2273e442a1992233.json",
@@ -256,10 +257,17 @@
    "reviewer": "general-purpose subagent, isolated context, read-only instructions (the factory repository does not project the reviewer agent: not a platform-attested run); it declared one write outside the allowed directory (a TAP file in /tmp, deleted)",
    "findings": "LOW-1 the short 2.1.288 refusal could be imitated by an MCP tool error; LOW-2 negative cases not pinned (refusal only in a blob, id reused under another name, result in an assistant turn, CRLF); INFO-3 '7707e93 lost' wording; INFO-4 fail-closed review, N-34 unchanged; INFO-5 pre-existing: packet read checked by the Read call, not its result; INFO-6 E2E A tests the refusal mechanism, not a packet injection; INFO-7 docs match code, scope clean",
    "addressedIn": "bf885e4 (LOW-1, LOW-2); V3.4.3-PATCH.md (INFO-3)"
+  },
+  {
+   "n": 2,
+   "sha": "4a4765a..b9e513d (delta)",
+   "verdict": "APPROVED",
+   "reviewer": "another general-purpose subagent, isolated context, read-only instructions (not a platform-attested run)",
+   "findings": "0 BLOCKER/HIGH/MEDIUM; verified TAP/transcript/receipt digests, adapter blobs, the 9-receipt replay with three adapters and that the new tests exercise their code paths; ran the 3 N-35 tests at b9e513d (3 PASS, default TMP); LOW-3 the 275/273 count is the whole circuit step, not review-ledger; LOW-4 the 9 local FAIL were not re-run for this candidate; INFO-5 bundle evidence location",
+   "addressedIn": "the following docs commit (documentation and evidence only)"
   }
  ],
  "pending": [
-  "delta review of bf885e4 and the docs commit",
   "PLATFORM audit of the final SHA",
   "remote CI (clean full run, including the 9 local git failures)",
   "PR to develop (base origin/develop = 3f4351d)",
