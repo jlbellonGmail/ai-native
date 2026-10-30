@@ -153,6 +153,16 @@ tests/green validators do not constitute v4 quality-gate completion or approval.
 
 ## Recovery and required human action
 
+## Planning addendum — 2026-10-30
+
+The full SDD packages now define four unimplemented commitments: owner-validated
+public contract-change declarations; registry-only shell-free commands with
+argv, environment, filesystem and timeout controls; canonical SHA-256 evidence
+fingerprints with exact stale rules; and actual-shape v3.4.3 upgrade fixtures
+for admission, preservation, rollback and idempotence. Details live in the three
+feature `spec.md` and `plan.md` files. They remain subject to the existing human
+plan approval before implementation.
+
 Read `V4-STATE.md`, the v4 roadmap and the three feature plans. Explicit human
 approval of the implementation plans is required before opening T1 of the first
 feature. After that approval, resume sequential bounded execution; verify, repair,

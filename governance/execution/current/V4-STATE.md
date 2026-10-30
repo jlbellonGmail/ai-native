@@ -17,6 +17,16 @@ The trusted-base gate derivation for planned contract/runtime paths is
 `AWAITING_HUMAN_APPROVAL` before invoking implementation. This is a real blocking
 HITL gate, not a technical failure. No approval is recorded.
 
+## Planning addendum awaiting approval
+
+The updated feature artifacts now define: owner-validated public contract change
+declarations and conservative unknown compatibility; shell-free registry-only
+acceptance execution with argv/environment/filesystem/timeout boundaries;
+canonical SHA-256 evidence fingerprints and exact stale rules; and actual-shape
+v3.4.3 upgrade admission, owned-file preservation, rollback and idempotence
+fixtures. These are planned requirements only: no runner, upgrade change or
+consumer execution exists yet.
+
 ## Current artifacts
 
 - Audit/evidence: `governance/execution/current/V4-AUDIT.md`.

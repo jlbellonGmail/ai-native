@@ -35,10 +35,25 @@ THE SYSTEM SHALL mark prior evidence stale rather than use it as PASS.
 RF-7. THE SYSTEM SHALL distinguish real execution from mock/simulated execution
 in result metadata.
 
+RF-8. THE SYSTEM SHALL execute a scenario only through a registry entry with a
+fixed executable identity, argument vector and working-directory root; shell
+interpretation, inline script text, command substitution and environment-derived
+executables shall be rejected.
+
+RF-9. THE SYSTEM SHALL enforce a finite per-scenario timeout, a minimal
+allowlisted environment, bounded stdout/stderr capture and a filesystem boundary
+that permits only declared read inputs and a runner-owned evidence directory.
+
+RF-10. IF a command requests an undeclared argument, executable, environment
+variable, path escape, forbidden shell feature or exceeds its timeout, THEN THE
+SYSTEM SHALL report BLOCKED with a safe diagnostic and shall not execute a
+fallback command.
+
 ## Non-goals
 
-No unregistered shell command runs, no automatic scenario generation by an LLM,
-no empty test directories, no claim that fakes are external integration.
+No unregistered shell command runs, arbitrary arguments, inherited secret-rich
+environments, automatic scenario generation by an LLM, empty test directories,
+or claim that fakes are external integration.
 
 ## Acceptance criteria
 

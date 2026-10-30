@@ -39,6 +39,23 @@ RF-7. THE SYSTEM SHALL obtain an independent, runtime-attested review of the
 final revision when the verified Claude capability is available; otherwise it
 shall report REVIEW_PENDING and retain HITL.
 
+RF-8. THE SYSTEM SHALL recognize a v3.4.3 lock as a supported v3.x migration
+source and shall reject unknown, future or incompatible source protocol versions
+before any consumer file is modified.
+
+RF-9. WHEN upgrading a supported v3.x consumer, THE SYSTEM SHALL preserve
+project-owned files byte-for-byte, preserve existing managed-file edits according
+to the current keep-local policy, and report every preserved collision or drift.
+
+RF-10. IF an upgrade write, adapter projection, verification or migration step
+fails, THEN THE SYSTEM SHALL restore the pre-upgrade working tree/index state or
+report `ROLLBACK_INCOMPLETE` with the exact remaining paths; it shall never
+report READY after partial restoration.
+
+RF-11. WHEN the same verified v4 bundle is applied twice to an unchanged
+supported v3.x fixture, THE SYSTEM SHALL produce the same managed state on the
+second run without deleting project-owned files or creating duplicate artifacts.
+
 ## Non-goals
 
 Do not modify real GI repositories, merge branches, publish a release/tag,
