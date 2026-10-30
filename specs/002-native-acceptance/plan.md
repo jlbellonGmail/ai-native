@@ -11,14 +11,14 @@ inputs. Cross ownership is checked from consumer module IDs, not directory names
 
 | Requirement | Change and discarded alternative |
 |---|---|
-| RF-1, RF-2 | Registry/discovery plus graph resolution; discard filesystem-only discovery because it cannot prove declared ownership. |
+| RF-1, RF-2, RF-12, RF-13 | Expand each dependency edge deterministically into a consumer-owned mandatory validation obligation. Missing/skip/unavailable test is BLOCKED; discard provider-owned cross tests and advisory optional obligations. |
 | RF-3, RF-4 | Explicit state machine with mandatory-count checks; discard treating zero tests/skips as success. |
-| RF-5, RF-6, RF-7, RF-11 | JSON evidence separates `sourceRevision` report provenance from canonical scenario-input fingerprints and execution kind; discard whole-repository revision fingerprints, free-form logs and timestamp-only freshness. |
-| RF-8, RF-9, RF-10 | Spawn executable plus argv without shell, registry-only verified command identity, root-contained working directory/paths, finite timeout, minimal environment allowlist, bounded streams and runner-owned output; discard `shell: true`, inherited `process.env`, relative-path trust and arbitrary command text. |
+| RF-5, RF-6, RF-7, RF-11, RF-17, RF-18 | JSON evidence separates `sourceRevision` provenance from canonical scenario-input fingerprints; include verifiable non-secret configuration and declared environment inputs. Secret values are neither stored/logged nor directly hashed; unknown critical secret-derived configuration is BLOCKED. Discard whole-repository revision fingerprints and timestamp-only freshness. |
+| RF-8, RF-9, RF-10, RF-14, RF-15, RF-16 | Spawn executable plus argv without shell only as injection defense, not sandbox. Require a verified isolation profile for filesystem roots, network-deny default, child processes, OS privileges and resource limits before execution; otherwise BLOCKED. Discard treating subprocess launch as isolation or inheriting `process.env`. |
 
 ## Probable files after approval
 
-`contracts/acceptance-*.schema.json`, `runtime/acceptance/{registry,runner,evidence}.mjs`, focused tests and disposable fixtures. The registry names executable digest/path, argv tokens, timeout, permitted environment keys, input roots and evidence root; no command string is accepted. Evidence retention is bounded and ignored unless governance explicitly selects versioned evidence. No consumer source changes.
+`contracts/acceptance-*.schema.json`, `runtime/acceptance/{registry,runner,evidence}.mjs`, focused tests and disposable fixtures. The registry names executable identity, argv tokens, timeout, isolation profile, permitted non-secret configuration/environment keys, filesystem roots and evidence root; no command string is accepted. Evidence retention is bounded and ignored unless governance explicitly selects versioned evidence. No consumer source changes.
 
 ## Evidence fingerprint and staleness contract
 
@@ -37,6 +37,15 @@ captured output, secret environment values and undeclared repository paths are
 excluded. This prevents an unrelated source change from invalidating a module's
 acceptance while preserving traceability of the report's originating revision.
 
+Relevant configuration files are fingerprinted from declared, validated
+non-secret fields only. Environment dependencies are enumerated by key name and
+classified before reading values; allowlisted non-secret values may enter the
+canonical fingerprint. Secret values never enter reports or direct hashes. A
+protected secret version/rotation identifier may be fingerprinted only if it is
+provided as a non-secret stable identifier; otherwise a critical
+secret-dependent scenario is BLOCKED. Missing/unreadable or unclassifiable
+critical config/environment is BLOCKED, not silently omitted.
+
 Evidence is stale if a fingerprint field differs, a required input is absent or
 unreadable, the report schema is unsupported, a mandatory scenario has no result,
 or its recorded result is not PASS. Byte-identical canonical inputs remain current
@@ -51,7 +60,12 @@ Use local Node fixture commands for deterministic runner semantics, labelled
 them `real-integration`. Negative tests cover empty/missing/skip/fail/stale,
 shell metacharacters, argument injection, path traversal/symlink escape,
 undeclared environment variables, inherited secret-like variables, output limits
-and timeout process cleanup. Evidence tests prove a relevant fixture/contract
+and timeout process cleanup. Isolation tests separately assert restricted
+execution is not labelled sandbox, network/process/filesystem controls are
+enforced, and absent host enforcement blocks before spawn. Evidence tests prove
+configuration and non-secret environment changes invalidate, secret values are
+never persisted/hashed, and unverifiable critical configuration blocks. They
+also prove a relevant fixture/contract
 change invalidates, while a changed unrelated file or `sourceRevision` alone
 preserves the same input fingerprint and current evidence. The runner rejects
 unregistered commands. Rollback removes additive files.

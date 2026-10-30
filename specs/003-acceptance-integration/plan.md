@@ -40,7 +40,7 @@ range check.
 | RF-2, RF-3 | Reuse graph/runner selection and existing gates; discard unconditional all-consumer runs and a second governance system. |
 | RF-4, RF-8, RF-9, RF-10, RF-11, RF-12, RF-13 | Add matrix validation before the current verified-bundle upgrade transaction. Use individual v3.4.2/v3.4.3 fixtures, project-owned sentinels, managed drift, Git/index snapshots, injected failures and second-run comparison. Discard version-prefix admission, overwriting consumer-owned files, broad filesystem snapshots and running upgrade in this factory. |
 | RF-5 | Targeted docs/versioning candidate handoff; discard release/tag publication. |
-| RF-6 | Disposable GI copy, pinned source and PostgreSQL fixture; discard `gi_dev.py` because its exit code is not a gate. |
+| RF-6, RF-14, RF-15, RF-16, RF-17 | Disposable GI copy, pinned source and PostgreSQL fixture. Model Regions -> Locales as same-database SQL/FK consumption; verify persistence/public reads, `locale_id`, valid/invalid references and repeat runs. Mark mocks/in-process separately from real PostgreSQL integration and from socket E2E. Discard an invented Regions HTTP client and `gi_dev.py` because its exit code is not a gate. |
 | RF-7 | Existing review ledger plus Claude attester; discard self-review or an OpenCode subagent as approval. |
 
 ## Probable files after approval
@@ -66,6 +66,23 @@ Build the GI pilot only after implementation-plan approval; use the
 `postgres:16-alpine` digest recorded in `V4-AUDIT.md` and classify
 ASGI/PostgreSQL correctly as real integration. Delete only pilot resources
 created by the run. Revert an additive factory change through Git if rejected.
+
+Pilot test matrix (all commands and exact test IDs to be verified from the pinned
+consumer copy before execution):
+
+| Behavior | Setup/assertion | Evidence class |
+|---|---|---|
+| Locales persistence/read | Incorporate the deterministic locale snapshot into disposable PostgreSQL; read persisted locales through supported public interface. | Real PostgreSQL integration; API via ASGI is in-process, not socket E2E. |
+| Regions persistence/read | Incorporate Regions/Subregions with required locales already persisted; read rows and response fields. | Real PostgreSQL integration. |
+| FK integrity | Inspect/enforce actual schema FK from region locale reference to locale identity; valid insert succeeds, invalid/missing locale insert or incorporation fails without partial data. | Real PostgreSQL integration. |
+| `locale_id` resolution | Query region/localized response by the locale UUID; assert returned identity and locale-specific values match seeded row. | Real PostgreSQL integration. |
+| Valid/invalid references | Existing IDs succeed; nonexistent UUID is rejected distinctly and leaves database state unchanged. | Real PostgreSQL integration. |
+| Repeatability | Run the exact same tests twice against a freshly reset deterministic fixture each time; compare normalized outputs and row counts. | Two independent real PostgreSQL runs. |
+| Mock/fake boundaries | Identify tests using fake repositories/errors; retain only as supplementary behavior tests, never as database/FK proof. | Simulated. |
+
+Do not claim network HTTP E2E for FastAPI `TestClient`; only a test against an
+explicitly started loopback socket can receive that label. The current GI source
+inspection found Regions depends on Locales by PostgreSQL/FK, not HTTP.
 
 ## Risks
 

@@ -32,6 +32,13 @@ fixture validation; all other v3.x, malformed, future or unknown sources are
 planned to reject before write. Evidence provenance `sourceRevision` is separate
 from a scenario-only input fingerprint.
 
+Final architecture review also added public-vs-internal byte classification and
+immutable contract refs; per-edge consumer-owned mandatory cross validations;
+actual isolation attestation distinct from shell-free spawn; secret-safe
+configuration/environment fingerprint rules; and PostgreSQL/FK-focused GI pilot
+coverage. Planning validation is pending this revision. No implementation or
+consumer changes are authorized.
+
 ## Current artifacts
 
 - Audit/evidence: `governance/execution/current/V4-AUDIT.md`.

@@ -18,6 +18,10 @@ LLM inference.
 * **public contract change declaration**: an explicit, validated record identifying
   one owned contract, its prior and candidate immutable references, and its
   compatibility classification (`compatible`, `incompatible` or `unknown`).
+* **contract reference**: the immutable source commit plus contract path and
+  SHA-256 content digest resolved to exact bytes; a mutable branch, tag alias,
+  version label or Git object ID without the SHA-256 content check is not
+  sufficient by itself.
 
 ## Requirements
 
@@ -53,6 +57,21 @@ identify its exact affected contract and select impact from that declaration;
 `unknown` compatibility shall require the same consumer checks as
 `incompatible`, while an explicitly internal change shall select none.
 
+RF-9. THE SYSTEM SHALL classify a change as internal only when changed paths and
+content are outside the manifest's declared public-contract inventory; changes
+to declared public-contract bytes SHALL be public changes and SHALL require an
+explicit declaration with immutable previous and candidate references.
+
+RF-10. IF a declared public contract changes without a matching change
+declaration, or a declaration's reference does not resolve to the stated exact
+bytes, THEN THE SYSTEM SHALL reject the impact analysis as BLOCKED and SHALL NOT
+classify the change as internal or infer compatibility.
+
+RF-11. THE SYSTEM SHALL verify that a referenced contract source commit is
+immutable, available and resolves the declared path to bytes matching the
+declared SHA-256 content digest before accepting the reference; a mutable alias
+or Git object identity without this content check SHALL be rejected.
+
 ## Non-functional requirements
 
 NF-1. Validation is fail-closed and dependency-free.
@@ -67,5 +86,7 @@ No acceptance command, CI gate or migration behavior is added by this feature.
 
 Valid Locales -> Regions -> Countries sample manifests and public change
 declarations resolve reproducibly; unknown references, duplicates, cycles,
-contract mismatches and invalid/deceptive change declarations fail; the same
-logical input yields the same graph/impact/topological output.
+contract mismatches, undeclared public-byte changes, mutable/unverifiable
+references and invalid/deceptive change declarations fail closed; internal-only
+changes require proof against the declared inventory. No LLM classification is
+used, and identical inputs produce identical graph/impact/topological output.

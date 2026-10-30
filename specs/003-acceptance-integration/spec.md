@@ -36,6 +36,22 @@ with Locales and Regions public scenarios, compatible/incompatible provider data
 consumer impact, restoration, evidence and stale-evidence checks; unavailable
 external requirements shall be reported BLOCKED.
 
+RF-14. THE SYSTEM SHALL model the GI Regions -> Locales dependency as PostgreSQL
+data consumption with foreign keys in the shared schema, not as an HTTP API
+dependency.
+
+RF-15. THE GI pilot SHALL verify persisted writes and public reads for Locales
+and Regions against real disposable PostgreSQL, including FK integrity and
+Regions resolution by `locale_id`.
+
+RF-16. THE GI pilot SHALL exercise valid locale references, invalid/nonexistent
+locale references rejected by referential integrity, and repeat the relevant
+acceptance tests against the same deterministic fixture state.
+
+RF-17. THE GI pilot SHALL label mock/fake/ASGI-only checks as simulated or
+in-process and PostgreSQL-backed execution as real database integration; it
+SHALL NOT describe the latter as HTTP-socket E2E unless a real socket is used.
+
 RF-7. THE SYSTEM SHALL obtain an independent, runtime-attested review of the
 final revision when the verified Claude capability is available; otherwise it
 shall report REVIEW_PENDING and retain HITL.
@@ -75,5 +91,8 @@ upgrade scope does not silently admit every structurally similar v3 release.
 ## Acceptance criteria
 
 Command/adapters/dispatcher tests, explicit matrix fixtures, gate-negative tests
-and an isolated real pilot meet their declared evidence states; a draft PR is
-prepared only after final validation and review status are truthful.
+and an isolated real pilot meet their declared evidence states. The pilot proves
+database persistence/read, FK integrity, `locale_id` resolution, valid/invalid
+references and repeatability, with simulated and PostgreSQL integration evidence
+clearly separated. A draft PR is prepared only after final validation and review
+status are truthful.

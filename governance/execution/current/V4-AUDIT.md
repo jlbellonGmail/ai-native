@@ -163,6 +163,49 @@ for admission, preservation, rollback and idempotence. Details live in the three
 feature `spec.md` and `plan.md` files. They remain subject to the existing human
 plan approval before implementation.
 
+## Architecture review addendum — 2026-10-30
+
+The final planning refinement (user-requested, planning-only) now specifies:
+
+- Dependency classification compares changed bytes to an explicit public
+  contract inventory. A public byte change without a matching declaration is
+  BLOCKED; internal means positively proving no declared public contract changed.
+  Contract refs must resolve to immutable Git objects/digests and exact bytes.
+  No LLM inference is permitted.
+- Each declared dependency derives a mandatory Cross Acceptance owned by the
+  consumer. Missing, skipped, unexecutable or unisolated mandatory validation is
+  BLOCKED, never PASS.
+- Runner plans distinguish command restrictions (including spawn without shell)
+  from actual sandbox isolation. Filesystem, network (deny by default), child
+  process, privilege and resource controls must be verified before execution;
+  absent host enforcement is BLOCKED.
+- Evidence fingerprints declared relevant non-secret configuration and
+  allowlisted non-secret environment inputs. Secret values are never stored,
+  logged or directly hashed; critical unverified secret-dependent configuration
+  is BLOCKED. `sourceRevision` remains provenance outside the input fingerprint.
+- GI pilot plans reflect the inspected architecture: Regions consumes Locales via
+  PostgreSQL/FK, not HTTP. Required cases cover persistence/read, FK behavior,
+  `locale_id`, valid/invalid references and repeatability. Fake/in-process checks
+  are separated from real PostgreSQL integration; ASGI TestClient is not called
+  socket E2E.
+
+These changes affect only `specs/001-*`, `specs/002-*`, `specs/003-*` and this
+planning record. They specify tests; none of the implementation, consumer pilot,
+runner, migration, PostgreSQL scenarios or Independent Review was executed.
+
+Planning validation evidence for commit preparation (2026-10-30):
+
+| Command | Result |
+|---|---|
+| `node runtime/circuit/sdd-cli.mjs validate 001-dependency-graph --level full` | PASS |
+| `node runtime/circuit/sdd-cli.mjs validate 002-native-acceptance --level full` | PASS |
+| `node runtime/circuit/sdd-cli.mjs validate 003-acceptance-integration --level full` | PASS |
+| Requirement-to-plan/task consistency check using `requirementIds` / `parseTasks` | PASS: 001 = 13 requirements / 4 tasks; 002 = 18 / 5; 003 = 17 / 6; no missing mappings or malformed tasks. |
+| `node contracts/validate-contracts.mjs` | PASS: 20 schemas, 7 data files. |
+| `node runtime/docs/validate-doc-drift.mjs` | PASS. |
+| `node --test --test-concurrency=1 runtime/circuit/sdd-workflow.test.mjs` | PASS: 19/19. |
+| `git diff --check` | PASS. |
+
 ### Final planning refinement — evidence and upgrade matrix
 
 `sourceRevision` is now report provenance outside the acceptance input
