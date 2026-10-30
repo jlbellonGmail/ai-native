@@ -26,11 +26,13 @@ RF-4. THE SYSTEM SHALL report PASS, FAIL, BLOCKED or NOT_APPLICABLE per scenario
 and in a fail-closed consolidated result.
 
 RF-5. THE SYSTEM SHALL write bounded, reproducible evidence linked to module,
-feature, scenario, contract/provider/consumer IDs, input digests, commit,
+feature, scenario, contract/provider/consumer IDs, input digests, sourceRevision,
 environment, timestamp, execution kind and result.
 
-RF-6. WHEN a relevant manifest, contract, fixture, command or code input changes,
-THE SYSTEM SHALL mark prior evidence stale rather than use it as PASS.
+RF-6. WHEN a relevant manifest, contract, fixture, command, code input or declared
+environment identity changes, THE SYSTEM SHALL mark prior evidence stale rather
+than use it as PASS. A change outside the selected module scenario inputs shall
+not invalidate its evidence.
 
 RF-7. THE SYSTEM SHALL distinguish real execution from mock/simulated execution
 in result metadata.
@@ -49,6 +51,10 @@ variable, path escape, forbidden shell feature or exceeds its timeout, THEN THE
 SYSTEM SHALL report BLOCKED with a safe diagnostic and shall not execute a
 fallback command.
 
+RF-11. THE SYSTEM SHALL store sourceRevision as report provenance outside the
+acceptance input fingerprint. The input fingerprint shall contain only declared
+scenario-relevant inputs, and a changed sourceRevision alone shall not alter it.
+
 ## Non-goals
 
 No unregistered shell command runs, arbitrary arguments, inherited secret-rich
@@ -59,4 +65,4 @@ or claim that fakes are external integration.
 
 Fixture scenarios prove module PASS, consumer-owned cross PASS, missing/empty
 mandatory scenario BLOCKED, command failure FAIL, dependency-free cross
-NOT_APPLICABLE and stale evidence detection.
+NOT_APPLICABLE, relevant-input stale detection and unrelated-revision retention.

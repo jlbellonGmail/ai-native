@@ -11,33 +11,38 @@ inputs. Cross ownership is checked from consumer module IDs, not directory names
 
 | Requirement | Change and discarded alternative |
 |---|---|
-| RF-1, RF-2 | Registry/discovery plus graph resolution; discarded filesystem-only discovery because it cannot prove declared ownership. |
-| RF-3, RF-4 | Explicit state machine with mandatory-count checks; discarded treating zero tests/skips as success. |
-| RF-5, RF-6, RF-7 | JSON evidence with canonical input fingerprints and execution kind; discarded free-form logs and timestamp-only freshness. |
-| RF-8, RF-9, RF-10 | Spawn executable plus argv without shell, registry-only absolute/verified command identity, root-contained working directory and paths, fixed timeout, minimal env allowlist, bounded streams and runner-owned output directory; discarded `shell: true`, inherited `process.env`, relative path trust and arbitrary command text. |
+| RF-1, RF-2 | Registry/discovery plus graph resolution; discard filesystem-only discovery because it cannot prove declared ownership. |
+| RF-3, RF-4 | Explicit state machine with mandatory-count checks; discard treating zero tests/skips as success. |
+| RF-5, RF-6, RF-7, RF-11 | JSON evidence separates `sourceRevision` report provenance from canonical scenario-input fingerprints and execution kind; discard whole-repository revision fingerprints, free-form logs and timestamp-only freshness. |
+| RF-8, RF-9, RF-10 | Spawn executable plus argv without shell, registry-only verified command identity, root-contained working directory/paths, finite timeout, minimal environment allowlist, bounded streams and runner-owned output; discard `shell: true`, inherited `process.env`, relative-path trust and arbitrary command text. |
 
 ## Probable files after approval
 
-`contracts/acceptance-*.schema.json`, `runtime/acceptance/{registry,runner,evidence}.mjs`, focused tests and disposable fixtures. The registry names executable digest/path, argv tokens, timeout, permitted environment keys, input roots and evidence root; no command string is accepted. Evidence destination and retention are bounded and ignored unless governance expressly selects versioned evidence. No consumer source changes.
+`contracts/acceptance-*.schema.json`, `runtime/acceptance/{registry,runner,evidence}.mjs`, focused tests and disposable fixtures. The registry names executable digest/path, argv tokens, timeout, permitted environment keys, input roots and evidence root; no command string is accepted. Evidence retention is bounded and ignored unless governance explicitly selects versioned evidence. No consumer source changes.
 
 ## Evidence fingerprint and staleness contract
 
-The runner will construct canonical UTF-8 JSON (recursively sorted object keys,
-arrays in declared registry order, no wall-clock fields) and SHA-256 it. The
-fingerprint fields are: schema version; module/scenario/provider/consumer IDs;
-contract IDs and immutable references; canonical dependency-manifest digest;
-registry entry digest; executable content digest; argv token list; fixture/input
-file content digests in declared order; execution kind; selected environment
-identity (platform, architecture, runtime version and only allowlisted key
-**names**); and source revision. Timestamp, report path, captured output and
-secret environment values are excluded.
+The runner constructs canonical UTF-8 JSON (recursively sorted object keys,
+arrays in declared registry order, no wall-clock fields) and SHA-256 hashes it.
+The **input fingerprint** contains only scenario-relevant data: schema version;
+module/scenario/provider/consumer IDs; contract IDs and immutable references;
+canonical dependency-manifest digest; registry entry digest; executable content
+digest; argv tokens; declared fixture/input content digests; execution kind; and
+environment identity (platform, architecture, runtime version and allowlisted
+environment key names only).
 
-Evidence is stale if any fingerprint field differs, any required input is absent
-or unreadable, the report schema is unsupported, the scenario was mandatory but
-has no result, or its recorded result is not PASS. Byte-identical canonical inputs
-are valid regardless of filesystem mtime, JSON key order or evidence file name.
-Comparison is exact and never uses a freshness duration. A stale/malformed record
-is reported as `BLOCKED` for a mandatory check, not silently rerun or reused.
+`sourceRevision` is stored in the evidence report as provenance of the report,
+but is intentionally outside the input fingerprint. Timestamp, report path,
+captured output, secret environment values and undeclared repository paths are
+excluded. This prevents an unrelated source change from invalidating a module's
+acceptance while preserving traceability of the report's originating revision.
+
+Evidence is stale if a fingerprint field differs, a required input is absent or
+unreadable, the report schema is unsupported, a mandatory scenario has no result,
+or its recorded result is not PASS. Byte-identical canonical inputs remain current
+regardless of mtime, JSON key order, report file name, `sourceRevision`, or
+unrelated repository changes. Comparison is exact and never time-based. A stale
+or malformed mandatory record is `BLOCKED`, never silently rerun or reused.
 
 ## Test strategy and rollback
 
@@ -46,8 +51,10 @@ Use local Node fixture commands for deterministic runner semantics, labelled
 them `real-integration`. Negative tests cover empty/missing/skip/fail/stale,
 shell metacharacters, argument injection, path traversal/symlink escape,
 undeclared environment variables, inherited secret-like variables, output limits
-and timeout process cleanup. The runner must reject unregistered commands.
-Rollback removes additive files.
+and timeout process cleanup. Evidence tests prove a relevant fixture/contract
+change invalidates, while a changed unrelated file or `sourceRevision` alone
+preserves the same input fingerprint and current evidence. The runner rejects
+unregistered commands. Rollback removes additive files.
 
 ## Risks
 

@@ -27,6 +27,11 @@ v3.4.3 upgrade admission, owned-file preservation, rollback and idempotence
 fixtures. These are planned requirements only: no runner, upgrade change or
 consumer execution exists yet.
 
+The final planning refinement admits only v3.4.2 and v3.4.3 after real-shape
+fixture validation; all other v3.x, malformed, future or unknown sources are
+planned to reject before write. Evidence provenance `sourceRevision` is separate
+from a scenario-only input fingerprint.
+
 ## Current artifacts
 
 - Audit/evidence: `governance/execution/current/V4-AUDIT.md`.

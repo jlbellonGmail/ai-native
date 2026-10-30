@@ -163,6 +163,22 @@ for admission, preservation, rollback and idempotence. Details live in the three
 feature `spec.md` and `plan.md` files. They remain subject to the existing human
 plan approval before implementation.
 
+### Final planning refinement — evidence and upgrade matrix
+
+`sourceRevision` is now report provenance outside the acceptance input
+fingerprint. The planned test pair proves that a relevant declared input change
+invalidates evidence, while an unrelated repository change or `sourceRevision`
+change alone does not.
+
+Local tag inspection produced the explicit upgrade matrix in
+`specs/003-acceptance-integration/plan.md`: v3.0.0–v3.2.0 lack a complete
+lock/protocol/upgrade family (v3.2.0 has a lock schema but no upgrade engine);
+v3.3.0–v3.4.3 share observed lock-schema blob
+`d67779957b93…`, bootstrap protocol 1 and an upgrade engine. Initial v4 admits
+only v3.4.2 and v3.4.3, each with its own real-shape fixture. Other, future,
+malformed or unadmitted inputs must reject before any filesystem, index or cache
+mutation. These are planning findings only; no consumer upgrade was run.
+
 Read `V4-STATE.md`, the v4 roadmap and the three feature plans. Explicit human
 approval of the implementation plans is required before opening T1 of the first
 feature. After that approval, resume sequential bounded execution; verify, repair,
