@@ -23,6 +23,8 @@ HITL gate, not a technical failure. No approval is recorded.
 - Roadmap: `governance/roadmaps/AI-NATIVE-V4-ROADMAP.md`.
 - Full feature specs/plans/tasks: `specs/001-dependency-graph/`,
   `specs/002-native-acceptance/`, `specs/003-acceptance-integration/`.
+- Draft planning PR: [#168](https://github.com/jlbellonGmail/ai-native/pull/168),
+  base `develop`; it is intentionally not merge-ready.
 
 ## Next permitted action
 
