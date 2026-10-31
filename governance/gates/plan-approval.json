@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 2,
+  "description": "Plan Approval Receipt bootstrap. Trusted configuration: the workflow reads it from the checkout of the `main` commit it executes from and refuses to continue unless it equals main's; consumers recover it from the tip of `main` on GitHub, never from a worktree, a PR or an input. NON-CIRCULAR: this file holds no hash of itself; its identity (git blob, sha256, commit, repository id, run id) is recorded in each receipt as `trustedConfig` and compared with main by the verifier. Any change here changes that identity and blocks earlier receipts until they are reissued. Control plane (governance/gates/**): changing it needs human review. FAIL-CLOSED PINS, each of which blocks everything while unset: `requester.botUserId` (null until the GitHub App `ai-native-plan-approval` exists and a human pins its bot user id), `environment.id` (null until the dedicated Environment `ai-native-plan-approval` exists and a human pins its id) and `workflow.trustedRevisions` (empty until a human registers the git blobs of the integrated workflow files; see governance/security/PLAN-APPROVAL-RECEIPT.md). The Environment `ai-native-human-review` belongs to merge-gate and is intentionally NOT used here.",
+  "repository": { "fullName": "jlbellonGmail/ai-native", "id": 1262211240 },
+  "workflow": {
+    "path": ".github/workflows/plan-approval-receipt.yml",
+    "eventName": "workflow_dispatch",
+    "ref": "refs/heads/main",
+    "branch": "main",
+    "runAttempt": 1,
+    "trustedFiles": [
+      ".github/workflows/plan-approval-receipt.yml",
+      "runtime/gates/plan-approval.mjs",
+      "runtime/gates/plan-approval-receipt.mjs",
+      "runtime/gates/plan-approval-artifact.mjs",
+      "runtime/lib/schema-lite.mjs",
+      "contracts/plan-approval-receipt.schema.json"
+    ],
+    "trustedRevisions": []
+  },
+  "requester": {
+    "appSlug": "ai-native-plan-approval",
+    "botLogin": "ai-native-plan-approval[bot]",
+    "botUserId": null,
+    "actorType": "Bot"
+  },
+  "environment": {
+    "name": "ai-native-plan-approval",
+    "id": null,
+    "canAdminsBypass": false,
+    "preventSelfReview": true,
+    "deploymentBranches": ["main"]
+  },
+  "reviewer": { "login": "jlbellonGmail", "id": 215926636, "type": "User" },
+  "artifact": { "namePrefix": "plan-approval-receipt-", "fileName": "plan-approval-receipt.json" },
+  "scopes": {
+    "acceptance-v4-plans-v1": {
+      "pullRequest": 168,
+      "baseBranch": "develop",
+      "headBranch": "feature/acceptance-v4",
+      "documents": [
+        "specs/001-dependency-graph/spec.md",
+        "specs/001-dependency-graph/plan.md",
+        "specs/001-dependency-graph/tasks.md",
+        "specs/002-native-acceptance/spec.md",
+        "specs/002-native-acceptance/plan.md",
+        "specs/002-native-acceptance/tasks.md",
+        "specs/003-acceptance-integration/spec.md",
+        "specs/003-acceptance-integration/plan.md",
+        "specs/003-acceptance-integration/tasks.md"
+      ]
+    }
+  }
+}
