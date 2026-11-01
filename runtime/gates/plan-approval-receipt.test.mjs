@@ -17,8 +17,8 @@ const real = loadConfig();
 const schema = loadSchema();
 const read = (p) => readFileSync(new URL(`../../${p}`, import.meta.url), "utf8");
 
-// Same config as the repository one, with every fail-closed pin filled with explicit FIXTURE values (the real file keeps
-// them null/empty until the App, the dedicated Environment and an integrated workflow revision exist).
+// Same config as the repository one, with every fail-closed pin filled with explicit FIXTURE values (the suite never
+// depends on the real pins, so rotating them in the governed file does not change what these scenarios exercise).
 const ENV_ID = 7000000001;
 const FILES = Object.fromEntries(real.workflow.trustedFiles.map((p, i) => [p, String(i + 1).repeat(40)]));
 const config = {
@@ -27,6 +27,12 @@ const config = {
   environment: { ...real.environment, id: ENV_ID },
   workflow: { ...real.workflow, trustedRevisions: [{ id: "rev-1", files: { ...FILES } }] },
 };
+// Isolated NEGATIVE fixtures: each one is a deep copy of the valid fixture config with exactly ONE pin explicitly unset.
+// They never read or mutate the real governed file (which is pinned) and never pretend it is in an earlier state.
+const derive = (mutate) => { const c = structuredClone(config); mutate(c); return c; };
+const unpinnedBot = derive((c) => { c.requester.botUserId = null; });
+const noRevisions = derive((c) => { c.workflow.trustedRevisions = []; });
+const unpinnedEnv = derive((c) => { c.environment.id = null; });
 const SCOPE = "acceptance-v4-plans-v1";
 const scope = config.scopes[SCOPE];
 const HEAD = "a".repeat(40);
@@ -260,11 +266,14 @@ test("BLOCKED: github-actions[bot] (dispatch from a GITHUB_TOKEN workflow) is no
 test("BLOCKED: triggering_actor differs from actor (re-run by someone else)", () => blockedApproval("ACTOR_TRIGGERING_DIFFER", (f) => { f.run.triggering_actor = { login: config.reviewer.login, id: config.reviewer.id, type: "User" }; }));
 test("BLOCKED: the owner dispatching the run (requester is the reviewer)", () => blockedApproval("REQUESTER_IS_REVIEWER", (f) => { f.run.actor = { login: config.reviewer.login, id: config.reviewer.id, type: "User" }; f.run.triggering_actor = f.run.actor; }));
 test("BLOCKED: GitHub user record of the bot does not match the pin", () => blockedApproval("BOT_USER_MISMATCH", (f) => { f.botUser = { login: bot.login, id: 5, type: "Bot" }; }));
-test("BLOCKED: botUserId null (App identity not pinned) — the real repository config today", () => {
-  const findings = evaluateRequest(real, requestFacts());
+test("BLOCKED: botUserId null (App identity not pinned) — isolated fixture, the valid fixture stays pinned", () => {
+  assert.equal(unpinnedBot.requester.botUserId, null);
+  assert.equal(config.requester.botUserId, bot.id, "deriving the negative fixture must not touch the valid one");
+  const findings = evaluateRequest(unpinnedBot, requestFacts());
   assert.ok(codes(findings).includes("REQUESTER_NOT_PINNED"));
-  assert.equal(real.requester.botUserId, null);
-  blockedApproval("REQUESTER_NOT_PINNED", () => {}, { ...config, requester: { ...config.requester, botUserId: null } });
+  assert.equal(verdict(findings).status, "BLOCKED");
+  assert.ok(!codes(evaluateRequest(config, requestFacts())).includes("REQUESTER_NOT_PINNED"));
+  blockedApproval("REQUESTER_NOT_PINNED", () => {}, unpinnedBot);
 });
 test("BLOCKED: self-approval (approver is the requesting identity, or reviewer id equals actor id)", () => {
   blockedApproval("SELF_APPROVAL", (f) => { f.approvals[0].userId = bot.id; });
@@ -346,12 +355,16 @@ test("BLOCKED: workflow not from main, commit not on main, ancestry unavailable,
   blockedApproval("REPO_MISMATCH", (f) => { f.context.repository = "someone/else"; });
   blockedApproval("REPO_ID_MISMATCH", (f) => { f.run.repository.id = 1; });
 });
-test("BLOCKED: no trusted workflow revision registered (the real repository config today, and an empty list in general)", () => {
-  assert.ok(codes(evaluateRequest(real, requestFacts())).includes("WORKFLOW_REVISIONS_EMPTY"));
-  assert.deepEqual(real.workflow.trustedRevisions, []);
-  blockedApproval("WORKFLOW_REVISIONS_EMPTY", () => {}, { ...config, workflow: { ...config.workflow, trustedRevisions: [] } });
-  blockedApproval("WORKFLOW_REVISIONS_EMPTY", () => {}, { ...config, workflow: { ...config.workflow, trustedRevisions: undefined } });
-  blockedProvenance("WORKFLOW_REVISIONS_EMPTY", () => {}, { ...config, workflow: { ...config.workflow, trustedRevisions: [] } });
+test("BLOCKED: no trusted workflow revision registered (isolated fixture: empty list, and a missing list)", () => {
+  assert.deepEqual(noRevisions.workflow.trustedRevisions, []);
+  assert.equal(config.workflow.trustedRevisions.length, 1, "deriving the negative fixture must not touch the valid one");
+  const findings = evaluateRequest(noRevisions, requestFacts());
+  assert.ok(codes(findings).includes("WORKFLOW_REVISIONS_EMPTY"));
+  assert.equal(verdict(findings).status, "BLOCKED");
+  assert.ok(!codes(evaluateRequest(config, requestFacts())).includes("WORKFLOW_REVISIONS_EMPTY"));
+  blockedApproval("WORKFLOW_REVISIONS_EMPTY", () => {}, noRevisions);
+  blockedApproval("WORKFLOW_REVISIONS_EMPTY", () => {}, derive((c) => { delete c.workflow.trustedRevisions; }));
+  blockedProvenance("WORKFLOW_REVISIONS_EMPTY", () => {}, noRevisions);
 });
 test("BLOCKED: ancestry of main is not enough — unknown / historical workflow revision (any executed file differs)", () => {
   for (const p of real.workflow.trustedFiles) {
@@ -406,8 +419,11 @@ test("BLOCKED: Environment protections (wrong Environment, reviewer absent/extra
   blockedApproval("ENV_BRANCH_POLICY", (f) => { f.environment.protectedBranches = true; });
   blockedApproval("ENV_BRANCH_POLICY", (f) => { f.environment.customBranchPolicies = false; });
   blockedApproval("ENV_UNREADABLE", (f) => { f.environment = null; });
-  blockedApproval("ENV_NOT_PINNED", () => {}, { ...config, environment: { ...config.environment, id: null } });
-  assert.ok(codes(evaluateRequest(real, requestFacts())).includes("ENV_NOT_PINNED"));
+  assert.equal(unpinnedEnv.environment.id, null);
+  assert.equal(config.environment.id, ENV_ID, "deriving the negative fixture must not touch the valid one");
+  blockedApproval("ENV_NOT_PINNED", () => {}, unpinnedEnv);
+  assert.ok(codes(evaluateRequest(unpinnedEnv, requestFacts())).includes("ENV_NOT_PINNED"));
+  assert.ok(!codes(evaluateRequest(config, requestFacts())).includes("ENV_NOT_PINNED"));
 });
 test("a config that tries to weaken the Environment policy itself is rejected (bypass allowed / self-review off)", () => {
   assert.ok(codes(evaluateEnvironment({ ...config, environment: { ...config.environment, canAdminsBypass: true } }, { ...goodEnv(), canAdminsBypass: true })).includes("ENV_ADMIN_BYPASS"));
@@ -832,13 +848,55 @@ test("code: no write verbs, no approval, merge or dispatch endpoints in the rece
   }
 });
 
-test("config: governance/gates/plan-approval.json is coherent, and every fail-closed pin is still unset in the repository", () => {
+test("config: governance/gates/plan-approval.json is coherent, and every fail-closed pin is registered with its exact value", () => {
   assert.equal(Object.keys(real.scopes[SCOPE].documents).length, 9);
   assert.equal(new Set(real.scopes[SCOPE].documents).size, 9);
+
+  // requester identity: the dedicated App bot, a Bot (never a User), and not the human reviewer
+  assert.equal(real.requester.appSlug, "ai-native-plan-approval");
+  assert.equal(real.requester.botLogin, "ai-native-plan-approval[bot]");
+  assert.equal(real.requester.botUserId, 350901564);
+  assert.equal(real.requester.actorType, "Bot");
+  assert.ok(Number.isSafeInteger(real.requester.botUserId) && real.requester.botUserId > 0);
+  assert.notEqual(real.requester.botUserId, real.reviewer.id, "the requesting identity is never the human reviewer");
+  assert.notEqual(real.requester.botLogin, real.reviewer.login);
+  assert.equal(real.reviewer.type, "User");
+
+  // dedicated Environment: pinned by name AND id, with the protections the evaluator enforces
   assert.equal(real.environment.name, "ai-native-plan-approval");
-  assert.equal(real.environment.id, null, "the id is pinned by a human only after the Environment exists");
-  assert.equal(real.requester.botUserId, null, "the id is pinned by a human only after the App exists");
-  assert.deepEqual(real.workflow.trustedRevisions, [], "revisions are registered by a human only after the workflow is integrated into main");
+  assert.equal(real.environment.id, 25906730072);
+  assert.ok(Number.isSafeInteger(real.environment.id) && real.environment.id > 0);
+  assert.notEqual(real.environment.id, 23407797697, "not the human-review Environment");
+
+  // trusted workflow revision: exactly one, covering exactly trustedFiles, six git blob SHA-1 (no extra, no missing)
+  const EXPECTED_REVISION = {
+    id: "r1-07d93c13d7a8",
+    files: {
+      ".github/workflows/plan-approval-receipt.yml": "d8ff23f761d625e6ef0901b28dc28d871a0ef1b6",
+      "runtime/gates/plan-approval.mjs": "0908ae08001cc622469f3ba4e92157dca2194ea5",
+      "runtime/gates/plan-approval-receipt.mjs": "0c247d755701367326af52a137eb843f56983baa",
+      "runtime/gates/plan-approval-artifact.mjs": "483d6ea056fa444f0d7cdae26cdf3506adcd1a82",
+      "runtime/lib/schema-lite.mjs": "2798b5b93fff0b13c0c9fdc73d9556c25899992d",
+      "contracts/plan-approval-receipt.schema.json": "124c50516ebee34375fd0fa949b2da866d3dc4b2",
+    },
+  };
+  assert.equal(real.workflow.trustedFiles.length, 6);
+  assert.equal(real.workflow.trustedRevisions.length, 1);
+  const [rev] = real.workflow.trustedRevisions;
+  assert.deepEqual(rev, EXPECTED_REVISION);
+  assert.deepEqual(Object.keys(rev.files).sort(), [...real.workflow.trustedFiles].sort());
+  assert.equal(Object.keys(rev.files).length, 6);
+  for (const [p, sha] of Object.entries(rev.files)) assert.match(sha, /^[0-9a-f]{40}$/, `${p} must pin a git blob SHA-1`);
+  assert.equal(new Set(Object.values(rev.files)).size, 6, "six distinct blobs");
+
+  // the registered pins satisfy the evaluators with the REAL config (no fail-closed pin finding is raised)
+  const realWorkflowFiles = real.workflow.trustedFiles.map((p) => ({ path: p, type: "file", blobSha: rev.files[p] }));
+  assert.deepEqual(evaluateWorkflowRevision(real, realWorkflowFiles), []);
+  assert.ok(codes(evaluateWorkflowRevision(real, realWorkflowFiles.map((f, i) => (i === 0 ? { ...f, blobSha: "9".repeat(40) } : f)))).includes("WORKFLOW_REVISION_UNKNOWN"), "a single differing file is not the registered revision");
+  const pinFindings = codes(evaluateRequest(real, requestFacts()));
+  for (const c of ["REQUESTER_NOT_PINNED", "ENV_NOT_PINNED", "WORKFLOW_REVISIONS_EMPTY", "TRUST_CONFIG_INVALID"]) assert.ok(!pinFindings.includes(c), `${c} must not be raised by the registered pins`);
+  assert.deepEqual(codes(evaluateEnvironment(real, { ...goodEnv(), id: real.environment.id, name: real.environment.name })).filter((c) => c === "ENV_NOT_PINNED" || c === "ENV_MISMATCH"), []);
+
   assert.equal(real.environment.preventSelfReview, true);
   assert.equal(real.environment.canAdminsBypass, false);
   assert.deepEqual(real.environment.deploymentBranches, ["main"]);
