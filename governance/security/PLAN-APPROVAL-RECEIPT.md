@@ -67,7 +67,7 @@ Un test fija que `planSetFingerprint` no lee `sourceRevision`/`trustedConfig` y 
 
 **Emisión (en el workflow, `request` y `issue`)** — `evaluateConfigSource`:
 1. La configuración en uso se captura como **bytes** del checkout del commit del run (`github.sha`, ancestro de `main`).
-2. Se lee el mismo fichero de GitHub en `run.head_sha` y la cabeza actual de `main`. Deben coincidir: bytes locales == bytes de `main` en el commit del run (`CONFIG_NOT_FROM_REVISION`; sólo se tolera CRLF↔LF de un checkout Windows), el objeto en uso es el parse de esos bytes (`CONFIG_OBJECT_MISMATCH`), los bytes devueltos hashean al git blob que GitHub declara (`CONFIG_BLOB_MISMATCH`), y **`main` no movió el fichero** desde el commit del run (`CONFIG_CHANGED`, relevante porque la aprobación puede tardar horas).
+2. Se lee el mismo fichero de GitHub en `run.head_sha` y la cabeza actual de `main`. Deben coincidir: los bytes locales y remotos se comparan tras normalizar CRLF↔LF en ambos buffers (`CONFIG_NOT_FROM_REVISION`; esto tolera tanto el checkout Windows como un blob que conserve finales mixtos), el objeto en uso es el parse de esos bytes (`CONFIG_OBJECT_MISMATCH`), los bytes devueltos hashean al git blob que GitHub declara (`CONFIG_BLOB_MISMATCH`), y **`main` no movió el fichero** desde el commit del run (`CONFIG_CHANGED`, relevante porque la aprobación puede tardar horas). La normalización solo sirve para comparar; la identidad sigue usando los bytes originales devueltos por GitHub.
 3. El receipt registra `sourceRevision` (= `workflowSHA`), `gitBlobSha`, `sha256` **de los bytes originales de GitHub**, `repositoryId` y `workflowRunId`.
 
 **Verificación (consumidor)** — `loadTrustedConfig` + `evaluateTrustedConfig`:
@@ -134,7 +134,7 @@ Aceptar «cualquier ancestro de `main`» admitía versiones históricas ya no co
 ### Procedimiento para registrar la revisión (no ejecutado; no se inventa ningún SHA)
 
 1. El humano mergea el bootstrap a `main` (merge-gate). Sea `M` el commit resultante.
-2. Obtener los blobs en `M` **desde git/GitHub, no con `git hash-object` sobre el árbol de trabajo** (en Windows el árbol es CRLF; `.gitattributes` fuerza LF en el blob):
+2. Obtener los blobs en `M` **desde git/GitHub, no con `git hash-object` sobre el árbol de trabajo** (en Windows el árbol puede tener finales distintos; la identidad siempre usa el blob original):
    `for p in <trustedFiles>; do git rev-parse "M:$p"; done` o `gh api "repos/jlbellonGmail/ai-native/contents/<ruta>?ref=M" --jq .sha`.
 3. PR **sólo de configuración** (control plane, revisión humana) que añade a `workflow.trustedRevisions`: `{ "id": "r1-<M corto>", "files": { "<ruta>": "<blob>", … } }` con exactamente las rutas de `trustedFiles`. Esa PR no debe tocar ningún fichero de `trustedFiles`. **Cambia la identidad de la configuración**: los receipts anteriores (ninguno hoy) quedarían BLOCKED.
 4. Cualquier cambio futuro en esos ficheros exige una nueva entrada; se puede retirar la anterior.
