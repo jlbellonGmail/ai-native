@@ -1004,7 +1004,8 @@ test("G7 no circularity: the repository configuration holds no hash of itself, i
   // the PR documents (the nine plans) never include the configuration
   for (const d of parsed.scopes[SCOPE].documents) assert.notEqual(d, TRUSTED_CONFIG_PATH);
   assert.equal(sameConfigBytes(Buffer.from("a\r\nb"), Buffer.from("a\nb")), true);
-  assert.equal(sameConfigBytes(Buffer.from("a\nb"), Buffer.from("a\r\nb")), false);
+  assert.equal(sameConfigBytes(Buffer.from("a\nb"), Buffer.from("a\r\nb")), true);
+  assert.equal(sameConfigBytes(bytes, bytes), true, "identical mixed line endings must compare equal");
   assert.equal(sameConfigBytes(Buffer.from("a"), Buffer.from("b")), false);
   assert.equal(sameConfigBytes("a", Buffer.from("a")), false);
   assert.equal(sameConfigBytes(null, Buffer.from("a")), false);
