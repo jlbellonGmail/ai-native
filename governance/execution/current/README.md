@@ -1,3 +1,21 @@
+# AI-NATIVE v4.0.1 — PATCH Candidate
+
+Prepared on `release/v4.0.1` from `main` `ced0969`, PR #175 to `main`; not tagged, not released. Detail:
+`governance/versioning/V4.0.1-PATCH.md`.
+
+```text
+ROADMAP: AI-NATIVE V3 platform line, v4 (MAJOR tag v4.0.0 created by the human; justification pending, N-38)
+STATE: V4.0.1_CANDIDATE
+CONSUMED TAG: v4.0.0 on ced0969 (Release run 41563775024: build FAIL, no current PLATFORM report + CLI_VERSION v3.4.3); no release; never moved
+CONTENT: pretag.mjs (pre-tag readiness check); CLI_VERSION v4.0.1; N-36 trusted revision r2-ced0969cf38b (human-authorised) + LF renormalization + drift test; N-37, N-39 docs; N-41 fixture out of the bundle
+AUDIT: c99ed8f 87.75 (below 88, release-gate FAIL); the final frozen head needs a new independent audit
+OPEN (human): N-38 MAJOR justification; N-40 / G5 human-agent separation
+PENDING: audit of the frozen head / human merge (merge commit) / pretag READY / tag v4.0.1 (human) / main -> develop sync
+v4.0.1 TAG / RELEASE: NOT CREATED / NOT PUBLISHED
+```
+
+Current release: v3.4.3, below.
+
 # AI-NATIVE v3.4.3 — Released and Verified
 
 `v3.4.3` is published and verified. Release and consumer evidence:
