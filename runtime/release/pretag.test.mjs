@@ -21,8 +21,8 @@ const report = (target, score = 92) =>
 
 /**
  * `w` (local `main`: an audited commit, then an .audit-only commit with its report; `origin/main` set to it) and `o`, a
- * separate repository that only `git ls-remote --tags` reads, reached through `https://github.com/o/r` (insteadOf) so the
- * origin URL names the --repo. Nothing is pushed: tags "on origin" are created there directly and `origin/main` is moved
+ * separate repository standing in for GitHub: origin's URL is `https://github.com/o/r` (it names the --repo) and the
+ * test git (`gitFor`) sends only `ls-remote --tags origin` to `o`; everything else is real git in `w`. Nothing is pushed: tags "on origin" are created there directly and `origin/main` is moved
  * with update-ref (a push into a repository under %TEMP% is the Windows host's known "Permission denied" flake). Short
  * paths and core.longpaths: a long %TEMP% otherwise hits "Filename too long" on Windows.
  */
@@ -47,7 +47,6 @@ function fixture({ declares = "v9.9.1", score = 92 } = {}) {
   git(dir, "commit", "-q", "-m", "docs(audit): report");
   const candidate = git(dir, "rev-parse", "HEAD");
   git(dir, "remote", "add", "origin", "https://github.com/o/r");
-  git(dir, "config", `url.${origin.replaceAll("\\", "/")}.insteadOf`, "https://github.com/o/r");
   toMain(dir);
   return { base, dir, origin, audited, candidate };
 }
@@ -76,7 +75,20 @@ function gh({ releases = "", green = 1, fail = [] } = {}) {
   fn.calls = calls;
   return fn;
 }
-const run = (f, over = {}) => pretag({ root: f.dir, tag: "v9.9.1", candidate: f.candidate, repo: "o/r", gh: gh(), ...over });
+/** Real git in the fixture; `ls-remote --tags origin` reaches the local stand-in for GitHub; `override` may answer first. */
+function gitFor(f, override = () => null) {
+  return (args) => {
+    const forced = override(args);
+    if (forced) return forced;
+    const real = args[0] === "ls-remote" && args[1] === "--tags" && args[2] === "origin" ? ["ls-remote", "--tags", f.origin, ...args.slice(3)] : args;
+    try {
+      return { status: 0, stdout: execFileSync("git", real, { cwd: f.dir, encoding: "utf8", env, stdio: "pipe" }), stderr: "" };
+    } catch (error) {
+      return { status: error.status ?? 1, stdout: String(error.stdout ?? ""), stderr: String(error.stderr ?? "") };
+    }
+  };
+}
+const run = (f, over = {}) => pretag({ root: f.dir, tag: "v9.9.1", candidate: f.candidate, repo: "o/r", gh: gh(), git: gitFor(f), ...over });
 const byName = (r) => Object.fromEntries(r.checks.map((c) => [c.name, c]));
 const failing = (r) => r.checks.filter((c) => c.status === "FAIL").map((c) => c.name);
 
@@ -160,18 +172,13 @@ test("a check that cannot be evaluated fails closed (gh or origin unavailable)",
   assert.deepEqual(failing(run(f)), ["tag does not exist on origin"]);
   renameSync(join(f.base, "gone"), f.origin);
   // a git failure on the local tag lookup is not "free"
-  const real = (args) => execFileSync("git", args, { cwd: f.dir, encoding: "utf8", env, stdio: "pipe" });
-  const wrapped = (args) => {
-    if (args[0] === "rev-parse") return { status: 128, stdout: "", stderr: "fatal: broken" };
-    try {
-      return { status: 0, stdout: real(args), stderr: "" };
-    } catch (error) {
-      return { status: error.status, stdout: String(error.stdout ?? ""), stderr: String(error.stderr ?? "") };
-    }
-  };
-  const r = run(f, { git: wrapped });
+  const r = run(f, { git: gitFor(f, (a) => (a[0] === "rev-parse" ? { status: 128, stdout: "", stderr: "fatal: broken" } : null)) });
   assert.deepEqual(failing(r), ["tag does not exist locally"]);
   assert.match(byName(r)["tag does not exist locally"].detail, /git failed: fatal: broken/);
+  // a failure listing an existing .audit/reports/ is an error, not "no reports" (S-29)
+  const l = run(f, { git: gitFor(f, (a) => (a[0] === "ls-tree" ? { status: 128, stdout: "", stderr: "fatal: bad tree" } : null)) });
+  assert.deepEqual(failing(l), ["PLATFORM audit release-gate"]);
+  assert.match(byName(l)["PLATFORM audit release-gate"].detail, /cannot list \.audit\/reports\/ at [0-9a-f]{40}: fatal: bad tree/);
 });
 
 test("--repo must be the repository origin points to (the GitHub queries and the tag check must agree)", (t) => {
@@ -180,7 +187,17 @@ test("--repo must be the repository origin points to (the GitHub queries and the
   assert.deepEqual(failing(run(f, { repo: "o/other" })), ["origin is the repository given in --repo"]);
   assert.deepEqual(failing(run(f, { repo: "O/R" })), [], "GitHub owner/name are case-insensitive");
   git(f.dir, "remote", "set-url", "origin", "https://github.com.evil.example/o/r");
-  assert.deepEqual(failing(run(f)), ["origin is the repository given in --repo", "tag does not exist on origin"]);
+  assert.deepEqual(failing(run(f)), ["origin is the repository given in --repo"]);
+  // S-28: the URL git really contacts counts, not the raw remote.origin.url: an insteadOf to another repository is caught
+  git(f.dir, "remote", "set-url", "origin", "https://github.com/o/r");
+  assert.deepEqual(failing(run(f)), []);
+  git(f.dir, "config", "url.https://github.com/x/evil.insteadOf", "https://github.com/o/r");
+  const r = run(f);
+  assert.deepEqual(failing(r), ["origin is the repository given in --repo"]);
+  assert.equal(byName(r)["origin is the repository given in --repo"].detail, "origin is x/evil");
+  // no origin at all
+  git(f.dir, "remote", "remove", "origin");
+  assert.ok(failing(run(f)).includes("origin is the repository given in --repo"));
 });
 
 test("alpha: a missing audit is reported, not blocking, exactly as in release.yml", (t) => {

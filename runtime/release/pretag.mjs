@@ -33,8 +33,10 @@ const firstLine = (s) => String(s ?? "").trim().split("\n")[0].slice(0, 200);
 
 /** The .audit/reports/*.md texts of `sha`'s tree (what the release job sees after checking out the tag). */
 function reportsAt(git, sha) {
+  // no .audit/reports/ in the tree = no reports (the gate then fails); any other git failure is an error, not "none"
+  if (git(["cat-file", "-e", `${sha}:${REPORTS.slice(0, -1)}`]).status !== 0) return [];
   const ls = git(["ls-tree", "-z", "--name-only", `${sha}:${REPORTS}`]);
-  if (ls.status !== 0) return [];
+  if (ls.status !== 0) throw new Error(`cannot list ${REPORTS} at ${sha}: ${firstLine(ls.stderr)}`);
   return ls.stdout.split("\0").filter((n) => n.endsWith(".md") && n !== "README.md").map((name) => {
     const r = git(["show", `${sha}:${REPORTS}${name}`]);
     if (r.status !== 0) throw new Error(`cannot read ${REPORTS}${name} at ${sha}`);
@@ -65,8 +67,9 @@ export function pretag({ root, tag, candidate, repo, git = defaultGit(root), gh 
   const exists = git(["cat-file", "-e", `${candidate}^{commit}`]);
   add("candidate commit exists locally", exists.status === 0, exists.status === 0 ? candidate : "unknown commit (git fetch first)");
   if (exists.status !== 0) return done();
-  // The GitHub queries use --repo and the tag check uses origin: both must be the same repository.
-  const url = git(["config", "--get", "remote.origin.url"]);
+  // The GitHub queries use --repo and the tag check uses origin: both must be the same repository. The URL is the one
+  // `git ls-remote origin` really contacts (url.*.insteadOf applied), not the raw remote.origin.url.
+  const url = git(["ls-remote", "--get-url", "origin"]);
   const slug = url.status === 0 ? githubSlug(url.stdout) : null;
   add("origin is the repository given in --repo", slug !== null && slug.toLowerCase() === repo.toLowerCase(), slug ? `origin is ${slug}` : "origin is not a GitHub repository URL");
 
