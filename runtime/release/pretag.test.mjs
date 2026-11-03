@@ -3,7 +3,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync, renameSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { pretag } from "./pretag.mjs";
@@ -20,18 +20,22 @@ const report = (target, score = 92) =>
   `---\ntargetRepo: o/r\ntargetCommit: ${target}\nplatform:\n  version: "fixture"\n  commit: ${target}\nauditMethod: "1.2"\nprofile: PLATFORM\ndate: "2026-11-02T00:00:00Z"\nscope: "fixture"\nscore: ${score}\nisMergeGate: false\n---\n# Report\n`;
 
 /**
- * `work` (local `main`: an audited commit, then an .audit-only commit with its report) and `origin`, a separate repository
- * that only `git ls-remote --tags` reads. Nothing is pushed: tags "on origin" are created there directly (a push into a
- * repository under %TEMP% is the Windows host's known "Permission denied" flake).
+ * `w` (local `main`: an audited commit, then an .audit-only commit with its report; `origin/main` set to it) and `o`, a
+ * separate repository that only `git ls-remote --tags` reads, reached through `https://github.com/o/r` (insteadOf) so the
+ * origin URL names the --repo. Nothing is pushed: tags "on origin" are created there directly and `origin/main` is moved
+ * with update-ref (a push into a repository under %TEMP% is the Windows host's known "Permission denied" flake). Short
+ * paths and core.longpaths: a long %TEMP% otherwise hits "Filename too long" on Windows.
  */
 function fixture({ declares = "v9.9.1", score = 92 } = {}) {
-  const base = mkdtempSync(join(tmpdir(), "ai-native-pretag-"));
-  const origin = join(base, "origin");
-  const dir = join(base, "work");
+  const base = mkdtempSync(join(tmpdir(), "pt-"));
+  const origin = join(base, "o");
+  const dir = join(base, "w");
   git(base, "init", "-q", origin);
+  git(origin, "config", "core.longpaths", "true");
   git(origin, "commit", "-q", "--allow-empty", "-m", "origin");
   git(base, "init", "-q", dir);
   git(dir, "config", "core.autocrlf", "false");
+  git(dir, "config", "core.longpaths", "true");
   git(dir, "checkout", "-q", "-b", "main");
   put(dir, "runtime/cli/ai-native.mjs", cli(declares));
   put(dir, "audit/method.json", method);
@@ -42,8 +46,14 @@ function fixture({ declares = "v9.9.1", score = 92 } = {}) {
   git(dir, "add", "-A");
   git(dir, "commit", "-q", "-m", "docs(audit): report");
   const candidate = git(dir, "rev-parse", "HEAD");
-  git(dir, "remote", "add", "origin", origin);
+  git(dir, "remote", "add", "origin", "https://github.com/o/r");
+  git(dir, "config", `url.${origin.replaceAll("\\", "/")}.insteadOf`, "https://github.com/o/r");
+  toMain(dir);
   return { base, dir, origin, audited, candidate };
+}
+/** What `git fetch origin main` would leave after a merge to main: origin/main at HEAD. */
+function toMain(dir) {
+  git(dir, "update-ref", "refs/remotes/origin/main", "HEAD");
 }
 const commit = (dir, files, msg = "c") => {
   for (const [p, t] of Object.entries(files)) put(dir, p, t);
@@ -66,7 +76,7 @@ function gh({ releases = "", green = 1, fail = [] } = {}) {
   fn.calls = calls;
   return fn;
 }
-const run = (f, over = {}) => pretag({ root: f.dir, tag: "v9.9.1", candidate: f.candidate, repo: "o/r", mainRef: "main", gh: gh(), ...over });
+const run = (f, over = {}) => pretag({ root: f.dir, tag: "v9.9.1", candidate: f.candidate, repo: "o/r", gh: gh(), ...over });
 const byName = (r) => Object.fromEntries(r.checks.map((c) => [c.name, c]));
 const failing = (r) => r.checks.filter((c) => c.status === "FAIL").map((c) => c.name);
 
@@ -86,6 +96,7 @@ test("the v4.0.0 incident: no current audit and a CLI that declares the previous
   const f = fixture({ declares: "v9.9.0" });
   t.after(() => rmSync(f.base, { recursive: true, force: true }));
   const changed = commit(f.dir, { "runtime/gates/new.mjs": "export {};\n" }, "feat: after the audit");
+  toMain(f.dir);
   const r = run(f, { candidate: changed });
   assert.equal(r.ready, false);
   assert.deepEqual(failing(r), ["CLI_VERSION declares the tag", "PLATFORM audit release-gate"]);
@@ -99,6 +110,7 @@ test("reports and CLI are read from the candidate's tree, never from the working
   const f = fixture({ declares: "v9.9.0" });
   t.after(() => rmSync(f.base, { recursive: true, force: true }));
   const changed = commit(f.dir, { "runtime/x.mjs": "export {};\n" });
+  toMain(f.dir);
   // an uncommitted, otherwise valid report and CLI bump in the working tree must not count
   put(f.dir, `.audit/reports/AUDIT-PLATFORM-${changed.slice(0, 7)}.md`, report(changed));
   put(f.dir, "runtime/cli/ai-native.mjs", cli("v9.9.1"));
@@ -134,21 +146,48 @@ test("an existing release, a missing green CI run or a commit outside main are N
   git(f.dir, "checkout", "-q", "-b", "feature");
   const side = commit(f.dir, { [`.audit/reports/README.md`]: "x\n" }, "docs(audit): side");
   git(f.dir, "checkout", "-q", "main");
-  assert.deepEqual(failing(run(f, { candidate: side })), ["candidate is reachable from main"]);
+  assert.deepEqual(failing(run(f, { candidate: side })), ["candidate is reachable from origin/main"]);
+  // main is not configurable: a local branch that contains the candidate does not count, and neither does an extra option
+  git(f.dir, "update-ref", "refs/heads/main", side);
+  assert.deepEqual(failing(run(f, { candidate: side, mainRef: "feature" })), ["candidate is reachable from origin/main"]);
 });
 
 test("a check that cannot be evaluated fails closed (gh or origin unavailable)", (t) => {
   const f = fixture();
   t.after(() => rmSync(f.base, { recursive: true, force: true }));
   assert.deepEqual(failing(run(f, { gh: gh({ fail: ["api", "run"] }) })), ["no release (published or draft) exists for the tag", "candidate has a successful ci.yml run"]);
-  git(f.dir, "remote", "set-url", "origin", join(f.base, "missing"));
+  renameSync(f.origin, join(f.base, "gone"));
   assert.deepEqual(failing(run(f)), ["tag does not exist on origin"]);
+  renameSync(join(f.base, "gone"), f.origin);
+  // a git failure on the local tag lookup is not "free"
+  const real = (args) => execFileSync("git", args, { cwd: f.dir, encoding: "utf8", env, stdio: "pipe" });
+  const wrapped = (args) => {
+    if (args[0] === "rev-parse") return { status: 128, stdout: "", stderr: "fatal: broken" };
+    try {
+      return { status: 0, stdout: real(args), stderr: "" };
+    } catch (error) {
+      return { status: error.status, stdout: String(error.stdout ?? ""), stderr: String(error.stderr ?? "") };
+    }
+  };
+  const r = run(f, { git: wrapped });
+  assert.deepEqual(failing(r), ["tag does not exist locally"]);
+  assert.match(byName(r)["tag does not exist locally"].detail, /git failed: fatal: broken/);
+});
+
+test("--repo must be the repository origin points to (the GitHub queries and the tag check must agree)", (t) => {
+  const f = fixture();
+  t.after(() => rmSync(f.base, { recursive: true, force: true }));
+  assert.deepEqual(failing(run(f, { repo: "o/other" })), ["origin is the repository given in --repo"]);
+  assert.deepEqual(failing(run(f, { repo: "O/R" })), [], "GitHub owner/name are case-insensitive");
+  git(f.dir, "remote", "set-url", "origin", "https://github.com.evil.example/o/r");
+  assert.deepEqual(failing(run(f)), ["origin is the repository given in --repo", "tag does not exist on origin"]);
 });
 
 test("alpha: a missing audit is reported, not blocking, exactly as in release.yml", (t) => {
   const f = fixture({ declares: "v9.9.1-alpha.1" });
   t.after(() => rmSync(f.base, { recursive: true, force: true }));
   const changed = commit(f.dir, { "runtime/x.mjs": "export {};\n" });
+  toMain(f.dir);
   const r = run(f, { tag: "v9.9.1-alpha.1", candidate: changed });
   assert.equal(r.ready, true);
   assert.equal(byName(r)["PLATFORM audit release-gate"].status, "WARN");
@@ -160,9 +199,9 @@ test("alpha: a missing audit is reported, not blocking, exactly as in release.ym
 test("malformed input stops before any git or gh call", () => {
   const g = gh();
   let gitCalls = 0;
-  const r = pretag({ root: ".", tag: "4.0.1", candidate: "ced0969", repo: "o/r; rm", mainRef: "-x", gh: g, git: () => { gitCalls++; return { status: 0, stdout: "", stderr: "" }; } });
+  const r = pretag({ root: ".", tag: "4.0.1", candidate: "ced0969", repo: "o/r; rm", gh: g, git: () => { gitCalls++; return { status: 0, stdout: "", stderr: "" }; } });
   assert.equal(r.ready, false);
-  assert.deepEqual(failing(r), ["tag is a release tag release.yml accepts", "candidate is a full commit SHA", "repository is owner/name", "main ref is a plain ref name"]);
+  assert.deepEqual(failing(r), ["tag is a release tag release.yml accepts", "candidate is a full commit SHA", "repository is owner/name"]);
   assert.equal(gitCalls, 0);
   assert.equal(g.calls.length, 0);
 });

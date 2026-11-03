@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Pre-tag readiness check (v4.0.1): run it BEFORE creating a release tag.
 //   git fetch origin main --tags
-//   node runtime/release/pretag.mjs --tag vX.Y.Z --candidate <40-hex sha> --repo owner/name [--main origin/main]
+//   node runtime/release/pretag.mjs --tag vX.Y.Z --candidate <40-hex sha> --repo owner/name
 // Incident (v4.0.0): the tag was pushed on a commit that had no current PLATFORM audit report and still declared
 // CLI_VERSION v3.4.3. `release.yml` refused it, as it must, but only after the tag existed, and a pushed tag is never
 // moved or reused. This script answers the same questions BEFORE the tag exists, with the very rules release.yml
@@ -18,8 +18,14 @@ import { evaluateReleaseGate } from "../audit/framework.mjs";
 
 const SHA = /^[0-9a-f]{40}$/;
 const SAFE_REPO = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/;
-const SAFE_REF = /^[A-Za-z0-9][A-Za-z0-9._/-]*$/;
+const MAIN = "origin/main"; // release.yml: `git fetch origin main` + `merge-base --is-ancestor "$GITHUB_SHA" origin/main`; not configurable
 const REPORTS = ".audit/reports/";
+
+/** owner/name of a GitHub remote URL (https, ssh or scp form), or null. */
+export function githubSlug(url) {
+  const m = /^(?:https:\/\/(?:[^@/]+@)?github\.com\/|ssh:\/\/git@github\.com\/|git@github\.com:)([A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+?)(?:\.git)?\/?$/.exec(String(url ?? "").trim());
+  return m ? m[1] : null;
+}
 
 const defaultGit = (root) => (args) => spawnSync("git", args, { cwd: root, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
 const defaultGh = (args) => spawnSync("gh", args, { encoding: "utf8" });
@@ -27,9 +33,9 @@ const firstLine = (s) => String(s ?? "").trim().split("\n")[0].slice(0, 200);
 
 /** The .audit/reports/*.md texts of `sha`'s tree (what the release job sees after checking out the tag). */
 function reportsAt(git, sha) {
-  const ls = git(["ls-tree", "--name-only", `${sha}:${REPORTS}`]);
+  const ls = git(["ls-tree", "-z", "--name-only", `${sha}:${REPORTS}`]);
   if (ls.status !== 0) return [];
-  return ls.stdout.split("\n").map((n) => n.trim()).filter((n) => n.endsWith(".md") && n !== "README.md").map((name) => {
+  return ls.stdout.split("\0").filter((n) => n.endsWith(".md") && n !== "README.md").map((name) => {
     const r = git(["show", `${sha}:${REPORTS}${name}`]);
     if (r.status !== 0) throw new Error(`cannot read ${REPORTS}${name} at ${sha}`);
     return { name, text: r.stdout };
@@ -47,7 +53,7 @@ function profilesAt(git, sha) {
  * @returns {{ready: boolean, checks: {name: string, status: "PASS"|"FAIL"|"WARN", detail: string}[]}}
  * A check that cannot be evaluated (git or gh failing, no network) is FAIL: blind is not ready.
  */
-export function pretag({ root, tag, candidate, repo, mainRef = "origin/main", git = defaultGit(root), gh = defaultGh }) {
+export function pretag({ root, tag, candidate, repo, git = defaultGit(root), gh = defaultGh }) {
   const checks = [];
   const add = (name, ok, detail, { warnOnly = false } = {}) => checks.push({ name, status: ok ? "PASS" : warnOnly ? "WARN" : "FAIL", detail });
   const done = () => ({ ready: checks.every((c) => c.status !== "FAIL"), checks });
@@ -55,15 +61,18 @@ export function pretag({ root, tag, candidate, repo, mainRef = "origin/main", gi
   add("tag is a release tag release.yml accepts", isTag(tag), String(tag));
   add("candidate is a full commit SHA", SHA.test(candidate ?? ""), String(candidate));
   add("repository is owner/name", SAFE_REPO.test(repo ?? ""), String(repo));
-  add("main ref is a plain ref name", SAFE_REF.test(mainRef ?? ""), String(mainRef));
   if (checks.some((c) => c.status === "FAIL")) return done();
   const exists = git(["cat-file", "-e", `${candidate}^{commit}`]);
   add("candidate commit exists locally", exists.status === 0, exists.status === 0 ? candidate : "unknown commit (git fetch first)");
   if (exists.status !== 0) return done();
+  // The GitHub queries use --repo and the tag check uses origin: both must be the same repository.
+  const url = git(["config", "--get", "remote.origin.url"]);
+  const slug = url.status === 0 ? githubSlug(url.stdout) : null;
+  add("origin is the repository given in --repo", slug !== null && slug.toLowerCase() === repo.toLowerCase(), slug ? `origin is ${slug}` : "origin is not a GitHub repository URL");
 
   // A tag is pushed once and never moved, deleted or reused.
   const local = git(["rev-parse", "-q", "--verify", `refs/tags/${tag}`]);
-  add("tag does not exist locally", local.status !== 0, local.status === 0 ? `already points to ${firstLine(local.stdout)}` : "free");
+  add("tag does not exist locally", local.status === 1, local.status === 0 ? `already points to ${firstLine(local.stdout)}` : local.status === 1 ? "free" : `git failed: ${firstLine(local.stderr)}`);
   const remote = git(["ls-remote", "--tags", "origin", `refs/tags/${tag}`]);
   if (remote.status !== 0) add("tag does not exist on origin", false, `cannot list origin tags: ${firstLine(remote.stderr)}`);
   else add("tag does not exist on origin", remote.stdout.trim() === "", remote.stdout.trim() ? `already on origin: ${firstLine(remote.stdout)}` : "free");
@@ -71,8 +80,8 @@ export function pretag({ root, tag, candidate, repo, mainRef = "origin/main", gi
   add("no release (published or draft) exists for the tag", unreleased.ok, unreleased.ok ? "none" : unreleased.errors.join("; "));
 
   // Build job, step "Tag commit must be reachable from main".
-  const anc = git(["merge-base", "--is-ancestor", candidate, mainRef]);
-  add(`candidate is reachable from ${mainRef}`, anc.status === 0, anc.status === 0 ? "yes" : anc.status === 1 ? `not an ancestor of ${mainRef} (merge first, then git fetch)` : `git failed: ${firstLine(anc.stderr)}`);
+  const anc = git(["merge-base", "--is-ancestor", candidate, MAIN]);
+  add(`candidate is reachable from ${MAIN}`, anc.status === 0, anc.status === 0 ? "yes" : anc.status === 1 ? `not an ancestor of ${MAIN} (merge first, then git fetch origin main)` : `git failed: ${firstLine(anc.stderr)}`);
 
   // Build job, step "Tag commit must have a green CI run" (same query).
   const ci = gh(["run", "list", "--repo", repo, "--workflow", "ci.yml", "--commit", candidate, "--status", "success", "--json", "conclusion", "--jq", "length"]);
@@ -109,7 +118,7 @@ export function pretag({ root, tag, candidate, repo, mainRef = "origin/main", gi
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   const argv = process.argv.slice(2);
   const value = (n) => (argv.includes(n) ? argv[argv.indexOf(n) + 1] : null);
-  const r = pretag({ root: process.cwd(), tag: value("--tag"), candidate: value("--candidate"), repo: value("--repo"), mainRef: value("--main") ?? "origin/main" });
+  const r = pretag({ root: process.cwd(), tag: value("--tag"), candidate: value("--candidate"), repo: value("--repo") });
   for (const c of r.checks) console.log(`${c.status.padEnd(4)} ${c.name}: ${c.detail}`);
   console.log(r.ready ? `READY: ${value("--tag")} may be created on ${value("--candidate")}` : "NOT READY: do not create the tag");
   process.exit(r.ready ? 0 : 1);
