@@ -6,10 +6,12 @@ import assert from "node:assert/strict";
 import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 import { deflateRawSync } from "node:zlib";
 import { describeArchive, readSingleEntryZip, sha256OfBytes } from "./plan-approval-artifact.mjs";
 import { buildZip } from "./plan-approval-zip.fixture.mjs";
-import { BINDING_IDENTITY, REQUIRED_EVIDENCE, TRUSTED_CONFIG_PATH, buildReceipt, canonicalJson, describeConfigBytes, evaluateAgentIsolation, evaluateApproval, evaluateBinding, evaluateConfigSource, evaluateEnvironment, evaluateRequest, evaluateTrustedConfig, evaluateWorkflowRevision, gitBlobSha, parseIsoInstant, planSetFingerprint, sameConfigBytes, sha256Hex, validateReceipt, verdict, verifyReceiptProvenance } from "./plan-approval-receipt.mjs";
+import { BINDING_IDENTITY, REQUIRED_EVIDENCE, TRUSTED_CONFIG_PATH, buildReceipt, canonicalJson, describeConfigBytes, evaluateAgentIsolation, evaluateApproval, evaluateBinding, evaluateConfigSource, evaluateEnvironment, evaluateRequest, evaluateTrustedConfig, evaluateWorkflowRevision, findWorkflowRevision, gitBlobSha, parseIsoInstant, planSetFingerprint, sameConfigBytes, sha256Hex, validateReceipt, verdict, verifyReceiptProvenance } from "./plan-approval-receipt.mjs";
 import { collectFacts, collectIsolationProbe, collectProvenanceEvidence, loadConfig, loadConfigFile, loadSchema, loadTrustedConfig, readConfigAt, run, verifyFromGitHub } from "./plan-approval.mjs";
 import { checkWorkflow } from "./supply-chain.mjs";
 
@@ -868,31 +870,44 @@ test("config: governance/gates/plan-approval.json is coherent, and every fail-cl
   assert.ok(Number.isSafeInteger(real.environment.id) && real.environment.id > 0);
   assert.notEqual(real.environment.id, 23407797697, "not the human-review Environment");
 
-  // trusted workflow revision: exactly one, covering exactly trustedFiles, six git blob SHA-1 (no extra, no missing)
-  const EXPECTED_REVISION = {
-    id: "r1-07d93c13d7a8",
-    files: {
-      ".github/workflows/plan-approval-receipt.yml": "d8ff23f761d625e6ef0901b28dc28d871a0ef1b6",
-      "runtime/gates/plan-approval.mjs": "0908ae08001cc622469f3ba4e92157dca2194ea5",
-      "runtime/gates/plan-approval-receipt.mjs": "0c247d755701367326af52a137eb843f56983baa",
-      "runtime/gates/plan-approval-artifact.mjs": "483d6ea056fa444f0d7cdae26cdf3506adcd1a82",
-      "runtime/lib/schema-lite.mjs": "2798b5b93fff0b13c0c9fdc73d9556c25899992d",
-      "contracts/plan-approval-receipt.schema.json": "124c50516ebee34375fd0fa949b2da866d3dc4b2",
-    },
+  // trusted workflow revisions: exactly these two, each covering exactly trustedFiles with six git blob SHA-1 (no extra,
+  // no missing). r1 = main after #169/#171 (07d93c1); r2 = main after #174 (ced0969), which changed plan-approval-receipt.mjs
+  // (N-36: #174 registered no revision, so every run on main was WORKFLOW_REVISION_UNKNOWN). r2 was registered by the human's
+  // explicit authorisation; blobs from `git rev-parse ced0969:<path>` and the GitHub contents API, never from a worktree.
+  const R1_FILES = {
+    ".github/workflows/plan-approval-receipt.yml": "d8ff23f761d625e6ef0901b28dc28d871a0ef1b6",
+    "runtime/gates/plan-approval.mjs": "0908ae08001cc622469f3ba4e92157dca2194ea5",
+    "runtime/gates/plan-approval-receipt.mjs": "0c247d755701367326af52a137eb843f56983baa",
+    "runtime/gates/plan-approval-artifact.mjs": "483d6ea056fa444f0d7cdae26cdf3506adcd1a82",
+    "runtime/lib/schema-lite.mjs": "2798b5b93fff0b13c0c9fdc73d9556c25899992d",
+    "contracts/plan-approval-receipt.schema.json": "124c50516ebee34375fd0fa949b2da866d3dc4b2",
   };
+  const EXPECTED_REVISIONS = [
+    { id: "r1-07d93c13d7a8", files: R1_FILES },
+    { id: "r2-ced0969cf38b", files: { ...R1_FILES, "runtime/gates/plan-approval-receipt.mjs": "1bc62084c0b2cf79a9a7a6131c921756f2ae5ece" } },
+  ];
   assert.equal(real.workflow.trustedFiles.length, 6);
-  assert.equal(real.workflow.trustedRevisions.length, 1);
+  assert.deepEqual(real.workflow.trustedRevisions, EXPECTED_REVISIONS);
+  assert.equal(new Set(real.workflow.trustedRevisions.map((r) => r.id)).size, 2, "revision ids are unique");
+  for (const rev of real.workflow.trustedRevisions) {
+    assert.deepEqual(Object.keys(rev.files).sort(), [...real.workflow.trustedFiles].sort());
+    assert.equal(Object.keys(rev.files).length, 6);
+    for (const [p, sha] of Object.entries(rev.files)) assert.match(sha, /^[0-9a-f]{40}$/, `${p} must pin a git blob SHA-1`);
+    assert.equal(new Set(Object.values(rev.files)).size, 6, "six distinct blobs");
+  }
   const [rev] = real.workflow.trustedRevisions;
-  assert.deepEqual(rev, EXPECTED_REVISION);
-  assert.deepEqual(Object.keys(rev.files).sort(), [...real.workflow.trustedFiles].sort());
-  assert.equal(Object.keys(rev.files).length, 6);
-  for (const [p, sha] of Object.entries(rev.files)) assert.match(sha, /^[0-9a-f]{40}$/, `${p} must pin a git blob SHA-1`);
-  assert.equal(new Set(Object.values(rev.files)).size, 6, "six distinct blobs");
 
   // the registered pins satisfy the evaluators with the REAL config (no fail-closed pin finding is raised)
+  for (const r of real.workflow.trustedRevisions) {
+    const files = real.workflow.trustedFiles.map((p) => ({ path: p, type: "file", blobSha: r.files[p] }));
+    assert.deepEqual(evaluateWorkflowRevision(real, files), [], r.id);
+    assert.equal(findWorkflowRevision(real, files)?.id, r.id);
+  }
   const realWorkflowFiles = real.workflow.trustedFiles.map((p) => ({ path: p, type: "file", blobSha: rev.files[p] }));
-  assert.deepEqual(evaluateWorkflowRevision(real, realWorkflowFiles), []);
   assert.ok(codes(evaluateWorkflowRevision(real, realWorkflowFiles.map((f, i) => (i === 0 ? { ...f, blobSha: "9".repeat(40) } : f)))).includes("WORKFLOW_REVISION_UNKNOWN"), "a single differing file is not the registered revision");
+  // mixing files of two revisions is not a revision
+  const mixed = real.workflow.trustedFiles.map((p) => ({ path: p, type: "file", blobSha: p === "runtime/gates/plan-approval-receipt.mjs" ? EXPECTED_REVISIONS[1].files[p] : "8".repeat(40) }));
+  assert.ok(codes(evaluateWorkflowRevision(real, mixed)).includes("WORKFLOW_REVISION_UNKNOWN"));
   const pinFindings = codes(evaluateRequest(real, requestFacts()));
   for (const c of ["REQUESTER_NOT_PINNED", "ENV_NOT_PINNED", "WORKFLOW_REVISIONS_EMPTY", "TRUST_CONFIG_INVALID"]) assert.ok(!pinFindings.includes(c), `${c} must not be raised by the registered pins`);
   assert.deepEqual(codes(evaluateEnvironment(real, { ...goodEnv(), id: real.environment.id, name: real.environment.name })).filter((c) => c === "ENV_NOT_PINNED" || c === "ENV_MISMATCH"), []);
@@ -908,6 +923,21 @@ test("config: governance/gates/plan-approval.json is coherent, and every fail-cl
   for (const p of real.scopes[SCOPE].documents) assert.match(p, /^specs\/00[123]-[a-z-]+\/(spec|plan|tasks)\.md$/);
   for (const p of real.workflow.trustedFiles) assert.ok(read(p).length > 0, `${p} must exist`);
   assert.ok(!real.workflow.trustedFiles.includes("governance/gates/plan-approval.json"));
+});
+
+test("drift (N-36): the trusted files committed at HEAD are a registered revision, so the workflow on main can run", () => {
+  // A change to any trustedFile must register its revision before it reaches main; otherwise every run there is
+  // WORKFLOW_REVISION_UNKNOWN (fail-closed, but the subsystem is dead). Blobs of the COMMITTED tree (git rev-parse
+  // HEAD:<path>), never hashes of the worktree. Not being able to read them is a failure, not a skip.
+  const root = fileURLToPath(new URL("../../", import.meta.url));
+  const files = real.workflow.trustedFiles.map((p) => {
+    const r = spawnSync("git", ["rev-parse", `HEAD:${p}`], { cwd: root, encoding: "utf8" });
+    assert.equal(r.status, 0, `git rev-parse HEAD:${p}: ${r.stderr}`);
+    return { path: p, type: "file", blobSha: r.stdout.trim() };
+  });
+  const found = findWorkflowRevision(real, files);
+  assert.ok(found, `no trusted revision covers HEAD: ${JSON.stringify(Object.fromEntries(files.map((f) => [f.path, f.blobSha])))} (register one in governance/gates/plan-approval.json)`);
+  assert.deepEqual(evaluateWorkflowRevision(real, files), []);
 });
 
 // =====================================================================================================================
