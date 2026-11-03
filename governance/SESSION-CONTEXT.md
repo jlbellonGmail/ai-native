@@ -12,7 +12,7 @@ INITIATIVE: CLOSED (N-02b); CLI_LIFECYCLE: CLOSED (v3.3.0)
 STABLE_BASELINE: v3.4.3 (tag sobre 7bfa2f0; digest sha256:12c15adc8db3d30559eb72e075eedc16b620b522dd9235696cb83617446cea7b)
 CONSUMED_TAG: v4.0.0 (tag anotado cf3059e sobre ced0969, creado por el humano; Release run 41563775024 FAIL en el build; sin release; no se mueve ni se reutiliza)
 PREVIOUS_BASELINE: v3.4.2 (tag sobre 30119d5, inmutable)
-MAIN_DEVELOP: divergen; develop no tiene #169/#171/#174 (v4); main recibe aquí el registro post-release de v3.4.3 (cherry-pick de 238a0a4)
+MAIN_DEVELOP: divergen; develop tiene #169 y #171 (merges main -> develop #170 y #173) pero no #174 ni esta candidata; main recibe aquí el registro post-release de v3.4.3 (cherry-pick de 238a0a4)
 ```
 
 **Candidata `v4.0.1` (PATCH), 2026-11-03:** rama `release/v4.0.1` desde `main` `ced0969`, PR #175 directa a `main` (como #169/#171/#174). `v4.0.0` falló porque ningún informe PLATFORM certificaba `ced0969` (los 30 `STALE` son históricos y esperables) y porque `ced0969` declaraba `CLI_VERSION v3.4.3`. Contenido:
@@ -23,7 +23,18 @@ MAIN_DEVELOP: divergen; develop no tiene #169/#171/#174 (v4); main recibe aquí 
 * N-39: este registro;
 * N-41: el fixture de test fuera del bundle.
 
-La primera auditoría independiente (`c99ed8f`) dio 87.75, por debajo de 88; el SHA final necesita una nueva. Siguen abiertos y son decisión humana: N-38 (justificar la MAJOR v4 frente a `VERSIONING-POLICY.md`, o registrar la excepción) y N-40/G5 (separación humano/agente). Pendiente: auditoría del head congelado; merge humano con merge commit; `pretag.mjs` `READY`; tag `v4.0.1` (humano); sincronización `main` → `develop`. Detalle: `governance/versioning/V4.0.1-PATCH.md`.
+Auditorías independientes:
+* `c99ed8f`: 87.75, por debajo de 88.
+* `b43b5d6`: 88.50, `PASS_WITH_WARNINGS` por tolerancia.
+
+Después de `b43b5d6`:
+* N-42: `runtime/audit/fixtures.mjs` queda fuera del bundle.
+* N-38: la línea v4 se registra como excepción humana a §MAJOR (roadmap D5); el contenido es MINOR.
+* N-39: corregida la línea `MAIN_DEVELOP`.
+
+El SHA final necesita una auditoría nueva. Sigue abierto N-40/G5 (separación humano/agente; el proceso del agente puede aprobar Environments como el propietario).
+
+Pendiente: auditoría del head congelado; merge humano con merge commit; `pretag.mjs` `READY`; tag `v4.0.1` (humano); sincronización `main` → `develop`. Detalle: `governance/versioning/V4.0.1-PATCH.md`.
 
 **Release `v3.4.3` (PATCH), N-35 (2026-10-29):** PR #164 fusionada en `develop`; sincronización de `main` por #166; promoción #165 a `main` en `7bfa2f063303ce48af90a024283625856d74e8cb`; tag anotado `v3.4.3`; release pública verificada, bundle `sha256:12c15adc8db3d30559eb72e075eedc16b620b522dd9235696cb83617446cea7b`. El workflow `40820318690` pasó en el intento 2 después de terminar verde la CI de `main`. El piloto conserva el residual offline Ubuntu: Docker exit 125 antes del producto; los otros tres jobs pasan. `gi-common-reference` fue actualizado por PR #6, merge `42ec2dce372b9a8e188ec93c7f2069ecdd995e83`; doctor, tests y replay de los cuatro receipts pasan con los resultados esperados. Detalle: `governance/versioning/V3.4.3-POST-RELEASE-VERIFICATION.md`.
 
