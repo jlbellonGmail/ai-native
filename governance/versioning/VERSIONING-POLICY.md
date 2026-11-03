@@ -73,6 +73,8 @@ Esta regla se mantiene sin cambios para la versión de plataforma v3.
 `evaluation/fixtures/cli/`; subir `protocol` es MAJOR. Añadir capacidades al CLI sin exigirlas es MINOR. Una release que exige más de lo que el CLI ofrece
 falla cerrada (`INCOMPATIBLE_CLI`), nunca parcialmente. El CLI declara el tag que lo publica (`CLI_VERSION`), prereleases incluidos: el build rechaza un commit cuya declaración no sea exactamente el tag (`runtime/release/cli-version.mjs`). El CLI solo selecciona e instala releases estables. Detalle: `governance/versioning/V3.3.0-RELEASE.md`.
 
+Un tag publicado no se mueve, no se borra y no se reutiliza, aunque su release haya fallado: la corrección sale con la versión siguiente. Antes de crear un tag, `node runtime/release/pretag.mjs --tag <vX.Y.Z> --candidate <sha> --repo <owner/name>` (tras `git fetch origin main --tags`) debe responder `READY`: tag libre local y remoto, sin release previa, candidato alcanzable desde `main`, `ci.yml` verde, `CLI_VERSION` igual al tag y `release-gate` PLATFORM vigente leído del árbol del candidato. Son las mismas reglas de `release.yml`, que sigue siendo la autoridad. Origen: `governance/versioning/V4.0.1-PATCH.md`.
+
 ## Compatibilidad y deprecación
 
 Cada contrato (schema, skill del core, perfil, workflow reutilizable) declara:

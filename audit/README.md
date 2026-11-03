@@ -19,3 +19,5 @@ Reglas de la plataforma (`runtime/audit/`):
 * Un perfil que no esté `Activo` no puede usarse para puntuar.
 
 Comandos: `node runtime/audit/cli.mjs check` (estructura del método), `node runtime/audit/cli.mjs release-gate --profile <P> --candidate <sha> [--reports <dir>]`.
+
+Orden de una release: la auditoría PLATFORM se hace sobre el SHA final (con `CLI_VERSION` ya igual al tag), el informe entra en un commit que solo toca `.audit/**`, y el tag se crea sobre `main` únicamente después de que `node runtime/release/pretag.mjs --tag <vX.Y.Z> --candidate <sha> --repo <owner/name>` responda `READY`. Ese chequeo lee los informes del árbol del candidato y aplica las mismas reglas que `release.yml`; no las sustituye. Cuando no hay informe vigente, `release-gate` lista también los informes históricos `STALE`: son esperables, el error real es la falta de un informe del candidato.
