@@ -106,9 +106,12 @@ test("gzipDeterministic: valid gzip (zlib round-trips it), fixed header, crc32 c
   assert.ok(!gz.equals(gzipSync(data)), "intentionally not zlib's wrapper");
 });
 
-test("isShipped: allowlist prefixes, tests excluded", () => {
+test("isShipped: allowlist prefixes, tests and test-only fixtures excluded", () => {
   assert.ok(isShipped("runtime/bootstrap/install.mjs") && isShipped(".agents/skills/recovery/SKILL.md") && isShipped("contracts/lock.schema.json"));
   assert.ok(!isShipped("runtime/lib/git.test.mjs") && !isShipped("legacy/x") && !isShipped("template/x") && !isShipped("foundation/x") && !isShipped("governance/x"));
+  // N-41: the plan-approval ZIP builder is imported only by tests; it must not reach consumers
+  assert.ok(!isShipped("runtime/gates/plan-approval-zip.fixture.mjs"));
+  assert.ok(isShipped("runtime/gates/plan-approval-artifact.mjs") && isShipped("runtime/audit/fixtures.mjs"), "only the .fixture.mjs suffix is excluded");
 });
 
 test("publishedPlatform adds the real digest and asset pointers without mutating the bundled one", () => {
