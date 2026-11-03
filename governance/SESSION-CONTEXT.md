@@ -4,14 +4,39 @@
 > `governance/history/SESSION-CONTEXT-HISTORY-2026-10-04.md`. Fuente de verdad del estado: este archivo, `governance/roadmaps/AI-NATIVE-V3-ROADMAP.md` y Git/GitHub.
 > Política del merge humano: `governance/security/HITL-MERGE-POLICY.md`. Frontera de secretos: `governance/security/SECRETS-BOUNDARY.md`.
 
-Actualizado: 2026-10-28 (candidata `v3.4.3` PATCH en `feature/fix-independent-review-rejected-tools-v343`, sin tag ni release; `v3.4.2` sigue siendo la release vigente).
+Actualizado: 2026-11-03 (candidata `v4.0.1` en la PR #175 a `main`, sin tag ni release; `v4.0.0` es un tag consumido sin release; `v3.4.3` sigue siendo la release vigente).
 
 ```text
-STATUS: V3.4.3_CANDIDATE (PATCH, N-35), sin tag ni release; baseline vigente V3.4.2_RELEASED_AND_VERIFIED (PATCH, N-34; Claude Code 2.1.311 sin E2E)
+STATUS: V4.0.1_CANDIDATE (PATCH sobre el tag consumido v4.0.0), sin tag ni release; release vigente V3.4.3_RELEASED_AND_VERIFIED (PATCH, N-35)
 INITIATIVE: CLOSED (N-02b); CLI_LIFECYCLE: CLOSED (v3.3.0)
-STABLE_BASELINE: v3.4.2 (tag sobre 30119d5; digest sha256:97da1195a68456d2c8d3ce669e80de0863b82863b75891e720757ac027bdd76f)
-PREVIOUS_BASELINE: v3.4.1 (tag sobre 635a60c, inmutable). Los 9 consumidores seguían en v3.1.2 el 2026-10-12; no re-verificado desde entonces
+STABLE_BASELINE: v3.4.3 (tag sobre 7bfa2f0; digest sha256:12c15adc8db3d30559eb72e075eedc16b620b522dd9235696cb83617446cea7b)
+CONSUMED_TAG: v4.0.0 (tag anotado cf3059e sobre ced0969, creado por el humano; Release run 41563775024 FAIL en el build; sin release; no se mueve ni se reutiliza)
+PREVIOUS_BASELINE: v3.4.2 (tag sobre 30119d5, inmutable)
+MAIN_DEVELOP: divergen; develop tiene #169 y #171 (merges main -> develop #170 y #173) pero no #174 ni esta candidata; main recibe aquí el registro post-release de v3.4.3 (cherry-pick de 238a0a4)
 ```
+
+**Candidata `v4.0.1` (PATCH), 2026-11-03:** rama `release/v4.0.1` desde `main` `ced0969`, PR #175 directa a `main` (como #169/#171/#174). `v4.0.0` falló porque ningún informe PLATFORM certificaba `ced0969` (los 30 `STALE` son históricos y esperables) y porque `ced0969` declaraba `CLI_VERSION v3.4.3`. Contenido:
+* chequeo previo al tag `runtime/release/pretag.mjs`;
+* `CLI_VERSION v4.0.1`;
+* N-36: trusted revision `r2-ced0969cf38b`, autorizada por el humano el 2026-11-03, con `plan-approval.json` renormalizado a LF y un test de drift;
+* N-37: `PLAN-APPROVAL-RECEIPT.md` actualizado;
+* N-39: este registro;
+* N-41: el fixture de test fuera del bundle.
+
+Auditorías independientes:
+* `c99ed8f`: 87.75, por debajo de 88.
+* `b43b5d6`: 88.50, `PASS_WITH_WARNINGS` por tolerancia.
+
+Después de `b43b5d6`:
+* N-42: `runtime/audit/fixtures.mjs` queda fuera del bundle.
+* N-38: la línea v4 se registra como excepción humana a §MAJOR (roadmap D5); el contenido es MINOR.
+* N-39: corregida la línea `MAIN_DEVELOP`.
+
+El SHA final necesita una auditoría nueva. Sigue abierto N-40/G5 (separación humano/agente; el proceso del agente puede aprobar Environments como el propietario).
+
+Pendiente: auditoría del head congelado; merge humano con merge commit; `pretag.mjs` `READY`; tag `v4.0.1` (humano); sincronización `main` → `develop`. Detalle: `governance/versioning/V4.0.1-PATCH.md`.
+
+**Release `v3.4.3` (PATCH), N-35 (2026-10-29):** PR #164 fusionada en `develop`; sincronización de `main` por #166; promoción #165 a `main` en `7bfa2f063303ce48af90a024283625856d74e8cb`; tag anotado `v3.4.3`; release pública verificada, bundle `sha256:12c15adc8db3d30559eb72e075eedc16b620b522dd9235696cb83617446cea7b`. El workflow `40820318690` pasó en el intento 2 después de terminar verde la CI de `main`. El piloto conserva el residual offline Ubuntu: Docker exit 125 antes del producto; los otros tres jobs pasan. `gi-common-reference` fue actualizado por PR #6, merge `42ec2dce372b9a8e188ec93c7f2069ecdd995e83`; doctor, tests y replay de los cuatro receipts pasan con los resultados esperados. Detalle: `governance/versioning/V3.4.3-POST-RELEASE-VERIFICATION.md`.
 
 **Candidata `v3.4.3` (PATCH), N-35 (2026-10-28):** rama `feature/fix-independent-review-rejected-tools-v343` sobre `develop` `3f4351d`; corrección `7707e93` y endurecimiento `bf885e4` (solo `runtime/adapters/claude-review.mjs` y su regresión en `runtime/circuit/review-ledger.test.mjs`), documentación `b61e3cd` y `CLI_VERSION = "v3.4.3"` en `4a4765a`. El adaptador de Claude ya no cuenta como herramienta usada una llamada del Reviewer que Claude Code rechazó antes de ejecutarla (par exacto llamada/negativa del arnés para esa herramienta, leído de los turnos; nunca una herramienta `mcp__`); toda llamada que corrió, aun con error, sigue impidiendo aprobar. Antes, el Reviewer de `gi-common-reference` (`002-regions-subregions`) que intentó `Bash` terminaba `NOT_PROVEN`. Regresión RED/GREEN (3 tests «N-35»), reverificación de 9 receipts reales y E2E real con Claude Code 2.1.312: A (rechazada) `INDEPENDENT_REVIEW` PASS / `APPROVED`; B (corrió) y C (corrió con exit 3) `NOT_PROVEN`. Revisión independiente de `4a4765a`: `APPROVED` con LOW-1/LOW-2, atendidos en `bf885e4`; revisión delta de `bf885e4` y de la documentación: `APPROVED` (LOW-3/LOW-4 de redacción, corregidos). PR #164 a `develop`: CI remota de `d7a2ee5` con validadores Windows (1108 PASS, 0 FAIL, 2 skips) y Ubuntu (1110 PASS) en verde (los 9 FAIL de la réplica local no se reproducen); CodeQL señaló un escape inútil en la aserción del test N-35, corregido en `a4165b3`. **Pendiente:** CI remota y auditoría PLATFORM del SHA final, merge humano de la PR #164, promoción y release; después, `gi-common-reference`. Sin cambios en `core/**` ni en proyecciones. Detalle, delta de consumidor y SemVer: `governance/versioning/V3.4.3-PATCH.md`; evidencia: `governance/versioning/evidence/n35-refused-tool-calls-v3.4.3.json`.
 

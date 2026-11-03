@@ -2,7 +2,7 @@
 
 Mecanismo mínimo para que el Coordinator pueda exigir, antes de habilitar al Builder, una aprobación humana de un conjunto exacto de documentos SDD **verificable contra GitHub**. Una aprobación conversacional no es evidencia runtime; un JSON local aislado tampoco.
 
-Estado: **bootstrap local remediado por tercera vez** tras el dictamen REJECT de la segunda revisión independiente de Codex, pendiente de tercera revisión. **No hay seguridad operativa extremo a extremo.** Faltan la configuración externa (App, Environment dedicado, registro de la revisión del workflow, separación de credenciales), el Coordinator consumer y la prueba extremo a extremo. Lo que existe es el verificador (`verifyFromGitHub` / `plan-approval.mjs verify`) que ese consumidor llamará; su contrato obligatorio está en `PLAN-APPROVAL-COORDINATOR-CONTRACT.md`.
+Estado (2026-11-03): **bootstrap integrado en `main`** (#169 `07d93c1`, pines #171 `08a8581`, comparador simétrico #174 `ced0969`). La App `ai-native-plan-approval` (bot id `350901564`), el Environment dedicado (id `25906730072`) y las revisiones del workflow están fijados en `governance/gates/plan-approval.json`; `r2-ced0969cf38b` cubre el código de `main` desde #174 (N-36: entre #174 y su registro, todo run en `main` era `WORKFLOW_REVISION_UNKNOWN`). **No hay seguridad operativa extremo a extremo.** Faltan la separación de credenciales humano/agente (G5 BLOCKED, `AGENT-HUMAN-IDENTITY-SEPARATION.md`), el Coordinator consumer y la prueba extremo a extremo: el único run real (`41369500299`, sobre `08a8581`) terminó BLOCKED y ningún receipt se ha emitido. Lo que existe es el verificador (`verifyFromGitHub` / `plan-approval.mjs verify`) que ese consumidor llamará; su contrato obligatorio está en `PLAN-APPROVAL-COORDINATOR-CONTRACT.md`.
 
 **TOCTOU end-to-end: NO RESUELTO.** El verificador reduce la ventana y el contrato del consumidor la acota, pero sin consumidor implementado y probado no hay garantía posterior a la emisión del receipt (ver «TOCTOU y reutilización»).
 
@@ -39,15 +39,15 @@ Todo es plano de control (`.github/**`, `governance/gates/**`, `contracts/**`, `
 
 ## Tres pines que bloquean (fail-closed) hasta que un humano los fije
 
-`governance/gates/plan-approval.json` nace con tres valores sin fijar. Mientras cualquiera lo esté, **toda petición y toda verificación quedan BLOCKED**; ningún entorno de producción acepta «cualquier» valor.
+`governance/gates/plan-approval.json` nació con tres valores sin fijar. Mientras cualquiera lo esté, **toda petición y toda verificación quedan BLOCKED**; ningún entorno de producción acepta «cualquier» valor. Los tres están fijados en `main`:
 
-| Pin | Valor hoy | Código de bloqueo | Quién lo fija y cuándo |
+| Pin | Valor en `main` | Código si falta | Fijado por |
 |---|---|---|---|
-| `requester.botUserId` | `null` | `REQUESTER_NOT_PINNED` | humano, tras crear la App (PR revisada) |
-| `environment.id` | `null` | `ENV_NOT_PINNED` | humano, tras crear el Environment dedicado (PR revisada) |
-| `workflow.trustedRevisions` | `[]` | `WORKFLOW_REVISIONS_EMPTY` | humano, tras integrar el workflow en `main` (PR revisada) |
+| `requester.botUserId` | `350901564` | `REQUESTER_NOT_PINNED` | humano, #171 |
+| `environment.id` | `25906730072` | `ENV_NOT_PINNED` | humano, #171 |
+| `workflow.trustedRevisions` | `r1-07d93c13d7a8` (#171), `r2-ced0969cf38b` (PR de v4.0.1, autorizada por el humano) | `WORKFLOW_REVISIONS_EMPTY` / `WORKFLOW_REVISION_UNKNOWN` | humano |
 
-Los tests usan fixtures explícitos con estos valores rellenados; un test fija que el fichero del repositorio sigue sin ellos.
+Los tests usan fixtures explícitos para los casos negativos; un test fija los valores exactos del fichero del repositorio y otro (drift, N-36) falla si ninguna revisión registrada cubre los `trustedFiles` commiteados en `HEAD`.
 
 ## Configuración confiable: modelo de confianza no circular (hallazgo HIGH 2)
 
@@ -131,7 +131,9 @@ Aceptar «cualquier ancestro de `main`» admitía versiones históricas ya no co
 - La configuración del commit del run **sí** se compara ya con la del consumidor (identidad de la sección anterior): ya no es un límite pendiente.
 - El veredicto PASS devuelve `binding.workflowRevisionId`.
 
-### Procedimiento para registrar la revisión (no ejecutado; no se inventa ningún SHA)
+### Procedimiento para registrar la revisión (ejecutado para `r1` y `r2`; no se inventa ningún SHA)
+
+Desde N-36 el test de drift hace que un cambio en un `trustedFile` no llegue verde a `main` sin su revisión: la PR que cambia el código registra también la entrada (blobs del head de esa PR, que son los que tendrá `M`, contenido direccionado), o la entrada llega en una PR de configuración previa al merge. En ambos casos con revisión humana.
 
 1. El humano mergea el bootstrap a `main` (merge-gate). Sea `M` el commit resultante.
 2. Obtener los blobs en `M` **desde git/GitHub, no con `git hash-object` sobre el árbol de trabajo** (en Windows el árbol puede tener finales distintos; la identidad siempre usa el blob original):
@@ -183,7 +185,7 @@ Límites: la forma de una entrada `gh` **con sesión** (`hosts.<host>[].login`) 
 - Allow administrators to bypass: **deshabilitado**.
 - Deployment branches: *Selected branches* → **sólo `main`**.
 
-El workflow, la configuración (`environment.name`, `id: null` hasta crearlo), el validador (`evaluateEnvironment`) y los tests están alineados. Estado real comprobado (GET): `GET environments/ai-native-plan-approval` → **404** (no existe); `ai-native-human-review` sin cambios.
+El workflow, la configuración (`environment.name`, `id: 25906730072`), el validador (`evaluateEnvironment`) y los tests están alineados. Estado real comprobado (GET, 2026-11-03): `GET environments/ai-native-plan-approval` → id `25906730072`, `can_admins_bypass: false`, `required_reviewers` con `prevent_self_review: true` y `branch_policy`; `ai-native-human-review` sin cambios.
 
 ## `Actions: write`: alcance real, operación a operación (hallazgo MEDIUM 5)
 
@@ -342,4 +344,4 @@ Tres defectos reproducidos por el Independent Reviewer tras la tercera revisión
 | MEDIUM `evaluateBinding` | sólo comprobaba `undefined`/`null`: `""` en todos los campos pasaba y se comparaba consigo mismo | validación de ambos bindings (propiedades propias, tipo, formato, esquema cerrado) antes de comparar |
 | MEDIUM `evaluateBinding` + Proxy (quinta revisión) | `readBinding` llamaba a `Object.getPrototypeOf`/`ownKeys`/descriptores sobre la entrada: un `Proxy` transparente superaba todas las comprobaciones (PASS) y sus traps se ejecutaban durante la validación. Incumplimiento del contrato de validación; no se demostró que falsifique una aprobación remota (el binding sale de `verifyReceiptProvenance`, no de un llamador externo) | `util.types.isProxy` es la primera comprobación de `readBinding`: cualquier Proxy (transparente, con traps, revocado, anidado, de función o array), en cualquiera de los dos lados, ⇒ `BINDING_MALFORMED` sin ejecutar ningún trap |
 
-Estado: **corrección local**, sin commit. El Coordinator consumer sigue sin existir y **TOCTOU end-to-end: NO RESUELTO**. Esta corrección no implanta aislamiento humano/agente (G5 sigue BLOCKED): DETECCIÓN NO ES AISLAMIENTO. Las cifras de la tabla «Quality Gates (tercera remediación)» son históricas de esa ronda.
+Estado: corrección integrada en `main` con el bootstrap (#169). El Coordinator consumer sigue sin existir y **TOCTOU end-to-end: NO RESUELTO**. Esta corrección no implanta aislamiento humano/agente (G5 sigue BLOCKED): DETECCIÓN NO ES AISLAMIENTO. Las cifras de la tabla «Quality Gates (tercera remediación)» son históricas de esa ronda.
