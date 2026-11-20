@@ -20,7 +20,7 @@
 import { existsSync, readdirSync, readFileSync, realpathSync } from "node:fs";
 import { join, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
-import { deriveSddStatus, formatSddStatus, loadWorkflow, parseTasks, persistTaskState, validateSpecFolder } from "./sdd-workflow.mjs";
+import { deriveSddStatus, formatSddStatus, loadWorkflow, parseTasks, persistTaskState, specWarnings, validateSpecFolder } from "./sdd-workflow.mjs";
 import { convergenceBudgetFor } from "./converge.mjs";
 import { formatReviewOutcome } from "./independent-review.mjs";
 import { beginReview, captureReceipt, recordReview, reviewStatus, runValidation } from "./review-ledger.mjs";
@@ -71,9 +71,14 @@ export function main(argv, cwd = process.cwd()) {
       if (!existsSync(dir)) fail(`specs/${slug} does not exist`);
       const level = levelArg(flag("--level"));
       const errors = validateSpecFolder(dir, { level });
-      if (argv.includes("--json")) console.log(JSON.stringify({ slug, level, ok: errors.length === 0, errors }, null, 2));
-      else if (errors.length) errors.forEach((e) => console.error(`FAIL: ${e}`));
-      else console.log(`PASS: specs/${slug} is structurally valid at level ${level}`);
+      // warnings never change the exit code (v4.0.2): they make the spec's acceptance promises visible
+      const warnings = specWarnings(dir, { level });
+      if (argv.includes("--json")) console.log(JSON.stringify({ slug, level, ok: errors.length === 0, errors, warnings }, null, 2));
+      else {
+        if (errors.length) errors.forEach((e) => console.error(`FAIL: ${e}`));
+        else console.log(`PASS: specs/${slug} is structurally valid at level ${level}`);
+        warnings.forEach((w) => console.log(`WARN: ${w}`));
+      }
       return errors.length ? 1 : 0;
     }
     case "status": {
