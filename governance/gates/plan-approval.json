@@ -30,6 +30,17 @@
           "runtime/lib/schema-lite.mjs": "2798b5b93fff0b13c0c9fdc73d9556c25899992d",
           "contracts/plan-approval-receipt.schema.json": "124c50516ebee34375fd0fa949b2da866d3dc4b2"
         }
+      },
+      {
+        "id": "r2-ced0969cf38b",
+        "files": {
+          ".github/workflows/plan-approval-receipt.yml": "d8ff23f761d625e6ef0901b28dc28d871a0ef1b6",
+          "runtime/gates/plan-approval.mjs": "0908ae08001cc622469f3ba4e92157dca2194ea5",
+          "runtime/gates/plan-approval-receipt.mjs": "1bc62084c0b2cf79a9a7a6131c921756f2ae5ece",
+          "runtime/gates/plan-approval-artifact.mjs": "483d6ea056fa444f0d7cdae26cdf3506adcd1a82",
+          "runtime/lib/schema-lite.mjs": "2798b5b93fff0b13c0c9fdc73d9556c25899992d",
+          "contracts/plan-approval-receipt.schema.json": "124c50516ebee34375fd0fa949b2da866d3dc4b2"
+        }
       }
     ]
   },

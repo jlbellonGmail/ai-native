@@ -106,9 +106,17 @@ test("gzipDeterministic: valid gzip (zlib round-trips it), fixed header, crc32 c
   assert.ok(!gz.equals(gzipSync(data)), "intentionally not zlib's wrapper");
 });
 
-test("isShipped: allowlist prefixes, tests excluded", () => {
+test("isShipped: allowlist prefixes, tests and test-only fixtures excluded", () => {
   assert.ok(isShipped("runtime/bootstrap/install.mjs") && isShipped(".agents/skills/recovery/SKILL.md") && isShipped("contracts/lock.schema.json"));
   assert.ok(!isShipped("runtime/lib/git.test.mjs") && !isShipped("legacy/x") && !isShipped("template/x") && !isShipped("foundation/x") && !isShipped("governance/x"));
+  // N-41 / N-42: test-only fixtures must not reach consumers (the ZIP builder; the audit fixture materializer, whose
+  // evaluation/fixtures/audit/ data is not shipped either)
+  assert.ok(!isShipped("runtime/gates/plan-approval-zip.fixture.mjs"));
+  assert.ok(!isShipped("runtime/audit/fixtures.mjs"));
+  assert.ok(!isShipped("evaluation/fixtures/audit/LIBRARY/x"), "the data it reads is not shipped");
+  // the exclusions are exact: the runtime modules next to them still ship
+  assert.ok(isShipped("runtime/gates/plan-approval-artifact.mjs") && isShipped("runtime/audit/framework.mjs") && isShipped("runtime/audit/report.mjs") && isShipped("runtime/audit/cli.mjs"));
+  assert.ok(isShipped("runtime/audit/fixtures-extra.mjs") && isShipped("runtime/x/fixtures.mjs"), "only runtime/audit/fixtures.mjs itself is excluded");
 });
 
 test("publishedPlatform adds the real digest and asset pointers without mutating the bundled one", () => {

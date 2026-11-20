@@ -1,3 +1,21 @@
+# AI-NATIVE v4.0.1 — Released
+
+Prepared on `release/v4.0.1` from `main` `ced0969`, PR #175 to `main`; merged as `878322a`, tagged `v4.0.1` and released (GitHub release published 2026-11-03T23:57:26Z, Release run 41742877489 success). Post-release verification not yet recorded. Detail:
+`governance/versioning/V4.0.1-PATCH.md`.
+
+```text
+ROADMAP: AI-NATIVE V3 platform line, v4 (tag v4.0.0 created by the human; content is MINOR by VERSIONING-POLICY; v4 recorded as a human exception, roadmap D5, N-38)
+STATE: V4.0.1_RELEASED (post-release verification not recorded)
+CONSUMED TAG: v4.0.0 on ced0969 (Release run 41563775024: build FAIL, no current PLATFORM report + CLI_VERSION v3.4.3); no release; never moved
+CONTENT: pretag.mjs (pre-tag readiness check); CLI_VERSION v4.0.1; N-36 trusted revision r2-ced0969cf38b (human-authorised) + LF renormalization + drift test; N-37, N-39 docs; N-41 fixture out of the bundle
+AUDIT: c99ed8f 87.75 (release-gate FAIL); b43b5d6 88.50 (PASS_WITH_WARNINGS, tolerance); after it N-42, N-38, N-39 line fixed; the final frozen head needs a new independent audit
+OPEN (human): N-40 / G5 human-agent separation (the agent process can approve Environments as the owner)
+PENDING: v4.0.1 post-release verification record / human merge of the main -> develop sync PR (replaces #180)
+v4.0.1 TAG / RELEASE: annotated tag on 878322a / PUBLISHED
+```
+
+Previous release: v3.4.3, below.
+
 # AI-NATIVE v3.4.3 — Released and Verified
 
 `v3.4.3` is published and verified. Release and consumer evidence:

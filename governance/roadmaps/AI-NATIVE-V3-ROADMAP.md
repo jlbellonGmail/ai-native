@@ -76,6 +76,7 @@ Cada oleada requiere autorización explícita separada. Orden: `gi-common-person
 | A1 | Crear identidad propia del agente (App `ai-native-worker`) — RESUELTA | M4.3 |
 | A2 | Crear rulesets en repos públicos — `template` y `template-starter` RESUELTO (M0.0b); consumidores GI pendientes para M6 | M0.0b, M6 |
 | A3 | Crear GitHub App del gate (App `ai-native-trust`, P44) — RESUELTA | M4.3 |
+| D5 | Línea de versión v4. Su contenido (plan approval receipt) es MINOR según `VERSIONING-POLICY.md`, pero el humano abrió v4 con el tag público e inmutable `v4.0.0` y ordenó publicar `v4.0.1` (2026-11-03). Es una excepción a §MAJOR, sin cambio de política y sin migración de consumidores; detalle en `governance/versioning/V4.0.1-PATCH.md`. RESUELTA | release `v4.0.1` |
 
 ## Condiciones P1–P45
 
