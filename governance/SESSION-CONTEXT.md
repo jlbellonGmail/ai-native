@@ -4,15 +4,15 @@
 > `governance/history/SESSION-CONTEXT-HISTORY-2026-10-04.md`. Fuente de verdad del estado: este archivo, `governance/roadmaps/AI-NATIVE-V3-ROADMAP.md` y Git/GitHub.
 > Política del merge humano: `governance/security/HITL-MERGE-POLICY.md`. Frontera de secretos: `governance/security/SECRETS-BOUNDARY.md`.
 
-Actualizado: 2026-11-03 (candidata `v4.0.1` en la PR #175 a `main`, sin tag ni release; `v4.0.0` es un tag consumido sin release; `v3.4.3` sigue siendo la release vigente).
+Actualizado: 2026-11-20 (`v4.0.1` publicada: tag anotado sobre `878322a` (merge de #175), release de GitHub publicada el 2026-11-03T23:57:26Z, workflow `Release` run 41742877489 `success`; verificación post-release de `v4.0.1` no registrada todavía. Sincronización `main` → `develop` en la PR de sync que reemplaza a #180).
 
 ```text
-STATUS: V4.0.1_CANDIDATE (PATCH sobre el tag consumido v4.0.0), sin tag ni release; release vigente V3.4.3_RELEASED_AND_VERIFIED (PATCH, N-35)
+STATUS: V4.0.1_RELEASED (PATCH sobre el tag consumido v4.0.0; tag sobre 878322a, release publicada; verificación post-release pendiente de registro); release anterior V3.4.3_RELEASED_AND_VERIFIED (PATCH, N-35)
 INITIATIVE: CLOSED (N-02b); CLI_LIFECYCLE: CLOSED (v3.3.0)
 STABLE_BASELINE: v3.4.3 (tag sobre 7bfa2f0; digest sha256:12c15adc8db3d30559eb72e075eedc16b620b522dd9235696cb83617446cea7b)
 CONSUMED_TAG: v4.0.0 (tag anotado cf3059e sobre ced0969, creado por el humano; Release run 41563775024 FAIL en el build; sin release; no se mueve ni se reutiliza)
 PREVIOUS_BASELINE: v3.4.2 (tag sobre 30119d5, inmutable)
-MAIN_DEVELOP: divergen; develop tiene #169 y #171 (merges main -> develop #170 y #173) pero no #174 ni esta candidata; main recibe aquí el registro post-release de v3.4.3 (cherry-pick de 238a0a4)
+MAIN_DEVELOP: la PR de sync (rama chore/sync-main-into-develop-v4.0.2, merge de main 878322a en develop 4ad8d77, que ya incluye #179) integra v4.0.1 en develop; pendiente de merge humano. Reemplaza a #180
 ```
 
 **Candidata `v4.0.1` (PATCH), 2026-11-03:** rama `release/v4.0.1` desde `main` `ced0969`, PR #175 directa a `main` (como #169/#171/#174). `v4.0.0` falló porque ningún informe PLATFORM certificaba `ced0969` (los 30 `STALE` son históricos y esperables) y porque `ced0969` declaraba `CLI_VERSION v3.4.3`. Contenido:
