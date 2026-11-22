@@ -1,3 +1,22 @@
+# AI-NATIVE v4.0.2 — PATCH Candidate
+
+Prepared on `release/v4.0.2` from `develop` `8681756` (merge of #181), PR to `main`; not tagged, not released. Detail:
+`governance/versioning/V4.0.2-PATCH.md`.
+
+
+```text
+ROADMAP: AI-NATIVE V3 platform line, v4 (PATCH)
+STATE: V4.0.2_CANDIDATE
+CONTENT: #179 sdd validate acceptance warnings (spec without acceptance criteria, requirement without task; exit code unchanged); #181 main -> develop sync; CLI_VERSION v4.0.2
+CONSUMER DELTA: 4 bundle files + platform.json (version/commit/digest only); bootstrap identical; no migration
+EXCLUDED: Native Acceptance (#168) -> v4.1.0
+PENDING: independent PLATFORM audit of the frozen head / remote CI / human merge to main (merge commit) / pretag READY / tag v4.0.2 (human) / release verification / main -> develop sync
+v4.0.2 TAG / RELEASE: NOT CREATED / NOT PUBLISHED
+```
+
+
+Current release: v4.0.1, below.
+
 # AI-NATIVE v4.0.1 — Released
 
 Prepared on `release/v4.0.1` from `main` `ced0969`, PR #175 to `main`; merged as `878322a`, tagged `v4.0.1` and released (GitHub release published 2026-11-03T23:57:26Z, Release run 41742877489 success). Post-release verification not yet recorded. Detail:
