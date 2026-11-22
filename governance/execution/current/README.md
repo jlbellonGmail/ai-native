@@ -1,6 +1,6 @@
 # AI-NATIVE v4.0.2 — PATCH Candidate
 
-Prepared on `release/v4.0.2` from `develop` `8681756` (merge of #181), PR to `main`; not tagged, not released. Detail:
+Prepared on `release/v4.0.2` from `develop` `8681756` (merge of #181) and merged into `main` by #183 as `5b3e9cf`; pre-tag remediation in PR #184 (`release/v4.0.2-remediation`); not tagged, not released. Detail:
 `governance/versioning/V4.0.2-PATCH.md`.
 
 

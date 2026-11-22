@@ -70,7 +70,7 @@ Consumidores: job `legacy-template-baseline` de `.github/workflows/ci.yml` (pyte
 
 Criterio de los scripts retirados: sin referencias por nombre ni por stem en workflows, tests, AGENTS.md, README, `.agentic`, `.claude`, `.codex`, `.opencode`, docs ni scripts conservados (solo menciones históricas en `runs/`, que no se tocan); `parity/v2.0.5/files-map.json`, área `scripts/`: `consumerKeeps=false`. Los revisores lo verificaron con clones nuevos. En los 4 repos sin PR, referencias solo documentales no bastan para borrar (regla: UNKNOWN se conserva); la documentación del circuito Template que las menciona sigue siendo deuda (abajo).
 
-**Riesgos residuales de las dos PRs de scripts:** (a) quien los ejecute a mano por costumbre los pierde (recuperables desde Git); (b) en `gi-clinicadental` desaparecen `check-integrity.ps1` y `sync-agentic-adapters.ps1`, así que ya no hay chequeo automático de coherencia de `.agentic` y adaptadores en el repo (el L3 verifica otras cosas: bootstrap, integridad de STATUS, adopción y tests de producto). `ruff_baseline.json` de `gi-ot` contiene rutas `<workspace>\gi-ot\...` como claves del ratchet: no se tocan, cambiarlas alteraría el baseline.
+**Riesgos residuales de las dos PRs de scripts:** (a) quien los ejecute a mano por costumbre los pierde (recuperables desde Git); (b) en `gi-clinicadental` desaparecen `check-integrity.ps1` y `sync-agentic-adapters.ps1`, así que ya no hay chequeo automático de coherencia de `.agentic` y adaptadores en el repo (el L3 verifica otras cosas: bootstrap, integridad de STATUS, adopción y tests de producto). `ruff_baseline.json` de `gi-ot` contiene rutas `<workspace-D>\gi-ot\...` como claves del ratchet: no se tocan, cambiarlas alteraría el baseline.
 
 ## Ramas, worktrees y clones
 

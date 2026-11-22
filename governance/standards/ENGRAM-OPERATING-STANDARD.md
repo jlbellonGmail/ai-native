@@ -40,7 +40,7 @@ Proyecto operativo por defecto para este workspace:
 
 Motivo:
 `engram doctor --json` detecto drift entre el directorio
-`D:\proyectos\ai-native` y una sesion guardada como `enterprise-10-10`.
+`<workspace>\ai-native` y una sesion guardada como `enterprise-10-10`.
 Hasta consolidar nombres de proyecto, usar `--project ai-native` de forma
 explicita para checkpoints de este workspace.
 
