@@ -4,16 +4,18 @@
 > `governance/history/SESSION-CONTEXT-HISTORY-2026-10-04.md`. Fuente de verdad del estado: este archivo, `governance/roadmaps/AI-NATIVE-V3-ROADMAP.md` y Git/GitHub.
 > Política del merge humano: `governance/security/HITL-MERGE-POLICY.md`. Frontera de secretos: `governance/security/SECRETS-BOUNDARY.md`.
 
-Actualizado: 2026-11-03 (candidata `v4.0.1` en la PR #175 a `main`, sin tag ni release; `v4.0.0` es un tag consumido sin release; `v3.4.3` sigue siendo la release vigente).
+Actualizado: 2026-11-22 (candidata `v4.0.2` (PATCH) en `release/v4.0.2` desde `develop` `8681756` (merge de #181); PR a `main`; sin tag ni release. `v4.0.1` publicada: tag anotado sobre `878322a`, release 2026-11-03T23:57:26Z, `Release` run 41742877489 `success`; verificación post-release de `v4.0.1` no registrada todavía).
 
 ```text
-STATUS: V4.0.1_CANDIDATE (PATCH sobre el tag consumido v4.0.0), sin tag ni release; release vigente V3.4.3_RELEASED_AND_VERIFIED (PATCH, N-35)
+STATUS: V4.0.2_CANDIDATE (PATCH: avisos de Acceptance en sdd validate, #179; sin tag ni release); release vigente V4.0.1_RELEASED (PATCH sobre el tag consumido v4.0.0; tag sobre 878322a, release publicada; verificación post-release pendiente de registro); release anterior V3.4.3_RELEASED_AND_VERIFIED (PATCH, N-35)
 INITIATIVE: CLOSED (N-02b); CLI_LIFECYCLE: CLOSED (v3.3.0)
 STABLE_BASELINE: v3.4.3 (tag sobre 7bfa2f0; digest sha256:12c15adc8db3d30559eb72e075eedc16b620b522dd9235696cb83617446cea7b)
 CONSUMED_TAG: v4.0.0 (tag anotado cf3059e sobre ced0969, creado por el humano; Release run 41563775024 FAIL en el build; sin release; no se mueve ni se reutiliza)
 PREVIOUS_BASELINE: v3.4.2 (tag sobre 30119d5, inmutable)
-MAIN_DEVELOP: divergen; develop tiene #169 y #171 (merges main -> develop #170 y #173) pero no #174 ni esta candidata; main recibe aquí el registro post-release de v3.4.3 (cherry-pick de 238a0a4)
+MAIN_DEVELOP: #181 fusionada en develop (8681756); develop contiene main 878322a. La rama release/v4.0.2 añade CLI_VERSION v4.0.2 y este registro; tras la release, sincronizar main -> develop
 ```
+
+**Candidata `v4.0.2` (PATCH), 2026-11-22:** rama `release/v4.0.2` desde `develop` `8681756`, PR a `main`. Contenido: #179 (`sdd validate` avisa de spec sin criterios de aceptación y de requisitos sin tarea; exit code sin cambios), #181 (sync) y `CLI_VERSION v4.0.2`. Native Acceptance (#168) queda para `v4.1.0`. Pendiente: auditoría PLATFORM del head congelado; merge humano con merge commit; `pretag.mjs` `READY`; tag `v4.0.2` (humano). Detalle: `governance/versioning/V4.0.2-PATCH.md`.
 
 **Candidata `v4.0.1` (PATCH), 2026-11-03:** rama `release/v4.0.1` desde `main` `ced0969`, PR #175 directa a `main` (como #169/#171/#174). `v4.0.0` falló porque ningún informe PLATFORM certificaba `ced0969` (los 30 `STALE` son históricos y esperables) y porque `ced0969` declaraba `CLI_VERSION v3.4.3`. Contenido:
 * chequeo previo al tag `runtime/release/pretag.mjs`;
