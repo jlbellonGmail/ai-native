@@ -40,11 +40,12 @@ export const sha256Hex = (data) => createHash("sha256").update(data).digest("hex
 export const gitBlobSha = (bytes) => createHash("sha1").update(`blob ${bytes.length}\0`).update(bytes).digest("hex");
 
 /**
- * A Windows worktree stores text as CRLF while the git blob (and GitHub) hold LF (.gitattributes: eol=lf). Only the
- * "does my local copy equal the trusted one" comparison tolerates that difference; identities are always computed over
- * the bytes GitHub returns, never over a local file.
+ * The "does my local copy equal the trusted one" comparison tolerates CRLF/LF differences on either side; identities are
+ * always computed over the original bytes GitHub returns, never over a normalized representation.
  */
-export const sameConfigBytes = (local, trusted) => Buffer.isBuffer(local) && Buffer.isBuffer(trusted) && Buffer.from(local.toString("utf8").replace(/\r\n/g, "\n")).equals(trusted);
+const normalizeConfigLineEndings = (bytes) => Buffer.from(bytes.toString("utf8").replace(/\r\n/g, "\n"));
+export const sameConfigBytes = (local, trusted) => Buffer.isBuffer(local) && Buffer.isBuffer(trusted)
+  && normalizeConfigLineEndings(local).equals(normalizeConfigLineEndings(trusted));
 
 /** Identity of a configuration file = digests of its ORIGINAL bytes (never of a re-serialised object). */
 export function describeConfigBytes(bytes) {
