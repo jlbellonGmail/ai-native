@@ -8,6 +8,8 @@ Estado: **PROPUESTA. No implantada.** El Builder no ha creado usuarios Windows, 
 
 ## Diseño (sin gasto, sin segunda identidad GitHub, sin YubiKey, sin VM/contenedor/Linux)
 
+`<humano>` es la cuenta de Windows del propietario (su perfil, `C:\Users\<humano>`) y `<workspace>` la carpeta de trabajo compartida con el agente.
+
 ```text
 Usuario Windows <humano>   humano. Conserva keyring, gh, navegador, WSL2, claves.   Aprueba en GitHub.
 Usuario Windows ai-agent   estándar (no admin). Ejecuta TODOS los agentes.          Solo tokens de App.
@@ -15,7 +17,7 @@ GitHub                     jlbellonGmail = única persona aprobadora
                            App ai-native-plan-approval = identidad técnica del agente (solo solicita)
 ```
 
-La frontera es la de Windows: el almacén de credenciales (Credential Manager/DPAPI) y el perfil del humano no son legibles por otro usuario estándar. En los pasos, `<humano>` es la cuenta de Windows del propietario (su perfil, `C:\Users\<humano>`) y `<workspace>` la carpeta de trabajo compartida con el agente.
+La frontera es la de Windows: el almacén de credenciales (Credential Manager/DPAPI) y el perfil del humano no son legibles por otro usuario estándar.
 
 ### Pasos (propietario; reversibles)
 

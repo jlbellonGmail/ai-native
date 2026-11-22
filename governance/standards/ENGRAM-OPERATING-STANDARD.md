@@ -25,7 +25,7 @@ Engram instalado:
 SI
 
 Base local:
-`D:\tools-ai\engram_db\engram.db`
+`<tools>\engram_db\engram.db` (`<tools>`: la carpeta local de herramientas de IA de la estación de trabajo)
 
 Base existente:
 SI
