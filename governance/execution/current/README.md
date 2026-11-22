@@ -1,16 +1,17 @@
 # AI-NATIVE v4.0.2 — PATCH Candidate
 
-Prepared on `release/v4.0.2` from `develop` `8681756` (merge of #181), PR to `main`; not tagged, not released. Detail:
+Prepared on `release/v4.0.2` from `develop` `8681756` (merge of #181) and merged into `main` by #183 as `5b3e9cf`; pre-tag remediation in PR #184 (`release/v4.0.2-remediation`); not tagged, not released. Detail:
 `governance/versioning/V4.0.2-PATCH.md`.
 
 
 ```text
 ROADMAP: AI-NATIVE V3 platform line, v4 (PATCH)
-STATE: V4.0.2_CANDIDATE
+STATE: V4.0.2_CANDIDATE (PR #183 merged into main as 5b3e9cf, not tagged; pre-tag remediation of N-45, N-46, N-47, F-002 on release/v4.0.2-remediation)
 CONTENT: #179 sdd validate acceptance warnings (spec without acceptance criteria, requirement without task; exit code unchanged); #181 main -> develop sync; CLI_VERSION v4.0.2
-CONSUMER DELTA: 4 bundle files + platform.json (version/commit/digest only); bootstrap identical; no migration
+CONSUMER DELTA: 4 bundle files + platform.json; bootstrap identical; no migration (measured detail: governance/versioning/V4.0.2-PATCH.md, Delta de consumidor)
 EXCLUDED: Native Acceptance (#168) -> v4.1.0
-PENDING: independent PLATFORM audit of the frozen head / remote CI / human merge to main (merge commit) / pretag READY / tag v4.0.2 (human) / release verification / main -> develop sync
+AUDIT: 7881266 89.25 (PASS_WITH_WARNINGS, tolerance); the remediation head needs a new independent audit
+PENDING: independent PLATFORM audit of the remediation head / remote CI / human merge to main (merge commit) / pretag READY / tag v4.0.2 (human) / release verification / main -> develop sync
 v4.0.2 TAG / RELEASE: NOT CREATED / NOT PUBLISHED
 ```
 
@@ -29,7 +30,7 @@ CONSUMED TAG: v4.0.0 on ced0969 (Release run 41563775024: build FAIL, no current
 CONTENT: pretag.mjs (pre-tag readiness check); CLI_VERSION v4.0.1; N-36 trusted revision r2-ced0969cf38b (human-authorised) + LF renormalization + drift test; N-37, N-39 docs; N-41 fixture out of the bundle
 AUDIT: c99ed8f 87.75 (release-gate FAIL); b43b5d6 88.50 (PASS_WITH_WARNINGS, tolerance); after it N-42, N-38, N-39 line fixed; the final frozen head needs a new independent audit
 OPEN (human): N-40 / G5 human-agent separation (the agent process can approve Environments as the owner)
-PENDING: v4.0.1 post-release verification record / human merge of the main -> develop sync PR (replaces #180)
+PENDING: v4.0.1 post-release verification record (the main -> develop sync PR #181 is merged as 8681756)
 v4.0.1 TAG / RELEASE: annotated tag on 878322a / PUBLISHED
 ```
 

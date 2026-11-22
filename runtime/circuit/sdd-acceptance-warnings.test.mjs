@@ -99,6 +99,18 @@ test("review findings: fenced code, CRLF and heading variants do not distort the
   }
 });
 
+test("N-45: a fence closes only with the same character and at least the opening length (CommonMark)", () => {
+  // a ``` line inside a ```` block is content: the RF-7 example stays inside the block
+  const nested = "# 001\n- RF-1. a.\n## Acceptance criteria\n- CA-1. ok.\n## Example\n````md\n```\n- RF-7. example only.\n```\n````\n";
+  assert.deepEqual(specWarnings(folder({ "spec.md": nested, "plan.md": PLAN, "tasks.md": task("T1", "RF-1") })), [], "RF-7 is an example inside the fence");
+  // a ~~~ line inside a ``` block is content: the block still closes and the acceptance section after it counts
+  const mixed = "# 001\n- RF-1. a.\n```text\n~~~\n```\n## Acceptance criteria\n- CA-1. ok.\n";
+  assert.deepEqual(specWarnings(folder({ "spec.md": mixed, "plan.md": PLAN, "tasks.md": task("T1", "RF-1") })), [], "the section after the block is seen");
+  // a closing line carries no info string: "```js" inside a ``` block does not close it
+  const info = "# 001\n- RF-1. a.\n```\n```js\n- RF-9. example only.\n```\n## Acceptance criteria\n- CA-1. ok.\n";
+  assert.deepEqual(specWarnings(folder({ "spec.md": info, "plan.md": PLAN, "tasks.md": task("T1", "RF-1") })), []);
+});
+
 test("sdd validate --level light reports no warnings", () => {
   const project = mkdtempSync(join(tmpdir(), "sdd-acc-light-"));
   mkdirSync(join(project, "specs", "001-demo"), { recursive: true });

@@ -217,7 +217,10 @@ export function validateSpecFolder(dir, { level = "normal" } = {}) {
 }
 
 const HEADING = /^ {0,3}(#{1,6})\s+(.*)$/;
-const FENCE = /^ {0,3}(```|~~~)/;
+// CommonMark fences: an opening run of 3+ backticks (info string without backticks) or 3+ tildes; it closes only with a
+// run of the same character, at least as long, followed by nothing but spaces
+const FENCE_OPEN = /^ {0,3}(`{3,}(?=[^`]*$)|~{3,})/;
+const FENCE_CLOSE = /^ {0,3}(`{3,}|~{3,})[ \t]*$/;
 const ACCEPTANCE_HEADING = /^[*_]*(?:\d+(?:\.\d+)*[.)]?\s*)?[*_]*(?:acceptance criteria|criterios de aceptaci[oó]n)\b/i;
 // the same definition pattern requirementIds uses, one line at a time
 const REQUIREMENT_LINE = new RegExp(REQUIREMENT_DEF.source);
@@ -239,13 +242,18 @@ export function specWarnings(dir, { level = "normal" } = {}) {
   const requirements = new Set();
   let hasAcceptance = false;
   let acceptanceDepth = 0;
-  let fenced = false;
+  let fence = null; // the opening run while inside a fenced block
   for (const line of spec.normalize("NFC").split(/\r?\n/)) {
-    if (FENCE.test(line)) {
-      fenced = !fenced;
+    if (fence) {
+      const close = FENCE_CLOSE.exec(line);
+      if (close && close[1][0] === fence[0] && close[1].length >= fence.length) fence = null;
       continue;
     }
-    if (fenced) continue;
+    const open = FENCE_OPEN.exec(line);
+    if (open) {
+      fence = open[1];
+      continue;
+    }
     const heading = HEADING.exec(line);
     if (heading) {
       const depth = heading[1].length;

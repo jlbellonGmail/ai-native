@@ -25,10 +25,10 @@ Documented setup surfaces:
 The setup flow assumes an operator has local access to the workspace and can
 inspect each independent Git repository:
 
-* `D:/proyectos/ai-native`
-* `D:/proyectos/ai-native/ai-foundation`
-* `D:/proyectos/ai-native/ai-knowledge`
-* `D:/proyectos/ai-native/ai-template`
+* `<workspace>/ai-native`
+* `<workspace>/ai-native/ai-foundation`
+* `<workspace>/ai-native/ai-knowledge`
+* `<workspace>/ai-native/ai-template`
 
 Required local tools are documented as prerequisites only:
 
