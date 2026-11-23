@@ -179,7 +179,7 @@ se salta **todas** las reglas del ruleset que lo concede:
 Si la plataforma no ofrece esa combinación, U1 queda BLOCKED y se informa, sin
 sustituto más débil. Los checks requeridos se añaden en U6, cuando existan (un
 check requerido que nunca se publica bloquearía todo merge). Verificación:
-`gh api repos/jlbellonGmail/ai-native/rulesets` muestra ambos rulesets activos,
+antes de crearlos, comprobar en la configuración de rulesets del repositorio que la regla «restrict updates» está disponible para esta cuenta (si no, BLOCKED); después, `gh api repos/jlbellonGmail/ai-native/rulesets` muestra ambos rulesets activos,
 el primero con `bypass_actors: []`. Depende de U0 (si no, el agente podría
 mergear como propietario).
 
@@ -309,12 +309,12 @@ recibe exactamente una clase:
 | `control-plane` | globs de `gates.json` | aprobación del Environment humano `ai-native-human-review` para ese head SHA, también en PR hacia `develop` (job `human` del gate, como en `merge-gate`) |
 | `exempt` | `pathClasses.exempt`: lista explícita de rutas sin efecto en ejecución (p. ej. `governance/execution/**`, `docs/**`) | ninguna adicional |
 | desconocida | ninguna de las anteriores, incluidas rutas nuevas fuera de todo glob | **BLOCKED** `PATH_UNCLASSIFIED` |
-| ambigua | coincide con más de una clase de distinta exigencia, o difiere de otra ruta sólo en mayúsculas | **BLOCKED** `PATH_AMBIGUOUS` |
+| ambigua | la reclaman dos scopes distintos, o difiere de otra ruta sólo en mayúsculas | **BLOCKED** `PATH_AMBIGUOUS` |
 
-El PR exige la unión de las exigencias de sus rutas. Un PR de promoción
+Una ruta que coincide con varias clases (p. ej. `scope-impl` y `control-plane`) exige la **unión** de sus exigencias (continuidad del plan **y** Environment humano); `exempt` nunca se combina con otra clase (el validador lo impide). El PR exige la unión de las exigencias de sus rutas. Un PR de promoción
 `develop` → `main` exige además que cada commit del rango haya entrado por un
 merge cuyo PR tenga `ai-native/plan-continuity` en `success` de la App fijada;
-un commit del rango sin ese PR ⇒ BLOCKED.
+un commit del rango sin ese PR ⇒ BLOCKED. Sólo quedan fuera los ancestros de un SHA de activación `activationBaseline` registrado en `plan-approval.json` (control plane) en U6, para que los commits anteriores a la existencia del gate no bloqueen la primera promoción.
 
 **Exclusiones gobernadas.** El validador de `pathClasses` (en `main`) rechaza
 en `exempt` globs que cubran todo (`**`, `*`), una raíz de código, rutas de
@@ -398,7 +398,7 @@ consumo U4 y continuidad U5 para cada tarea de implementación.
 | U3 | `.github/workflows/plan-approval-attest.yml`, schema del binding en `contracts/` + tests | sí | ídem |
 | U5 | `.github/workflows/plan-continuity.yml`, `runtime/gates/plan-continuity.mjs` + tests, campos `implementationPaths` y `pathClasses` (con su validador) en `plan-approval.json`, enmienda de `PLAN-APPROVAL-RECEIPT.md` | sí | ídem |
 | U4 | `runtime/circuit/coordinator.mjs`, `runtime/gates/plan-approval-consumer.mjs` + tests, enmienda v2 de `PLAN-APPROVAL-COORDINATOR-CONTRACT.md` | sí | ídem |
-| U6 | `plan-approval.json` (`trustedRevisions`, scope `unblock-e2e-v1`, y `implementationPaths` no vacío para `unblock-e2e-v1` y `acceptance-v4-plans-v1` antes de emitir cualquier receipt de ellos), rulesets remotos | sí | `merge-gate` + `ai-native-human-review` hacia `main` |
+| U6 | `plan-approval.json` (`trustedRevisions`, `activationBaseline`, scope `unblock-e2e-v1`, y `implementationPaths` no vacío para `unblock-e2e-v1` y `acceptance-v4-plans-v1` antes de emitir cualquier receipt de ellos), rulesets remotos | sí | `merge-gate` + `ai-native-human-review` hacia `main` |
 
 Un solo documento nuevo de especificación (`specs/004-plan-approval-enforcement/`)
 cubre U2–U5; no se crean Apps salvo la condicional de U3.
@@ -440,7 +440,9 @@ verificarlo; luego aprobar este plan (etapa 2) y crear el ruleset de U1.
 | Cambio de código fuera de `implementationPaths` y fuera de `exempt` | `PATH_UNCLASSIFIED` (o `control-plane` con Environment humano) ⇒ nunca `success` sin más | U5 |
 | PR que edita `pathClasses`, `implementationPaths`, `gates.json` o `plan-continuity.mjs` para reclasificarse | se aplica la versión de `main`; el PR es `control-plane` ⇒ exige el Environment humano | U5, U6 |
 | PR sólo con rutas `exempt` válidas | `success` | U5 |
-| Ruta ambigua o variante de mayúsculas | `PATH_AMBIGUOUS` ⇒ BLOCKED | U5 |
+| Ruta reclamada por dos scopes o variante de mayúsculas | `PATH_AMBIGUOUS` ⇒ BLOCKED | U5 |
+| Ruta `scope-impl` que además es control plane (p. ej. `.github/workflows/…` de 002 T7) | exige continuidad **y** Environment humano; falta cualquiera ⇒ BLOCKED | U5 |
+| Primera promoción tras activar | commits anteriores a `activationBaseline` no bloquean; posteriores sin check ⇒ BLOCKED | U6 |
 | Exclusión `**` o sobre código en `pathClasses` | el validador de `main` la rechaza | U5 |
 | Commits posteriores legítimos dentro del alcance aprobado (continuidad válida) | atestación sobre `H` + ancestro + documentos idénticos + tarea aprobada ⇒ PASS en dos tareas sucesivas sin nueva aprobación | U5, U6 |
 
