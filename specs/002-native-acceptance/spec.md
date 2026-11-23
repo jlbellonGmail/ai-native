@@ -297,7 +297,11 @@ whose plan contains that item, and it binds the item's justification digest;
 any later change to the item, its justification or the plan's applicability
 matrix returns it to `PENDING_APPROVAL`. The Builder, the reviewer agent and
 any App SHALL NOT approve it, and no file in the repository records it as
-approved.
+approved. The trusted verdict path SHALL preserve the approval evidence (run
+ID, Environment, reviewer login and ID, approval time, head SHA and the item's
+justification digest) in the published check output and in the merge-closure
+traceability report; those copies are evidence for audit, and every gate
+re-reads the approval from GitHub instead of trusting them.
 
 ## Non-goals
 
@@ -353,4 +357,5 @@ handling, critical-configuration BLOCKED, and unrelated-revision retention.
 - AC-11 (RF-35): a pending N/A or DOWNGRADE is reported and allows `DONE` and
   `REVIEW_PENDING`, blocks merge closure, is cleared only by the Environment
   approval for the exact head SHA, and returns to pending after its
-  justification changes.
+  justification changes; the traceability report carries the approval
+  evidence, and a hand-edited copy does not clear a pending item.

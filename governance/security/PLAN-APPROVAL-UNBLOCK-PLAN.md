@@ -69,7 +69,11 @@ por ejecución, su propia spec/plan/tasks bajo `specs/004-plan-approval-enforcem
 
 ### U0 — B2: separación humano/agente (procedimiento humano, sin código)
 
-Reutiliza `AGENT-HUMAN-IDENTITY-SEPARATION.md`, pasos 1–6, con estas precisiones:
+Reutiliza `AGENT-HUMAN-IDENTITY-SEPARATION.md`, pasos 1–6, con estas precisiones.
+Las credenciales y sesiones existentes del perfil humano (keyring de `gh`, Git
+Credential Manager, navegador, WSL2) **no se borran ni se modifican**: siguen
+siendo del humano; lo que cambia es que ningún agente vuelve a ejecutarse en
+ese perfil.
 
 1. Crear el usuario local estándar `ai-agent` sin pertenencia a
    Administradores y sin conocer ninguna contraseña de administrador.
@@ -314,6 +318,21 @@ Con U0–U6 cerrados: dispatch por U2 desde `ai-agent` sobre el head de #168,
 aprobación del propietario en el Environment desde su perfil, atestación U3,
 consumo U4 y continuidad U5 para cada tarea de implementación.
 
+## Archivos previstos y gates por tarea
+
+| Tarea | Archivos previstos | Control plane | Gate de entrega |
+|---|---|---|---|
+| U0 | ninguno en el repo; evidencia en `governance/execution/current/` | no | verificación de 8 filas por el propietario |
+| U1 | ninguno (ruleset remoto) | configuración remota | `gh api …/rulesets` revisado por el propietario |
+| U2 | `runtime/gates/plan-approval-dispatch.mjs` + test | sí | `human_gate: required`, revisión independiente, merge humano |
+| U3 | `.github/workflows/plan-approval-attest.yml`, schema del binding en `contracts/` + tests | sí | ídem |
+| U5 | `.github/workflows/plan-continuity.yml`, `runtime/gates/plan-continuity.mjs` + tests, campo `implementationPaths` en `plan-approval.json`, enmienda de `PLAN-APPROVAL-RECEIPT.md` | sí | ídem |
+| U4 | `runtime/circuit/coordinator.mjs`, `runtime/gates/plan-approval-consumer.mjs` + tests, enmienda v2 de `PLAN-APPROVAL-COORDINATOR-CONTRACT.md` | sí | ídem |
+| U6 | `plan-approval.json` (`trustedRevisions`, scope `unblock-e2e-v1`), rulesets remotos | sí | `merge-gate` + `ai-native-human-review` hacia `main` |
+
+Un solo documento nuevo de especificación (`specs/004-plan-approval-enforcement/`)
+cubre U2–U5; no se crean Apps salvo la condicional de U3.
+
 ## Arranque: autorizaciones distintas y procedimiento existente
 
 | Etapa | Quién | Mecanismo existente | ¿Lo exige el runtime? | Disponible hoy |
@@ -338,12 +357,15 @@ verificarlo; luego aprobar este plan (etapa 2) y crear el ruleset de U1.
 | Receipt ausente | atestación no publicada; consumidor y `plan-continuity` BLOCKED | U3, U4, U5 |
 | Receipt inválido (schema, digest, ZIP hostil, otro contenido) | `verify` BLOCKED; check `failure` | U3 (reusa pruebas del verificador) |
 | Receipt vencido (artifact expirado) o reemitido tras cambio de configuración | BLOCKED (`ARTIFACT_EXPIRED`, `CONFIG_CHANGED`) | U3 |
-| Receipt ajeno (otro repo, PR, scope, run o rama) | BLOCKED (`RECEIPT_STALE`, ids distintos) | U3, U4 |
+| Receipt ajeno (otro repo, PR, run o rama) | BLOCKED (`RECEIPT_STALE`, `REPO_ID_MISMATCH`, `PR_MISMATCH`) | U3, U4 |
+| Receipt de otro scope | BLOCKED (`RECEIPT_SCOPE`, `SCOPE_MISMATCH`) | U3, U5 |
+| Receipt revocado (PR de planes cerrado sin merge, o con un push posterior a la aprobación) | `plan-continuity` BLOCKED (condiciones 1–2) aunque la atestación siga existiendo | U5 |
 | Cambio de planes tras aprobar | condición 4 de U5 ⇒ BLOCKED | U5 |
 | Implementación sin autorización (sin trailer, tarea no aprobada, sin atestación) | `plan-continuity` BLOCKED; el ruleset impide el merge | U5, U6 |
 | Cambio del verificador desde el PR | el veredicto lo calcula el código de `main`; el PR es control plane ⇒ Environment humano | U3, U5, U6 |
 | Agente con capacidad de aprobación humana | `check-agent-isolation` BLOCKED ⇒ U2 y U4 se niegan; U0 verificado | U0, U2, U4 |
-| Continuidad válida | atestación sobre `H` + ancestro + documentos idénticos + tarea aprobada ⇒ PASS en dos tareas sucesivas sin nueva aprobación | U5, U6 |
+| Degradación de controles (Environment con `prevent_self_review` desactivado, bypass de administradores, otro revisor; revisión del workflow retirada) | BLOCKED (`check-environment`, `WORKFLOW_REVISION_UNKNOWN`) en atestación y continuidad | U3, U5 |
+| Commits posteriores legítimos dentro del alcance aprobado (continuidad válida) | atestación sobre `H` + ancestro + documentos idénticos + tarea aprobada ⇒ PASS en dos tareas sucesivas sin nueva aprobación | U5, U6 |
 
 ## Decisiones humanas requeridas
 
