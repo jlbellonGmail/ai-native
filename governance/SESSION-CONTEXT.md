@@ -4,16 +4,20 @@
 > `governance/history/SESSION-CONTEXT-HISTORY-2026-10-04.md`. Fuente de verdad del estado: este archivo, `governance/roadmaps/AI-NATIVE-V3-ROADMAP.md` y Git/GitHub.
 > Política del merge humano: `governance/security/HITL-MERGE-POLICY.md`. Frontera de secretos: `governance/security/SECRETS-BOUNDARY.md`.
 
-Actualizado: 2026-11-20 (`v4.0.1` publicada: tag anotado sobre `878322a` (merge de #175), release de GitHub publicada el 2026-11-03T23:57:26Z, workflow `Release` run 41742877489 `success`; verificación post-release de `v4.0.1` no registrada todavía. Sincronización `main` → `develop` en la PR de sync que reemplaza a #180).
+Actualizado: 2026-11-23 (`v4.0.2` (PATCH) publicada y verificada: tag anotado sobre `d08531e` (merge de #184), release 2026-11-23T01:13:51Z, `Release` run 45093125488 `success`, `verify-release` PASS; `v4.0.1` verificada contra su release publicada; sincronización `main` → `develop` en la PR de este registro).
 
 ```text
-STATUS: V4.0.1_RELEASED (PATCH sobre el tag consumido v4.0.0; tag sobre 878322a, release publicada; verificación post-release pendiente de registro); release anterior V3.4.3_RELEASED_AND_VERIFIED (PATCH, N-35)
+STATUS: V4.0.2_RELEASED_AND_VERIFIED (PATCH: avisos de Acceptance en sdd validate, #179, y remediación #184; tag sobre d08531e, release publicada y verificada); release anterior V4.0.1_RELEASED_AND_VERIFIED (verificación registrada 2026-11-23); V3.4.3_RELEASED_AND_VERIFIED (PATCH, N-35)
 INITIATIVE: CLOSED (N-02b); CLI_LIFECYCLE: CLOSED (v3.3.0)
-STABLE_BASELINE: v3.4.3 (tag sobre 7bfa2f0; digest sha256:12c15adc8db3d30559eb72e075eedc16b620b522dd9235696cb83617446cea7b)
+STABLE_BASELINE: v4.0.2 (tag anotado e9a171c sobre d08531e; digest sha256:959dfe18a890a4bc0bcf0812371ba244ed185166bc6560154234de63fc59a399)
 CONSUMED_TAG: v4.0.0 (tag anotado cf3059e sobre ced0969, creado por el humano; Release run 41563775024 FAIL en el build; sin release; no se mueve ni se reutiliza)
-PREVIOUS_BASELINE: v3.4.2 (tag sobre 30119d5, inmutable)
-MAIN_DEVELOP: la PR de sync (rama chore/sync-main-into-develop-v4.0.2, merge de main 878322a en develop 4ad8d77, que ya incluye #179) integra v4.0.1 en develop; pendiente de merge humano. Reemplaza a #180
+PREVIOUS_BASELINE: v4.0.1 (tag anotado 373700c sobre 878322a, inmutable); v3.4.3 (tag sobre 7bfa2f0)
+MAIN_DEVELOP: main = d08531e (v4.0.2). La PR chore/v4.0.2-post-release-sync -> develop trae main (11 commits; develop no tiene commits propios) y este registro; pendiente de merge humano
 ```
+
+**Release `v4.0.2` (PATCH), 2026-11-23:** #184 fusionada en `main` como `d08531e` (merge commit; árbol = `cebd5bf`, que difiere del SHA auditado `cad1053` solo en `.audit/**`; auditoría 90.50, 0 BLOCKER/CRITICAL/MAJOR); `pretag` READY; tag anotado `v4.0.2` (humano); `Release` run 45093125488 build/publish/verify success; release inmutable; `verify-release` PASS (33 checks); build local byte-idéntico al publicado; upgrade `v4.0.1` → `v4.0.2` READY en un consumidor temporal. Pilot offline Ubuntu en el push de `d08531e`: Docker exit 125 (N-26). Continuidad: Native Acceptance (#168) para `v4.1.0`. Detalle: `governance/versioning/V4.0.2-POST-RELEASE-VERIFICATION.md`; `v4.0.1`: `governance/versioning/V4.0.1-POST-RELEASE-VERIFICATION.md`.
+
+**Candidata `v4.0.2` (PATCH), 2026-11-22:** rama `release/v4.0.2` desde `develop` `8681756`, PR a `main`. Contenido: #179 (`sdd validate` avisa de spec sin criterios de aceptación y de requisitos sin tarea; exit code sin cambios), #181 (sync) y `CLI_VERSION v4.0.2`. Native Acceptance (#168) queda para `v4.1.0`. #183 fusionada en `main` como `5b3e9cf` (auditoría `7881266`: 89.25, `PASS_WITH_WARNINGS`), sin tag. Remediación previa al tag (N-45, N-46, N-47, F-002) en `release/v4.0.2-remediation`. Pendiente: auditoría PLATFORM del head de la remediación; merge humano con merge commit; `pretag.mjs` `READY`; tag `v4.0.2` (humano). Detalle: `governance/versioning/V4.0.2-PATCH.md`.
 
 **Candidata `v4.0.1` (PATCH), 2026-11-03:** rama `release/v4.0.1` desde `main` `ced0969`, PR #175 directa a `main` (como #169/#171/#174). `v4.0.0` falló porque ningún informe PLATFORM certificaba `ced0969` (los 30 `STALE` son históricos y esperables) y porque `ced0969` declaraba `CLI_VERSION v3.4.3`. Contenido:
 * chequeo previo al tag `runtime/release/pretag.mjs`;

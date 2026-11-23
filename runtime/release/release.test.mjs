@@ -318,7 +318,8 @@ test("CLI lifecycle (v3.3.0): the build refuses a CLI that does not declare the 
 test("N-16: the release build works for every tag release.yml accepts once the CLI declares it (v3.3.0, v3.3.1, v3.3.1-rc.1, v3.3.1-alpha.1), and for nothing else", () => {
   // a real clone of this tree: the CLI is changed and committed there, and the clone's own build.mjs builds that commit
   const clone = join(tmp(), "clone");
-  execFileSync("git", ["clone", "-q", "--local", repoRoot, clone], { encoding: "utf8" });
+  // --no-hardlinks: copy the objects, so the clone works when the repository and the temp dir are on different volumes (N-47)
+  execFileSync("git", ["clone", "-q", "--no-hardlinks", repoRoot, clone], { encoding: "utf8" });
   const cliFile = join(clone, "runtime", "cli", "ai-native.mjs");
   const original = readFileSync(cliFile, "utf8");
   const declare = (text) => {

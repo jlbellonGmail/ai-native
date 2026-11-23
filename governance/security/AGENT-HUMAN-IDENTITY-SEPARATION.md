@@ -8,35 +8,37 @@ Estado: **PROPUESTA. No implantada.** El Builder no ha creado usuarios Windows, 
 
 ## Diseño (sin gasto, sin segunda identidad GitHub, sin YubiKey, sin VM/contenedor/Linux)
 
+`<humano>` es la cuenta de Windows del propietario (su perfil, `C:\Users\<humano>`) y `<workspace>` la carpeta de trabajo compartida con el agente.
+
 ```text
-Usuario Windows ASUS       humano. Conserva keyring, gh, navegador, WSL2, claves.   Aprueba en GitHub.
+Usuario Windows <humano>   humano. Conserva keyring, gh, navegador, WSL2, claves.   Aprueba en GitHub.
 Usuario Windows ai-agent   estándar (no admin). Ejecuta TODOS los agentes.          Solo tokens de App.
 GitHub                     jlbellonGmail = única persona aprobadora
                            App ai-native-plan-approval = identidad técnica del agente (solo solicita)
 ```
 
-La frontera es la de Windows: el almacén de credenciales (Credential Manager/DPAPI) y el perfil `C:\Users\ASUS` no son legibles por otro usuario estándar.
+La frontera es la de Windows: el almacén de credenciales (Credential Manager/DPAPI) y el perfil del humano no son legibles por otro usuario estándar.
 
 ### Pasos (propietario; reversibles)
 
 1. **Crear el usuario** local estándar `ai-agent` (Configuración → Cuentas → Otros usuarios, o `net user ai-agent * /add` en terminal elevada). Sin pertenencia a Administradores; sin contraseña de administrador disponible para él (si UAC le pide credenciales de admin y las tiene, la frontera no existe).
-2. **ACL mínima**, solo sobre el área de trabajo: `icacls C:\Proyectos /grant ai-agent:(OI)(CI)M`. No conceder nada sobre `C:\Users\ASUS`. Aviso: Git puede rechazar repositorios con propietario distinto («dubious ownership»); resolver con `git config --global --add safe.directory <ruta>` en el perfil que lo necesite, no ampliando permisos.
-3. **Ejecutar los agentes solo como `ai-agent`**: Claude Code CLI, Claude Desktop, Codex CLI, Codex Desktop y OpenCode CLI se instalan e inician sesión *dentro* de esa cuenta (con su propia autenticación de proveedor LLM; no es una credencial de GitHub). Para escritorio, Cambio rápido de usuario; para CLI, `runas /user:%COMPUTERNAME%\ai-agent cmd` o una sesión propia. Ningún agente se lanza ya desde el perfil `ASUS`.
+2. **ACL mínima**, solo sobre el área de trabajo: `icacls <workspace> /grant ai-agent:(OI)(CI)M`. No conceder nada sobre `C:\Users\<humano>`. Aviso: Git puede rechazar repositorios con propietario distinto («dubious ownership»); resolver con `git config --global --add safe.directory <ruta>` en el perfil que lo necesite, no ampliando permisos.
+3. **Ejecutar los agentes solo como `ai-agent`**: Claude Code CLI, Claude Desktop, Codex CLI, Codex Desktop y OpenCode CLI se instalan e inician sesión *dentro* de esa cuenta (con su propia autenticación de proveedor LLM; no es una credencial de GitHub). Para escritorio, Cambio rápido de usuario; para CLI, `runas /user:%COMPUTERNAME%\ai-agent cmd` o una sesión propia. Ningún agente se lanza ya desde el perfil `<humano>`.
 4. **Credenciales GitHub del perfil del agente**: ninguna cuenta humana. `gh` sin sesión (o con otra cuenta que no sea `jlbellonGmail`), sin `GH_TOKEN`/`GITHUB_TOKEN`, sin credenciales `github` en Credential Manager. El agente obtiene tokens de instalación de las Apps técnicas (≤ 1 h). La clave privada de la App `ai-native-plan-approval` vive en el perfil del agente con ACL solo para `ai-agent` (`icacls <clave.pem> /inheritance:r /grant:r ai-agent:R`) y **nunca** en secrets del repositorio. Riesgo aceptado y acotado: quien tenga esa clave *es* la App, y la App no puede aprobar (ver `Actions: write` en el documento principal).
-5. **Verificar desde la sesión `ai-agent`**: `node runtime/gates/plan-approval.mjs check-agent-isolation` ⇒ `agent-isolation: PASS` (la sonda es detección, **no** aislamiento: ver abajo); `dir C:\Users\ASUS` ⇒ acceso denegado; `echo %GH_TOKEN%` vacío; `cmdkey /list` sin destinos `github`. Repetir tras cada instalación o actualización de una herramienta.
+5. **Verificar desde la sesión `ai-agent`**: `node runtime/gates/plan-approval.mjs check-agent-isolation` ⇒ `agent-isolation: PASS` (la sonda es detección, **no** aislamiento: ver abajo); `dir C:\Users\<humano>` ⇒ acceso denegado; `echo %GH_TOKEN%` vacío; `cmdkey /list` sin destinos `github`. Repetir tras cada instalación o actualización de una herramienta.
 6. **Aprobar solo desde el perfil humano**: GitHub → Actions → run → *Review deployments* → `ai-native-plan-approval`. Cualquier dispositivo vale mientras la credencial humana no esté al alcance del agente.
 
 ### Reversión
 
-`net user ai-agent /delete`, `icacls C:\Proyectos /remove ai-agent`, desinstalar/reinstalar herramientas en `ASUS`. Sin coste, sin servicios, sin mantenimiento más allá de actualizar las herramientas en dos perfiles.
+`net user ai-agent /delete`, `icacls <workspace> /remove ai-agent`, desinstalar/reinstalar herramientas en `<humano>`. Sin coste, sin servicios, sin mantenimiento más allá de actualizar las herramientas en dos perfiles.
 
 ## Qué cubre y qué no
 
 | Cubre | No cubre |
 |---|---|
-| Keyring/`gh`/Git Credential Manager del humano; tokens en variables de entorno de otro usuario; claves en `C:\Users\ASUS`; WSL2 del humano (la distro es por usuario de Windows) | Cuenta `ai-agent` con rol de administrador o con credenciales de admin a mano |
-| El agente no puede leer la sesión del navegador del humano (perfil distinto) | **Herramientas de control de navegador/escritorio** (p. ej. extensiones o «computer use») ejecutadas en la sesión del humano: pueden pulsar «Approve». No usarlas en la sesión `ASUS` mientras haya una aprobación pendiente |
-| Detección de los caminos habituales con `check-agent-isolation` (nombres de variables, login de `gh`, destinos de credenciales; **detección, no aislamiento**) | Secretos que el humano deje en `C:\Proyectos` (carpeta compartida con el agente) o en WSL2 si un agente se lanza dentro de la distro del humano (`/mnt/c/Users/ASUS`) |
+| Keyring/`gh`/Git Credential Manager del humano; tokens en variables de entorno de otro usuario; claves en `C:\Users\<humano>`; WSL2 del humano (la distro es por usuario de Windows) | Cuenta `ai-agent` con rol de administrador o con credenciales de admin a mano |
+| El agente no puede leer la sesión del navegador del humano (perfil distinto) | **Herramientas de control de navegador/escritorio** (p. ej. extensiones o «computer use») ejecutadas en la sesión del humano: pueden pulsar «Approve». No usarlas en la sesión `<humano>` mientras haya una aprobación pendiente |
+| Detección de los caminos habituales con `check-agent-isolation` (nombres de variables, login de `gh`, destinos de credenciales; **detección, no aislamiento**) | Secretos que el humano deje en `<workspace>` (carpeta compartida con el agente) o en WSL2 si un agente se lanza dentro de la distro del humano (`/mnt/c/Users/<humano>`) |
 | Elimina la necesidad de una segunda identidad humana de GitHub | Malware/escalada local en el mismo equipo; un humano que entregue su token al agente |
 
 ## DETECCIÓN NO ES AISLAMIENTO
