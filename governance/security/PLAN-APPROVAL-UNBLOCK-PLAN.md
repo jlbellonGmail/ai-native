@@ -300,7 +300,7 @@ se evalúa con el mapa de `main` y sólo rige después de llegar a `main`.
 
 **Clasificación por ruta, con denegación por defecto.** Cada ruta cambiada del
 diff `base...head` (añadida, modificada, borrada, y ambos lados de un renombre)
-recibe exactamente una clase:
+recibe una o más clases (sin clase ⇒ desconocida):
 
 | Clase de ruta | Fuente | Exigencia |
 |---|---|---|
