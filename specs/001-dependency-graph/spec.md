@@ -8,7 +8,8 @@ autonomy: full
 
 Provide one versioned, declarative source of truth for public modules, contracts
 and their dependencies so AI-NATIVE can resolve provider/consumer impact without
-LLM inference.
+LLM inference. Base: AI-NATIVE v4.0.2; no graph capability exists there, so
+nothing is duplicated. Feature 002 consumes the graph for cross acceptance.
 
 ## Definitions
 
