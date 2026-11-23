@@ -1,6 +1,6 @@
 # AI-NATIVE v4.1.0 (Native Acceptance) execution state
 
-STATUS: `AWAITING_HUMAN_PLAN_APPROVAL`
+STATUS: `BLOCKED` (plan approval circuit incomplete: B2–B5; corrected plans and unblock proposal ready for human decision)
 WORKTREE: `<workspace>/ai-native-acc41`
 BRANCH: `feature/acceptance-v4` (PR #168, draft, base `develop`)
 BASE: `develop` / `15548c122c221cfe0605247fc7d14c3e92baa622` (merge of #185;
@@ -47,15 +47,39 @@ v4.0.2 released and verified, tag `v4.0.2` on `d08531e`)
   (002 RF-29..RF-33, RF-9/15/16/25/27/31 rewrites; 003 RF-1/18/19). The final
   text has not had a fourth review; the human plan approval is the gate.
 
+## 2026-11-23 second update: HITL preparation found the circuit incomplete
+
+- Candidate `504af3e` (CI 11/11 PASS) had a fourth isolated, read-only review
+  (not runtime-attested): CHANGES_REQUESTED, 1 HIGH (the downgrade detector
+  was described as BASE-platform but `ci.yml` runs candidate code on
+  `pull_request`; `develop` has no human-only gate), 2 MEDIUM (RF-30 vs
+  legitimate spec/doc changes; v4.0.1/v4.0.2 fixtures missing), 2 LOW
+  (injectable acceptance stage; N/A approval timing).
+- Approval circuit check: dispatch needs the App key and has no tooling (B3);
+  no component consumes the receipt (B4); continuity from the approved SHA to
+  implementation commits is not supported (B5); `check-agent-isolation` is
+  BLOCKED in the agent session (B2); `develop` has no ruleset or protection.
+- Owner instruction (strict path): correct B1 in documentation only and prepare
+  a coordinated B2–B5 proposal; no implementation of either.
+- Applied: 002 RF-25 (trusted verdict path: `main` code via `workflow_run`,
+  read-only job without secrets on candidate data, `ai-native-trust` publishes,
+  pending mechanisms listed and BLOCKED until they exist), RF-30/RF-34
+  (non-SUT path class without global exemption), RF-31 provenance, RF-35 (N/A
+  and DOWNGRADE pending until the human Environment approval for the exact
+  SHA); 003 RF-11/RF-13 (any admitted source), RF-19 (platform-owned stage, no
+  callback), matrix re-checked for v4.0.1/v4.0.2 (lock schema blob
+  `d67779957b93…`, protocol 1, upgrade engine), T3/T4 fixtures for the four
+  releases. Unblock proposal: `governance/security/PLAN-APPROVAL-UNBLOCK-PLAN.md`.
+
 ## Next permitted action
 
-Human plan approval through the real mechanism
-(`governance/security/PLAN-APPROVAL-RECEIPT.md`): a `workflow_dispatch` of
-`plan-approval-receipt.yml` on `main` by the `ai-native-plan-approval` App with
-`scope_id=acceptance-v4-plans-v1`, `pr_number=168` and the pushed head SHA, then
-the owner's approval in the `ai-native-plan-approval` Environment. Only after a
-receipt exists and verifies may implementation start, one task at a time in
-dependency order 001 -> 002 -> 003.
+Human actions, in order (`PLAN-APPROVAL-UNBLOCK-PLAN.md`, section «Arranque»):
+U0 identity separation executed and verified by the owner; decision D-0 on the
+unblock plan, recorded by the owner from the human profile; U1 `develop`
+ruleset. No receipt is dispatched for `acceptance-v4-plans-v1` until U2–U6 are
+delivered to `main`; only then the receipt for the #168 head, the owner's
+Environment approval, attestation and consumption allow implementation, one
+task at a time in dependency order 001 -> 002 -> 003.
 
 ## Restrictions retained
 

@@ -60,7 +60,7 @@ RF-10. IF a source lock/version/protocol is absent, malformed, unknown, future,
 or outside the admitted matrix, THEN THE SYSTEM SHALL reject it before any
 consumer file, index or cache state is modified.
 
-RF-11. WHEN upgrading an admitted v3.x consumer, THE SYSTEM SHALL preserve
+RF-11. WHEN upgrading a consumer from any admitted source release (RF-9), THE SYSTEM SHALL preserve
 project-owned files byte-for-byte, preserve existing managed-file edits according
 to the current keep-local policy, and report every preserved collision or drift.
 
@@ -69,8 +69,8 @@ fails, THEN THE SYSTEM SHALL restore the pre-upgrade working tree/index state or
 report `ROLLBACK_INCOMPLETE` with the exact remaining paths; it shall never
 report READY after partial restoration.
 
-RF-13. WHEN the same verified v4 bundle is applied twice to an unchanged
-admitted v3.x fixture, THE SYSTEM SHALL produce the same managed state on the
+RF-13. WHEN the same verified v4.1.0 bundle is applied twice to an unchanged
+fixture of any admitted source release, THE SYSTEM SHALL produce the same managed state on the
 second run without deleting project-owned files or creating duplicate artifacts.
 
 RF-14. THE SYSTEM SHALL model the GI Regions -> Locales dependency as PostgreSQL
@@ -92,7 +92,8 @@ SHALL NOT describe the latter as HTTP-socket E2E unless a real socket is used.
 RF-18. THE SYSTEM SHALL classify each feature as acceptance REQUIRED when its
 spec declares acceptance criteria, or NOT_APPLICABLE only through an explicit
 `acceptance: not-applicable` declaration with a justification citing its
-requirements, which forces `human_gate: required`. A feature not listed in the
+requirements, which forces `human_gate: required` and is pending approval
+under 002 RF-35. A feature not listed in the
 legacy cutoff recorded by the upgrade (the feature slugs existing at upgrade
 time) and having neither SHALL be BLOCKED at closure and review regardless of
 level; `sdd validate` at level `full` SHALL fail for it, while level `normal`
@@ -107,8 +108,14 @@ BLOCKED, STALE or NOT_RUN), THEN `/sdd-implement-all` SHALL NOT return DONE,
 the review-ledger validation SHALL NOT be PASS and the review outcome SHALL NOT
 be APPROVED; a free-text `--command` validation run SHALL NOT count toward
 acceptance. Feature acceptance runs once per feature after the task loop and
-before the review loop. Correcting the
-defect and re-running SHALL be able to restore PASS.
+before the review loop. The stage SHALL be a platform-owned step that invokes
+the 002 runner itself and reads the result from the acceptance ledger; it
+SHALL NOT be an injectable callback or agent hook, and `/sdd-implement-all`,
+`validationOf` and `deriveReviewOutcome` SHALL derive acceptance status from
+the runner-written ledger entry for the evaluated revision (local) or from the
+trusted CI verdict (merge, 002 RF-31), never from a return value supplied by an
+agent, a callback or a test double. A stage result without such an entry SHALL
+be BLOCKED. Correcting the defect and re-running SHALL be able to restore PASS.
 
 RF-20. THE SYSTEM SHALL include in the independent review packet the acceptance
 plan, applicability matrix and N/A justifications, DOWNGRADE findings,
@@ -142,7 +149,9 @@ status are truthful.
   acceptance phase wired into existing commands with no new slash command, and
   the REQUIRED / NOT_APPLICABLE / missing classification per level.
 - AC-2 (RF-3, RF-19): FAIL, BLOCKED, STALE and NOT_RUN acceptance each prevent
-  DONE and APPROVED; a `--command "node -e 0"` run does not count.
+  DONE and APPROVED; a `--command "node -e 0"` run does not count; an injected
+  stage, callback or agent returning PASS without a runner-written ledger entry
+  for the evaluated revision is BLOCKED.
 - AC-3 (RF-20): the review packet of a fixture feature contains every
   acceptance element bound to the reviewed revision.
 - AC-4 (RF-21): the end-to-end consumer evidence shows all ten observations and
@@ -151,5 +160,7 @@ status are truthful.
   affected consumer once; the docs make no release claim; the GI pilot proves
   the PostgreSQL/FK behaviors with simulated and real evidence separated; the
   final review is attested or REVIEW_PENDING.
-- AC-5 (RF-4, RF-8 to RF-13): per-release upgrade fixtures prove admission,
-  rejection before writes, preservation, rollback and idempotence.
+- AC-5 (RF-4, RF-8 to RF-13): individual fixtures for v4.0.1, v4.0.2, v3.4.2
+  and v3.4.3 each prove admission, preservation, rollback and idempotence;
+  v4.0.0, v3.4.1 and unknown/malformed sources are rejected before writes; the
+  v3.4.x paths report the MAJOR crossing.

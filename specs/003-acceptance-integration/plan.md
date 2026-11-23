@@ -11,10 +11,13 @@ branch-protection semantics or adding a slash command. Reuse the upgrade transac
 review ledger. Run the GI pilot from an isolated source copy with its source SHA
 explicitly recorded, never in its parent factory Git identity.
 
-## Inspected v3 compatibility matrix
+## Inspected compatibility matrix
 
 The matrix below is derived from local annotated tags, not documentation claims.
-For `v3.3.0` through `v3.4.3`, `contracts/lock.schema.json` has blob
+Re-checked 2026-11-23 at tags `v4.0.1`, `v4.0.2`, `v3.4.2` and `v3.4.3`:
+`contracts/lock.schema.json` blob `d67779957b93…`, `contracts/bootstrap-protocol.json`
+protocol `1` and `runtime/bootstrap/upgrade.mjs` present in all four. For
+`v3.3.0` through `v3.4.3`, `contracts/lock.schema.json` has blob
 `d67779957b93…`, `contracts/bootstrap-protocol.json` declares protocol `1`, and
 the release tree has `runtime/bootstrap/upgrade.mjs`. `v3.4.2` and `v3.4.3` each
 declare CLI protocol `1` with `adopt`, `upgrade`, `detach` capabilities. Releases
@@ -31,8 +34,8 @@ upgrade engine.
 | `v3.4.3` | Same observed lock family; CLI `v3.4.3`, protocol 1, includes `upgrade` | Admitted (MAJOR crossing reported) | Individual fixture generated from v3.4.3 lock/protocol artifacts; preservation, failure rollback and second-run idempotence. |
 | Unknown/future/malformed | Not in an exact matrix row | Rejected | Negative fixtures assert no filesystem, index or cache mutation. |
 
-The equal schema/protocol family does not itself imply admission. The initial v4
-release explicitly supports the two latest release fixtures requested here;
+The equal schema/protocol family does not itself imply admission. v4.1.0
+explicitly admits exactly the four fixture-backed releases above;
 expanding to `v3.3.0`–`v3.4.1` requires fixtures and approval, not an implicit
 range check.
 
@@ -41,11 +44,11 @@ range check.
 | Requirement | Change and discarded alternative |
 |---|---|
 | RF-1, RF-18 | Update `core/commands/{sdd-spec,sdd-tasks,sdd-implement-all,sdd-validate}.md` bodies and their projections; add `sdd acceptance` to `sdd-cli.mjs`; add the level-`full` error next to the v4.0.2 warnings in `sdd-workflow.mjs`. Discard a new `/acceptance` slash command (G1: no separate request) and a standalone script. |
-| RF-19 | Change points: `implement-all.mjs` gains a feature-level `acceptance()` stage after the task loop and before the review loop (the per-task `accept(task)` is unchanged); `review-ledger.mjs` `validationOf` and `review status` require acceptance PASS from the acceptance ledger for REQUIRED features and ignore free-text `--command` runs for acceptance; `independent-review.mjs` `deriveReviewOutcome` takes acceptance status as an explicit input. Discard advisory acceptance results. |
+| RF-19 | Change points: `implement-all.mjs` gains a feature-level acceptance stage after the task loop and before the review loop that imports and calls the 002 runner directly and then re-reads the acceptance ledger; it is not part of the injected `agents` object, so a test double or agent cannot supply its result (the per-task `accept(task)` is unchanged and never counts as feature acceptance); tests inject a stub returning PASS and assert BLOCKED without a ledger entry; `review-ledger.mjs` `validationOf` and `review status` require acceptance PASS from the acceptance ledger for REQUIRED features and ignore free-text `--command` runs for acceptance; `independent-review.mjs` `deriveReviewOutcome` takes acceptance status as an explicit input. Discard advisory acceptance results. |
 | RF-20 | Extend the existing review-ledger packet; discard a second review channel. |
 | RF-21 | Disposable consumer from the candidate bundle via `ai-native init`, a small product with a seeded defect, a normal `/sdd-*` feature with criteria, then the fix; plus scripted bypass attempts. Evidence kept under `governance/execution/current/`. Discard proving the circuit by instructing the agent to run tests. |
 | RF-2, RF-3 | Reuse graph/runner selection and existing gates; discard unconditional all-consumer runs and a second governance system. |
-| RF-4, RF-8, RF-9, RF-10, RF-11, RF-12, RF-13 | Add matrix validation before the current verified-bundle upgrade transaction. Use individual v3.4.2/v3.4.3 fixtures, project-owned sentinels, managed drift, Git/index snapshots, injected failures and second-run comparison. Discard version-prefix admission, overwriting consumer-owned files, broad filesystem snapshots and running upgrade in this factory. |
+| RF-4, RF-8, RF-9, RF-10, RF-11, RF-12, RF-13 | Add matrix validation before the current verified-bundle upgrade transaction. Use individual v4.0.1, v4.0.2, v3.4.2 and v3.4.3 fixtures, project-owned sentinels, managed drift, Git/index snapshots, injected failures and second-run comparison. Discard version-prefix admission, overwriting consumer-owned files, broad filesystem snapshots and running upgrade in this factory. |
 | RF-5 | Targeted docs/versioning candidate handoff; discard release/tag publication. |
 | RF-6, RF-14, RF-15, RF-16, RF-17 | Disposable GI copy, pinned source and PostgreSQL fixture. Model Regions -> Locales as same-database SQL/FK consumption; verify persistence/public reads, `locale_id`, valid/invalid references and repeat runs. Mark mocks/in-process separately from real PostgreSQL integration and from socket E2E. Discard an invented Regions HTTP client and `gi_dev.py` because its exit code is not a gate. |
 | RF-7 | Existing review ledger plus Claude attester; discard self-review or an OpenCode subagent as approval. |
@@ -72,8 +75,10 @@ and a generated proposal the human reviews.
 
 ## Migration, rollout and rollback
 
-Generate hermetic fixtures from the tagged v3.4.2 and v3.4.3 lock/protocol
-artifacts, retaining each source version rather than relabelling one fixture.
+Generate hermetic fixtures from the published v4.0.1 and v4.0.2 release
+bundles and from the tagged v3.4.2 and v3.4.3 lock/protocol artifacts, one per
+source version, never relabelling one fixture; each fixture records its source
+tag and the observed lock-schema blob and protocol so the matrix is re-checkable.
 Before/after compare project-owned sentinels, managed drift, Git status/index and
 collision reports. Force failures after every write boundary through existing or
 new test seams; assert `ROLLED_BACK` byte identity or explicit

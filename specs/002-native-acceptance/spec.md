@@ -48,6 +48,14 @@ trusted-base control-plane loader (`runtime/gates/control-plane.mjs`).
   (Node permission model flags for filesystem and child processes, verified
   from the spawned process arguments) or `container` (OCI container with
   `--network none` or a human-approved loopback service network).
+* **trusted platform revision**: in this repository, the commit of the default
+  branch `main` (protected by its ruleset and the merge gate) whose code and
+  configuration run a governance check; in a consumer, the platform commit
+  pinned by the lock on the consumer's BASE branch. Candidate code is never a
+  trusted platform revision for its own change.
+* **non-SUT path class**: the contract-declared, explicit list of
+  specification, documentation and governance paths that are not inputs of the
+  system under test (RF-34).
 * **observed case**: a case ID read from the runner's structured result output
   (not from the exit code alone) with its own pass/fail/skip status.
 
@@ -172,20 +180,35 @@ matched to the plan, THEN THE SYSTEM SHALL report BLOCKED regardless of exit
 code. A command such as `node -e 0`, `true` or `exit 0` therefore cannot yield
 PASS; an explicit denylist of no-op commands is kept only as defense in depth.
 
-RF-25. THE SYSTEM SHALL evaluate acceptance governance from the trusted BASE
-platform in CI (as the existing HITL derivation does), comparing the BASE and
-candidate validation contract, plan and spec acceptance section. It SHALL force
+RF-25. THE SYSTEM SHALL evaluate acceptance governance only with code and
+configuration of the trusted platform revision, comparing the BASE and
+candidate validation contract, plan and spec acceptance section. The candidate
+SHALL be read only as data (Git objects or API contents of the exact head SHA,
+size-bounded, parsed as JSON/Markdown, never executed, imported, installed or
+checked out into the working tree of the trusted code); the job that reads
+candidate data SHALL hold no secret and only read permissions; the verdict
+SHALL be published by a separate step under an identity the candidate cannot
+use, bound to the head SHA; and a candidate change to the detector, its
+workflow, `runtime/policy/hitl.mjs` or the gates configuration SHALL NOT change
+the verdict on that same change. A missing, failed, unauthenticated or
+other-SHA verdict SHALL be BLOCKED. The `ci.yml` HITL derivation, which runs
+candidate code, is early feedback only and never this verdict. It SHALL force
 `human_gate: required` when the change creates or modifies the validation
 contract, declares any `NOT_APPLICABLE` category or feature on an acceptance
 REQUIRED feature, or contains a DOWNGRADE: a removed or renamed case, a lowered
 mandatory flag, a removed AC or AC mapping, a changed runner executable, argv,
 format or cwd, a lowered coverage minimum, a weaker isolation tier, a widened
 network or environment allowlist, a longer timeout, or a changed expected result
-or dataset of an existing case, or an addition to the consumer's legacy
-acceptance cutoff (feature 003 RF-18). Every such finding SHALL be listed in the review
-packet and the evidence, and SHALL be approved only through the existing
-human-only Environment approval of the merge gate, never by the Builder,
-the reviewer agent or a file the agent can write.
+or dataset of an existing case, an addition to the consumer's legacy
+acceptance cutoff (feature 003 RF-18), or an addition to or widening of the
+non-SUT path class (RF-34). Every such finding SHALL be listed in the review
+packet and the evidence, and SHALL be approved only through a human-only GitHub
+Environment approval bound to the head SHA, given by the pinned human reviewer
+from an identity the agents cannot use, never by the Builder, the reviewer
+agent, the requesting App or a file the agent can write. Until that trusted
+verdict path, its required check on every protected target branch and the
+human/agent identity separation exist, RF-25 SHALL be reported BLOCKED, never
+as satisfied by the `ci.yml` derivation.
 
 RF-26. THE SYSTEM SHALL render a manual acceptance procedure from the same
 acceptance plan: glossary and naming, prerequisites, environment setup, dataset
@@ -224,7 +247,8 @@ evidence whose `sourceRevision` equals the evaluated revision. Fingerprint-based
 reuse (RF-6, RF-11) SHALL be limited to cross-acceptance obligations of
 consumers not affected by the change and to impact selection; each case's input
 set SHALL include its declared SUT paths, and a changed path of the feature not
-covered by any case's inputs SHALL be BLOCKED.
+covered by any case's inputs and not in the non-SUT path class (RF-34) SHALL be
+BLOCKED.
 
 RF-31. THE SYSTEM SHALL write local acceptance evidence only from the platform
 runner into the append-only ledger under `<git-common-dir>/ai-native/acceptance/`,
@@ -232,12 +256,14 @@ as the review ledger does for validation runs; worktree reports are renderings
 and are never read as evidence, and an entry whose digest chain does not verify
 SHALL be BLOCKED. Because code under test may share the runner's OS rights, the
 local ledger is circuit evidence only: the evidence that closes a REQUIRED
-feature for merge SHALL come from CI on the evaluated commit, with the BASE
-platform's runner in a fresh checkout, where the cases execute at the
+feature for merge SHALL come from CI on the evaluated commit, with the trusted
+platform revision's runner in a fresh checkout, where the cases execute at the
 `container` tier (or `node-permission` when the code under test cannot write
 outside its output directory) and a separate job, in which no code under test
-runs, derives and publishes the result from the raw structured-output artifact,
-bound to that commit and run ID.
+runs and which follows the RF-25 provenance rules, verifies that the producing
+run used a registered workflow file, the expected event and the evaluated head
+SHA, then derives and publishes the result from the raw structured-output
+artifact read as size-bounded data, bound to that commit and run ID.
 
 RF-32. THE SYSTEM SHALL require, for each AC, at least one case whose expected
 result is a rejection/failure, or a recorded seeded-failure run that shows the
@@ -246,6 +272,30 @@ case can fail; an AC with only vacuously passing cases SHALL be BLOCKED.
 RF-33. THE SYSTEM SHALL require every mandatory case to declare a minimum
 isolation tier; running it at a lower tier SHALL be BLOCKED and lowering the
 declared minimum is a DOWNGRADE (RF-25).
+
+RF-34. THE SYSTEM SHALL let the validation contract declare a non-SUT path
+class as explicit globs rooted under `specs/`, `docs/`, `governance/` or
+`knowledge/`, or as single named Markdown files. A changed path in that class
+SHALL NOT trigger the RF-30 uncovered-path BLOCKED. The plan validator SHALL
+reject an entry that matches every path or a whole top-level directory outside
+those roots (for example `**`, `*`, `src/**`), or that matches any declared SUT
+input path, runner executable or argv path, dataset, the validation contract,
+an acceptance plan or a path under `.github/`, `runtime/`, `contracts/`,
+`core/` or `profiles/`. A path outside the class and outside every case's
+inputs stays BLOCKED; there is no global permission.
+
+RF-35. THE SYSTEM SHALL treat every `NOT_APPLICABLE` category or feature
+declaration (RF-20, 003 RF-18), and every DOWNGRADE (RF-25), as
+`PENDING_APPROVAL` until approved. A pending item is reported in the feature
+status, the review packet and the traceability report; it does not by itself
+block `DONE` or `REVIEW_PENDING`, but it SHALL block merge closure and SHALL
+keep the review outcome from being presented as approved for merge. Approval is
+valid only as the RF-25 human-only Environment approval for the exact head SHA
+whose plan contains that item, and it binds the item's justification digest;
+any later change to the item, its justification or the plan's applicability
+matrix returns it to `PENDING_APPROVAL`. The Builder, the reviewer agent and
+any App SHALL NOT approve it, and no file in the repository records it as
+approved.
 
 ## Non-goals
 
@@ -275,7 +325,10 @@ handling, critical-configuration BLOCKED, and unrelated-revision retention.
   mandatory case and an unknown observed ID are BLOCKED; a real failing case is
   FAIL; all mandatory cases passing is PASS.
 - AC-4 (RF-25): each DOWNGRADE kind is detected against the BASE plan/contract,
-  forces `human_gate: required` and appears in the review packet.
+  forces `human_gate: required` and appears in the review packet; a candidate
+  that edits the detector, its workflow, `hitl.mjs` or the gates configuration
+  still receives the trusted revision's verdict; a missing or other-SHA verdict
+  is BLOCKED; the candidate is never executed by the verdict job.
 - AC-5 (RF-26, RF-27): the rendered manual contains every required field per
   case and the parity check fails on any runner/manual divergence.
 - AC-6 (RF-28, RF-29): the traceability report is complete for a fixture
@@ -291,3 +344,11 @@ handling, critical-configuration BLOCKED, and unrelated-revision retention.
 - AC-9 (RF-31): a ledger entry or result file written by code under test does
   not close a feature; only the result derived by the separate CI job from the
   raw output of the evaluated commit does.
+- AC-10 (RF-30, RF-34): a change only to a declared non-SUT path closes; an
+  undeclared changed path is BLOCKED; `**`, a whole source root, a SUT input or
+  a contract/plan path in the class is rejected; widening the class is a
+  DOWNGRADE.
+- AC-11 (RF-35): a pending N/A or DOWNGRADE is reported and allows `DONE` and
+  `REVIEW_PENDING`, blocks merge closure, is cleared only by the Environment
+  approval for the exact head SHA, and returns to pending after its
+  justification changes.

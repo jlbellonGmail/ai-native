@@ -22,6 +22,11 @@ The trusted `develop` control-plane configuration includes `contracts/**`, so
 (`governance/security/PLAN-APPROVAL-RECEIPT.md`). No task checkbox may be marked
 done before a verified receipt exists.
 
+As of 2026-11-23 that receipt cannot be issued or consumed safely (dispatch
+tooling, consumer, continuity and human/agent separation are missing); the
+prerequisites are proposed in `governance/security/PLAN-APPROVAL-UNBLOCK-PLAN.md`
+and the line is `BLOCKED` until they are delivered.
+
 ## Completion conditions
 
 All feature tasks done with current validation evidence; G1–G6 compliance
