@@ -1,36 +1,37 @@
-# AI-NATIVE v4.0.2 — PATCH Candidate
+# AI-NATIVE v4.0.2 — Released and Verified
 
-Prepared on `release/v4.0.2` from `develop` `8681756` (merge of #181) and merged into `main` by #183 as `5b3e9cf`; pre-tag remediation in PR #184 (`release/v4.0.2-remediation`); not tagged, not released. Detail:
-`governance/versioning/V4.0.2-PATCH.md`.
+Merged into `main` by #183 (`5b3e9cf`) and #184 (`d08531e`, merge commit), tagged `v4.0.2` and released (GitHub release published 2026-11-23T01:13:51Z, Release run 45093125488 success). Detail:
+`governance/versioning/V4.0.2-PATCH.md`; post-release evidence: `governance/versioning/V4.0.2-POST-RELEASE-VERIFICATION.md`.
 
 
 ```text
 ROADMAP: AI-NATIVE V3 platform line, v4 (PATCH)
-STATE: V4.0.2_CANDIDATE (PR #183 merged into main as 5b3e9cf, not tagged; pre-tag remediation of N-45, N-46, N-47, F-002 on release/v4.0.2-remediation)
-CONTENT: #179 sdd validate acceptance warnings (spec without acceptance criteria, requirement without task; exit code unchanged); #181 main -> develop sync; CLI_VERSION v4.0.2
+STATE: V4.0.2_RELEASED_AND_VERIFIED
+CONTENT: #179 sdd validate acceptance warnings (exit code unchanged); #184 pre-tag remediation (N-45, N-46, N-47, F-002, N-48); CLI_VERSION v4.0.2
 CONSUMER DELTA: 4 bundle files + platform.json; bootstrap identical; no migration (measured detail: governance/versioning/V4.0.2-PATCH.md, Delta de consumidor)
 EXCLUDED: Native Acceptance (#168) -> v4.1.0
-AUDIT: 7881266 89.25 (PASS_WITH_WARNINGS, tolerance); the remediation head needs a new independent audit
-PENDING: independent PLATFORM audit of the remediation head / remote CI / human merge to main (merge commit) / pretag READY / tag v4.0.2 (human) / release verification / main -> develop sync
-v4.0.2 TAG / RELEASE: NOT CREATED / NOT PUBLISHED
+AUDIT: cad1053 90.50 (release-gate PASS_WITH_WARNINGS: historical STALE only); release SHA d08531e has the tree of cebd5bf (cad1053 + .audit/** only)
+RELEASE: tag v4.0.2 (annotated e9a171c) on d08531e; digest sha256:959dfe18a890a4bc0bcf0812371ba244ed185166bc6560154234de63fc59a399; verify-release PASS (33); local rebuild byte-identical; upgrade v4.0.1 -> v4.0.2 READY
+PENDING: human merge of the main -> develop sync PR that carries this record
+v4.0.2 TAG / RELEASE: annotated tag on d08531e / PUBLISHED
 ```
 
 
-Current release: v4.0.1, below.
+Previous release: v4.0.1, below.
 
-# AI-NATIVE v4.0.1 — Released
+# AI-NATIVE v4.0.1 — Released and Verified
 
-Prepared on `release/v4.0.1` from `main` `ced0969`, PR #175 to `main`; merged as `878322a`, tagged `v4.0.1` and released (GitHub release published 2026-11-03T23:57:26Z, Release run 41742877489 success). Post-release verification not yet recorded. Detail:
+Prepared on `release/v4.0.1` from `main` `ced0969`, PR #175 to `main`; merged as `878322a`, tagged `v4.0.1` and released (GitHub release published 2026-11-03T23:57:26Z, Release run 41742877489 success). Post-release verification recorded 2026-11-23. Detail:
 `governance/versioning/V4.0.1-PATCH.md`.
 
 ```text
 ROADMAP: AI-NATIVE V3 platform line, v4 (tag v4.0.0 created by the human; content is MINOR by VERSIONING-POLICY; v4 recorded as a human exception, roadmap D5, N-38)
-STATE: V4.0.1_RELEASED (post-release verification not recorded)
+STATE: V4.0.1_RELEASED_AND_VERIFIED (governance/versioning/V4.0.1-POST-RELEASE-VERIFICATION.md)
 CONSUMED TAG: v4.0.0 on ced0969 (Release run 41563775024: build FAIL, no current PLATFORM report + CLI_VERSION v3.4.3); no release; never moved
 CONTENT: pretag.mjs (pre-tag readiness check); CLI_VERSION v4.0.1; N-36 trusted revision r2-ced0969cf38b (human-authorised) + LF renormalization + drift test; N-37, N-39 docs; N-41 fixture out of the bundle
 AUDIT: c99ed8f 87.75 (release-gate FAIL); b43b5d6 88.50 (PASS_WITH_WARNINGS, tolerance); after it N-42, N-38, N-39 line fixed; the final frozen head needs a new independent audit
 OPEN (human): N-40 / G5 human-agent separation (the agent process can approve Environments as the owner)
-PENDING: v4.0.1 post-release verification record (the main -> develop sync PR #181 is merged as 8681756)
+PENDING: none (post-release verification recorded 2026-11-23; main -> develop sync #181 merged as 8681756)
 v4.0.1 TAG / RELEASE: annotated tag on 878322a / PUBLISHED
 ```
 
