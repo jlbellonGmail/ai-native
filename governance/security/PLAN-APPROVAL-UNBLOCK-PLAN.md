@@ -129,6 +129,17 @@ cualquier proceso de `ai-agent` puede leer su clave. Recomendación: esquema
 mínimo hasta cerrar U6; decidir D-2 entonces con estas cinco condiciones
 verificadas.
 
+| Criterio | A: agente aislado sin escritura | B: agente aislado con `ai-native-builder` |
+|---|---|---|
+| Viabilidad hoy | sí (sólo U0) | no hasta U1 y U6; técnicamente viable en GitHub (una App con `contents: write` empuja ramas y con `pull_requests: write` abre PR) |
+| Permisos | ninguno en GitHub | `contents: write`, `pull_requests: write`, `metadata: read`; nunca `workflows`, `actions`, `administration`, `environments` |
+| Puede aprobar o cambiar protecciones | no | no (no es revisora ni administradora; verificable con `gh api`) |
+| Fricción | el humano importa bundles y empuja cada PR | el agente empuja y abre PR; el humano sólo revisa, aprueba y mergea |
+| Riesgo residual | ninguno nuevo | empuje a ramas de PR abiertas (invalida, no falsifica), cierre/edición de PR, clave legible por procesos `ai-agent` |
+| Cambios de contrato | ninguno | enmendar `AGENT-HUMAN-IDENTITY-SEPARATION.md` (segunda identidad técnica del agente) y la tabla de identidades de este plan; opcionalmente activar `prevent_self_review` en `ai-native-human-review` (el que empuja ya no sería el propietario: refuerza, no rebaja); `PLAN-APPROVAL-COORDINATOR-CONTRACT.md` no cambia |
+
+Ninguna de las dos se adopta en esta tarea; la elección es D-2.
+
 **Impacto sobre el entorno actual.** Esta sesión de agente (perfil humano, con
 credenciales del propietario) deja de ser un lugar válido para agentes. El
 agente deja de poder hacer `git push`, abrir PR o comentar en GitHub. Entrega

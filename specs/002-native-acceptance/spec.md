@@ -56,6 +56,20 @@ trusted-base control-plane loader (`runtime/gates/control-plane.mjs`).
 * **non-SUT path class**: the contract-declared, explicit list of
   specification, documentation and governance paths that are not inputs of the
   system under test (RF-34).
+* **completion semantics** (existing statuses of `runtime/circuit`, no new
+  ones): a **task is finished** when, within its convergence budget,
+  implementation, its test and its per-task `accept(task)` done-when check pass
+  and `implement-all` appends it to `completed`; a task's own pass never
+  depends on feature acceptance. The **feature is completed** only when
+  `implement-all` returns `DONE` (all tasks finished, feature-level acceptance
+  PASS at the evaluated revision per 003 RF-19, review `APPROVED`) and the
+  Coordinator returns `DONE` (`human_gate: none`) or `READY_FOR_HITL` followed
+  by the human gate. The **feature is accepted** only when its consolidated
+  acceptance is PASS at the evaluated revision with every N/A and DOWNGRADE
+  approved (RF-35) and, for merge, the trusted CI verdict (RF-31) is PASS.
+  Acceptance FAIL ⇒ `CHANGES_REQUESTED` path (never `DONE`); BLOCKED, STALE or
+  NOT_RUN ⇒ `BLOCKED`; only a pending N/A or DOWNGRADE approval ⇒
+  `NEEDS_HUMAN_DECISION` (RF-35).
 * **observed case**: a case ID read from the runner's structured result output
   (not from the exit code alone) with its own pass/fail/skip status.
 
