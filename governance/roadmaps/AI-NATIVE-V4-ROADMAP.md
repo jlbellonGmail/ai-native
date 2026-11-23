@@ -1,10 +1,12 @@
-# AI-NATIVE v4.0.0 roadmap
+# AI-NATIVE v4.1.0 roadmap (Native Acceptance)
 
-Status: **PLANNING_COMPLETE / IMPLEMENTATION_AWAITING_HUMAN_APPROVAL**
-Authority: user goal `GOAL-V4.md`, current execution evidence and SDD artifacts.
+Status: **PLANNING_UPDATED / IMPLEMENTATION_AWAITING_HUMAN_PLAN_APPROVAL**
 
-This roadmap is an additive v4 work unit. It does not reopen completed v3
-roadmaps or authorize merge, main promotion, tags or releases.
+Authority: current user request (2026-11-23), governance execution evidence
+and the SDD artifacts below. Base: v4.0.2 (`develop` `15548c1`). This roadmap
+is additive; it does not reopen completed roadmaps or authorize merge, `main`
+promotion, tags or releases. Originally planned as v4.0.0 (2026-10-30); that tag
+was consumed without release and v4.0.1/v4.0.2 shipped other content.
 
 | Order | Feature | State | Dependency | Evidence |
 |---|---|---|---|---|
@@ -14,14 +16,17 @@ roadmaps or authorize merge, main promotion, tags or releases.
 
 ## Gate
 
-The trusted `develop` control-plane configuration includes `contracts/**`.
-The actual Coordinator flow therefore returns `AWAITING_HUMAN_APPROVAL` after
-planning and before implementation. See `governance/execution/current/V4-AUDIT.md`.
-No task checkbox may be marked done until explicit human approval of these plans.
+The trusted `develop` control-plane configuration includes `contracts/**`, so
+`human_gate` is `required`. Approval is the plan-approval receipt of scope
+`acceptance-v4-plans-v1` bound to PR #168's head SHA
+(`governance/security/PLAN-APPROVAL-RECEIPT.md`). No task checkbox may be marked
+done before a verified receipt exists.
 
 ## Completion conditions
 
-All feature tasks are done with current validation evidence; real pilot results
-or justified BLOCKED records are preserved; final independent review is runtime
-attested or correctly remains `REVIEW_PENDING`; PR is prepared for human merge.
-Human merge, release promotion, tag and publication are out of scope.
+All feature tasks done with current validation evidence; G1–G6 compliance
+matrix with evidence; end-to-end isolated-consumer proof (003 RF-21); real pilot
+results or justified BLOCKED records; final independent review runtime-attested
+or correctly `REVIEW_PENDING`; PLATFORM audit >= 90 without threshold changes;
+PR prepared for human merge. Human merge, promotion, tag and publication are out
+of scope.
