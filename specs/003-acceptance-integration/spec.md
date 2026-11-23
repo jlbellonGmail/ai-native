@@ -156,11 +156,11 @@ status are truthful.
   acceptance element bound to the reviewed revision.
 - AC-4 (RF-21): the end-to-end consumer evidence shows all ten observations and
   both refused bypass attempts.
-- AC-6 (RF-2, RF-5, RF-6, RF-7, RF-14 to RF-17): impact selection runs each
-  affected consumer once; the docs make no release claim; the GI pilot proves
-  the PostgreSQL/FK behaviors with simulated and real evidence separated; the
-  final review is attested or REVIEW_PENDING.
 - AC-5 (RF-4, RF-8 to RF-13): individual fixtures for v4.0.1, v4.0.2, v3.4.2
   and v3.4.3 each prove admission, preservation, rollback and idempotence;
   v4.0.0, v3.4.1 and unknown/malformed sources are rejected before writes; the
   v3.4.x paths report the MAJOR crossing.
+- AC-6 (RF-2, RF-5, RF-6, RF-7, RF-14 to RF-17): impact selection runs each
+  affected consumer once; the docs make no release claim; the GI pilot proves
+  the PostgreSQL/FK behaviors with simulated and real evidence separated; the
+  final review is attested or REVIEW_PENDING.

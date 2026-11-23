@@ -57,10 +57,9 @@ bypass de administradores); verificador completo con pruebas sobre mocks.
 ## Tareas y dependencias
 
 ```text
-U0 (humano, B2) ──► U1 (humano, ruleset develop) ──► U2 (B3) ─┐
-                                   │                          ├─► U6 (entrega a main + E2E) ──► U7 (aprobación de planes 001–003)
-                                   └──► U3 (B4a) ──► U4 (B4b) ─┤
-                                              └────► U5 (B5) ──┘
+U0 (humano, B2) ──► U1 (humano, ruleset develop) ──► U2 (B3) ──────────────┐
+                                   │                                       ├─► U6 (entrega a main + E2E) ──► U7 (aprobación de planes 001–003)
+                                   └──► U3 (B4a) ──► U5 (B5) ──► U4 (B4b) ──┘
 ```
 
 Cada tarea de código (U2–U5) es control plane (`.github/**`,
@@ -74,10 +73,16 @@ Reutiliza `AGENT-HUMAN-IDENTITY-SEPARATION.md`, pasos 1–6, con estas precision
 
 1. Crear el usuario local estándar `ai-agent` sin pertenencia a
    Administradores y sin conocer ninguna contraseña de administrador.
-2. ACL sólo sobre las carpetas de trabajo que usará el agente (hoy
-   `D:\proyectos\ai-native` y sus worktrees `D:\proyectos\ai-native-*`):
-   `icacls <carpeta> /grant ai-agent:(OI)(CI)M`. Nada sobre `C:\Users\<humano>`.
-   No guardar secretos en esas carpetas.
+2. **Repositorios separados.** El agente trabaja sólo en un clon propio en una
+   carpeta nueva (por ejemplo `D:\agent\ai-native`) con
+   `icacls <carpeta> /grant ai-agent:(OI)(CI)M`. El humano conserva sus clones
+   actuales (`D:\proyectos\ai-native*`) **sin** permiso de escritura para
+   `ai-agent`. Un árbol que el agente puede escribir (incluido `.git`: hooks,
+   `core.fsmonitor`, `core.hooksPath`, alias, filtros) puede ejecutar código del
+   agente con la identidad humana; por eso el humano nunca ejecuta `git`,
+   `node`, `npm` ni scripts dentro de un árbol escribible por el agente, y no
+   añade `safe.directory` para ellos. Nada sobre `C:\Users\<humano>`. Sin
+   secretos en la carpeta del agente.
 3. Instalar e iniciar sesión de Claude Code, Codex y OpenCode *dentro* de
    `ai-agent` (autenticación del proveedor LLM, no de GitHub). No lanzar ningún
    agente desde el perfil humano a partir de ese momento.
@@ -92,11 +97,13 @@ Reutiliza `AGENT-HUMAN-IDENTITY-SEPARATION.md`, pasos 1–6, con estas precision
 
 **Impacto sobre el entorno actual.** Esta sesión de agente (perfil humano, con
 credenciales del propietario) deja de ser un lugar válido para agentes. El
-agente deja de poder hacer `git push`, abrir PR o comentar en GitHub: prepara
-commits locales y el humano los revisa (`git log -p`) y empuja desde su perfil.
-Git puede rechazar repositorios de otro propietario («dubious ownership»):
-`git config --global --add safe.directory <ruta>` en el perfil que lo necesite.
-El cambio local sin commitear de `D:\proyectos\ai-native\scripts\ai-cli.mjs` no
+agente deja de poder hacer `git push`, abrir PR o comentar en GitHub. Entrega
+su trabajo como datos: `git bundle create <carpeta-de-intercambio>\<rama>.bundle <base>..<rama>`.
+El humano, desde su propio clon, ejecuta `git bundle verify <fichero>`,
+`git fetch <fichero> <rama>:refs/agent/<rama>`, revisa con `git log -p` en su
+clon y empuja desde allí. Un bundle es sólo datos: no trae configuración ni
+hooks. La carpeta de intercambio es escribible por `ai-agent` y sólo legible
+para el humano como datos. El cambio local sin commitear de `D:\proyectos\ai-native\scripts\ai-cli.mjs` no
 se toca (las ACL no alteran contenido). Herramientas de control de
 navegador/escritorio no se usan en la sesión humana mientras haya aprobaciones
 pendientes. Reversión: `net user ai-agent /delete` e `icacls <carpeta> /remove ai-agent`.
@@ -112,9 +119,10 @@ pendientes. Reversión: `net user ai-agent /delete` e `icacls <carpeta> /remove 
 | sesión `ai-agent` | `gh auth status` | sin sesión |
 | sesión `ai-agent` | `cmdkey /list` | sin destinos `github` |
 | sesión `ai-agent` | `dir C:\Users\<humano>` | acceso denegado |
-| sesión humana | `node runtime/gates/plan-approval.mjs check-agent-isolation` | BLOCKED (control positivo: la sonda sigue detectando) |
+| sesión `ai-agent` | crear un fichero en `.git\hooks` del clon humano | acceso denegado |
+| sesión humana, en su propio clon | `node runtime/gates/plan-approval.mjs check-agent-isolation` | BLOCKED (control positivo: la sonda sigue detectando) |
 
-Criterio de cierre: las siete filas, con fecha y SHA del repositorio. Hasta
+Criterio de cierre: las ocho filas, con fecha y SHA del repositorio. Hasta
 entonces toda aprobación humana posterior se considera **no independiente**.
 
 ### U1 — Ruleset de `develop` (humano, configuración remota)
@@ -145,13 +153,25 @@ podría mergear como propietario).
   y los tres inputs; (6) localiza el run creado (evento `workflow_dispatch`,
   actor = bot fijado) e imprime sólo su id y URL. El token vive en memoria; nunca
   se imprime, se guarda ni se pasa a un subproceso.
+- **Permisos de la instalación:** antes del primer uso, el propietario
+  comprueba en la configuración de la App que la instalación tiene
+  exactamente `Actions: write` y `Metadata: read`. Quien tenga la clave puede
+  pedir *todos* los permisos de la instalación, no sólo los que pide U2.
 - **Custodia:** el propietario genera la clave en la configuración de la App
   desde su perfil, la mueve a `%USERPROFILE%\.ai-native\keys\` *del perfil
   `ai-agent`* con `icacls <clave.pem> /inheritance:r /grant:r ai-agent:R`, y
   borra la copia descargada. Nunca en el repositorio, en secrets de GitHub, en
   variables de entorno ni en el chat. Rotación y revocación: desde la
   configuración de la App (perfil humano). Riesgo aceptado y acotado: quien
-  tiene la clave *es* el solicitante, y el solicitante no puede aprobar.
+  tiene la clave *es* el solicitante, y el solicitante no puede aprobar; pero
+  `Actions: write` también permite cancelar o borrar runs, logs y artifacts,
+  desactivar workflows y cambiar la personalización OIDC
+  (`PLAN-APPROVAL-RECEIPT.md`), es decir, sabotear o borrar evidencia, nunca
+  aprobar. Cualquier proceso que corra como `ai-agent` puede leer la clave,
+  incluido código bajo prueba ejecutado en el tier `restricted` de 002. El
+  runner de aceptación excluye esa ruta en los tiers `node-permission` y
+  `container`; en `restricted` el riesgo queda aceptado y declarado, salvo que
+  el propietario elija D-4.
 - **Pruebas:** con claves efímeras generadas en la propia prueba y API
   simulada: rechazo con aislamiento BLOCKED, PR cerrado, head distinto, scope
   desconocido; el token no aparece en ninguna salida ni error; permisos pedidos
@@ -206,9 +226,12 @@ podría mergear como propietario).
 ### U5 — B5: continuidad verificable hacia la implementación
 
 **Registro de aprobación.** El check `ai-native/plan-approval` publicado por
-`ai-native-trust` sobre el SHA aprobado `H` (U3). Es inmutable, sobrevive al
-merge del PR de planes y sólo puede crearlo la App cuya clave vive en un
-Environment restringido a `main`. Ser descendiente de `H` **no** es una
+`ai-native-trust` sobre el SHA aprobado `H` (U3). Sobrevive al merge del PR de
+planes y sólo puede crearlo o actualizarlo la App cuya clave vive en un
+Environment restringido a `main`; se toma el check más reciente de esa App cuyo
+binding tiene el mismo digest. La conservación de checks la decide GitHub y se
+comprueba en U3: un check que ya no se puede leer ⇒ BLOCKED, nunca aprobación
+presunta. Ser descendiente de `H` **no** es una
 autorización: es sólo una de las condiciones.
 
 **Declaración del PR de implementación.** Trailer o cuerpo con
@@ -216,11 +239,26 @@ autorización: es sólo una de las condiciones.
 
 **Gate `ai-native/plan-continuity`** (nuevo workflow por `workflow_run` del CI,
 con el mismo reparto `analyze` sin secretos / `publish` con `ai-native-trust`;
-código de `main`, PR leído como datos). PASS sólo si se cumplen todas:
+código de `main`, PR leído como datos). Es el **único** check nuevo requerido;
+se publica en todo PR hacia `develop` o `main` y clasifica cada PR (los
+rulesets no pueden exigir un check sólo para ciertas rutas):
 
-1. Existe exactamente un check `ai-native/plan-approval` de la App fijada con
-   `success` sobre el head final `H` del PR de planes del scope (leído de la API
-   del PR, también tras el merge), y su binding valida.
+| Clase | Cómo se detecta | Resultado |
+|---|---|---|
+| PR de planes | toca un documento de algún scope de `plan-approval.json` | PASS sólo con `ai-native/plan-approval` en `success` sobre exactamente su head |
+| PR de implementación | declara `Plan-Scope`/`Plan-Task`, o toca una ruta de `implementationPaths` de un scope (campo nuevo, control plane) | condiciones 1–7 siguientes |
+| PR de promoción `develop` → `main` | base `main`, head `develop` | PASS sólo si cada merge de primer padre del rango tiene `ai-native/plan-continuity` en `success` de la App fijada |
+| Otro PR | ninguna de las anteriores | `success` con la clase «sin scope» visible en el resumen; su control plane sigue pasando por `merge-gate` y el merge humano (U1) |
+
+Una implementación sin declarar y fuera de `implementationPaths` cae en «otro
+PR»: el gate no puede deducir intención, y ese caso queda cubierto por el
+merge humano y la clase visible (límite declarado). Para la clase de
+implementación, PASS sólo si se cumplen todas:
+
+1. El check `ai-native/plan-approval` más reciente de la App fijada sobre el
+   head final `H` del PR de planes del scope (leído de la API del PR, también
+   tras el merge) está en `success` y su binding valida; checks de otras Apps
+   se ignoran.
 2. El PR de planes está abierto con head `H`, o mergeado con `H` como ancestro
    del commit de merge. Cerrado sin merge ⇒ aprobación **revocada**.
 3. `H` es ancestro del head del PR de implementación.
@@ -246,9 +284,9 @@ código de `main`, PR leído como datos). PASS sólo si se cumplen todas:
 | Scope, workflow emisor, Environment o aprobador cambiados | condición 6/7 | BLOCKED; reemisión |
 | Tarea no aprobada o sin declarar | condición 5 / formato | BLOCKED |
 
-**Al mergear el PR de planes:** permitido sólo con el check
-`ai-native/plan-approval` en `success` sobre su head (check requerido para PR
-que toquen documentos de un scope); la aprobación persiste en ese check.
+**Al mergear el PR de planes:** permitido sólo si `ai-native/plan-continuity`
+(clase PR de planes) está en `success`, es decir, con `ai-native/plan-approval`
+en `success` sobre su head; la aprobación persiste en ese check.
 **Al cerrarlo sin merge:** revocada; los PR de implementación quedan bloqueados.
 
 **Límite honesto:** nadie impide empujar commits a una rama cualquiera; lo que
@@ -261,9 +299,10 @@ aprobación del Environment `ai-native-human-review` por el propietario desde su
 perfil (independiente tras U0). Mismo PR (control plane): registrar la nueva
 `trustedRevision` del workflow en `plan-approval.json` y un scope de prueba
 `unblock-e2e-v1` sobre un PR de prueba con un documento trivial. Tras el merge
-humano: añadir `ai-native/plan-approval` (PR con documentos de scope),
-`ai-native/plan-continuity` y los checks existentes como requeridos en los
-rulesets de `develop` y `main` (acción humana). Prueba extremo a extremo con un
+humano: añadir `ai-native/plan-continuity` y los checks existentes como
+requeridos en los rulesets de `develop` y `main` (acción humana);
+`ai-native/plan-approval` no se hace requerido (sólo lo exige
+`plan-continuity` para su clase). Prueba extremo a extremo con un
 receipt real del scope de prueba y los criterios negativos de abajo.
 
 ### U7 — Aprobación de los planes 001–003 (objetivo final, fuera de este plan)
@@ -315,6 +354,9 @@ verificarlo; luego aprobar este plan (etapa 2) y crear el ruleset de U1.
   humano empuja) o aprobar más adelante una identidad de escritura para el
   agente con su propia justificación.
 - **D-3:** dónde vive este plan: en #168 (actual) o en un PR propio.
+- **D-4:** custodia de la clave solicitante: perfil `ai-agent` con el riesgo
+  aceptado de U2, o un usuario Windows separado `ai-dispatch` sólo para el
+  dispatch (más aislamiento, una identidad local más).
 
 ## Riesgos residuales
 

@@ -275,13 +275,15 @@ declared minimum is a DOWNGRADE (RF-25).
 
 RF-34. THE SYSTEM SHALL let the validation contract declare a non-SUT path
 class as explicit globs rooted under `specs/`, `docs/`, `governance/` or
-`knowledge/`, or as single named Markdown files. A changed path in that class
+`knowledge/`, or as single named Markdown files, excluding control-plane paths
+(`governance/gates/`, `governance/rulesets/` and any other control-plane glob)
+and the manual renderer's template inputs (`knowledge/sdd/templates/`). A changed path in that class
 SHALL NOT trigger the RF-30 uncovered-path BLOCKED. The plan validator SHALL
 reject an entry that matches every path or a whole top-level directory outside
 those roots (for example `**`, `*`, `src/**`), or that matches any declared SUT
 input path, runner executable or argv path, dataset, the validation contract,
-an acceptance plan or a path under `.github/`, `runtime/`, `contracts/`,
-`core/` or `profiles/`. A path outside the class and outside every case's
+an acceptance plan, a control-plane path, a manual template input or a path
+under `.github/`, `runtime/`, `contracts/`, `core/` or `profiles/`. A path outside the class and outside every case's
 inputs stays BLOCKED; there is no global permission.
 
 RF-35. THE SYSTEM SHALL treat every `NOT_APPLICABLE` category or feature

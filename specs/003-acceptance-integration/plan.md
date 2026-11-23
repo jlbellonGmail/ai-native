@@ -6,8 +6,9 @@ Wire the acceptance phase into the existing SDD command bodies and a new
 feature-level stage of `implement-all` (after the task loop, before the review
 loop), add an `acceptance` subcommand to the existing
 `sdd` dispatcher (`runtime/circuit/sdd-cli.mjs`), then integrate its result into
-`deriveReviewOutcome`, the review packet and HITL without changing
-branch-protection semantics or adding a slash command. Reuse the upgrade transaction and
+`deriveReviewOutcome`, the review packet and HITL without adding a slash
+command; the only branch-protection change is the `develop` ruleset and
+required checks that 002 RF-25 and the unblock plan need, applied by a human. Reuse the upgrade transaction and
 review ledger. Run the GI pilot from an isolated source copy with its source SHA
 explicitly recorded, never in its parent factory Git identity.
 
