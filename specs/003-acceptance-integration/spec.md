@@ -107,7 +107,9 @@ RF-19. IF mandatory acceptance is not PASS at the evaluated revision (FAIL,
 BLOCKED, STALE or NOT_RUN), THEN `/sdd-implement-all` SHALL NOT return DONE,
 the review-ledger validation SHALL NOT be PASS and the review outcome SHALL NOT
 be APPROVED; a free-text `--command` validation run SHALL NOT count toward
-acceptance. Feature acceptance runs once per feature after the task loop and
+acceptance. When the only obstacle is a pending N/A or DOWNGRADE approval (002
+RF-35), the result is the existing `NEEDS_HUMAN_DECISION` in `implement-all`,
+the review outcome and the Coordinator. Feature acceptance runs once per feature after the task loop and
 before the review loop. The stage SHALL be a platform-owned step that invokes
 the 002 runner itself and reads the result from the acceptance ledger; it
 SHALL NOT be an injectable callback or agent hook, and `/sdd-implement-all`,

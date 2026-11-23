@@ -71,6 +71,17 @@ v4.0.2 released and verified, tag `v4.0.2` on `d08531e`)
   `d67779957b93…`, protocol 1, upgrade engine), T3/T4 fixtures for the four
   releases. Unblock proposal: `governance/security/PLAN-APPROVAL-UNBLOCK-PLAN.md`.
 
+## 2026-11-23 third update: U5 obligation, DONE/N/A semantics, U0 capabilities
+
+Documentation only. U5 now derives the obligation from changed paths classified
+by a trusted map read from `main` (default deny: unknown or ambiguous paths
+BLOCKED; governed exemptions; PR metadata only selects the task). 002 RF-35
+aligned with the real statuses (`implement-all` `DONE` is feature-level;
+pending N/A ⇒ `NEEDS_HUMAN_DECISION`, never `DONE`/`READY_FOR_HITL`/`APPROVED`;
+tasks may still complete). U0 separates approval, administration and push;
+push removal limited to the bootstrap, builder App deferred to decision D-2.
+U1 split into a no-bypass ruleset and a restrict-updates ruleset.
+
 ## Next permitted action
 
 Human actions, in order (`PLAN-APPROVAL-UNBLOCK-PLAN.md`, section «Arranque»):

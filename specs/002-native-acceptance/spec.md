@@ -288,10 +288,20 @@ inputs stays BLOCKED; there is no global permission.
 
 RF-35. THE SYSTEM SHALL treat every `NOT_APPLICABLE` category or feature
 declaration (RF-20, 003 RF-18), and every DOWNGRADE (RF-25), as
-`PENDING_APPROVAL` until approved. A pending item is reported in the feature
-status, the review packet and the traceability report; it does not by itself
-block `DONE` or `REVIEW_PENDING`, but it SHALL block merge closure and SHALL
-keep the review outcome from being presented as approved for merge. Approval is
+`PENDING_APPROVAL` until approved (an item label, not a new run status). A
+pending item is reported in the feature status, the review packet and the
+traceability report. It SHALL NOT prevent individual tasks from completing
+(the task loop's `completed` list), but the feature's consolidated acceptance
+SHALL NOT be PASS while any item is pending: it is reported BLOCKED with the
+reason `NOT_APPLICABLE_PENDING_APPROVAL` (or `DOWNGRADE_PENDING_APPROVAL`).
+Consequently, with the existing statuses: `implement-all` SHALL NOT return
+`DONE` (feature-level: all tasks converged and the review approved) and returns
+`NEEDS_HUMAN_DECISION` when the pending approval is the only obstacle;
+`deriveReviewOutcome` SHALL NOT return `APPROVED` and returns
+`NEEDS_HUMAN_DECISION`; the Coordinator SHALL NOT return `DONE` or
+`READY_FOR_HITL` and propagates `NEEDS_HUMAN_DECISION`; merge closure is
+BLOCKED. `REVIEW_PENDING` keeps its meaning (no independent review yet) and is
+never a completion state. Approval is
 valid only as the RF-25 human-only Environment approval for the exact head SHA
 whose plan contains that item, and it binds the item's justification digest;
 any later change to the item, its justification or the plan's applicability
@@ -354,8 +364,11 @@ handling, critical-configuration BLOCKED, and unrelated-revision retention.
   undeclared changed path is BLOCKED; `**`, a whole source root, a SUT input or
   a contract/plan path in the class is rejected; widening the class is a
   DOWNGRADE.
-- AC-11 (RF-35): a pending N/A or DOWNGRADE is reported and allows `DONE` and
-  `REVIEW_PENDING`, blocks merge closure, is cleared only by the Environment
+- AC-11 (RF-35): a pending N/A or DOWNGRADE is reported; tasks still complete;
+  an attempt to close the feature with only a pending N/A yields
+  `NEEDS_HUMAN_DECISION` from `implement-all`, the review outcome and the
+  Coordinator (never `DONE`, `READY_FOR_HITL` or `APPROVED`) and a BLOCKED
+  merge closure; it is cleared only by the Environment
   approval for the exact head SHA, and returns to pending after its
   justification changes; the traceability report carries the approval
   evidence, and a hand-edited copy does not clear a pending item.

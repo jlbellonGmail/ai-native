@@ -99,6 +99,36 @@ ese perfil.
    PR es el propio humano; la independencia la da que el agente ya no pueda
    actuar como `jlbellonGmail`.
 
+**Tres capacidades distintas, tratadas por separado.**
+
+| Capacidad | Hoy (credencial del propietario) | Propuesta | Motivo |
+|---|---|---|---|
+| Aprobar como humano (Environments, comentario de aprobación) | el agente puede | **eliminar**, sin alternativa | es la independencia que exige el circuito |
+| Modificar protecciones, rulesets o Environments (admin) | el agente puede | **eliminar**, sin alternativa | quien puede cambiar el control puede anularlo |
+| Push y abrir PR con identidad técnica limitada | no existe identidad limitada; sólo la del propietario | **eliminar durante el arranque (U0–U6)**; reponer después con una App de escritura si se aprueba D-2 | ver abajo |
+
+Por qué se elimina también el push: hoy la única identidad de escritura es la
+del propietario, así que quitar aprobación y administración quita el push. Una
+identidad técnica de escritura sólo es segura cuando ya existen los controles
+que la acotan, y ninguno existe todavía: rulesets de `develop` sin bypass y
+«restrict updates» (U1), protección de tags y el check obligatorio de U5 (U6).
+Durante el arranque son pocos PR y el bundle no añade identidades.
+
+Alternativa con garantías equivalentes (para D-2, después de U6): una App
+`ai-native-builder` instalada sólo en este repositorio con `contents: write` y
+`pull_requests: write`, **sin** `workflows`, `actions`, `administration` ni
+`environments`; clave con la misma custodia que U2. Equivalencia sólo si se
+cumplen todas: (1) no es revisora de ningún Environment ni administradora; (2)
+rulesets de U1 en `develop` y `main` sin bypass para ella; (3) un ruleset de
+tags `v*` sin bypass que impida crearlos o borrarlos; (4) el check de U5
+requerido; (5) sin `workflows: write` no puede empujar cambios de
+`.github/workflows/**` (los empuja el humano). Límites que no cierra: puede
+empujar a ramas de PR abiertas (incluida la de planes, lo que invalida su
+aprobación pero no la falsifica), cerrar PR o editar descripciones, y
+cualquier proceso de `ai-agent` puede leer su clave. Recomendación: esquema
+mínimo hasta cerrar U6; decidir D-2 entonces con estas cinco condiciones
+verificadas.
+
 **Impacto sobre el entorno actual.** Esta sesión de agente (perfil humano, con
 credenciales del propietario) deja de ser un lugar válido para agentes. El
 agente deja de poder hacer `git push`, abrir PR o comentar en GitHub. Entrega
@@ -134,16 +164,24 @@ entonces toda aprobación humana posterior se considera **no independiente**.
 
 ### U1 — Ruleset de `develop` (humano, configuración remota)
 
-Crear el ruleset `ai-native-develop` sobre `refs/heads/develop`: PR
-obligatorio; sin borrado ni non-fast-forward; método de merge sólo «merge
-commit» (preserva el SHA aprobado como ancestro); actualizaciones restringidas
-de modo que sólo el propietario pueda mergear (regla «restrict updates» con
-bypass del rol administrador en modo *pull request*; si la plataforma no ofrece
-esa combinación, U1 queda BLOCKED y se informa, sin sustituto más débil). Los
-checks requeridos se añaden en U6, cuando existan (un check requerido que nunca
-se publica bloquearía todo merge). Verificación: `gh api repos/jlbellonGmail/ai-native/rulesets`
-muestra el ruleset activo con esas reglas. Depende de U0 (si no, el agente
-podría mergear como propietario).
+Dos rulesets sobre `refs/heads/develop`, porque en GitHub un actor con bypass
+se salta **todas** las reglas del ruleset que lo concede:
+
+- `ai-native-develop` (**sin bypass**): PR obligatorio; sin borrado ni
+  non-fast-forward; método de merge sólo «merge commit» (preserva el SHA
+  aprobado como ancestro); en U6, checks requeridos.
+- `ai-native-develop-writers`: sólo la regla «restrict updates», con bypass del
+  rol administrador en modo *pull request*, para que sólo el propietario pueda
+  mergear. Ese bypass no alcanza a los checks del otro ruleset. El mismo par
+  se propone para `main` (el ruleset `ai-native-main` actual no tiene bypass y
+  se mantiene; se añade el de «restrict updates»).
+
+Si la plataforma no ofrece esa combinación, U1 queda BLOCKED y se informa, sin
+sustituto más débil. Los checks requeridos se añaden en U6, cuando existan (un
+check requerido que nunca se publica bloquearía todo merge). Verificación:
+`gh api repos/jlbellonGmail/ai-native/rulesets` muestra ambos rulesets activos,
+el primero con `bypass_actors: []`. Depende de U0 (si no, el agente podría
+mergear como propietario).
 
 ### U2 — B3: dispatch soportado de la App con custodia de la clave
 
@@ -241,26 +279,55 @@ comprueba en U3: un check que ya no se puede leer ⇒ BLOCKED, nunca aprobación
 presunta. Ser descendiente de `H` **no** es una
 autorización: es sólo una de las condiciones.
 
-**Declaración del PR de implementación.** Trailer o cuerpo con
-`Plan-Scope: <scopeId>` y `Plan-Task: <feature>/<Tn>`, de formato estricto.
+**Metadatos del PR.** Trailer o cuerpo con `Plan-Scope: <scopeId>` y
+`Plan-Task: <feature>/<Tn>`, de formato estricto. Sólo **seleccionan** la tarea
+dentro de una obligación que ya existe por las rutas; nunca crean, quitan ni
+cambian la obligación. Su ausencia en un PR que la tiene ⇒ BLOCKED.
 
 **Gate `ai-native/plan-continuity`** (nuevo workflow por `workflow_run` del CI,
 con el mismo reparto `analyze` sin secretos / `publish` con `ai-native-trust`;
 código de `main`, PR leído como datos). Es el **único** check nuevo requerido;
-se publica en todo PR hacia `develop` o `main` y clasifica cada PR (los
-rulesets no pueden exigir un check sólo para ciertas rutas):
+se publica en todo PR hacia `develop` o `main` (los rulesets no pueden exigir
+un check sólo para ciertas rutas) y la obligación sale de las **rutas
+cambiadas**, no de lo que el autor declara.
 
-| Clase | Cómo se detecta | Resultado |
+**Fuente confiable de la clasificación.** Un mapa `pathClasses` en
+`governance/gates/plan-approval.json` (control plane) más los globs de control
+plane de `governance/gates/gates.json`, leídos **siempre de `main`**, nunca del
+PR, del worktree ni de un input. El candidato no puede cambiar su propia
+clasificación: una edición del mapa en el PR es un cambio de control plane que
+se evalúa con el mapa de `main` y sólo rige después de llegar a `main`.
+
+**Clasificación por ruta, con denegación por defecto.** Cada ruta cambiada del
+diff `base...head` (añadida, modificada, borrada, y ambos lados de un renombre)
+recibe exactamente una clase:
+
+| Clase de ruta | Fuente | Exigencia |
 |---|---|---|
-| PR de planes | toca un documento de algún scope de `plan-approval.json` | PASS sólo con `ai-native/plan-approval` en `success` sobre exactamente su head |
-| PR de implementación | declara `Plan-Scope`/`Plan-Task`, o toca una ruta de `implementationPaths` de un scope (campo nuevo, control plane, **obligatorio y no vacío**: un scope sin él ⇒ BLOCKED) | condiciones 1–7 siguientes |
-| PR de promoción `develop` → `main` | base `main`, head `develop` | PASS sólo si cada merge de primer padre del rango tiene `ai-native/plan-continuity` en `success` de la App fijada |
-| Otro PR | ninguna de las anteriores | `success` con la clase «sin scope» visible en el resumen, marcando explícitamente si toca `runtime/`, `core/`, `contracts/` o control plane; hacia `develop` sólo lo frena el merge humano del ruleset U1 (`merge-gate` actúa únicamente en PR hacia `main`) |
+| `plan-doc` | documentos de un scope | `ai-native/plan-approval` en `success` sobre exactamente el head del PR |
+| `scope-impl` | `implementationPaths` de un scope (obligatorio y no vacío; un scope sin él ⇒ BLOCKED) | condiciones 1–7 siguientes; `Plan-Task` obligatorio |
+| `control-plane` | globs de `gates.json` | aprobación del Environment humano `ai-native-human-review` para ese head SHA, también en PR hacia `develop` (job `human` del gate, como en `merge-gate`) |
+| `exempt` | `pathClasses.exempt`: lista explícita de rutas sin efecto en ejecución (p. ej. `governance/execution/**`, `docs/**`) | ninguna adicional |
+| desconocida | ninguna de las anteriores, incluidas rutas nuevas fuera de todo glob | **BLOCKED** `PATH_UNCLASSIFIED` |
+| ambigua | coincide con más de una clase de distinta exigencia, o difiere de otra ruta sólo en mayúsculas | **BLOCKED** `PATH_AMBIGUOUS` |
 
-Una implementación sin declarar y fuera de `implementationPaths` cae en «otro
-PR»: el gate no puede deducir intención, y ese caso queda cubierto por el
-merge humano y la clase visible (límite declarado). Para la clase de
-implementación, PASS sólo si se cumplen todas:
+El PR exige la unión de las exigencias de sus rutas. Un PR de promoción
+`develop` → `main` exige además que cada commit del rango haya entrado por un
+merge cuyo PR tenga `ai-native/plan-continuity` en `success` de la App fijada;
+un commit del rango sin ese PR ⇒ BLOCKED.
+
+**Exclusiones gobernadas.** El validador de `pathClasses` (en `main`) rechaza
+en `exempt` globs que cubran todo (`**`, `*`), una raíz de código, rutas de
+control plane, `implementationPaths`, documentos de scope, ficheros ejecutables
+(`*.mjs`, `*.js`, `*.json` fuera de `governance/execution/`) o plantillas del
+manual. Añadir o ampliar una exclusión es un cambio de control plane con
+aprobación humana del Environment; no existe exclusión implícita.
+
+**Función del merge humano.** El check requerido decide si el PR *puede*
+mergearse; el propietario decide si *quiere*. Ninguno sustituye al otro: el
+ruleset sin bypass de U1 impide mergear sin el check, también al propietario.
+
+Para la clase `scope-impl`, PASS sólo si se cumplen todas:
 
 1. El check `ai-native/plan-approval` más reciente de la App fijada sobre el
    head final `H` del PR de planes del scope (leído de la API del PR, también
@@ -290,6 +357,8 @@ implementación, PASS sólo si se cumplen todas:
 | PR de planes mergeado con squash/rebase | `H` no es ancestro (condición 2/3) | BLOCKED; U1 impone «merge commit» |
 | Scope, workflow emisor, Environment o aprobador cambiados | condición 6/7 | BLOCKED; reemisión |
 | Tarea no aprobada o sin declarar | condición 5 / formato | BLOCKED |
+| Ruta nueva o sin clase | `PATH_UNCLASSIFIED` | BLOCKED hasta clasificarla en `main` con aprobación humana |
+| Cambio del mapa de clasificación en el propio PR | se evalúa con el mapa de `main`; clase `control-plane` | requiere el Environment humano; no altera su propia evaluación |
 
 **Al mergear el PR de planes:** permitido sólo si `ai-native/plan-continuity`
 (clase PR de planes) está en `success`, es decir, con `ai-native/plan-approval`
@@ -298,6 +367,7 @@ en `success` sobre su head; la aprobación persiste en ese check.
 
 **Límite honesto:** nadie impide empujar commits a una rama cualquiera; lo que
 se impide es que lleguen a `develop` o `main` sin el check (requerido por U1/U6).
+Todo esto es diseño: hoy no existe ni el mapa, ni el gate, ni los rulesets.
 
 ### U6 — Entrega y activación en la base confiable
 
@@ -326,7 +396,7 @@ consumo U4 y continuidad U5 para cada tarea de implementación.
 | U1 | ninguno (ruleset remoto) | configuración remota | `gh api …/rulesets` revisado por el propietario |
 | U2 | `runtime/gates/plan-approval-dispatch.mjs` + test | sí | `human_gate: required`, revisión independiente, merge humano |
 | U3 | `.github/workflows/plan-approval-attest.yml`, schema del binding en `contracts/` + tests | sí | ídem |
-| U5 | `.github/workflows/plan-continuity.yml`, `runtime/gates/plan-continuity.mjs` + tests, campo `implementationPaths` en `plan-approval.json`, enmienda de `PLAN-APPROVAL-RECEIPT.md` | sí | ídem |
+| U5 | `.github/workflows/plan-continuity.yml`, `runtime/gates/plan-continuity.mjs` + tests, campos `implementationPaths` y `pathClasses` (con su validador) en `plan-approval.json`, enmienda de `PLAN-APPROVAL-RECEIPT.md` | sí | ídem |
 | U4 | `runtime/circuit/coordinator.mjs`, `runtime/gates/plan-approval-consumer.mjs` + tests, enmienda v2 de `PLAN-APPROVAL-COORDINATOR-CONTRACT.md` | sí | ídem |
 | U6 | `plan-approval.json` (`trustedRevisions`, scope `unblock-e2e-v1`, y `implementationPaths` no vacío para `unblock-e2e-v1` y `acceptance-v4-plans-v1` antes de emitir cualquier receipt de ellos), rulesets remotos | sí | `merge-gate` + `ai-native-human-review` hacia `main` |
 
@@ -365,6 +435,13 @@ verificarlo; luego aprobar este plan (etapa 2) y crear el ruleset de U1.
 | Cambio del verificador desde el PR | el veredicto lo calcula el código de `main`; el PR es control plane ⇒ Environment humano | U3, U5, U6 |
 | Agente con capacidad de aprobación humana | `check-agent-isolation` BLOCKED ⇒ U2 y U4 se niegan; U0 verificado | U0, U2, U4 |
 | Degradación de controles (Environment con `prevent_self_review` desactivado, bypass de administradores, otro revisor; revisión del workflow retirada) | BLOCKED (`check-environment`, `WORKFLOW_REVISION_UNKNOWN`) en atestación y continuidad | U3, U5 |
+| PR de implementación sin metadatos | rutas `scope-impl` sin `Plan-Task` ⇒ BLOCKED | U5 |
+| PR con una ruta nueva (fichero o directorio que ningún glob cubre) | `PATH_UNCLASSIFIED` ⇒ BLOCKED | U5 |
+| Cambio de código fuera de `implementationPaths` y fuera de `exempt` | `PATH_UNCLASSIFIED` (o `control-plane` con Environment humano) ⇒ nunca `success` sin más | U5 |
+| PR que edita `pathClasses`, `implementationPaths`, `gates.json` o `plan-continuity.mjs` para reclasificarse | se aplica la versión de `main`; el PR es `control-plane` ⇒ exige el Environment humano | U5, U6 |
+| PR sólo con rutas `exempt` válidas | `success` | U5 |
+| Ruta ambigua o variante de mayúsculas | `PATH_AMBIGUOUS` ⇒ BLOCKED | U5 |
+| Exclusión `**` o sobre código en `pathClasses` | el validador de `main` la rechaza | U5 |
 | Commits posteriores legítimos dentro del alcance aprobado (continuidad válida) | atestación sobre `H` + ancestro + documentos idénticos + tarea aprobada ⇒ PASS en dos tareas sucesivas sin nueva aprobación | U5, U6 |
 
 ## Decisiones humanas requeridas
@@ -375,9 +452,11 @@ verificarlo; luego aprobar este plan (etapa 2) y crear el ruleset de U1.
   revisión emisora retirada, y cambios de Environment, aprobador o solicitante.
   La alternativa estricta (cualquier cambio de configuración) haría imposible
   registrar nuevas revisiones sin re-aprobar todo.
-- **D-2:** mantener el esquema mínimo (el agente sin escritura en GitHub; el
-  humano empuja) o aprobar más adelante una identidad de escritura para el
-  agente con su propia justificación.
+- **D-2:** tras U6, mantener el esquema mínimo (el humano empuja bundles) o
+  adoptar la App `ai-native-builder` con las cinco condiciones de U0.
+- **D-5:** contenido inicial de `pathClasses.exempt` y de `implementationPaths`
+  de cada scope (propuesta inicial en la spec de 004; cada ampliación posterior
+  exige el Environment humano).
 - **D-3:** dónde vive este plan: en #168 (actual) o en un PR propio.
 - **D-4:** custodia de la clave solicitante: perfil `ai-agent` con el riesgo
   aceptado de U2, o un usuario Windows separado `ai-dispatch` sólo para el
@@ -389,4 +468,6 @@ Ventana TOCTOU entre verificar y actuar (acotada, no resuelta); una cuenta
 `ai-agent` con privilegios de administrador anularía U0; herramientas de
 control de escritorio en la sesión humana; `workflow_run` trata datos de un run
 no confiable (mitigado: no se ejecutan, se validan contra la API viva);
-consumidores que no hagan requerido el check; límites de la API de GitHub.
+consumidores que no hagan requerido el check; límites de la API de GitHub; un
+mapa `pathClasses` demasiado amplio, aprobado por el humano, sigue siendo una
+exclusión real (el validador sólo impide las groseras).
