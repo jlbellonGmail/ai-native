@@ -1,0 +1,115 @@
+name: plan-approval-receipt
+
+# Plan Approval Receipt bootstrap. Designed to run ONLY from `main` through workflow_dispatch, requested by the
+# GitHub App `ai-native-plan-approval` (Actions: write, nothing else). governance/security/PLAN-APPROVAL-RECEIPT.md
+# documents the model and the manual setup. Hard rules:
+#  - The PR is untrusted DATA. No checkout of the PR, no install, no PR scripts: the nine plan documents are read
+#    through the contents API at the exact head SHA and only hashed (runtime/gates/plan-approval.mjs).
+#  - Jobs here are NOT the trust anchor: a dispatch against another ref could run a different file. The anchor is
+#    the Environment branch policy (main only) plus the consumer-side provenance check (run path, event, branch,
+#    commit on main, run_attempt 1, bot actor), see verifyReceiptProvenance.
+#  - The human approval is the DEDICATED Environment `ai-native-plan-approval` (required reviewer, prevent self-review,
+#    no admin bypass, deployments from main only). `ai-native-human-review` belongs to merge-gate and is not used here.
+#    This workflow never approves, merges, tags or releases, and holds no write permission.
+#  - A receipt is only accepted by a consumer if the git blobs of every file this run executes are registered in
+#    governance/gates/plan-approval.json (workflow.trustedRevisions); ancestry of main is not enough.
+#  - The configuration this run uses is the one checked out from the run commit; the run records its identity
+#    (git blob, sha256, source revision) in the receipt and refuses to continue if it differs from main's.
+
+run-name: plan-approval-receipt ${{ inputs.scope_id }} PR#${{ inputs.pr_number }} ${{ inputs.head_sha }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: Pull request number
+        required: true
+        type: string
+      head_sha:
+        description: Expected PR head SHA (40 hex)
+        required: true
+        type: string
+      scope_id:
+        description: Approval scope id (governance/gates/plan-approval.json)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+  pull-requests: read
+  deployments: read
+
+concurrency:
+  group: plan-approval-receipt-${{ inputs.scope_id }}
+  cancel-in-progress: false
+
+jobs:
+  verify-request:
+    name: verify-request
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.ref == 'refs/heads/main' && github.run_attempt == 1
+    outputs:
+      plan_set_fingerprint: ${{ steps.request.outputs.plan_set_fingerprint }}
+      head_sha: ${{ steps.request.outputs.head_sha }}
+    steps:
+      - name: Checkout main (trusted code and config)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Verify the request, the App identity, the PR, the nine documents and the Environment
+        id: request
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          INPUT_PR: ${{ inputs.pr_number }}
+          INPUT_SHA: ${{ inputs.head_sha }}
+          INPUT_SCOPE: ${{ inputs.scope_id }}
+        run: node runtime/gates/plan-approval.mjs request
+
+  human-approval:
+    name: human-approval
+    runs-on: ubuntu-latest
+    timeout-minutes: 1440
+    needs: verify-request
+    if: github.ref == 'refs/heads/main' && github.run_attempt == 1
+    environment: ai-native-plan-approval
+    steps:
+      - name: Human approval recorded by the Environment required reviewer
+        run: echo "Approval is verified from the run history by the next job; this step grants nothing."
+
+  issue-receipt:
+    name: issue-receipt
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [verify-request, human-approval]
+    if: github.ref == 'refs/heads/main' && github.run_attempt == 1 && needs.human-approval.result == 'success'
+    steps:
+      - name: Checkout main (trusted code and config)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Re-verify everything, read the approval history and write the receipt
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          INPUT_PR: ${{ inputs.pr_number }}
+          INPUT_SHA: ${{ inputs.head_sha }}
+          INPUT_SCOPE: ${{ inputs.scope_id }}
+          EXPECTED_FINGERPRINT: ${{ needs.verify-request.outputs.plan_set_fingerprint }}
+        run: node runtime/gates/plan-approval.mjs issue
+
+      - name: Publish the receipt as an artifact of this run
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: plan-approval-receipt-${{ github.run_id }}
+          path: receipt/plan-approval-receipt.json
+          if-no-files-found: error
+          retention-days: 90

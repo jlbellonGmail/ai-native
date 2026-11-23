@@ -17,11 +17,14 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { writeTar } from "../bootstrap/tar.mjs";
 
-/** Paths shipped in a release. Tests are not runtime. */
+/**
+ * Paths shipped in a release. Tests and test-only fixtures are not runtime: `*.fixture.mjs`, and `runtime/audit/fixtures.mjs`
+ * (P33: imported only by runtime/audit/fixtures.test.mjs; it materializes evaluation/fixtures/audit/, which is never shipped).
+ */
 // knowledge/sdd/ is the only knowledge subset consumers resolve (the sdd skill and the AGENTS router point into it);
 // the rest of knowledge/ (benchmarks, datasets, evaluation) is factory material and stays out of the bundle.
 export const INCLUDE_PREFIXES = ["runtime/", "contracts/", "core/", "mcp/", "profiles/", "audit/", ".agents/skills/", "knowledge/sdd/"];
-export const EXCLUDE_PATTERNS = [/\.test\.(mjs|ps1)$/, /^knowledge\/sdd\/goals\//];
+export const EXCLUDE_PATTERNS = [/\.test\.(mjs|ps1)$/, /\.fixture\.mjs$/, /^runtime\/audit\/fixtures\.mjs$/, /^knowledge\/sdd\/goals\//];
 /** The real digest cannot live inside the bytes it digests; the published platform.json carries it. */
 export const PLACEHOLDER_DIGEST = `sha256:${"0".repeat(64)}`;
 export const ENTRY_POINT = "runtime/main.mjs";

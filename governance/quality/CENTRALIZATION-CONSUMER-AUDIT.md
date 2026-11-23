@@ -20,7 +20,7 @@ Every reusable capability already has one canonical home and a generator. A v3 c
 
 ## 2. Real consumers (read-only)
 
-`gi-clinicadental`, `gi-ocr`, `gi-ot`, `gi-common-{crm,persons,tenants}`, `gi-platform-core`, `gi-vertical-dental` (found in `C:\Proyectos`; `D:\proyectos` absent). All are generation-1 adopters: no `ai-native.lock.json`, no `.claude/commands`, no `.opencode/commands`, no `sdd` skill, no `.specify`.
+`gi-clinicadental`, `gi-ocr`, `gi-ot`, `gi-common-{crm,persons,tenants}`, `gi-platform-core`, `gi-vertical-dental` (found in the workstation workspace; the other workspace root checked was absent). All are generation-1 adopters: no `ai-native.lock.json`, no `.claude/commands`, no `.opencode/commands`, no `sdd` skill, no `.specify`.
 
 | Local item (all 8 repos) | Classification | Evidence |
 |---|---|---|

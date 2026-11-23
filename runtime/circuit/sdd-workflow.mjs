@@ -216,6 +216,70 @@ export function validateSpecFolder(dir, { level = "normal" } = {}) {
   return errors;
 }
 
+const HEADING = /^ {0,3}(#{1,6})\s+(.*)$/;
+// CommonMark fences: an opening run of 3+ backticks (info string without backticks) or 3+ tildes; it closes only with a
+// run of the same character, at least as long, followed by nothing but spaces
+const FENCE_OPEN = /^ {0,3}(`{3,}(?=[^`]*$)|~{3,})/;
+const FENCE_CLOSE = /^ {0,3}(`{3,}|~{3,})[ \t]*$/;
+const ACCEPTANCE_HEADING = /^[*_]*(?:\d+(?:\.\d+)*[.)]?\s*)?[*_]*(?:acceptance criteria|criterios de aceptaci[oó]n)\b/i;
+// the same definition pattern requirementIds uses, one line at a time
+const REQUIREMENT_LINE = new RegExp(REQUIREMENT_DEF.source);
+// requirement families always checked, whatever the tasks cite; other families (HU-, CL-, S-...) only once a task cites one
+const REQUIREMENT_FAMILIES = ["RF", "RNF", "NFR", "FR", "REQ"];
+
+/**
+ * Non-blocking findings (strings) for one specs/NNN-slug folder: the acceptance guarantees the spec phase
+ * already promises (/sdd-spec writes acceptance criteria; /sdd-analyze checks that every requirement is covered
+ * by a task) and the structural check does not enforce. Kept apart from validateSpecFolder on purpose: a warning
+ * changes no exit code and no review VALIDATION result (making them blocking is a new gate, see VERSIONING-POLICY).
+ * Ids defined under an acceptance criteria heading are criteria, not requirements.
+ */
+export function specWarnings(dir, { level = "normal" } = {}) {
+  if (level === "light") return [];
+  const spec = read(dir, "spec.md");
+  if (spec === null) return [];
+  const warnings = [];
+  const requirements = new Set();
+  let hasAcceptance = false;
+  let acceptanceDepth = 0;
+  let fence = null; // the opening run while inside a fenced block
+  for (const line of spec.normalize("NFC").split(/\r?\n/)) {
+    if (fence) {
+      const close = FENCE_CLOSE.exec(line);
+      if (close && close[1][0] === fence[0] && close[1].length >= fence.length) fence = null;
+      continue;
+    }
+    const open = FENCE_OPEN.exec(line);
+    if (open) {
+      fence = open[1];
+      continue;
+    }
+    const heading = HEADING.exec(line);
+    if (heading) {
+      const depth = heading[1].length;
+      if (acceptanceDepth && depth <= acceptanceDepth) acceptanceDepth = 0;
+      if (!acceptanceDepth && ACCEPTANCE_HEADING.test(heading[2].trim())) {
+        acceptanceDepth = depth;
+        hasAcceptance = true;
+      }
+      continue;
+    }
+    const definition = REQUIREMENT_LINE.exec(line);
+    if (definition && !acceptanceDepth) requirements.add(definition[1]);
+  }
+  if (!hasAcceptance) warnings.push('spec.md has no acceptance criteria section ("## Acceptance criteria" or "## Criterios de aceptación"): /sdd-spec requires testable acceptance criteria');
+  const tasks = read(dir, "tasks.md");
+  if (tasks !== null) {
+    const cited = new Set(parseTasks(tasks).filter((t) => !t.invalid).flatMap((t) => t.requirements));
+    // the usual requirement families plus any family a task cites (the project's convention): user stories, notes
+    // and other numbered lists that no task ever cites are not requirements to cover
+    const family = (id) => id.replace(/-\d+$/, "");
+    const families = new Set([...REQUIREMENT_FAMILIES, ...[...cited].map(family)]);
+    for (const id of requirements) if (families.has(family(id)) && !cited.has(id)) warnings.push(`${id} is not cited by any task in tasks.md: no task covers it`);
+  }
+  return warnings;
+}
+
 /**
  * Phase and next command from the artifacts only. `level` light has no folder:
  * the answer is the Task flow. Returns { phase, next, tasks: { done, pending, blocked, total }, errors }.

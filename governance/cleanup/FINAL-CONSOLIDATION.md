@@ -50,7 +50,7 @@ Dependabot quedó 39 commits detrás de `main` (checks en rojo por base obsoleta
 
 ## Local (fuera del repo)
 
-Archivo en `C:\Proyectos\_archive\2026-10-09\` con `README.md` manifest: parche accidental clinicadental→gi-ot, `gi-common-tenants.git-history-backup`, auditoría de Actions 2026-09-30 y 3 directorios huérfanos con evidencia suelta. Eliminados 11 directorios vacíos de `worktrees/`. Worktrees humanos (2, gi-common-tenants) y checkouts sucios (7): solo inventario, no tocados. Ramas y worktrees temporales de experimentos de esta sesión: eliminados.
+Archivo en `<workspace>\_archive\2026-10-09\` con `README.md` manifest: parche accidental clinicadental→gi-ot, `gi-common-tenants.git-history-backup`, auditoría de Actions 2026-09-30 y 3 directorios huérfanos con evidencia suelta. Eliminados 11 directorios vacíos de `worktrees/`. Worktrees humanos (2, gi-common-tenants) y checkouts sucios (7): solo inventario, no tocados. Ramas y worktrees temporales de experimentos de esta sesión: eliminados.
 
 ## Ramas
 

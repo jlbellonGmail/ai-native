@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-native.local/contracts/plan-approval-receipt.schema.json",
+  "title": "Plan Approval Receipt",
+  "description": "Evidence that the human owner approved an exact set of SDD plan documents at an exact PR head SHA, through the dedicated Environment `ai-native-plan-approval`, in a workflow run that executed from `main` and was requested by the `ai-native-plan-approval` GitHub App. Structure only: the configuration identity (trustedConfig) is checked against the tip of main by the verifier, never by this schema; provenance (the real artifact of that run: metadata, digest, downloaded bytes and content; run facts; trusted workflow revision; live PR, document and approval state) is verified against GitHub by `runtime/gates/plan-approval-receipt.mjs`; an isolated JSON is never sufficient evidence. The receipt authorises nothing else: no merge, no release, nothing outside the approved documents.",
+  "type": "object",
+  "required": [
+    "schemaVersion", "receiptId", "scopeId", "repositoryId", "repositoryName", "pullRequestNumber", "baseBranch", "headBranch", "headSHA",
+    "documents", "planSetFingerprint", "workflowPath", "workflowSHA", "workflowRunId", "trustedConfig", "runAttempt", "eventName",
+    "actorLogin", "actorId", "actorType", "environmentName", "environmentId", "approvalState", "reviewerLogin", "reviewerId",
+    "approvalObservedAt", "generatedAt"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "receiptId": { "type": "string", "pattern": "^par-[0-9]+-[0-9a-f]{16}$" },
+    "scopeId": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+    "repositoryId": { "type": "integer", "minimum": 1 },
+    "repositoryName": { "type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$" },
+    "pullRequestNumber": { "type": "integer", "minimum": 1 },
+    "baseBranch": { "type": "string", "pattern": "^\\S+$" },
+    "headBranch": { "type": "string", "pattern": "^\\S+$" },
+    "headSHA": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "documents": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["path", "sha256"],
+        "additionalProperties": false,
+        "properties": {
+          "path": { "type": "string", "pattern": "^[A-Za-z0-9_./-]+$" },
+          "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+        }
+      }
+    },
+    "planSetFingerprint": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "workflowPath": { "type": "string", "pattern": "^\\.github/workflows/[A-Za-z0-9_.-]+\\.ya?ml$" },
+    "workflowSHA": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "workflowRunId": { "type": "integer", "minimum": 1 },
+    "trustedConfig": {
+      "type": "object",
+      "description": "Identity of the configuration that judged this approval, read from a commit of main. Separate from planSetFingerprint: sourceRevision is NOT an input of the fingerprint.",
+      "required": ["path", "sourceRevision", "gitBlobSha", "sha256", "repositoryId", "workflowRunId"],
+      "additionalProperties": false,
+      "properties": {
+        "path": { "const": "governance/gates/plan-approval.json" },
+        "sourceRevision": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "gitBlobSha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "repositoryId": { "type": "integer", "minimum": 1 },
+        "workflowRunId": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "runAttempt": { "const": 1 },
+    "eventName": { "const": "workflow_dispatch" },
+    "actorLogin": { "type": "string", "pattern": "^[A-Za-z0-9-]+\\[bot\\]$" },
+    "actorId": { "type": "integer", "minimum": 1 },
+    "actorType": { "const": "Bot" },
+    "environmentName": { "type": "string", "pattern": "^\\S.*$" },
+    "environmentId": { "type": "integer", "minimum": 1 },
+    "approvalState": { "const": "approved" },
+    "reviewerLogin": { "type": "string", "pattern": "^[A-Za-z0-9-]+$" },
+    "reviewerId": { "type": "integer", "minimum": 1 },
+    "approvalObservedAt": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?Z$" },
+    "generatedAt": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?Z$" }
+  }
+}
