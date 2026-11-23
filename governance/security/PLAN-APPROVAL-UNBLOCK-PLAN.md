@@ -102,7 +102,10 @@ su trabajo como datos: `git bundle create <carpeta-de-intercambio>\<rama>.bundle
 El humano, desde su propio clon, ejecuta `git bundle verify <fichero>`,
 `git fetch <fichero> <rama>:refs/agent/<rama>`, revisa con `git log -p` en su
 clon y empuja desde allí. Un bundle es sólo datos: no trae configuración ni
-hooks. La carpeta de intercambio es escribible por `ai-agent` y sólo legible
+hooks. El humano **sólo lee** los diffs de esos commits: nunca hace checkout
+de `refs/agent/*` para ejecutar `node`, `npm`, pruebas o scripts en su perfil;
+la ejecución de código del agente ocurre sólo en la sesión `ai-agent` o en CI.
+La carpeta de intercambio es escribible por `ai-agent` y sólo legible
 para el humano como datos. El cambio local sin commitear de `D:\proyectos\ai-native\scripts\ai-cli.mjs` no
 se toca (las ACL no alteran contenido). Herramientas de control de
 navegador/escritorio no se usan en la sesión humana mientras haya aprobaciones
@@ -120,7 +123,7 @@ pendientes. Reversión: `net user ai-agent /delete` e `icacls <carpeta> /remove 
 | sesión `ai-agent` | `cmdkey /list` | sin destinos `github` |
 | sesión `ai-agent` | `dir C:\Users\<humano>` | acceso denegado |
 | sesión `ai-agent` | crear un fichero en `.git\hooks` del clon humano | acceso denegado |
-| sesión humana, en su propio clon | `node runtime/gates/plan-approval.mjs check-agent-isolation` | BLOCKED (control positivo: la sonda sigue detectando) |
+| sesión humana, en un checkout de un commit verificado de `main` (nunca código del agente) | `node runtime/gates/plan-approval.mjs check-agent-isolation` | BLOCKED (control positivo: la sonda sigue detectando) |
 
 Criterio de cierre: las ocho filas, con fecha y SHA del repositorio. Hasta
 entonces toda aprobación humana posterior se considera **no independiente**.
@@ -169,7 +172,7 @@ podría mergear como propietario).
   (`PLAN-APPROVAL-RECEIPT.md`), es decir, sabotear o borrar evidencia, nunca
   aprobar. Cualquier proceso que corra como `ai-agent` puede leer la clave,
   incluido código bajo prueba ejecutado en el tier `restricted` de 002. El
-  runner de aceptación excluye esa ruta en los tiers `node-permission` y
+  runner de aceptación deberá excluir esa ruta (requisito para 002, hoy no implementado) en los tiers `node-permission` y
   `container`; en `restricted` el riesgo queda aceptado y declarado, salvo que
   el propietario elija D-4.
 - **Pruebas:** con claves efímeras generadas en la propia prueba y API
@@ -246,9 +249,9 @@ rulesets no pueden exigir un check sólo para ciertas rutas):
 | Clase | Cómo se detecta | Resultado |
 |---|---|---|
 | PR de planes | toca un documento de algún scope de `plan-approval.json` | PASS sólo con `ai-native/plan-approval` en `success` sobre exactamente su head |
-| PR de implementación | declara `Plan-Scope`/`Plan-Task`, o toca una ruta de `implementationPaths` de un scope (campo nuevo, control plane) | condiciones 1–7 siguientes |
+| PR de implementación | declara `Plan-Scope`/`Plan-Task`, o toca una ruta de `implementationPaths` de un scope (campo nuevo, control plane, **obligatorio y no vacío**: un scope sin él ⇒ BLOCKED) | condiciones 1–7 siguientes |
 | PR de promoción `develop` → `main` | base `main`, head `develop` | PASS sólo si cada merge de primer padre del rango tiene `ai-native/plan-continuity` en `success` de la App fijada |
-| Otro PR | ninguna de las anteriores | `success` con la clase «sin scope» visible en el resumen; su control plane sigue pasando por `merge-gate` y el merge humano (U1) |
+| Otro PR | ninguna de las anteriores | `success` con la clase «sin scope» visible en el resumen, marcando explícitamente si toca `runtime/`, `core/`, `contracts/` o control plane; hacia `develop` sólo lo frena el merge humano del ruleset U1 (`merge-gate` actúa únicamente en PR hacia `main`) |
 
 Una implementación sin declarar y fuera de `implementationPaths` cae en «otro
 PR»: el gate no puede deducir intención, y ese caso queda cubierto por el
