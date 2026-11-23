@@ -67,8 +67,9 @@ trusted-base control-plane loader (`runtime/gates/control-plane.mjs`).
   by the human gate. The **feature is accepted** only when its consolidated
   acceptance is PASS at the evaluated revision with every N/A and DOWNGRADE
   approved (RF-35) and, for merge, the trusted CI verdict (RF-31) is PASS.
-  Acceptance FAIL ⇒ `CHANGES_REQUESTED` path (never `DONE`); BLOCKED, STALE or
-  NOT_RUN ⇒ `BLOCKED`; only a pending N/A or DOWNGRADE approval ⇒
+  Acceptance FAIL, BLOCKED, STALE or NOT_RUN ⇒ never `DONE`, `READY_FOR_HITL`
+  or `APPROVED`: the run ends `BLOCKED`, or `CHANGES_REQUESTED` when the
+  Coordinator's review rejects; only a pending N/A or DOWNGRADE approval ⇒
   `NEEDS_HUMAN_DECISION` (RF-35).
 * **observed case**: a case ID read from the runner's structured result output
   (not from the exit code alone) with its own pass/fail/skip status.
