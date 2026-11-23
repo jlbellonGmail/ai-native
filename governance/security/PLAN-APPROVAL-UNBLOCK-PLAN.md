@@ -328,7 +328,7 @@ consumo U4 y continuidad U5 para cada tarea de implementación.
 | U3 | `.github/workflows/plan-approval-attest.yml`, schema del binding en `contracts/` + tests | sí | ídem |
 | U5 | `.github/workflows/plan-continuity.yml`, `runtime/gates/plan-continuity.mjs` + tests, campo `implementationPaths` en `plan-approval.json`, enmienda de `PLAN-APPROVAL-RECEIPT.md` | sí | ídem |
 | U4 | `runtime/circuit/coordinator.mjs`, `runtime/gates/plan-approval-consumer.mjs` + tests, enmienda v2 de `PLAN-APPROVAL-COORDINATOR-CONTRACT.md` | sí | ídem |
-| U6 | `plan-approval.json` (`trustedRevisions`, scope `unblock-e2e-v1`), rulesets remotos | sí | `merge-gate` + `ai-native-human-review` hacia `main` |
+| U6 | `plan-approval.json` (`trustedRevisions`, scope `unblock-e2e-v1`, y `implementationPaths` no vacío para `unblock-e2e-v1` y `acceptance-v4-plans-v1` antes de emitir cualquier receipt de ellos), rulesets remotos | sí | `merge-gate` + `ai-native-human-review` hacia `main` |
 
 Un solo documento nuevo de especificación (`specs/004-plan-approval-enforcement/`)
 cubre U2–U5; no se crean Apps salvo la condicional de U3.

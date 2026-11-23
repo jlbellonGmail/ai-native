@@ -300,7 +300,7 @@ any App SHALL NOT approve it, and no file in the repository records it as
 approved. The trusted verdict path SHALL preserve the approval evidence (run
 ID, Environment, reviewer login and ID, approval time, head SHA and the item's
 justification digest) in the published check output and in the merge-closure
-traceability report; those copies are evidence for audit, and every gate
+traceability report (a derived rendering, never read as approval); those copies are evidence for audit, and every gate
 re-reads the approval from GitHub instead of trusting them.
 
 ## Non-goals
