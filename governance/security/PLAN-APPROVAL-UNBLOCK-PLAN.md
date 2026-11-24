@@ -47,7 +47,7 @@ bypass de administradores); verificador completo con pruebas sobre mocks.
 | Identidad | Estado | Uso en este plan | Justificación |
 |---|---|---|---|
 | `jlbellonGmail` (persona) | existe | única aprobadora; empuja y mergea mientras el agente no tenga identidad de escritura | ya es el revisor fijado; no se añade otra persona |
-| Usuario Windows `ai-agent` | **nuevo (U0)** | ejecuta todos los agentes | es la frontera que hace inaccesibles las credenciales humanas; sin coste |
+| Sesión Windows Sandbox con el usuario estándar `agent` | **nueva (U0, decidida por el propietario 2026-11-24)** | ejecuta todos los agentes | la frontera del hipervisor hace inaccesibles las credenciales, el escritorio y los archivos del host; sin cuentas ni ACL nuevas en el host; sin coste |
 | App `ai-native-plan-approval` | existe (bot 350901564) | sólo solicita (`workflow_dispatch`) | reutilizada; no puede aprobar Environments |
 | App `ai-native-trust` | existe (integration 5170488) | publica checks de veredicto/atestación | reutilizada: ya es la identidad de checks requeridos y su clave sólo vive en el Environment `ai-native-trust` (restringido a `main`) |
 | `GITHUB_TOKEN` de lectura | existe | credencial del verificador en CI | es un token de instalación de solo lectura que no es del propietario ni de la App solicitante, como exige el contrato |
@@ -67,34 +67,50 @@ Cada tarea de código (U2–U5) es control plane (`.github/**`,
 por ejecución, su propia spec/plan/tasks bajo `specs/004-plan-approval-enforcement/`
 (se crea al aprobarse este documento), revisión independiente y merge humano.
 
-### U0 — B2: separación humano/agente (procedimiento humano, sin código)
+### U0 — B2: separación humano/agente (Windows Sandbox, sin código de runtime)
 
-Reutiliza `AGENT-HUMAN-IDENTITY-SEPARATION.md`, pasos 1–6, con estas precisiones.
-Las credenciales y sesiones existentes del perfil humano (keyring de `gh`, Git
-Credential Manager, navegador, WSL2) **no se borran ni se modifican**: siguen
-siendo del humano; lo que cambia es que ningún agente vuelve a ejecutarse en
-ese perfil.
+Decisión del propietario (2026-11-24): U0 se realiza con **Windows Sandbox**;
+se descarta el usuario local `ai-agent` con ACL masivas (el procedimiento
+preparado no se ejecutó). Artefactos y procedimiento:
+`governance/security/u0-sandbox/` (`RUNBOOK.md`, `u0-sandbox.wsb`, `setup.ps1`,
+`agent-init.ps1`, `verify.ps1`, `checkpoint.ps1`, `restore.ps1`,
+`u0-config.json`, `CONTINUATION.md`). Las credenciales y sesiones del perfil
+humano **no se borran ni se modifican**; lo que cambia es que ningún agente
+vuelve a ejecutarse en ese perfil.
 
-1. Crear el usuario local estándar `ai-agent` sin pertenencia a
-   Administradores y sin conocer ninguna contraseña de administrador.
-2. **Repositorios separados.** El agente trabaja sólo en un clon propio en una
-   carpeta nueva (por ejemplo `D:\agent\ai-native`) con
-   `icacls <carpeta> /grant ai-agent:(OI)(CI)M`. El humano conserva sus clones
-   actuales (`D:\proyectos\ai-native*`) **sin** permiso de escritura para
-   `ai-agent`. Un árbol que el agente puede escribir (incluido `.git`: hooks,
-   `core.fsmonitor`, `core.hooksPath`, alias, filtros) puede ejecutar código del
-   agente con la identidad humana; por eso el humano nunca ejecuta `git`,
-   `node`, `npm` ni scripts dentro de un árbol escribible por el agente, y no
-   añade `safe.directory` para ellos. Nada sobre `C:\Users\<humano>`. Sin
-   secretos en la carpeta del agente.
-3. Instalar e iniciar sesión de Claude Code, Codex y OpenCode *dentro* de
-   `ai-agent` (autenticación del proveedor LLM, no de GitHub). No lanzar ningún
-   agente desde el perfil humano a partir de ese momento.
-4. Perfil `ai-agent` sin credenciales GitHub: `gh` sin sesión, sin
-   `GH_TOKEN`/`GITHUB_TOKEN`, sin destinos `github` en `cmdkey`. La clave de la
-   App solicitante **no** se instala todavía (se instala en U2, cuando exista
-   la herramienta que la usa).
-5. Ajuste en GitHub: ninguno en U0. `ai-native-human-review` mantiene
+1. **Frontera.** Una sesión de Windows Sandbox (VM desechable con hipervisor)
+   lanzada sólo desde el `.wsb` gobernado: portapapeles, impresoras, audio,
+   vídeo y vGPU deshabilitados; exactamente dos carpetas mapeadas:
+   `D:\agent-setup` (sólo lectura: scripts gobernados e instaladores con hash
+   fijado) y `D:\agent-exchange` (escritura: sólo bundles e informes
+   `u0-*`). No hay cuenta, ACL ni regla de firewall nuevas en el host.
+2. **Usuario del agente.** `setup.ps1` corre una vez como administrador del
+   Sandbox *antes* de que exista ningún proceso de agente: crea el usuario
+   estándar `agent` (contraseña aleatoria que nadie conoce), y el agente corre
+   siempre como `agent`, nunca como administrador.
+3. **Red.** El firewall del Sandbox, configurado por `setup.ps1` y no
+   modificable por `agent`, bloquea por defecto toda salida y permite sólo
+   IPv4 pública y DNS/DHCP hacia la pasarela del Sandbox: el host y la LAN
+   (SMB, SQL Server, IIS, Deskflow, GeneXus, router) quedan inalcanzables.
+   `verify.ps1` lo comprueba con conexiones reales.
+4. **Repositorio propio.** Clon público en `C:\work\ai-native` dentro del
+   Sandbox. Un árbol escribible por el agente (incluido `.git`: hooks,
+   `core.fsmonitor`, `core.hooksPath`, alias, filtros) puede ejecutar código;
+   por eso el humano nunca ejecuta nada desde `D:\agent-exchange` ni abre esa
+   carpeta en el Explorador (un `.url`/`.lnk`/`desktop.ini` hostil filtraría su
+   hash NTLM); sólo `git bundle verify`/`git fetch` desde su clon tras la
+   comprobación de contenido del `RUNBOOK.md`.
+5. **Proveedor LLM sin GitHub.** Claude Code se instala por usuario dentro del
+   Sandbox con el instalador oficial; el propietario inicia sesión con su
+   suscripción en el navegador del Sandbox (sin copiar perfiles, cookies ni
+   sesiones del host). Codex y OpenCode quedan fuera de U0. `gh` está
+   instalado sin sesión (la sonda lo necesita); sin `GH_TOKEN`/`GITHUB_TOKEN`,
+   sin credential helper y sin destinos en `cmdkey`. La clave de la App
+   solicitante **no** existe en el Sandbox (su custodia se decide en D-4).
+6. **Persistencia.** El Sandbox se descarta al cerrarse: el agente hace
+   `checkpoint.ps1` (bundle con la rama y el trabajo sin commitear) tras cada
+   commit y antes de cerrar; `restore.ps1` lo recupera en la sesión siguiente.
+7. Ajuste en GitHub: ninguno en U0. `ai-native-human-review` mantiene
    `prevent_self_review: false` porque, en el esquema mínimo, quien empuja los
    PR es el propio humano; la independencia la da que el agente ya no pueda
    actuar como `jlbellonGmail`.
@@ -125,7 +141,7 @@ requerido; (5) sin `workflows: write` no puede empujar cambios de
 `.github/workflows/**` (los empuja el humano). Límites que no cierra: puede
 empujar a ramas de PR abiertas (incluida la de planes, lo que invalida su
 aprobación pero no la falsifica), cerrar PR o editar descripciones, y
-cualquier proceso de `ai-agent` puede leer su clave. Recomendación: esquema
+cualquier proceso del agente puede leer su clave. Recomendación: esquema
 mínimo hasta cerrar U6; decidir D-2 entonces con estas cinco condiciones
 verificadas.
 
@@ -135,7 +151,7 @@ verificadas.
 | Permisos | ninguno en GitHub | `contents: write`, `pull_requests: write`, `metadata: read`; nunca `workflows`, `actions`, `administration`, `environments` |
 | Puede aprobar o cambiar protecciones | no | no (no es revisora ni administradora; verificable con `gh api`) |
 | Fricción | el humano importa bundles y empuja cada PR | el agente empuja y abre PR; el humano sólo revisa, aprueba y mergea |
-| Riesgo residual | ninguno nuevo | empuje a ramas de PR abiertas (invalida, no falsifica), cierre/edición de PR, clave legible por procesos `ai-agent` |
+| Riesgo residual | ninguno nuevo | empuje a ramas de PR abiertas (invalida, no falsifica), cierre/edición de PR, clave legible por procesos del agente |
 | Cambios de contrato | ninguno | enmendar `AGENT-HUMAN-IDENTITY-SEPARATION.md` (segunda identidad técnica del agente) y la tabla de identidades de este plan; opcionalmente activar `prevent_self_review` en `ai-native-human-review` (el que empuja ya no sería el propietario: refuerza, no rebaja); `PLAN-APPROVAL-COORDINATOR-CONTRACT.md` no cambia |
 
 Ninguna de las dos se adopta en esta tarea; la elección es D-2.
@@ -149,29 +165,38 @@ El humano, desde su propio clon, ejecuta `git bundle verify <fichero>`,
 clon y empuja desde allí. Un bundle es sólo datos: no trae configuración ni
 hooks. El humano **sólo lee** los diffs de esos commits: nunca hace checkout
 de `refs/agent/*` para ejecutar `node`, `npm`, pruebas o scripts en su perfil;
-la ejecución de código del agente ocurre sólo en la sesión `ai-agent` o en CI.
-La carpeta de intercambio es escribible por `ai-agent` y sólo legible
-para el humano como datos. El cambio local sin commitear de `D:\proyectos\ai-native\scripts\ai-cli.mjs` no
-se toca (las ACL no alteran contenido). Herramientas de control de
+la ejecución de código del agente ocurre sólo en el Sandbox o en CI.
+La carpeta de intercambio `D:\agent-exchange` es escribible por el Sandbox y
+para el humano es sólo datos. El cambio local sin commitear de `D:\proyectos\ai-native\scripts\ai-cli.mjs` no
+se toca. Herramientas de control de
 navegador/escritorio no se usan en la sesión humana mientras haya aprobaciones
-pendientes. Reversión: `net user ai-agent /delete` e `icacls <carpeta> /remove ai-agent`.
+pendientes. Reversión: cerrar la ventana del Sandbox (descarta todo su
+estado); en el host sólo quedan `D:\agent-setup` y `D:\agent-exchange`, cuyo
+borrado es una decisión manual aparte.
 
 **Verificación requerida** (evidencia sin secretos, registrada en
 `governance/execution/current/`):
 
 | Desde | Comando | Esperado |
 |---|---|---|
-| sesión `ai-agent` | `whoami` | `<equipo>\ai-agent` |
-| sesión `ai-agent` | `net localgroup Administrators` | `ai-agent` no aparece |
-| sesión `ai-agent` | `node runtime/gates/plan-approval.mjs check-agent-isolation` | `agent-isolation: PASS` |
-| sesión `ai-agent` | `gh auth status` | sin sesión |
-| sesión `ai-agent` | `cmdkey /list` | sin destinos `github` |
-| sesión `ai-agent` | `dir C:\Users\<humano>` | acceso denegado |
-| sesión `ai-agent` | crear un fichero en `.git\hooks` del clon humano | acceso denegado |
-| sesión humana, en un checkout de un commit verificado de `main` (nunca código del agente) | `node runtime/gates/plan-approval.mjs check-agent-isolation` | BLOCKED (control positivo: la sonda sigue detectando) |
+| Desde | Prueba (`RUNBOOK.md`) | Esperado |
+|---|---|---|
+| host, antes de cada arranque | V0: hash de cada artefacto de `D:\agent-setup` contra el blob del commit revisado; instaladores contra `u0-config.json`; contenido exacto de las dos carpetas | todo coincide; `D:\agent-exchange` sin nada salvo bundles/informes `u0-*` |
+| Sandbox, usuario `agent` (`verify.ps1`) | V1: `whoami`, nombre de equipo, token | `*\agent`, distinto de `M7`, no administrador |
+| ídem | V2: unidades, mapeos SMB, rutas del host | sólo `C:`; ninguno; `D:\proyectos` y `C:\Users\<humano>` inexistentes |
+| ídem | V3: `node runtime/gates/plan-approval.mjs check-agent-isolation` | `agent-isolation: PASS` |
+| ídem | V4/V5: `gh auth status --json hosts`, `cmdkey /list`, variables de token, `credential.helper` efectivo | `{"hosts":{}}`; ninguno; ninguna; vacío |
+| ídem | V6: escribir en la carpeta de setup; escribir/borrar en exchange; crear junction y symlink en exchange | denegado; permitido; no se crean |
+| ídem | N: TCP a la pasarela del Sandbox y a la LAN en los puertos del host; UNC `\\<pasarela>\C$`; TCP a `github.com`, `api.anthropic.com`, `claude.ai`; desactivar el firewall o añadir una regla como `agent` | sin conexión; inaccesible; conecta; denegado |
+| Sandbox (humano) | V7: portapapeles en ambos sentidos | no pasa |
+| sesión humana, en un checkout de un commit verificado de `main` (nunca código del agente) | V8: `node runtime/gates/plan-approval.mjs check-agent-isolation` | BLOCKED (control positivo: la sonda sigue detectando) |
 
-Criterio de cierre: las ocho filas, con fecha y SHA del repositorio. Hasta
-entonces toda aprobación humana posterior se considera **no independiente**.
+Criterio de cierre: `verify.ps1` con `result: PASS` (informe JSON en
+`D:\agent-exchange`), V0, V7 y V8 registrados por el propietario con fecha y SHA
+del repositorio. Hasta entonces toda aprobación humana posterior se considera
+**no independiente**. Una comprobación PASS sólo prueba lo que mide: no
+cubre un escape del hipervisor ni una elevación de privilegios dentro del
+Sandbox (riesgos residuales, sin aceptar).
 
 ### U1 — Ruleset de `develop` (humano, configuración remota)
 
@@ -213,7 +238,7 @@ mergear como propietario).
   comprueba en la configuración de la App que la instalación tiene
   exactamente `Actions: write` y `Metadata: read`. Quien tenga la clave puede
   pedir *todos* los permisos de la instalación, no sólo los que pide U2.
-- **Custodia:** el propietario genera la clave en la configuración de la App
+- **Custodia** (texto anterior a la decisión de U0 por Sandbox; el perfil `ai-agent` ya no se crea y la custodia se redecide en D-4 antes de implementar U2): el propietario genera la clave en la configuración de la App
   desde su perfil, la mueve a `%USERPROFILE%\.ai-native\keys\` *del perfil
   `ai-agent`* con `icacls <clave.pem> /inheritance:r /grant:r ai-agent:R`, y
   borra la copia descargada. Nunca en el repositorio, en secrets de GitHub, en
@@ -395,7 +420,7 @@ receipt real del scope de prueba y los criterios negativos de abajo.
 
 ### U7 — Aprobación de los planes 001–003 (objetivo final, fuera de este plan)
 
-Con U0–U6 cerrados: dispatch por U2 desde `ai-agent` sobre el head de #168,
+Con U0–U6 cerrados: dispatch por U2 desde la identidad que fije D-4 sobre el head de #168,
 aprobación del propietario en el Environment desde su perfil, atestación U3,
 consumo U4 y continuidad U5 para cada tarea de implementación.
 
@@ -403,8 +428,8 @@ consumo U4 y continuidad U5 para cada tarea de implementación.
 
 | Tarea | Archivos previstos | Control plane | Gate de entrega |
 |---|---|---|---|
-| U0 | ninguno en el repo; evidencia en `governance/execution/current/` | no | verificación de 8 filas por el propietario |
-| U1 | ninguno (ruleset remoto) | configuración remota | `gh api …/rulesets` revisado por el propietario |
+| U0 | `governance/security/u0-sandbox/**` (configuración, scripts de preparación y verificación, runbook; sin runtime); evidencia en `governance/execution/current/` | no | `verify.ps1` PASS más V0, V7 y V8 registrados por el propietario |
+| U1 | cargas preparadas en `governance/security/u1-rulesets/` (las aplica el propietario; el ruleset es remoto) | configuración remota | `gh api …/rulesets` revisado por el propietario |
 | U2 | `runtime/gates/plan-approval-dispatch.mjs` + test | sí | `human_gate: required`, revisión independiente, merge humano |
 | U3 | `.github/workflows/plan-approval-attest.yml`, schema del binding en `contracts/` + tests | sí | ídem |
 | U5 | `.github/workflows/plan-continuity.yml`, `runtime/gates/plan-continuity.mjs` + tests, campos `implementationPaths` y `pathClasses` (con su validador) en `plan-approval.json`, enmienda de `PLAN-APPROVAL-RECEIPT.md` | sí | ídem |
@@ -471,14 +496,17 @@ verificarlo; luego aprobar este plan (etapa 2) y crear el ruleset de U1.
   de cada scope (propuesta inicial en la spec de 004; cada ampliación posterior
   exige el Environment humano).
 - **D-3:** dónde vive este plan: en #168 (actual) o en un PR propio.
-- **D-4:** custodia de la clave solicitante: perfil `ai-agent` con el riesgo
-  aceptado de U2, o un usuario Windows separado `ai-dispatch` sólo para el
-  dispatch (más aislamiento, una identidad local más).
+- **D-4:** custodia de la clave solicitante. Con U0 por Windows Sandbox no
+  existe el perfil `ai-agent`: el Sandbox es efímero y una clave en una carpeta
+  mapeada sería legible por el agente. Opciones a decidir antes de U2: un
+  usuario Windows separado `ai-dispatch` sólo para el dispatch, u otra custodia
+  que el agente no pueda leer.
 
 ## Riesgos residuales
 
-Ventana TOCTOU entre verificar y actuar (acotada, no resuelta); una cuenta
-`ai-agent` con privilegios de administrador anularía U0; herramientas de
+Ventana TOCTOU entre verificar y actuar (acotada, no resuelta); una elevación
+a administrador dentro del Sandbox (el firewall del invitado dejaría de
+contener la red) o un escape del hipervisor anularían U0, sin aceptar; herramientas de
 control de escritorio en la sesión humana; `workflow_run` trata datos de un run
 no confiable (mitigado: no se ejecutan, se validan contra la API viva);
 consumidores que no hagan requerido el check; límites de la API de GitHub; un

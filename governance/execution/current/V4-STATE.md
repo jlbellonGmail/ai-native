@@ -82,6 +82,29 @@ tasks may still complete). U0 separates approval, administration and push;
 push removal limited to the bootstrap, builder App deferred to decision D-2.
 U1 split into a no-bypass ruleset and a restrict-updates ruleset.
 
+## 2026-11-24 update: U0 by Windows Sandbox (prepared, not verified)
+
+- Owner decision: U0 uses Windows Sandbox; the mass-ACL `ai-agent` procedure is
+  discarded (never executed). Claude access: the owner's existing subscription,
+  logged in inside the Sandbox; no paid API key. Network reach to the host and
+  LAN must be mitigated and tested; no risk is recorded as accepted.
+- Prepared: `governance/security/u0-sandbox/` (governed `.wsb`, setup, standard
+  in-guest user `agent`, default-deny guest firewall, verifier with effective
+  identity/filesystem/link/network/tamper checks, checkpoint/restore bundles,
+  runbook, continuation text) and the U0 section of
+  `PLAN-APPROVAL-UNBLOCK-PLAN.md`. Host changes: only `D:\agent-setup`
+  (artifacts + installers verified against official hashes) and an empty
+  `D:\agent-exchange`.
+- Validated offline: PowerShell parse of every script, XML/JSON validity,
+  checkpoint→restore round trip on a throwaway repository (committed, staged,
+  modified and untracked work preserved; index untouched).
+- BLOCKED: Windows Sandbox does not start on the host. The app package
+  `MicrosoftWindows.WindowsSandbox` 0.8.114.0 was provisioned at first launch and
+  `WindowsSandboxRemoteSession.exe` crashes (`FileNotFoundException`
+  `WinRT.Runtime 2.2.0.0`), also without any `.wsb`; pending file renames exist.
+  Unblock: reboot, then Repair/Reset of the app (RUNBOOK.md). Until then V1–V7
+  and the network checks have not run: U0 is PENDING.
+
 ## Next permitted action
 
 Human actions, in order (`PLAN-APPROVAL-UNBLOCK-PLAN.md`, section «Arranque»):
