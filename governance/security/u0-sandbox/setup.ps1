@@ -89,6 +89,7 @@ try {
   Say 'step 5c: boundary verification as the agent user (after the final firewall pass)'
   $v = Start-Process powershell.exe -Credential $cred -LoadUserProfile -WorkingDirectory 'C:\work' -ArgumentList @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', (Join-Path $setup 'verify.ps1'), '-Stamp', $stamp) -Wait -PassThru
   Say "verify exit $($v.ExitCode) (0 = PASS)"
+  if ($v.ExitCode -ne 0) { Fail "verify FAIL (exit $($v.ExitCode)); no agent shell is opened. Read the u0-verify-$stamp.json report." }
 
   Say 'step 6: open the agent shell (standard user) for the human to start claude'
   Start-Process powershell.exe -Credential $cred -LoadUserProfile -WorkingDirectory $cfg.clonePath -ArgumentList @('-NoExit', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', "`$host.UI.RawUI.WindowTitle='U0 agent shell'; Get-Content -Encoding UTF8 C:\agent-setup\CONTINUATION.md; Write-Host ''; Write-Host 'Run: claude   (log in with the owner subscription in THIS sandbox browser)'")
