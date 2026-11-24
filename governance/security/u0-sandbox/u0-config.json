@@ -1,0 +1,36 @@
+{
+  "repository": "https://github.com/jlbellonGmail/ai-native.git",
+  "branch": "feature/acceptance-v4",
+  "agentUser": "agent",
+  "clonePath": "C:\\work\\ai-native",
+  "installers": [
+    { "file": "node-v26.13.1-x64.msi", "sha256": "0398ced8446e119478c724d1aa37c5afd6aa1a76fceab12787eb9714c5ed8b45", "source": "https://nodejs.org/dist/v26.13.1/ (SHASUMS256.txt)" },
+    { "file": "Git-2.56.1-64-bit.exe", "sha256": "c330c72e10b408cc39994bfefdb63542b0d93d21699325c3e0bd874af8a5a559", "source": "github.com/git-for-windows/git release v2.56.1.windows.1 (asset digest)" },
+    { "file": "gh_2.105.0_windows_amd64.msi", "sha256": "d18367836c7dcf689ad2052730acf3ec6b9e8b1259a8bae3d512584f680d7525", "source": "github.com/cli/cli release v2.105.0 (asset digest)" }
+  ],
+  "allowedPublicRanges": [
+    "1.0.0.0-9.255.255.255",
+    "11.0.0.0-100.63.255.255",
+    "100.128.0.0-126.255.255.255",
+    "128.0.0.0-169.253.255.255",
+    "169.255.0.0-172.15.255.255",
+    "172.32.0.0-191.255.255.255",
+    "192.0.1.0-192.167.255.255",
+    "192.169.0.0-198.17.255.255",
+    "198.20.0.0-223.255.255.255"
+  ],
+  "mustBeBlocked": [
+    { "host": "192.168.0.1", "ports": [53, 80, 443] },
+    { "host": "192.168.0.3", "ports": [135, 139, 445, 1433, 3389, 5357, 24800, 30381] }
+  ],
+  "ipv6MustBeBlocked": [
+    { "host": "2606:4700:4700::1111", "port": 443 },
+    { "host": "2001:4860:4860::8888", "port": 443 }
+  ],
+  "gatewayPortsMustBeBlocked": [80, 135, 139, 443, 445, 1433, 5357, 24800, 30381],
+  "mustBeReachable": [
+    { "host": "github.com", "port": 443 },
+    { "host": "api.anthropic.com", "port": 443 },
+    { "host": "claude.ai", "port": 443 }
+  ]
+}

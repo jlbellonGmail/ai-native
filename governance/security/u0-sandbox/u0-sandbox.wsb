@@ -1,0 +1,25 @@
+<Configuration>
+  <vGPU>Disable</vGPU>
+  <Networking>Enable</Networking>
+  <MappedFolders>
+    <MappedFolder>
+      <HostFolder>D:\agent-setup</HostFolder>
+      <SandboxFolder>C:\agent-setup</SandboxFolder>
+      <ReadOnly>true</ReadOnly>
+    </MappedFolder>
+    <MappedFolder>
+      <HostFolder>D:\agent-exchange</HostFolder>
+      <SandboxFolder>C:\agent-exchange</SandboxFolder>
+      <ReadOnly>false</ReadOnly>
+    </MappedFolder>
+  </MappedFolders>
+  <LogonCommand>
+    <Command>powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\agent-setup\setup.ps1</Command>
+  </LogonCommand>
+  <AudioInput>Disable</AudioInput>
+  <VideoInput>Disable</VideoInput>
+  <PrinterRedirection>Disable</PrinterRedirection>
+  <ClipboardRedirection>Disable</ClipboardRedirection>
+  <ProtectedClient>Enable</ProtectedClient>
+  <MemoryInMB>8192</MemoryInMB>
+</Configuration>
