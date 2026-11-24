@@ -29,11 +29,24 @@ lanzamiento (24/11/2026 01:15:16).
 Acción humana para destrabarlo, en este orden, y deteniéndose en cuanto
 arranque:
 1. Reiniciar Windows (completa las operaciones de archivo pendientes).
+   HECHO el 24/11/2026 a las 11:20; el fallo sigue igual a las 11:35.
 2. Si sigue fallando: Configuración → Aplicaciones → Aplicaciones instaladas →
    Windows Sandbox → Opciones avanzadas → **Reparar** (y, si no basta,
-   **Restablecer**).
-3. Si sigue fallando: Windows Update → buscar actualizaciones, reiniciar y
-   reintentar.
+   **Restablecer**). Impacto: sólo la app Windows Sandbox; no tiene datos
+   propios que perder (cada sesión es descartable) y no toca `D:\agent-setup`,
+   `D:\agent-exchange` ni el repositorio.
+3. Si sigue fallando: Microsoft Store → Biblioteca → **Obtener
+   actualizaciones**, y Windows Update → buscar actualizaciones; reiniciar si
+   lo pide y reintentar.
+4. Si nada de lo anterior lo arregla, es un defecto de esa versión de la app
+   en esta compilación de Windows: informarlo en el Centro de opiniones y
+   esperar una versión nueva. Desactivar y reactivar la característica
+   Windows Sandbox queda como decisión del propietario: desinstala el
+   componente y requiere reinicio.
+
+Prueba tras cada paso: abrir `C:\Windows\System32\WindowsSandbox.exe` sin
+configuración. ESPERADO: aparece un escritorio de Windows limpio. Cerrarlo
+antes de seguir con V0.
 
 Para comprobar el arreglo, abrir `C:\Windows\System32\WindowsSandbox.exe` sin
 `.wsb`: debe abrirse el escritorio del Sandbox; cerrarlo después. Hasta

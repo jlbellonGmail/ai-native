@@ -104,6 +104,18 @@ U1 split into a no-bypass ruleset and a restrict-updates ruleset.
   `WinRT.Runtime 2.2.0.0`), also without any `.wsb`; pending file renames exist.
   Unblock: reboot, then Repair/Reset of the app (RUNBOOK.md). Until then V1–V7
   and the network checks have not run: U0 is PENDING.
+- Re-check after the owner's reboot (boot 2026-11-24 11:20; no pending file
+  renames left): still BLOCKED. Launching `WindowsSandbox.exe` with no `.wsb`
+  at 11:35 gives the same crash (`.NET Runtime` 1026 / `Application Error` 1000,
+  exception 0xe0434352, in `GlobalVtableLookup.InitializeGlobalVtableLookup`).
+  Point checks: `WinRT.Runtime.dll` is in the package folder with assembly
+  identity `2.2.0.0` / token `99ea127f02d97709` matching `deps.json`, its
+  Authenticode signature is valid (Microsoft), there are no Code Integrity or
+  AppLocker blocks and no `DOTNET_*` variables. The guest VM side runs
+  (`vmmemCmSysprep`). The failure is in the app's client process itself, not
+  in the host configuration or the U0 artifacts. Next step: owner-run Repair,
+  then Reset of the app, then a Store update check (RUNBOOK.md); nothing was
+  uninstalled or reset automatically.
 
 ## Next permitted action
 
