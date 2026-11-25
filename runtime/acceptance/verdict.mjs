@@ -5,7 +5,7 @@
 //
 // node runtime/acceptance/verdict.mjs --repo <dir> --base <sha> --head <sha> [--closure <artifact dir>] [--run <json>] --out <file>
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { closeSync, existsSync, fstatSync, openSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { detectDowngrades } from "./downgrade.mjs";
@@ -35,11 +35,15 @@ function gitBlob(repo, sha, path) {
   }
 }
 const asJson = (b) => (b.text === undefined ? null : (() => { try { return JSON.parse(b.text); } catch { return { __invalid: true }; } })());
+// one descriptor: the file that is size-checked is the file that is read (no check-then-read race)
 const readBounded = (file, max) => {
+  let fd;
+  try { fd = openSync(file, "r"); } catch { return null; }
   try {
-    if (!statSync(file).isFile() || statSync(file).size > max) return null;
-    return readFileSync(file, "utf8");
-  } catch { return null; }
+    const st = fstatSync(fd);
+    if (!st.isFile() || st.size > max) return null;
+    return readFileSync(fd, "utf8");
+  } catch { return null; } finally { closeSync(fd); }
 };
 
 /**
