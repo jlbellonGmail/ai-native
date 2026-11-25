@@ -982,3 +982,97 @@ test("DETACH of a legacy repository never deletes a file it cannot prove is ai-n
     assert.deepEqual(state(p3), b3, bad);
   }
 });
+
+// ---- v4.1.0 upgrade compatibility matrix (spec 003 RF-4, RF-8..RF-13) ---------------------------------------------------------------------------
+import { admitSource, loadUpgradeMatrix } from "../bootstrap/upgrade-matrix.mjs";
+
+const MATRIX = loadUpgradeMatrix();
+const fixtureOf = (tag) => JSON.parse(readFileSync(join(REPO_ROOT, "runtime", "bootstrap", "fixtures", "upgrade-matrix", `${tag}.json`), "utf8"));
+const T410 = release("v4.1.0");
+
+test("MATRIX: every admitted source has its own real-shape fixture recording tag, lock-schema blob and protocol", () => {
+  assert.deepEqual(MATRIX.admitted.map((r) => r.source).sort(), ["v3.4.2", "v3.4.3", "v4.0.1", "v4.0.2"]);
+  for (const row of MATRIX.admitted) {
+    const fx = fixtureOf(row.source);
+    assert.equal(fx.source, row.source);
+    assert.match(fx.tagCommit, /^[0-9a-f]{40}$/);
+    assert.equal(fx.observed.lockSchemaBlob, row.lockSchemaBlob);
+    assert.equal(fx.observed.bootstrapProtocol, row.bootstrapProtocol);
+    assert.equal(fx.observed.upgradeEngine, true);
+    assert.equal(fx.observed.cliVersion, row.source);
+    assert.equal(fx.lock.platform.version, row.source);
+    // re-checkable: when the tag is present locally its artifacts must match what the fixture recorded
+    const tagged = spawnSync("git", ["rev-parse", `${row.source}:contracts/lock.schema.json`], { cwd: REPO_ROOT, encoding: "utf8" });
+    if (tagged.status === 0) assert.equal(tagged.stdout.trim(), fx.observed.lockSchemaBlob, `${row.source} blob`);
+  }
+  // the current lock schema is still the admitted family
+  assert.equal(git(REPO_ROOT, "hash-object", "contracts/lock.schema.json").trim(), MATRIX.lockSchemaBlob);
+});
+
+test("MATRIX: v4.0.0, v3.4.1, v3.2.0, unknown, malformed and future sources are rejected; v3.4.x reports the MAJOR crossing", () => {
+  for (const tag of ["v4.0.0", "v3.4.1", "v3.2.0"]) {
+    const r = admitSource({ lock: fixtureOf(tag).lock, target: "v4.1.0" });
+    assert.equal(r.ok, false, tag);
+    assert.match(r.errors[0], /not an admitted path/);
+  }
+  const lock = (version, extra = {}) => ({ schemaVersion: 1, platform: { repo: "o/ai-native", version, commit: "c".repeat(40), digest: `sha256:${"0".repeat(64)}` }, profiles: ["factory"], ...extra });
+  assert.match(admitSource({ lock: lock("v4.2.0"), target: "v4.1.0" }).errors[0], /future source/);
+  assert.match(admitSource({ lock: lock("v4.0.2-rc.1"), target: "v4.1.0" }).errors[0], /malformed or a prerelease/);
+  assert.match(admitSource({ lock: lock("4.0.2"), target: "v4.1.0" }).errors[0], /malformed/);
+  assert.match(admitSource({ lock: { ...lock("v4.0.2"), schemaVersion: 2 }, target: "v4.1.0" }).errors[0], /schemaVersion/);
+  assert.match(admitSource({ lock: null, target: "v4.1.0" }).errors[0], /absent or malformed/);
+  for (const tag of ["v3.4.2", "v3.4.3"]) assert.match(admitSource({ lock: fixtureOf(tag).lock, target: "v4.1.0" }).warnings.join(), /MAJOR_CROSSING: v3\.4\.\d -> v4\.1\.0/);
+  for (const tag of ["v4.0.1", "v4.0.2"]) assert.deepEqual(admitSource({ lock: fixtureOf(tag).lock, target: "v4.1.0" }).warnings, []);
+  // the matrix speaks only for its target line
+  assert.equal(admitSource({ lock: lock("v9.9.1"), target: "v9.9.2" }).applies, false);
+});
+
+for (const source of ["v4.0.1", "v4.0.2", "v3.4.2", "v3.4.3"]) {
+  test(`UPGRADE ${source} -> v4.1.0: owned files preserved, drift kept and reported, failure rolls back, second run idempotent`, async () => {
+    const SRC = release(source);
+    const { project, cache } = await adopted(SRC);
+    // project-owned sentinels and a managed-file edit (keep-local policy)
+    writeFileSync(join(project, "OWNED.md"), "project-owned, never touched\n");
+    mkdirSync(join(project, "src"), { recursive: true });
+    writeFileSync(join(project, "src", "app.py"), "print('owned')\n");
+    git(project, "add", "-A");
+    git(project, "-c", "user.email=t@example.invalid", "-c", "user.name=t", "commit", "-qm", "owned files");
+    const bundle = join(tmp("bundle"), "b.tar.gz");
+    writeFileSync(bundle, T410.rel.bytes);
+
+    // forced failure after the first write: exact rollback of files, index and status
+    const before = state(project);
+    const failed = await upgrade({ projectRoot: project, cacheRoot: cache, bundleFile: bundle, attestationRecord: record(T410.rel, SLUG), offline: true, afterWrite: () => { throw new Error("injected failure"); } });
+    assert.equal(failed.status, "FAIL");
+    assert.match(failed.text, /ROLLED_BACK/);
+    assert.deepEqual(state(project), before);
+
+    const ok = await upgrade({ projectRoot: project, cacheRoot: cache, bundleFile: bundle, attestationRecord: record(T410.rel, SLUG), offline: true });
+    assert.equal(ok.state, "READY", ok.text);
+    assert.equal(lockOf(project).platform.version, "v4.1.0");
+    assert.equal(readFileSync(join(project, "OWNED.md"), "utf8"), "project-owned, never touched\n");
+    assert.equal(readFileSync(join(project, "src", "app.py"), "utf8"), "print('owned')\n");
+    if (source.startsWith("v3.")) assert.match(ok.warnings.join(), /MAJOR_CROSSING/);
+    else assert.doesNotMatch(ok.warnings.join(), /MAJOR_CROSSING/);
+
+    // the same verified bundle again: same managed state, nothing deleted or duplicated
+    const after1 = snap(project);
+    const again = await upgrade({ projectRoot: project, cacheRoot: cache, bundleFile: bundle, attestationRecord: record(T410.rel, SLUG), offline: true });
+    assert.equal(again.state, "UP_TO_DATE", again.text);
+    assert.deepEqual(snap(project), after1);
+  });
+}
+
+test("UPGRADE v4.0.0 -> v4.1.0 is rejected before any file, index or cache write", async () => {
+  const SRC = release("v4.0.0");
+  const { project, cache } = await adopted(SRC);
+  const before = state(project);
+  const cacheBefore = snap(cache);
+  const bundle = join(tmp("bundle"), "b.tar.gz");
+  writeFileSync(bundle, T410.rel.bytes);
+  const r = await upgrade({ projectRoot: project, cacheRoot: cache, bundleFile: bundle, attestationRecord: record(T410.rel, SLUG), offline: true });
+  assert.equal(r.status, "FAIL");
+  assert.match(r.errors.join(), /UPGRADE_MATRIX: v4\.0\.0 -> v4\.1\.0 is not an admitted path/);
+  assert.deepEqual(state(project), before);
+  assert.deepEqual(snap(cache), cacheBefore);
+});

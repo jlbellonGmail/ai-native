@@ -18,6 +18,7 @@ import { applyUpgrade } from "../migrate/upgrade-delta.mjs";
 import { JOURNAL_PATH, safeJoin } from "../migrate/adopt.mjs";
 import { CALLER_WORKFLOW, planBump } from "../migrate/bump.mjs";
 import { managedPaths } from "../migrate/tracking.mjs";
+import { admitSource } from "./upgrade-matrix.mjs";
 import { ensureInCache, fail, gitSnapshot, readAttestation, renderText, repoFacts, restoreGit, stage, verify, writeAttestation } from "./adopt.mjs";
 
 const slugOf = (repo) => repo.replace(/^github:/, "");
@@ -64,6 +65,10 @@ export async function upgrade({ projectRoot, cacheRoot, bundleFile, attestationR
 
   const from = lock.platform.version;
   const base = { version: from, profile: lock.profiles[0], attestation: "PASS" };
+  // 003 RF-8..RF-10: exact admitted source releases only, checked before any file, index or cache write
+  const admission = admitSource({ lock, target: platform.version });
+  if (!admission.ok) return fail(admission.errors, warnings, base);
+  warnings.push(...admission.warnings);
   const order = cmpAny(platform.version, from);
   if (order < 0) return fail([`DOWNGRADE_REFUSED: this repository is pinned to ${from}; ${platform.version} is older. \`ai-native upgrade\` only moves forward`], warnings, base);
   if (order === 0 && digest === lock.platform.digest) {
