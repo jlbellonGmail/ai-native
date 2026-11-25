@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-native.local/contracts/acceptance-result.schema.json",
+  "title": "Acceptance result",
+  "description": "Result of one acceptance scenario or the fail-closed consolidation of a feature (spec 002 RF-4, RF-29). The six statuses map onto runtime/lib/result.mjs without changing that enum: PASS->PASS, FAIL->FAIL, BLOCKED/STALE/NOT_RUN->ERROR, NOT_APPLICABLE (approved or structural)->NOT_APPLICABLE. STALE, NOT_RUN and BLOCKED always block.",
+  "type": "object",
+  "required": ["status", "reasons"],
+  "properties": {
+    "status": { "type": "string", "enum": ["PASS", "FAIL", "BLOCKED", "STALE", "NOT_RUN", "NOT_APPLICABLE"] },
+    "reasons": { "type": "array", "items": { "type": "string" } },
+    "pending": { "type": "array", "items": { "type": "string", "enum": ["NOT_APPLICABLE_PENDING_APPROVAL", "DOWNGRADE_PENDING_APPROVAL"] } }
+  },
+  "additionalProperties": true
+}
