@@ -41,6 +41,7 @@ import { appendFileSync, closeSync, constants, existsSync, fstatSync, mkdirSync,
 import { dirname, join, resolve } from "node:path";
 import { ADVERSE_VERDICTS, REVIEW_VERDICTS, checkOutcomeCoherence, checkReviewEvidence, deriveReviewOutcome, loadRuntimeCapabilities } from "./independent-review.mjs";
 import { parseTasks, validateSpecFolder } from "./sdd-workflow.mjs";
+import { acceptancePacketLines, featureAcceptanceStatus } from "../acceptance/feature.mjs";
 
 export const LEDGER = "reviews.jsonl";
 export const KINDS = ["independent", "self"];
@@ -154,6 +155,7 @@ export function beginReview(project, slug, { base }) {
     "",
     // the command is the author's text too: fenced like its output, never part of the packet's own structure
     ...(validations.length ? validations.flatMap((r, i) => [`### Run ${i + 1}: exit ${r.exitCode}${r.revisionAfter === r.revision ? "" : " (changed the change it validated)"}`, "", "Command:", ...fenced("sh", r.command), "Output (tail):", ...fenced("text", String(r.outputTail ?? "").trimEnd()), ""]) : ["None. Without validation runs this change cannot be approved.", ""]),
+    ...acceptancePacketLines(project, slug, { base, revision: change.revision }),
     "## Artifacts",
     ...["spec.md", "plan.md", "tasks.md"].map((f) => `- specs/${slug}/${f}`),
     "",
@@ -256,7 +258,7 @@ const readValidations = (dir) => (existsSync(join(dir, "validations.jsonl")) ? r
  * Validation of `revision`: the structural check of the spec folder plus the latest run of every command the
  * platform ran on exactly this revision (a command that changed the change does not validate it). No run: NOT_RUN.
  */
-export function validationOf(project, slug, revision) {
+export function validationOf(project, slug, revision, { acceptance = null } = {}) {
   const reasons = [];
   const structural = validateSpecFolder(join(project, "specs", slug), { level: "normal" });
   if (structural.length) reasons.push(`sdd validate: ${structural[0]}`);
@@ -265,8 +267,14 @@ export function validationOf(project, slug, revision) {
     if (run.exitCode !== 0) reasons.push(`'${run.command}' exited ${run.exitCode}`);
     else if (run.revisionAfter !== revision) reasons.push(`'${run.command}' changed the change it validated`);
   }
-  const result = !runs.length ? (structural.length ? "FAIL" : "NOT_RUN") : reasons.length ? "FAIL" : "PASS";
+  let result = !runs.length ? (structural.length ? "FAIL" : "NOT_RUN") : reasons.length ? "FAIL" : "PASS";
   if (!runs.length) reasons.push("no validation command was run by `sdd review validate` on this revision");
+  // 003 RF-19: a REQUIRED feature validates only with Native Acceptance PASS from the acceptance ledger at this
+  // revision; free-text `--command` runs (`node -e 0` included) never count toward acceptance
+  if (acceptance && acceptance.status !== "PASS" && acceptance.status !== "NOT_APPLICABLE") {
+    if (result === "PASS") result = "FAIL";
+    reasons.push(`feature acceptance is ${acceptance.status}: ${(acceptance.reasons ?? []).slice(0, 3).join("; ") || "no runner-written ledger entry for this revision"}`);
+  }
   return { result, runs: runs.map(({ command, exitCode, ranAt }) => ({ command, exitCode, ranAt })), keys: runs.map(runKey), reasons };
 }
 
@@ -433,7 +441,8 @@ export function reviewStatus(project, slug, { base, policyGate = "required", att
     // nothing recorded yet: the review simply has not run (NOT_RUN), whatever the runtime
     capability = { independentReview: "available", reasons: [] };
   }
-  const validation = validationOf(project, slug, revision);
+  const acceptance = featureAcceptanceStatus(project, slug, { base });
+  const validation = validationOf(project, slug, revision, { acceptance });
   // an approval covers the validation runs its Reviewer was shown, and only those
   const shown = new Set(independentReview?.issued?.validations ?? []);
   const validationReviewed = validation.keys.length > 0 && validation.keys.every((k) => shown.has(k));
@@ -449,9 +458,13 @@ export function reviewStatus(project, slug, { base, policyGate = "required", att
     currentRevision: revision,
     policyGate,
     runtimes,
+    acceptance: acceptance.status,
+    acceptancePending: acceptance.status === "BLOCKED" && (acceptance.pending ?? []).length > 0 && (acceptance.reasons ?? []).every((r) => /_PENDING_APPROVAL$/.test(r)),
   });
   if (outcome.independentReview === "NOT_PROVEN" && lastUnattested) outcome.reasons.push(...lastUnattested.errors.map((e) => `unattested independent record: ${e}`));
   if (validation.result !== "PASS" && outcome.independentReview === "PASS") outcome.reasons.push(...validation.reasons);
+  // a validation failed only by Native Acceptance says so, whatever the review state (green runs next to VALIDATION: FAIL)
+  else if (validation.result !== "PASS") outcome.reasons.push(...validation.reasons.filter((r) => r.startsWith("feature acceptance is ")).map((r) => `VALIDATION: ${r}`));
   const runReasons = new Set();
   if (!attested.length && runs.some((r) => r.kind === "independent" && r.verdict === "APPROVED")) runReasons.add("a reviewer run of this revision approved it, but it is not recorded: `sdd review record --kind independent`");
   for (const run of unproven) {
@@ -469,6 +482,7 @@ export function reviewStatus(project, slug, { base, policyGate = "required", att
     records: records.length,
     unattested: unattested.map(({ record, errors }) => ({ nonce: record.nonce ?? null, verdict: record.verdict ?? null, errors })),
     validation,
+    acceptance: { classification: acceptance.classification, status: acceptance.status, pending: acceptance.pending ?? [], reasons: acceptance.reasons ?? [] },
     last: records.at(-1) ?? null,
   };
 }

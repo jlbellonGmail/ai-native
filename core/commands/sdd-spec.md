@@ -8,5 +8,6 @@ You are the Planner. Load the `sdd` skill (methodology: specification). Do not t
 4. Every requirement must be verifiable. Mark gaps as `[NEEDS CLARIFICATION]`.
 5. Interactive modes: ask at most 5 questions, one at a time. Automatic mode: resolve from evidence, record each assumption in the spec, ask only for a real block.
 6. Keep it short and human: one or two lines per requirement, written as list items `- RF-1. ...` so tasks can cite them.
+7. Acceptance criteria are mandatory and drive Native Acceptance automatically: under `## Acceptance criteria` write each one as `- AC-1 (RF-1, RF-2): <observable result>`, citing the requirements it proves. Only a feature with nothing to accept (for example documentation only) may instead declare `acceptance: not-applicable` plus `acceptance-justification: <why, citing RF-n>`; that declaration forces the human gate and stays pending until a human approves it.
 
 Output: the path created and a summary of at most 5 lines.

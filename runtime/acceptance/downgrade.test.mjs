@@ -51,7 +51,7 @@ test("every DOWNGRADE kind is detected against BASE and forces the human gate", 
 test("contract creation and N/A on a new REQUIRED feature are findings", () => {
   const c = base();
   c.plan = buildPlan({ naCategories: ["persistence"] });
-  assert.deepEqual(kinds({ contract: null, plan: null, specText: null, cutoff: null }, c).filter((k) => k !== "NON_SUT_CLASS_WIDENED"), ["CONTRACT_CREATED", "NOT_APPLICABLE_DECLARED"]);
+  assert.deepEqual(kinds({ contract: null, plan: null, specText: null, cutoff: null }, c), ["CONTRACT_CREATED", "NOT_APPLICABLE_DECLARED"]);
   const naSpec = { ...base(), specText: "# x\nacceptance: not-applicable\nacceptance-justification: RF-1\n" };
   assert.ok(kinds(base(), naSpec).includes("NOT_APPLICABLE_DECLARED"));
 });

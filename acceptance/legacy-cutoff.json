@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "recordedBy": "v4.1.0 factory cutoff (spec 003 RF-18): every specs/ slug at the v4.1.0 merge base origin/develop 15548c1, except 001, 002, 003",
+  "from": "v4.0.2",
+  "to": "v4.1.0",
+  "slugs": [
+    "hardening-v1.1-h4-executable-testing-profiles",
+    "hardening-v1.1-h5-real-evaluation-runs",
+    "hardening-v1.1-h6-target-repo-security-validation",
+    "hardening-v1.1-h7-first-client-project-playbook",
+    "p0-t2-audit-safe-script-mode",
+    "sdd-independent-review"
+  ]
+}

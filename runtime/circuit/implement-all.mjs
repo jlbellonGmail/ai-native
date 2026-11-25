@@ -15,6 +15,10 @@
 //   runtimes: core/agents.json `runtimes` (default: loaded from the platform)
 //   builderInvocationId: optional id of the authoring session; a review from it is never independent
 //   humanGate: optional { ok, gate, reasons } from deriveHumanGate; ok:false blocks before any task
+//   feature: { project, slug, base } of the spec folder (data, not a callback): after the task loop and before the review
+//            loop the platform runs Native Acceptance itself (runtime/acceptance/feature.mjs) and reads its result back
+//            from the runner-written ledger. Absent only for a Task flow (no spec folder): acceptance NOT_APPLICABLE.
+//            The per-task accept(task) is the task's done-when check and never counts as feature acceptance.
 //   persist(taskId, state) -> void   optional: writes the task state (e.g. tasks.md) as it changes;
 //                                    without it the returned `states` is the only record
 // An agent that throws counts as a failed attempt with that error as the diagnosis.
@@ -27,6 +31,8 @@
 import { loadWorkflow } from "./sdd-workflow.mjs";
 import { convergenceBudgetFor, decideConvergence } from "./converge.mjs";
 import { checkReviewEvidence, deriveReviewOutcome, loadRuntimeCapabilities, resolveReviewCapability } from "./independent-review.mjs";
+// the feature-level acceptance stage is platform-owned: imported here, never injected (003 RF-19)
+import { featureAcceptanceStatus, runFeatureAcceptance } from "../acceptance/feature.mjs";
 
 const circuitLevelOf = (workflow, level) => {
   const found = workflow.levels.find((l) => l.id === level);
@@ -37,7 +43,11 @@ const circuitLevelOf = (workflow, level) => {
 // the reviewer's verdict as the outcome sees it once the convergence decision is terminal
 const TERMINAL_VERDICT = { NEEDS_HUMAN_DECISION: "NEEDS_HUMAN_DECISION", BLOCKED: "BLOCKED" };
 
-export async function implementAll({ tasks, level = "normal", implement, test, accept, fullSuite, review, selfReview = null, fix, revision = async () => null, capability = null, runtimes = loadRuntimeCapabilities(), builderInvocationId = null, persist = async () => {}, workflow = loadWorkflow(), humanGate = null }) {
+/** The only obstacle is a pending NOT_APPLICABLE / DOWNGRADE approval (002 RF-35). */
+const PENDING = new Set(["NOT_APPLICABLE_PENDING_APPROVAL", "DOWNGRADE_PENDING_APPROVAL"]);
+const pendingOnly = (a) => a?.status === "BLOCKED" && (a.pending ?? []).length > 0 && (a.reasons ?? []).every((r) => PENDING.has(r));
+
+export async function implementAll({ tasks, level = "normal", implement, test, accept, fullSuite, review, selfReview = null, fix, revision = async () => null, capability = null, runtimes = loadRuntimeCapabilities(), builderInvocationId = null, persist = async () => {}, workflow = loadWorkflow(), humanGate = null, feature = null }) {
   const depth = circuitLevelOf(workflow, level);
   const budget = convergenceBudgetFor(depth);
   const evidence = [];
@@ -46,7 +56,9 @@ export async function implementAll({ tasks, level = "normal", implement, test, a
   const states = new Map(tasks.map((t) => [t.id, t.state]));
   // a reviewer is "defined" here when one was injected; that alone never makes it independent
   const cap = resolveReviewCapability({ runtime: capability?.runtime ?? null, agentDelegation: capability?.agentDelegation, contextIsolation: capability?.contextIsolation, reviewerDefined: typeof review === "function", runtimes });
-  const outcomeOf = (fields) => deriveReviewOutcome({ capability: cap, builderInvocationId, policyGate: humanGate?.gate ?? "required", runtimes, ...fields });
+  let acceptance = { status: "NOT_APPLICABLE", pending: [], reasons: ["Task flow: no spec folder, no feature acceptance"] };
+  const acceptanceFields = () => ({ acceptance: acceptance.status, acceptancePending: pendingOnly(acceptance) });
+  const outcomeOf = (fields) => deriveReviewOutcome({ capability: cap, builderInvocationId, policyGate: humanGate?.gate ?? "required", runtimes, ...acceptanceFields(), ...fields });
   const result = (status, extra = {}) => ({
     status,
     completed,
@@ -54,6 +66,7 @@ export async function implementAll({ tasks, level = "normal", implement, test, a
     evidence,
     capability: cap,
     reviews,
+    acceptance,
     ...extra,
   });
 
@@ -109,6 +122,21 @@ export async function implementAll({ tasks, level = "normal", implement, test, a
     completed.push(task.id);
   }
 
+  // feature-level Native Acceptance: once, after every task converged, before any review (003 RF-19)
+  if (feature) {
+    try {
+      acceptance = await runFeatureAcceptance(feature.project, feature.slug, { base: feature.base });
+    } catch (error) {
+      acceptance = { status: "BLOCKED", pending: [], reasons: [`acceptance stage error: ${String(error?.message ?? error).slice(0, 300)}`] };
+    }
+    evidence.push({ step: "feature-acceptance", status: acceptance.status, pending: acceptance.pending ?? [], reasons: (acceptance.reasons ?? []).slice(0, 20) });
+    if (acceptance.status !== "PASS" && acceptance.status !== "NOT_APPLICABLE") {
+      // tasks stay completed (002 RF-35); the feature is not: a pending approval is a human decision, anything else blocks
+      const status = pendingOnly(acceptance) ? "NEEDS_HUMAN_DECISION" : "BLOCKED";
+      return result(status, { reason: `feature acceptance ${acceptance.status}`, cause: (acceptance.reasons ?? []).slice(0, 5).join("; "), escalation: pendingOnly(acceptance) ? "acceptance_pending_approval" : "acceptance_not_pass", outcome: outcomeOf({ implementation: "PASS", validation: "NOT_RUN" }) });
+    }
+  }
+
   // the author of the change reviews only when no isolated reviewer is available, and that review never approves
   const independent = cap.independentReview === "available";
   const reviewer = independent ? review : selfReview;
@@ -154,6 +182,15 @@ export async function implementAll({ tasks, level = "normal", implement, test, a
           if (iteration >= budget) return result("REVIEW_PENDING", { reason: "the last approval is stale and the review budget is spent", escalation: "convergence_stalled", convergence: decision, outcome: outcomeOf({ implementation: "PASS", validation, independentReview: record, currentRevision: current }) });
           previous = null;
           continue;
+        }
+        // acceptance must be PASS at the revision being approved: a review fix that moved the change re-runs it
+        if (feature) {
+          const now = featureAcceptanceStatus(feature.project, feature.slug, { base: feature.base });
+          acceptance = now.status === "PASS" || now.status === "NOT_APPLICABLE" ? now : await runFeatureAcceptance(feature.project, feature.slug, { base: feature.base });
+          evidence.push({ step: "feature-acceptance", status: acceptance.status, pending: acceptance.pending ?? [], reasons: (acceptance.reasons ?? []).slice(0, 20), final: true });
+          if (acceptance.status !== "PASS" && acceptance.status !== "NOT_APPLICABLE") {
+            return result(pendingOnly(acceptance) ? "NEEDS_HUMAN_DECISION" : "BLOCKED", { reason: `feature acceptance ${acceptance.status} at the reviewed revision`, cause: (acceptance.reasons ?? []).slice(0, 5).join("; "), convergence: decision, outcome: outcomeOf({ implementation: "PASS", validation, independentReview: record, otherReviews: reviews, currentRevision: current }) });
+          }
         }
         // an adverse review of this same revision stands (F2): a fix that changed nothing cannot be approved over it
         const outcome = outcomeOf({ implementation: "PASS", validation, independentReview: record, otherReviews: reviews, currentRevision: current });

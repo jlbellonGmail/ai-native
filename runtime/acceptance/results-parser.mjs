@@ -55,6 +55,8 @@ export function parseNodeTest(text) {
   let sawSummary = false;
   for (const line of text.split(/\r?\n/)) {
     if (/^ℹ (tests|pass|fail) /.test(line)) sawSummary = true;
+    // the spec reporter repeats every failure under "✖ failing tests:" after the summary: a recap, not new cases
+    if (/^✖ failing tests:\s*$/.test(line)) break;
     const m = re.exec(line);
     if (!m) continue;
     addCase(cases, errors, m[2].trim(), m[1] === "✔" ? "pass" : m[1] === "✖" ? "fail" : "skip");

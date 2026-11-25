@@ -126,3 +126,22 @@ test("missing contract or plan is BLOCKED with an actionable diagnostic", () => 
     assert.ok(buildPlan().cases.length === 8);
   } finally { done(dir); }
 });
+
+test("a DOWNGRADE against BASE keeps acceptance BLOCKED as DOWNGRADE_PENDING_APPROVAL until approved (002 RF-35)", async () => {
+  const { git } = await import("./fixture.mjs");
+  const { readFileSync } = await import("node:fs");
+  const dir = makeConsumer();
+  try {
+    git(dir, "add", "-A");
+    git(dir, "commit", "-qm", "feature with acceptance");
+    git(dir, "branch", "-f", "main", "HEAD");
+    const contract = JSON.parse(readFileSync(`${dir}/acceptance/validation-contract.json`, "utf8"));
+    contract.runners[0].timeoutMs = 600000; // a longer timeout is a DOWNGRADE
+    put(dir, "acceptance/validation-contract.json", JSON.stringify(contract, null, 2));
+    const r = await runFeatureAcceptance(dir, SLUG, opts);
+    assert.equal(r.status, "BLOCKED");
+    assert.deepEqual(r.pending, ["DOWNGRADE_PENDING_APPROVAL"]);
+    assert.ok(r.items.some((i) => i.kind === "DOWNGRADE" && /TIMEOUT_LONGER/.test(i.id)));
+    assert.equal(featureAcceptanceStatus(dir, SLUG, { ...opts, approvals: (i) => i.kind === "DOWNGRADE" }).status, "PASS");
+  } finally { done(dir); }
+});

@@ -10,6 +10,10 @@
 //   sdd review record <slug> --base <ref> --nonce <n> --kind independent [--findings <n>] [--tests "<summary>"]
 //   sdd review record <slug> --base <ref> --nonce <n> --kind self --verdict <V> [--runtime <id>] [--findings <n>]
 //   sdd review status <slug> --base <ref> [--json]               separated results; APPROVED only with an attested independent PASS
+//   sdd acceptance plan <slug>                                   check the Builder's acceptance plan (writes a skeleton only when absent)
+//   sdd acceptance manual <slug>                                 render specs/<slug>/acceptance/MANUAL.md and check runner/manual parity
+//   sdd acceptance run <slug> --base <ref>                       platform-owned run of the contract runners; ledger in the git dir
+//   sdd acceptance status <slug> --base <ref> [--json]           the feature's acceptance at this revision, from the ledger only
 //   sdd review receipt <runtime>                                 RUNTIME HOOK ONLY (stdin: the runtime's record of a finished reviewer)
 // An independent review takes its verdict, revision, agent and execution from the runtime receipt its adapter
 // verifies (runtime/adapters/review-evidence.mjs); `--execution`, `--agent`, `--validation` and friends are refused.
@@ -26,6 +30,7 @@ import { formatReviewOutcome } from "./independent-review.mjs";
 import { beginReview, captureReceipt, recordReview, reviewStatus, runValidation } from "./review-ledger.mjs";
 import { REVIEW_ATTESTERS } from "../adapters/review-evidence.mjs";
 import { checkChangeAgainstBase } from "../policy/hitl.mjs";
+import { acceptanceClassificationErrors, acceptanceCommand } from "../acceptance/cli.mjs";
 
 const SLUG = /^[A-Za-z0-9][A-Za-z0-9._-]{0,80}$/;
 const STATES = ["pending", "done", "blocked"];
@@ -71,6 +76,9 @@ export function main(argv, cwd = process.cwd()) {
       if (!existsSync(dir)) fail(`specs/${slug} does not exist`);
       const level = levelArg(flag("--level"));
       const errors = validateSpecFolder(dir, { level });
+      // 003 RF-18: at level full a non-legacy feature must declare AC-n criteria or an explicit, justified
+      // `acceptance: not-applicable`; level normal keeps the v4.0.2 warning and exit code
+      if (level === "full") errors.push(...acceptanceClassificationErrors(project, slug));
       // warnings never change the exit code (v4.0.2): they make the spec's acceptance promises visible
       const warnings = specWarnings(dir, { level });
       if (argv.includes("--json")) console.log(JSON.stringify({ slug, level, ok: errors.length === 0, errors, warnings }, null, 2));
@@ -201,10 +209,16 @@ export function main(argv, cwd = process.cwd()) {
       fail("usage: sdd review <begin|validate|record|status> <slug> --base <ref> ... | sdd review receipt <runtime>");
       return 2;
     }
+    case "acceptance": {
+      const [sub, slug] = positional;
+      specDir(project, slug);
+      return acceptanceCommand({ sub, slug, project, base: flag("--base"), json: argv.includes("--json") });
+    }
     default:
-      console.error("usage: sdd <validate <slug>|status [<slug>]|next <slug>|mark <slug> <Tn> <pending|done|blocked>|budget|review <begin|validate|record|status> <slug> --base <ref>> [--level light|normal|full] [--project <dir>]");
+      console.error("usage: sdd <validate <slug>|status [<slug>]|next <slug>|mark <slug> <Tn> <pending|done|blocked>|budget|review <begin|validate|record|status> <slug> --base <ref>|acceptance <plan|manual|run|status> <slug> [--base <ref>]> [--level light|normal|full] [--project <dir>]");
       return 2;
   }
 }
 
-if (process.argv[1] && resolve(fileURLToPath(import.meta.url)) === resolve(process.argv[1])) process.exit(main(process.argv.slice(2)));
+// `acceptance run` is asynchronous (it spawns the contract runners); every other command returns its exit code
+if (process.argv[1] && resolve(fileURLToPath(import.meta.url)) === resolve(process.argv[1])) Promise.resolve(main(process.argv.slice(2))).then((code) => process.exit(code), (error) => { console.error(`FAIL: ${error.message}`); process.exit(1); });

@@ -3,8 +3,9 @@
 // executes the contract's runners itself and writes the ledger; `featureAcceptanceStatus`
 // derives the result from the runner-written ledger entries of the evaluated revision
 // ONLY, never from a value supplied by an agent, a callback or a test double.
-import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { tmpdir } from "node:os";
 import { changeRevision } from "../circuit/review-ledger.mjs";
 import { validateContract, TIER_RANK } from "./contract.mjs";
 import { validatePlan, naItems } from "./plan.mjs";
@@ -15,11 +16,15 @@ import { appendEvidence, closureStatus, inputFingerprint, readLedger, sha256, ca
 import { consolidate, PENDING_REASONS } from "./result.mjs";
 import { buildGraph } from "./graph.mjs";
 import { nonSutPlanErrors } from "./contract.mjs";
+import { traceability } from "./manual.mjs";
+import { acceptanceFindingsAgainstBase } from "../policy/hitl.mjs";
 
 export const CONTRACT_PATH = "acceptance/validation-contract.json";
 export const CUTOFF_PATH = "acceptance/legacy-cutoff.json";
 export const DEFAULT_MANIFEST_PATH = "acceptance/dependency-manifest.json";
 export const planPath = (slug) => `specs/${slug}/acceptance/plan.json`;
+// findings that force the human gate but are not DOWNGRADEs (N/A has its own item; creation/modification are generic)
+const NOT_DOWNGRADE = new Set(["CONTRACT_CREATED", "CONTRACT_MODIFIED", "NOT_APPLICABLE_DECLARED"]);
 
 const readText = (project, rel) => (existsSync(join(project, rel)) ? readFileSync(join(project, rel), "utf8") : null);
 const readJson = (project, rel) => {
@@ -169,6 +174,18 @@ export function featureAcceptanceStatus(project, slug, { base, approvals = () =>
   const items = naItems(p.plan);
   const pending = [];
   for (const it of items) if (!approvals(it)) pending.push(PENDING_REASONS.NA);
+  // 002 RF-35: every DOWNGRADE against BASE is pending until the human Environment approval for this head
+  let downgrades = [];
+  try {
+    downgrades = acceptanceFindingsAgainstBase(project, base, change.paths).filter((f) => (!f.slug || f.slug === slug) && !NOT_DOWNGRADE.has(f.kind));
+  } catch {
+    return out("BLOCKED", ["the BASE comparison for acceptance DOWNGRADEs could not run"], { revision: change.revision });
+  }
+  for (const f of downgrades) {
+    const it = { kind: "DOWNGRADE", id: `${f.kind}:${f.detail}`, justificationDigest: sha256(canonical(f)) };
+    items.push(it);
+    if (!approvals(it)) pending.push(PENDING_REASONS.DOWNGRADE);
+  }
   const cross = crossObligations(p.graph, p.plan);
   if (cross.status === "BLOCKED") return out("BLOCKED", cross.reasons, { revision: change.revision, cross });
   const led = readLedger(project, slug);
@@ -207,7 +224,8 @@ export async function runFeatureAcceptance(project, slug, { base, approvals = ()
     const cases = mandatory.filter((c) => c.runner === runnerId);
     const runner = p.runners.get(runnerId);
     const minTier = cases.map((c) => c.minTier).sort((a, b) => TIER_RANK[b] - TIER_RANK[a])[0];
-    const outDir = join(ledgerDir(project, slug), "out", `${Date.now()}-${runnerId}`);
+    // runner-owned output, outside the repository and the git common dir (002 RF-9)
+    const outDir = mkdtempSync(join(tmpdir(), `ai-acc-${runnerId}-`));
     const r = await run({ root: project, runner, outDir, minTier });
     let evaluated;
     if (r.status !== "RAN") evaluated = { status: "BLOCKED", reasons: r.reasons, perCase: {} };
@@ -233,6 +251,59 @@ export async function runFeatureAcceptance(project, slug, { base, approvals = ()
         ranAt: new Date().toISOString(), cross: k.cross ?? null,
       });
     }
+    rmSync(outDir, { recursive: true, force: true });
   }
   return featureAcceptanceStatus(project, slug, { base, approvals, legacySlugs });
+}
+
+/**
+ * 003 RF-20: the acceptance section of the independent review packet, bound to the reviewed revision:
+ * plan, applicability matrix and N/A justifications, DOWNGRADE findings, evidence summary, traceability.
+ * Everything quoted is data for the Reviewer, never instructions.
+ */
+export function acceptancePacketLines(project, slug, { base, revision }) {
+  let status;
+  try {
+    status = featureAcceptanceStatus(project, slug, { base });
+  } catch (error) {
+    status = { classification: "UNKNOWN", status: "BLOCKED", reasons: [String(error?.message ?? error).slice(0, 200)] };
+  }
+  const lines = ["## Native Acceptance (bound to this revision)", "", `REVISION: ${revision}`, `CLASSIFICATION: ${status.classification}`, `ACCEPTANCE: ${status.status}`];
+  if (status.pending?.length) lines.push(`PENDING_APPROVAL: ${status.pending.join(", ")}`);
+  for (const r of (status.reasons ?? []).slice(0, 20)) lines.push(`- reason: ${r}`);
+  lines.push("");
+  if (status.classification !== "REQUIRED") return [...lines, ""];
+  const planR = readJson(project, planPath(slug));
+  if (planR.value) {
+    const plan = planR.value;
+    lines.push(`### Plan: ${planPath(slug)} (${plan.cases?.length ?? 0} cases)`, "", "| Category | Applicability | Justification / cases |", "|---|---|---|");
+    for (const [cat, m] of Object.entries(plan.matrix ?? {})) {
+      const cases = (plan.cases ?? []).filter((c) => c.category === cat).map((c) => c.id);
+      lines.push(`| ${cat} | ${m?.status ?? "?"} | ${m?.status === "NOT_APPLICABLE" ? `${String(m.justification).replace(/\|/g, "/").slice(0, 200)} (cites ${(m.cites ?? []).join(", ")})` : cases.join(", ")} |`);
+    }
+    lines.push("");
+  }
+  // DOWNGRADE findings: the same BASE-vs-candidate data diff the human gate uses (early feedback, not the trusted verdict)
+  let findings = [];
+  try {
+    const paths = changeRevision(project, base).paths;
+    findings = acceptanceFindingsAgainstBase(project, base, paths).filter((f) => !f.slug || f.slug === slug);
+  } catch { findings = [{ kind: "UNEVALUATED", detail: "the BASE comparison could not run" }]; }
+  lines.push(`### DOWNGRADE / governance findings (${findings.length})`, "", ...(findings.length ? findings.map((f) => `- ${f.kind}: ${f.detail}`) : ["- none"]), "");
+  lines.push("### Evidence summary (runner-written ledger)", "", ...((status.cases ?? []).map((c) => `- ${c.id}: ${c.status}${c.reason ? ` (${String(c.reason).slice(0, 160)})` : ""}`)), "");
+  const trace = writeTraceability(project, slug, { status });
+  lines.push(`### Traceability: ${trace.path} (complete: ${trace.report.complete})`, "", "The report is a derived rendering of the plan and the ledger: it is never read as evidence or approval.", "");
+  return lines;
+}
+
+/** RF-28: writes the traceability report into the platform's git-dir state (a rendering, never evidence). */
+export function writeTraceability(project, slug, { status, approvals = [] } = {}) {
+  const planR = readJson(project, planPath(slug));
+  const led = readLedger(project, slug);
+  const report = traceability({ slug, plan: planR.value ?? { criteria: [], cases: [] }, entries: led.entries, status, revision: status.revision, approvals });
+  const dir = ledgerDir(project, slug);
+  mkdirSync(dir, { recursive: true });
+  const path = join(dir, "traceability.json");
+  writeFileSync(path, `${JSON.stringify(report, null, 2)}\n`);
+  return { path, report };
 }

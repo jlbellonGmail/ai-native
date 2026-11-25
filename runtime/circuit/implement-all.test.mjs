@@ -2,6 +2,20 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { implementAll } from "./implement-all.mjs";
 import { runCoordinator, validateHandoff, phasesFor } from "./coordinator.mjs";
+import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+
+// v4.1.0: a Feature always has a spec folder and goes through Native Acceptance. These flow tests use a feature
+// listed in the legacy cutoff (v4.0.2 behavior retained); acceptance itself is covered in runtime/acceptance/.
+const LEGACY_FEATURE = (() => {
+  const project = mkdtempSync(join(tmpdir(), "ia-legacy-"));
+  mkdirSync(join(project, "acceptance"));
+  mkdirSync(join(project, "specs", "001-legacy"), { recursive: true });
+  writeFileSync(join(project, "acceptance", "legacy-cutoff.json"), JSON.stringify({ schemaVersion: 1, slugs: ["001-legacy"] }));
+  writeFileSync(join(project, "specs", "001-legacy", "spec.md"), "# legacy\n\nRF-1. x\n");
+  return { project, slug: "001-legacy", base: "main" };
+})();
 
 const task = (id, state = "pending") => ({ id, title: id, state, requirements: [], doneWhen: "ok" });
 // a runtime that can run the Reviewer isolated, and the evidence such a review leaves (no reasoning, only who/how/what)
@@ -12,7 +26,7 @@ const ISOLATED = { runtime: "test-runtime", agentDelegation: "available", contex
 const evidence = (verdict = "APPROVED", reviewedRevision = REV) => ({ runtime: "test-runtime", agent: "reviewer", execution: "delegated-fresh-context", isolation: "fresh-context", reviewId: "review-1", reviewedRevision, verdict, attestation: { source: "runtime", adapter: "test-runtime", agentId: "agent-1" } });
 const approve = () => ({ verdict: "APPROVED", findings: [], evidence: evidence() });
 const pass = () => ({ passed: true, output: "ok" });
-const coordinate = (args) => runCoordinator({ capability: ISOLATED, runtimes: RUNTIMES, ...args });
+const coordinate = (args) => runCoordinator({ capability: ISOLATED, runtimes: RUNTIMES, feature: LEGACY_FEATURE, ...args });
 
 function harness(overrides = {}) {
   const calls = [];

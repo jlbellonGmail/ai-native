@@ -55,9 +55,8 @@ export function detectDowngrades(base, cand) {
     }
     if (cand.contract.minObservedCases < base.contract.minObservedCases) add("COVERAGE_MINIMUM_LOWERED", `${base.contract.minObservedCases} -> ${cand.contract.minObservedCases}`);
     for (const g of widenedNonSut(base.contract.nonSutPaths, cand.contract.nonSutPaths)) add("NON_SUT_CLASS_WIDENED", g);
-  } else if (cand.contract && (cand.contract.nonSutPaths ?? []).length) {
-    for (const g of cand.contract.nonSutPaths) add("NON_SUT_CLASS_WIDENED", g);
   }
+  // a newly created contract (its non-SUT class included) is the CONTRACT_CREATED finding: human gate, not a DOWNGRADE of a BASE
 
   // plan
   if (base.plan && cand.plan) {

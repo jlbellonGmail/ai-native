@@ -95,6 +95,10 @@ test("TAP 13 / JUnit / node-test observed cases", () => {
   assert.deepEqual([j.get("a").status, j.get("b").status, j.get("c").status], ["pass", "fail", "skip"]);
   const n = parseNodeTest("▶ suite\n  ✔ x (1.2ms)\n  ✖ y (0.5ms)\n  ﹣ z # SKIP\n▶ suite (3ms)\nℹ tests 3\nℹ pass 1\n").cases;
   assert.deepEqual([n.get("x").status, n.get("y").status, n.get("z").status], ["pass", "fail", "skip"]);
+  // real node --test output repeats failures after the summary: they are not duplicates (found by the E2E run)
+  const real = parseNodeTest("✔ a (1ms)\n✖ b (2ms)\nℹ tests 2\nℹ pass 1\nℹ fail 1\n\n✖ failing tests:\n\ntest at x.mjs:3:1\n✖ b (2ms)\n  AssertionError\n");
+  assert.deepEqual(real.errors, []);
+  assert.deepEqual([real.cases.get("a").status, real.cases.get("b").status, real.cases.size], ["pass", "fail", 2]);
   assert.ok(parseStructured("tap13", "garbage").errors.length);
   assert.ok(parseStructured("junit", "").errors.length);
 });
