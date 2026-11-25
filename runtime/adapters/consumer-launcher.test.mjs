@@ -130,6 +130,14 @@ test("F-17 every command line the projected commands give an agent actually runs
       assert.match(r.stderr, /not an independent review: no runtime receipt/);
       continue;
     }
+    // fail-closed by design (v4.1.0): this fixture feature declares no AC-n criteria and is not in a legacy cutoff, so
+    // Native Acceptance runs and reports it BLOCKED with a structured status (never a crash, never PASS)
+    if (call.startsWith("sdd acceptance ")) {
+      assert.equal(r.status, 1, `${call} must not pass a feature without acceptance criteria`);
+      assert.match(r.stdout, /^ACCEPTANCE: BLOCKED\nCLASSIFICATION: MISSING\n/, `${call}\n${r.stdout}\n${r.stderr}`);
+      assert.doesNotMatch(r.stderr, /\bat .*\.mjs:\d+/, "no stack trace");
+      continue;
+    }
     assert.equal(r.status, 0, `${call} -> exit ${r.status}\n${r.stdout}\n${r.stderr}`);
     nonce = /REVIEW_NONCE: (\w+)/.exec(r.stdout)?.[1] ?? nonce;
   }

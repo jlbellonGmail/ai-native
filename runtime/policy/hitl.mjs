@@ -140,7 +140,8 @@ export function acceptanceFindingsAgainstBase(project, base, changedPaths) {
   const relevant = changedPaths.filter((p) => p === CONTRACT || p === CUTOFF || /^specs\/[^/]+\/(spec\.md|acceptance\/plan\.json)$/.test(p));
   if (!relevant.length) return [];
   const out = [];
-  const shared = { contract: readJsonText(atBase(CONTRACT)), cutoff: readJsonText(atBase(CUTOFF)) };
+  const baseSpecs = git(project, ["ls-tree", "-d", "--name-only", `${base}:specs`]);
+  const shared = { contract: readJsonText(atBase(CONTRACT)), cutoff: readJsonText(atBase(CUTOFF)), specSlugs: baseSpecs === null ? [] : baseSpecs.split(/\r?\n/).filter(Boolean) };
   const sharedHead = { contract: readJsonText(atHead(CONTRACT)), cutoff: readJsonText(atHead(CUTOFF)) };
   const slugs = [...new Set(relevant.map((p) => /^specs\/([^/]+)\//.exec(p)?.[1]).filter(Boolean))].sort();
   const project_wide = detectDowngrades({ ...shared, plan: null, specText: null }, { ...sharedHead, plan: null, specText: null }).findings;

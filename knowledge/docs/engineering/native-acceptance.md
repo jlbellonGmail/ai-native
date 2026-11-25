@@ -21,6 +21,7 @@ Specs: `specs/001-dependency-graph`, `specs/002-native-acceptance`, `specs/003-a
 | Feature stage | `runtime/acceptance/feature.mjs` | platform-owned run + status read back from the ledger only |
 | Downgrade detector | `runtime/acceptance/downgrade.mjs`, `runtime/policy/hitl.mjs` | BASE vs candidate data diff; forces `human_gate: required` |
 | Trusted verdict | `runtime/acceptance/verdict.mjs`, `.github/workflows/acceptance-governance.yml` | candidate read as Git objects, verdict posted by the trust App (pending human configuration) |
+| CI closure | `runtime/acceptance/ci-closure.mjs`, `ci.yml` job `acceptance-closure` | raw runner output of the evaluated commit; the trusted analyzer derives the result |
 | Manual and traceability | `runtime/acceptance/manual.mjs`, `knowledge/sdd/templates/acceptance-manual-template.md` | manual rendered from plan + contract, parity check, traceability report |
 | Upgrade matrix | `contracts/upgrade-matrix.json`, `runtime/bootstrap/upgrade-matrix.mjs` | exact admitted sources for the v4.1 line; legacy cutoff writer |
 
@@ -61,8 +62,23 @@ A consumer without a validation contract gets `BLOCKED` with an actionable diagn
   `develop` ruleset, `ai-native/acceptance-governance` as a required check, the Environment restrictions and
   human/agent identity separation. Until then the governance verdict is reported `BLOCKED`, never satisfied by the
   candidate-run `ci.yml` derivation, which is early feedback only.
-- CI closure evidence from a fresh checkout (RF-31) and the consumer L3 acceptance job are not implemented in this
-  candidate; local ledger evidence is circuit evidence only.
+- CI closure (RF-31): `ci.yml` job `acceptance-closure` re-runs changed features in a fresh checkout and uploads the
+  raw structured output; `verdict.mjs` (`deriveClosure`, run by `analyze` from the default branch) re-parses those
+  bytes against the head's plan and contract, after checking the producing run (workflow path, `pull_request`
+  event, head SHA) from the API. It is effective only once `acceptance-governance.yml` is on the default branch and
+  its check is required (human configuration). The consumer L3 acceptance job is not implemented in this candidate.
 - The `container` tier needs a container runtime; on a host without one it is `BLOCKED` without fallback.
 - The GI PostgreSQL reference pilot (003 RF-6, RF-14..RF-17) was not executed: it needs a disposable PostgreSQL
   container and no container runtime was available. It is reported `BLOCKED`.
+- The local acceptance ledger is a hash chain without a key: anything running with the developer's OS rights (the
+  agent, or a process left behind by a `restricted` runner) can append a chain-valid entry. It is circuit evidence
+  only; merge closure reads the CI closure derived by the trusted analyzer (see above), never this ledger.
+- `loopback` service networks for the `container` tier are refused (no per-run network and no agent-proof approval
+  yet); only `network: none` runs.
+- `implementAll` runs the stage only when the caller passes `feature`; the Coordinator refuses a Feature without it,
+  other direct callers are not guarded.
+- 003 RF-2 (impact selection running each affected consumer once) is implemented as `analyzeImpact` but not wired
+  into a run; 002 RF-17/RF-18 fingerprint environment names and allowlisted values, but no configuration-file
+  digests are declared yet.
+- Specs 001, 002 and 003 are not in the factory legacy cutoff and have no plan/contract of their own: their own
+  acceptance is BLOCKED (001 also lacks `AC-n` lines, MISSING). This is reported, not exempted.

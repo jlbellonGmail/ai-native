@@ -37,6 +37,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: read
+      actions: read
     outputs:
       status: ${{ steps.verdict.outputs.status }}
       head_sha: ${{ steps.verdict.outputs.head_sha }}
@@ -74,15 +75,34 @@ jobs:
           git fetch --no-tags origin "+refs/pull/${NUMBER}/head:refs/candidate/head" "+refs/heads/${BASE_REF}:refs/candidate/base"
           [ "$(git rev-parse refs/candidate/head)" = "$HEAD_SHA" ] || { echo "PR head moved"; exit 1; }
 
+      - name: Verify the producing run and download its closure artifact as data (002 RF-31)
+        id: run
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          # the run is re-read from the API: event fields of workflow_run are untrusted input
+          run=$(gh api "repos/$REPO/actions/runs/$RUN_ID" --jq '{path, event, headSha: .head_sha, id, attempt: .run_attempt}')
+          echo "run=$run" >> "$GITHUB_OUTPUT"
+          mkdir -p closure
+          gh run download "$RUN_ID" --repo "$REPO" --name acceptance-closure --dir closure || echo "no closure artifact"
+          # bound the data: regular files only, size-limited (the analyzer re-checks every file it reads)
+          find closure -type l -delete
+          [ "$(du -sk closure | cut -f1)" -le 65536 ] || { echo "closure artifact too large"; rm -rf closure; mkdir closure; }
+
       - name: Analyze (trusted code, candidate as data)
         id: verdict
         shell: bash
         env:
           HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          RUN_JSON: ${{ steps.run.outputs.run }}
         run: |
           set -euo pipefail
           base=$(git merge-base refs/candidate/base "$HEAD_SHA")
-          node runtime/acceptance/verdict.mjs --repo . --base "$base" --head "$HEAD_SHA" --out verdict.json || true
+          node runtime/acceptance/verdict.mjs --repo . --base "$base" --head "$HEAD_SHA" --closure closure --run "$RUN_JSON" --out verdict.json || true
           echo "status=$(jq -r .status verdict.json)" >> "$GITHUB_OUTPUT"
           echo "head_sha=$HEAD_SHA" >> "$GITHUB_OUTPUT"
 
@@ -141,6 +161,15 @@ jobs:
     if: needs.human.result == 'success'
     environment: ai-native-trust
     steps:
+      - name: Checkout the trusted platform revision (pinned human reviewers)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          fetch-depth: 1
+          persist-credentials: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: acceptance-verdict
       - name: Mint ai-native-trust installation token
         id: app
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
@@ -158,6 +187,13 @@ jobs:
           RUN_ID: ${{ github.run_id }}
         run: |
           set -euo pipefail
+          [ "$(jq -r .headSha verdict.json)" = "$HEAD_SHA" ] || { echo "verdict bound to another SHA"; exit 1; }
           approval=$(gh api "repos/$REPO/actions/runs/$RUN_ID/approvals" --jq '[.[] | select(.state=="approved") | select(any(.environments[]; .name=="ai-native-human-review"))][0] | {login: .user.login, id: .user.id, comment}')
           [ -n "$approval" ] && [ "$approval" != "null" ] || { echo "no Environment approval found"; exit 1; }
-          gh api "repos/$REPO/check-runs" -f name="ai-native/acceptance-governance" -f head_sha="$HEAD_SHA" -f status=completed -f conclusion=success -f "output[title]=acceptance governance: approved by the human Environment gate" -f "output[summary]={\"runId\":$RUN_ID,\"environment\":\"ai-native-human-review\",\"headSha\":\"$HEAD_SHA\",\"approval\":$approval}"
+          # the approver must be a pinned human of the trusted config, never the requesting App or an agent identity
+          login=$(jq -r .login <<<"$approval")
+          jq -e --arg l "$login" '.governance.humanMergers | index($l)' governance/gates/gates.json >/dev/null || { echo "approver $login is not a pinned human reviewer"; exit 1; }
+          approved_at=$(gh api "repos/$REPO/actions/runs/$RUN_ID/jobs" --jq '[.jobs[] | select(.name=="human")][0].completed_at')
+          digest=$(jq -r .digest verdict.json)
+          summary=$(jq -cn --argjson a "$approval" --arg run "$RUN_ID" --arg sha "$HEAD_SHA" --arg at "$approved_at" --arg d "$digest" '{runId: $run, environment: "ai-native-human-review", headSha: $sha, approvedAt: $at, findingsDigest: $d, approval: $a}')
+          gh api "repos/$REPO/check-runs" -f name="ai-native/acceptance-governance" -f head_sha="$HEAD_SHA" -f status=completed -f conclusion=success -f "output[title]=acceptance governance: approved by the human Environment gate" -f "output[summary]=$summary"

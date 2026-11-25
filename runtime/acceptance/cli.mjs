@@ -9,6 +9,16 @@ import { classifyFeature, parseSpecAcceptance } from "./spec-acceptance.mjs";
 import { checkParity, renderManual } from "./manual.mjs";
 
 const readJson = (file) => JSON.parse(readFileSync(file, "utf8"));
+/** Creates `file` only when absent (O_EXCL): no check-then-write race. @returns whether it was written. */
+function writeExclusive(file, text) {
+  try {
+    writeFileSync(file, text, { flag: "wx" });
+    return true;
+  } catch (error) {
+    if (error.code === "EEXIST") return false;
+    throw error;
+  }
+}
 const manualPath = (slug) => `specs/${slug}/acceptance/MANUAL.md`;
 export const PROPOSAL_PATH = "acceptance/validation-contract.proposal.json";
 // a deliberately incomplete proposal: it validates only after a human-reviewed runner replaces the placeholder argv
@@ -38,21 +48,19 @@ export function acceptanceCommand({ sub, slug, project, base, json = false }) {
     if (!existsSync(specFile)) { console.error(`FAIL: specs/${slug}/spec.md not found`); return 1; }
     const parsed = parseSpecAcceptance(readFileSync(specFile, "utf8"));
     const file = join(project, planPath(slug));
-    if (!existsSync(file)) {
-      // a skeleton the Builder completes: criteria from the spec, every category to decide, no invented case
-      mkdirSync(dirname(file), { recursive: true });
-      writeFileSync(file, `${JSON.stringify({ schemaVersion: 1, slug, criteria: parsed.criteria, matrix: Object.fromEntries(CATEGORIES.map((c) => [c, { status: "APPLICABLE" }])), datasets: [], cases: [] }, null, 2)}\n`);
+    // a skeleton the Builder completes (criteria from the spec, every category to decide, no invented case);
+    // created exclusively: an existing plan is never overwritten
+    mkdirSync(dirname(file), { recursive: true });
+    if (writeExclusive(file, `${JSON.stringify({ schemaVersion: 1, slug, criteria: parsed.criteria, matrix: Object.fromEntries(CATEGORIES.map((c) => [c, { status: "APPLICABLE" }])), datasets: [], cases: [] }, null, 2)}\n`)) {
       console.log(`WROTE: ${planPath(slug)} (skeleton: the Builder adds the cases, datasets and N/A justifications)`);
     }
     const cfile = join(project, CONTRACT_PATH);
     if (!existsSync(cfile)) {
       // never created silently: a proposal the human reviews and renames (its creation forces the human gate)
       const proposal = join(project, PROPOSAL_PATH);
-      if (!existsSync(proposal)) {
-        mkdirSync(dirname(proposal), { recursive: true });
-        writeFileSync(proposal, `${JSON.stringify(CONTRACT_PROPOSAL, null, 2)}\n`);
-      }
-      console.log(`BLOCKED: no ${CONTRACT_PATH}. Proposal: ${PROPOSAL_PATH} (schema: contracts/acceptance-validation-contract.schema.json of the platform).`);
+      mkdirSync(dirname(proposal), { recursive: true });
+      writeExclusive(proposal, `${JSON.stringify(CONTRACT_PROPOSAL, null, 2)}\n`);
+      console.log(`BLOCKED: no ${CONTRACT_PATH}. Proposal: ${PROPOSAL_PATH}; every validation error names the field to fix.`);
       console.log(`  Fill the runner (fixed executable, argv, structured format), then move it to ${CONTRACT_PATH} for human review.`);
       return 1;
     }

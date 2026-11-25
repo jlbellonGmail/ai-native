@@ -8,7 +8,7 @@ import { dirname, join } from "node:path";
 import { implementAll } from "../circuit/implement-all.mjs";
 import { deriveReviewOutcome, checkOutcomeCoherence } from "../circuit/independent-review.mjs";
 import { validationOf } from "../circuit/review-ledger.mjs";
-import { makeConsumer, put, SLUG, GOOD_SRC, BUGGY_SRC } from "./fixture.mjs";
+import { makeConsumer, put, SLUG, GOOD_SRC, BUGGY_SRC } from "./acceptance.fixture.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, "..", "..");
@@ -151,5 +151,37 @@ test("without a contract: plan writes a proposal for human review and stays BLOC
     assert.match(p.stdout, /Proposal: acceptance\/validation-contract\.proposal\.json/);
     assert.ok(existsSync(join(dir, "acceptance", "validation-contract.proposal.json")));
     assert.equal(existsSync(join(dir, "acceptance", "validation-contract.json")), false, "never created silently");
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("independent review F8: an approved review with only a pending N/A is NEEDS_HUMAN_DECISION, never CHANGES_REQUESTED", () => {
+  const pending = { status: "BLOCKED", pending: ["NOT_APPLICABLE_PENDING_APPROVAL"], reasons: ["NOT_APPLICABLE_PENDING_APPROVAL"] };
+  const dir = makeConsumer();
+  try {
+    assert.equal(validationOf(dir, SLUG, "sha256:x", { acceptance: pending }).reasons.some((r) => /feature acceptance is BLOCKED/.test(r)), true);
+    assert.notEqual(validationOf(dir, SLUG, "sha256:x", { acceptance: pending }).result, "FAIL");
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+  const o = deriveReviewOutcome({ implementation: "PASS", validation: "PASS", independentReview: null, capability: { independentReview: "available" }, acceptance: "BLOCKED", acceptancePending: true });
+  assert.notEqual(o.finalReviewStatus, "APPROVED");
+});
+
+test("the independent review packet carries the acceptance section bound to the reviewed revision (003 RF-20, AC-3)", () => {
+  const dir = makeConsumer({ naCategories: ["persistence"] });
+  try {
+    const run = sdd(dir, "acceptance", "run", SLUG, "--base", "main");
+    assert.match(run.stdout, /PENDING_APPROVAL/);
+    const begin = sdd(dir, "review", "begin", SLUG, "--base", "main");
+    assert.equal(begin.status, 0, begin.stderr);
+    const revision = /REVISION: (\S+)/.exec(begin.stdout)[1];
+    const packet = readFileSync(/^PACKET: (.+)$/m.exec(begin.stdout)[1].trim(), "utf8");
+    assert.match(packet, /## Native Acceptance \(bound to this revision\)/);
+    assert.ok(packet.includes(`REVISION: ${revision}`));
+    assert.match(packet, /CLASSIFICATION: REQUIRED/);
+    assert.match(packet, /PENDING_APPROVAL: NOT_APPLICABLE_PENDING_APPROVAL/);
+    assert.match(packet, /\| persistence \| NOT_APPLICABLE \| category persistence does not apply/);
+    assert.match(packet, /### DOWNGRADE \/ governance findings \(\d+\)/);
+    assert.match(packet, /CONTRACT_CREATED/);
+    assert.match(packet, /### Evidence summary \(runner-written ledger\)/);
+    assert.match(packet, /### Traceability: .*traceability\.json/);
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });

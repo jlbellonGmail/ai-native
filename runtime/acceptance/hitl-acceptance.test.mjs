@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { checkHumanGate } from "../policy/hitl.mjs";
-import { makeConsumer, git, put, SLUG } from "./fixture.mjs";
+import { makeConsumer, git, put, SLUG } from "./acceptance.fixture.mjs";
 
 const changed = (dir) => [...new Set([...git(dir, "diff", "--name-only", "main").split("\n"), ...git(dir, "ls-files", "--others", "--exclude-standard").split("\n")].filter(Boolean))];
 

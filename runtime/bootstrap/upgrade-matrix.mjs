@@ -26,8 +26,9 @@ export function admitSource({ lock, target, matrix = loadUpgradeMatrix() }) {
   const source = lock.platform?.version;
   if (typeof source !== "string" || !STABLE.test(source)) return { ok: false, applies: true, errors: [`UPGRADE_MATRIX: source version ${JSON.stringify(source)} is malformed or a prerelease; only exact admitted releases upgrade to ${target}`], warnings: [] };
   if (cmpAny(source, target) > 0) return { ok: false, applies: true, errors: [`UPGRADE_MATRIX: source ${source} is newer than the target ${target} (future source)`], warnings: [] };
-  // re-applying the pinned release is the engine's UP_TO_DATE / digest check, not a source admission
-  if (cmpAny(source, target) === 0) return { ok: true, applies: false, errors: [], warnings: [] };
+  // re-applying the pinned release is the engine's UP_TO_DATE / digest check, and a patch inside the v4.1 line
+  // (v4.1.0 -> v4.1.1) is not a crossing into it: neither is a source admission
+  if (cmpAny(source, target) === 0 || line(source) === line(target)) return { ok: true, applies: false, errors: [], warnings: [] };
   const row = matrix.admitted.find((r) => r.source === source);
   if (!row) return { ok: false, applies: true, errors: [`UPGRADE_MATRIX: ${source} -> ${target} is not an admitted path (admitted: ${matrix.admitted.map((r) => r.source).join(", ")})`], warnings: [] };
   if (row.lockSchemaBlob !== matrix.lockSchemaBlob || row.bootstrapProtocol !== matrix.bootstrapProtocol || !row.capabilities.includes("upgrade")) return { ok: false, applies: true, errors: [`UPGRADE_MATRIX: ${source} row does not match the admitted lock/protocol family`], warnings: [] };

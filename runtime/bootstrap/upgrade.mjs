@@ -4,7 +4,7 @@
 //   plan   target release -> compatibility (CLI <-> PLATFORM) -> no downgrade -> not revoked
 //   apply  lock (+ the pinned caller workflow) -> managed projections as a minimal delta (edited files are kept, never overwritten) -> sync -> stage
 //   verify status + drift + tracking + doctor; any failure puts back EXACTLY what was there before (proved against `git status` and the index)
-import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmdirSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { LOCK_FILE, readLock, sync } from "./install.mjs";
 import { sha256, verifyRelease } from "./cache.mjs";
@@ -154,6 +154,8 @@ export async function upgrade({ projectRoot, cacheRoot, bundleFile, attestationR
       if (content === null) rmSync(f, { force: true });
       else { mkdirSync(dirname(f), { recursive: true }); writeFileSync(f, content); }
     }
+    // a directory this run created only for the cutoff goes too (git status cannot see an empty directory)
+    if (cutoff) { try { rmdirSync(dirname(join(projectRoot, LEGACY_CUTOFF))); } catch { /* not empty or not ours */ } }
     const left = restoreGit(projectRoot, before, [...touched]);
     const rolled = left.length ? `ROLLBACK_INCOMPLETE (differs from before: ${left.slice(0, 8).join(", ")})` : "ROLLED_BACK (verified: `git status` and the index are identical to before)";
     return fail([error.message], warnings, { ...base, adoption: rolled });

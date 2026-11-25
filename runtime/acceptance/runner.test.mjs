@@ -15,7 +15,7 @@ function fixture() {
   writeFileSync(join(root, "t/big.mjs"), 'const s="x".repeat(1<<20);for(let i=0;i<8;i++)process.stdout.write(s);setInterval(()=>{},1000);');
   writeFileSync(join(root, "t/env.mjs"), "console.log(JSON.stringify(Object.keys(process.env).sort()));");
   writeFileSync(join(root, "t/git.mjs"), `import {readFileSync} from "node:fs";
-let r="readable";try{readFileSync(process.argv[2]);}catch(e){r=e.code;}console.log(r);`);
+let r="readable";try{readFileSync(process.cwd()+"/.git/HEAD");}catch(e){r=e.code;}console.log(r);`);
   writeFileSync(join(root, "t/child.mjs"), `import {spawnSync} from "node:child_process";
 let r="spawned";try{spawnSync(process.execPath,["-p","1"]);}catch(e){r=e.code;}console.log(r);`);
   return root;
@@ -73,8 +73,7 @@ test("node-permission: reports enforced controls; git dir and child processes un
   const root = fixture();
   try {
     assert.equal(probeTier("node-permission").available, true);
-    const gitFile = join(root, ".git", "HEAD");
-    const r = await runRunner({ root, runner: runner({ isolation: "node-permission", argv: ["t/git.mjs", gitFile] }), outDir: out(root) });
+    const r = await runRunner({ root, runner: runner({ isolation: "node-permission", argv: ["t/git.mjs"] }), outDir: out(root) });
     assert.equal(r.status, "RAN");
     assert.equal(r.stdout.trim(), "ERR_ACCESS_DENIED", "git common dir unreachable");
     assert.equal(r.isolated, true);
@@ -83,7 +82,10 @@ test("node-permission: reports enforced controls; git dir and child processes un
     const c = await runRunner({ root, runner: runner({ isolation: "node-permission", argv: ["t/child.mjs"] }), outDir: out(root) });
     assert.equal(c.stdout.trim(), "ERR_ACCESS_DENIED");
     // restricted does NOT block the same read: proves the tiers differ
-    const rr = await runRunner({ root, runner: runner({ argv: ["t/git.mjs", gitFile] }), outDir: out(root) });
+    const rr = await runRunner({ root, runner: runner({ argv: ["t/git.mjs"] }), outDir: out(root) });
+    // argv may never name the git directory, nor widen the permission model (independent review F5)
+    assert.equal((await runRunner({ root, runner: runner({ isolation: "node-permission", argv: ["t/git.mjs", ".git/HEAD"] }), outDir: out(root) })).status, "BLOCKED");
+    assert.equal((await runRunner({ root, runner: runner({ isolation: "node-permission", argv: ["--allow-fs-read=*", "t/git.mjs"] }), outDir: out(root) })).status, "BLOCKED");
     assert.equal(rr.stdout.trim(), "readable");
     // readPaths may never expose the git dir or root
     const bad = await runRunner({ root, runner: runner({ isolation: "node-permission", readPaths: [".git"] }), outDir: out(root) });

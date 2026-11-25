@@ -3,7 +3,7 @@
 // executes the contract's runners itself and writes the ledger; `featureAcceptanceStatus`
 // derives the result from the runner-written ledger entries of the evaluated revision
 // ONLY, never from a value supplied by an agent, a callback or a test double.
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { closeSync, existsSync, fstatSync, mkdirSync, mkdtempSync, openSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { changeRevision } from "../circuit/review-ledger.mjs";
@@ -13,7 +13,7 @@ import { classifyFeature } from "./spec-acceptance.mjs";
 import { parseStructured, evaluateObserved } from "./results-parser.mjs";
 import { runRunner, resolveExecutable } from "./runner.mjs";
 import { appendEvidence, closureStatus, inputFingerprint, readLedger, sha256, canonical, uncoveredPaths, ledgerDir } from "./evidence.mjs";
-import { consolidate, PENDING_REASONS } from "./result.mjs";
+import { consolidate, PENDING_REASONS, toResultStatus } from "./result.mjs";
 import { buildGraph } from "./graph.mjs";
 import { nonSutPlanErrors } from "./contract.mjs";
 import { traceability } from "./manual.mjs";
@@ -24,7 +24,7 @@ export const CUTOFF_PATH = "acceptance/legacy-cutoff.json";
 export const DEFAULT_MANIFEST_PATH = "acceptance/dependency-manifest.json";
 export const planPath = (slug) => `specs/${slug}/acceptance/plan.json`;
 // findings that force the human gate but are not DOWNGRADEs (N/A has its own item; creation/modification are generic)
-const NOT_DOWNGRADE = new Set(["CONTRACT_CREATED", "CONTRACT_MODIFIED", "NOT_APPLICABLE_DECLARED"]);
+const NOT_DOWNGRADE = new Set(["CONTRACT_CREATED", "CONTRACT_MODIFIED", "NOT_APPLICABLE_DECLARED", "CUTOFF_CREATED"]);
 
 const readText = (project, rel) => (existsSync(join(project, rel)) ? readFileSync(join(project, rel), "utf8") : null);
 const readJson = (project, rel) => {
@@ -37,8 +37,14 @@ const readJson = (project, rel) => {
 function digestPath(root, rel) {
   const abs = join(root, rel.replace(/\/$/, ""));
   try {
-    const st = statSync(abs);
-    if (st.isFile()) return sha256(readFileSync(abs));
+    // one descriptor: what is checked is what is hashed (no stat-then-read race)
+    let fd;
+    try { fd = openSync(abs, "r"); } catch { return null; }
+    let st;
+    try {
+      st = fstatSync(fd);
+      if (st.isFile()) return sha256(readFileSync(fd));
+    } finally { closeSync(fd); }
     if (st.isDirectory()) {
       const parts = [];
       const walk = (dir, prefix) => {
@@ -156,8 +162,19 @@ function caseFingerprint(project, p, k) {
  */
 export function featureAcceptanceStatus(project, slug, { base, approvals = () => false, legacySlugs } = {}) {
   const { cls } = load(project, slug, { legacySlugs });
-  const out = (status, reasons, extra = {}) => ({ slug, classification: cls.kind, status, reasons, resultStatus: consolidate([{ id: "feature", status }]).resultStatus, blocking: status !== "PASS" && status !== "NOT_APPLICABLE", ...extra });
-  if (cls.kind === "LEGACY") return out("NOT_APPLICABLE", ["legacy feature: v4.0.2 behavior retained until a human removes it from the cutoff"], { legacy: true });
+  const out = (status, reasons, extra = {}) => ({ slug, classification: cls.kind, status, reasons, resultStatus: toResultStatus(status), blocking: status !== "PASS" && status !== "NOT_APPLICABLE", ...extra });
+  if (cls.kind === "LEGACY") {
+    // 003 RF-18 / 002 RF-35: a slug added to the cutoff after the upgrade is a DOWNGRADE, pending until approved
+    let findings = [];
+    try {
+      findings = acceptanceFindingsAgainstBase(project, base, changeRevision(project, base).paths).filter((f) => f.kind === "LEGACY_CUTOFF_ADDITION" && f.detail === slug);
+    } catch {
+      return out("BLOCKED", ["the BASE comparison for the legacy cutoff could not run"]);
+    }
+    const items = findings.map((f) => ({ kind: "DOWNGRADE", id: `${f.kind}:${f.detail}`, justificationDigest: sha256(canonical(f)) }));
+    if (items.some((it) => !approvals(it))) return out("BLOCKED", [PENDING_REASONS.DOWNGRADE], { pending: [PENDING_REASONS.DOWNGRADE], items, humanGate: "required" });
+    return out("NOT_APPLICABLE", ["legacy feature: v4.0.2 behavior retained until a human removes it from the cutoff"], { legacy: true });
+  }
   if (cls.kind === "MISSING") return out("BLOCKED", cls.reasons);
   if (cls.kind === "NOT_APPLICABLE") {
     const item = { kind: "NOT_APPLICABLE", id: "feature", justificationDigest: sha256(cls.parsed.notApplicable.justification) };
@@ -190,6 +207,14 @@ export function featureAcceptanceStatus(project, slug, { base, approvals = () =>
   if (cross.status === "BLOCKED") return out("BLOCKED", cross.reasons, { revision: change.revision, cross });
   const led = readLedger(project, slug);
   if (!led.ok) return out("BLOCKED", led.errors, { revision: change.revision });
+  // 002 RF-32: an AC without a rejection-expecting case relies on a seeded-failure run, which must be a runner-written
+  // FAIL of one of its cases in the ledger (any revision): a `seededFailure` field alone is only the Builder's claim
+  for (const c of p.plan.criteria) {
+    const cases = p.plan.cases.filter((k) => k.ac.includes(c.id));
+    if (cases.some((k) => k.expected === "reject")) continue;
+    const ids = new Set(cases.map((k) => k.id));
+    if (!led.entries.some((e) => ids.has(e.scenarioId) && e.result === "FAIL")) results.push({ id: `seeded-failure:${c.id}`, status: "BLOCKED", reason: `${c.id} has no rejection-expecting case and no recorded seeded-failure run in the ledger` });
+  }
   for (const k of p.plan.cases.filter((c) => c.mandatory)) {
     const fp = caseFingerprint(project, p, k);
     if (!fp.ok) { results.push({ id: k.id, status: "BLOCKED", reason: fp.reasons[0] }); continue; }
@@ -211,7 +236,9 @@ const isGovernanceArtifact = (p, slug) =>
   p === CONTRACT_PATH || p === CUTOFF_PATH || p === DEFAULT_MANIFEST_PATH || p.startsWith(`specs/${slug}/acceptance/`) || p === `specs/${slug}/reviews.jsonl`;
 
 /** Platform-owned execution: runs every contract runner used by the plan, writes ledger entries. Then reads status back. */
-export async function runFeatureAcceptance(project, slug, { base, approvals = () => false, legacySlugs, run = runRunner } = {}) {
+// `rawDir`: where the CI closure job keeps each runner's raw structured output (002 RF-31); the trusted analyzer
+// derives the result from those bytes, never from this process's own conclusion.
+export async function runFeatureAcceptance(project, slug, { base, approvals = () => false, legacySlugs, run = runRunner, rawDir = null } = {}) {
   const { cls } = load(project, slug, { legacySlugs });
   if (cls.kind !== "REQUIRED") return featureAcceptanceStatus(project, slug, { base, approvals, legacySlugs });
   const p = prepare(project, slug, cls, { base });
@@ -227,6 +254,11 @@ export async function runFeatureAcceptance(project, slug, { base, approvals = ()
     // runner-owned output, outside the repository and the git common dir (002 RF-9)
     const outDir = mkdtempSync(join(tmpdir(), `ai-acc-${runnerId}-`));
     const r = await run({ root: project, runner, outDir, minTier });
+    if (rawDir) {
+      mkdirSync(rawDir, { recursive: true });
+      writeFileSync(join(rawDir, `${runnerId}.out`), r.stdout ?? "");
+      writeFileSync(join(rawDir, `${runnerId}.json`), `${JSON.stringify({ runnerId, status: r.status, exitCode: r.exitCode ?? null, tier: r.tier ?? runner.isolation, isolated: Boolean(r.isolated), reasons: r.reasons ?? [], outputDigest: r.stdout ? `sha256:${sha256(r.stdout)}` : null })}\n`);
+    }
     let evaluated;
     if (r.status !== "RAN") evaluated = { status: "BLOCKED", reasons: r.reasons, perCase: {} };
     else {

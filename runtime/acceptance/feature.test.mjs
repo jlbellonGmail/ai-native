@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { rmSync } from "node:fs";
 import { featureAcceptanceStatus, runFeatureAcceptance } from "./feature.mjs";
-import { makeConsumer, put, SLUG, GOOD_SRC, CONTRACT, buildPlan, SPEC } from "./fixture.mjs";
+import { makeConsumer, put, SLUG, GOOD_SRC, CONTRACT, buildPlan, SPEC } from "./acceptance.fixture.mjs";
 
 const opts = { base: "main" };
 const done = (dir) => rmSync(dir, { recursive: true, force: true });
@@ -128,7 +128,7 @@ test("missing contract or plan is BLOCKED with an actionable diagnostic", () => 
 });
 
 test("a DOWNGRADE against BASE keeps acceptance BLOCKED as DOWNGRADE_PENDING_APPROVAL until approved (002 RF-35)", async () => {
-  const { git } = await import("./fixture.mjs");
+  const { git } = await import("./acceptance.fixture.mjs");
   const { readFileSync } = await import("node:fs");
   const dir = makeConsumer();
   try {
@@ -143,5 +143,40 @@ test("a DOWNGRADE against BASE keeps acceptance BLOCKED as DOWNGRADE_PENDING_APP
     assert.deepEqual(r.pending, ["DOWNGRADE_PENDING_APPROVAL"]);
     assert.ok(r.items.some((i) => i.kind === "DOWNGRADE" && /TIMEOUT_LONGER/.test(i.id)));
     assert.equal(featureAcceptanceStatus(dir, SLUG, { ...opts, approvals: (i) => i.kind === "DOWNGRADE" }).status, "PASS");
+  } finally { done(dir); }
+});
+
+test("independent review F2/F3: the cutoff wins over AC lines, and a slug added to it is DOWNGRADE_PENDING_APPROVAL", async () => {
+  const { git } = await import("./acceptance.fixture.mjs");
+  const dir = makeConsumer();
+  try {
+    put(dir, "acceptance/legacy-cutoff.json", JSON.stringify({ schemaVersion: 1, slugs: [] }));
+    git(dir, "add", "-A");
+    git(dir, "commit", "-qm", "feature + empty cutoff");
+    git(dir, "branch", "-f", "main", "HEAD");
+    // F3: a legacy spec written from the v4.0.2 template has AC-n lines and must stay LEGACY (not REQUIRED/BLOCKED)
+    assert.equal(featureAcceptanceStatus(dir, SLUG, { ...opts, legacySlugs: [SLUG] }).classification, "LEGACY");
+    // F2: adding the feature to the cutoff after the upgrade is a DOWNGRADE, never a silent exemption
+    put(dir, "acceptance/legacy-cutoff.json", JSON.stringify({ schemaVersion: 1, slugs: [SLUG] }));
+    const s = featureAcceptanceStatus(dir, SLUG, opts);
+    assert.equal(s.classification, "LEGACY");
+    assert.equal(s.status, "BLOCKED");
+    assert.deepEqual(s.pending, ["DOWNGRADE_PENDING_APPROVAL"]);
+    assert.equal(s.blocking, true);
+    assert.equal(featureAcceptanceStatus(dir, SLUG, { ...opts, approvals: () => true }).status, "NOT_APPLICABLE");
+  } finally { done(dir); }
+});
+
+test("independent review F9: a seededFailure claim without a recorded FAIL in the ledger is BLOCKED", async () => {
+  const { readFileSync } = await import("node:fs");
+  const dir = makeConsumer();
+  try {
+    const plan = JSON.parse(readFileSync(`${dir}/specs/${SLUG}/acceptance/plan.json`, "utf8"));
+    // make AC-2 rely on a seeded-failure claim only: its cases no longer expect a rejection
+    for (const k of plan.cases) if (k.ac.includes("AC-2")) { k.expected = "pass"; k.seededFailure = { claimed: true }; }
+    put(dir, `specs/${SLUG}/acceptance/plan.json`, JSON.stringify(plan, null, 2));
+    const r = await runFeatureAcceptance(dir, SLUG, opts);
+    assert.equal(r.status, "BLOCKED");
+    assert.ok(r.cases.some((c) => c.id === "seeded-failure:AC-2" && c.status === "BLOCKED"), JSON.stringify(r.cases));
   } finally { done(dir); }
 });

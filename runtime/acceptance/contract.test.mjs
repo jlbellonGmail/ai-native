@@ -22,14 +22,22 @@ test("shell, inline script, substitution and path escape are rejected", () => {
   assert.match(bad({ executable: "$NODE" }).errors.join(), /schema/);
   assert.match(bad({ cwd: "../x" }).errors.join(), /schema|escapes/);
   assert.match(bad({ env: ["API_TOKEN"] }).errors.join(), /secret-like/);
+  // independent review F1/F5/F11: every spelling of inline code, preloads and permission switches is refused
+  for (const a of ["--eval=console.log(1)", "-pe", "--print=1", "--import=data:text/javascript,1", "-r", "--require=./x.cjs", "--allow-fs-read=*", "--allow-child-process", "--allow-addons", "--inspect", "--env-file=.env", "--experimental-loader=x", "--input-type=module"]) {
+    assert.ok(bad({ argv: [a, "tests/x.mjs"] }).errors.length > 0, a);
+  }
+  assert.equal(bad({ argv: ["--test", "--test-reporter=tap", "tests/x.mjs"] }).errors.length, 0);
+  assert.match(bad({ executable: "python" }).errors.join(), /not an allowed host identity/);
+  assert.match(bad({ executable: "pytest" }).errors.join(), /not an allowed host identity/);
+  assert.match(bad({ executable: "tools/sh" }).errors.join(), /is a shell/);
 });
 
 test("network and container rules", () => {
   const img = "reg/x@sha256:" + "a".repeat(64);
   assert.match(validateContract(contract({ runners: [runner({ isolation: "container", image: "x:latest" })] })).errors.join(), /pinned by digest/);
   assert.equal(validateContract(contract({ runners: [runner({ isolation: "container", image: img })] })).ok, true);
-  assert.match(validateContract(contract({ runners: [runner({ isolation: "container", image: img, network: "loopback" })] })).errors.join(), /human-approved/);
-  assert.equal(validateContract(contract({ runners: [runner({ isolation: "container", image: img, network: "loopback", networkApproval: "REVIEW-1" })] })).ok, true);
+  // loopback is refused outright: never mapped to host networking, never cleared by an agent-written field
+  assert.match(validateContract(contract({ runners: [runner({ isolation: "container", image: img, network: "loopback", networkApproval: "REVIEW-1" })] })).errors.join(), /not supported.*never host networking/);
   assert.match(validateContract(contract({ runners: [runner({ network: "none" })] })).errors.join(), /container tier/);
   assert.match(validateContract(contract({ runners: [runner(), runner()] })).errors.join(), /duplicate runner id/);
 });

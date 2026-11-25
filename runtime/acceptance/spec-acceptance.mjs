@@ -68,8 +68,9 @@ export function parseSpecAcceptance(specText) {
  */
 export function classifyFeature({ slug, specText, legacySlugs = [] }) {
   const parsed = parseSpecAcceptance(specText ?? "");
+  // the cutoff wins: a legacy spec keeps v4.0.2 behavior even when it has AC-n lines (the v4.0.2 template writes them)
+  if (legacySlugs.includes(slug)) return { kind: "LEGACY", blocking: false, reasons: [], parsed };
   if (parsed.criteria.length) return { kind: "REQUIRED", blocking: false, reasons: parsed.errors, parsed };
   if (parsed.notApplicable) return { kind: "NOT_APPLICABLE", blocking: parsed.errors.length > 0, reasons: parsed.errors, parsed, humanGate: "required", pendingApproval: true };
-  if (legacySlugs.includes(slug)) return { kind: "LEGACY", blocking: false, reasons: [], parsed };
   return { kind: "MISSING", blocking: true, reasons: ["spec declares neither AC-n acceptance criteria nor `acceptance: not-applicable` with a justification"], parsed };
 }

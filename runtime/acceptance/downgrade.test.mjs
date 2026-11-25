@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { detectDowngrades, governanceVerdict } from "./downgrade.mjs";
-import { CONTRACT, buildPlan, SPEC } from "./fixture.mjs";
+import { CONTRACT, buildPlan, SPEC } from "./acceptance.fixture.mjs";
 
 const clone = (x) => JSON.parse(JSON.stringify(x));
 const base = () => ({ contract: clone(CONTRACT), plan: buildPlan(), specText: SPEC, cutoff: { slugs: ["000-old"] } });
@@ -51,6 +51,7 @@ test("every DOWNGRADE kind is detected against BASE and forces the human gate", 
 test("contract creation and N/A on a new REQUIRED feature are findings", () => {
   const c = base();
   c.plan = buildPlan({ naCategories: ["persistence"] });
+  c.cutoff = null; // cutoff creation is its own finding (see the F4 test)
   assert.deepEqual(kinds({ contract: null, plan: null, specText: null, cutoff: null }, c), ["CONTRACT_CREATED", "NOT_APPLICABLE_DECLARED"]);
   const naSpec = { ...base(), specText: "# x\nacceptance: not-applicable\nacceptance-justification: RF-1\n" };
   assert.ok(kinds(base(), naSpec).includes("NOT_APPLICABLE_DECLARED"));
@@ -67,4 +68,17 @@ test("the governance verdict is BLOCKED until the trusted path exists; other-SHA
 test("the detector reads candidate data only: it imports no candidate module and spawns nothing", () => {
   const src = readFileSync(fileURLToPath(new URL("./downgrade.mjs", import.meta.url)), "utf8");
   assert.doesNotMatch(src, /child_process|import\(|eval\(|new Function/);
+});
+
+test("independent review F4: deleting the plan or the spec, and a cutoff created with new slugs, are findings", () => {
+  const noPlan = { ...base(), plan: null };
+  assert.ok(kinds(base(), noPlan).includes("PLAN_REMOVED"));
+  assert.ok(kinds(base(), noPlan).includes("CASE_REMOVED_OR_RENAMED"));
+  const noSpec = { ...base(), specText: null };
+  assert.ok(kinds(base(), noSpec).filter((k) => k === "AC_REMOVED").length === 2);
+  const b = { ...base(), cutoff: null, specSlugs: ["000-old"] };
+  const created = kinds(b, { ...base(), cutoff: { slugs: ["000-old", "010-new"] } });
+  assert.ok(created.includes("CUTOFF_CREATED"));
+  assert.deepEqual(detectDowngrades(b, { ...base(), cutoff: { slugs: ["000-old", "010-new"] } }).findings.filter((f) => f.kind === "LEGACY_CUTOFF_ADDITION").map((f) => f.detail), ["010-new"]);
+  assert.ok(kinds(base(), { ...base(), plan: { __invalid: true } }).includes("PLAN_INVALID"));
 });

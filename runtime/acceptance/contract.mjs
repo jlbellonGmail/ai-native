@@ -11,9 +11,14 @@ const loadSchema = (f) => JSON.parse(readFileSync(join(here, "..", "..", "contra
 export const CONTRACT_SCHEMA = loadSchema("acceptance-validation-contract.schema.json");
 
 export const TIER_RANK = Object.freeze({ restricted: 0, "node-permission": 1, container: 2 });
-const BARE_EXECUTABLES = new Set(["node", "python", "python3", "docker", "pytest"]);
-// inline script / eval / interactive switches per interpreter (RF-8)
-const INLINE_FLAGS = new Set(["-e", "--eval", "-p", "--print", "-c", "--command", "-i", "--interactive", "-"]);
+// on the host only `node` has a fixed identity (process.execPath); any other bare name would come from PATH (RF-8).
+// Inside a digest-pinned container image a bare name is the image's own executable.
+const HOST_BARE_EXECUTABLES = new Set(["node"]);
+// node runner flags are an ALLOWLIST: anything else (inline script, --import/--require preloads, permission or
+// inspector switches, env files) is refused, whatever its spelling (`-pe`, `--eval=...`, `--allow-fs-read=*`)
+const NODE_FLAG_ALLOW = [/^--test$/, /^--test-reporter=(tap|spec|junit|dot)$/, /^--test-name-pattern=[^\0]+$/, /^--test-timeout=\d+$/, /^--test-concurrency=\d+$/, /^--test-isolation=(process|none)$/, /^--no-warnings$/, /^--enable-source-maps$/];
+// python-like interpreters inside a container: only module invocation and harmless switches
+const PY_FLAG_ALLOW = [/^-m$/, /^-B$/, /^-I$/, /^-u$/];
 const SHELLS = new Set(["sh", "bash", "zsh", "cmd", "cmd.exe", "powershell", "pwsh", "powershell.exe", "pwsh.exe", "fish", "dash"]);
 const NOOP_DENYLIST = new Set(["true", "false", ":", "exit", "echo"]);
 
@@ -40,10 +45,10 @@ const hasGlob = (s) => /[*?]/.test(s);
 export const globMatches = (glob, path) => globToRegExp(glob).test(path);
 
 /** Resolves the executable identity; a bare name is never taken from the environment. */
-export function checkExecutable(executable) {
-  if (BARE_EXECUTABLES.has(executable)) return null;
-  if (SHELLS.has(executable.toLowerCase())) return `runner executable '${executable}' is a shell`;
-  if (!executable.includes("/")) return `runner executable '${executable}' is not an allowed identity`;
+export function checkExecutable(executable, { isolation = "restricted" } = {}) {
+  if (SHELLS.has(executable.toLowerCase()) || SHELLS.has(executable.split("/").at(-1).toLowerCase())) return `runner executable '${executable}' is a shell`;
+  if (HOST_BARE_EXECUTABLES.has(executable)) return null;
+  if (!executable.includes("/")) return isolation === "container" ? null : `runner executable '${executable}' is not an allowed host identity (only node, or a repository path)`;
   if (normalizeRepoPath(executable) === null) return `runner executable '${executable}' escapes the repository`;
   return null;
 }
@@ -51,9 +56,11 @@ export function checkExecutable(executable) {
 export function checkArgv(executable, argv) {
   const errors = [];
   const base = executable.split("/").at(-1).toLowerCase();
+  const allow = base === "node" ? NODE_FLAG_ALLOW : /^python(\d(\.\d+)?)?$/.test(base) ? PY_FLAG_ALLOW : null;
   argv.forEach((a, i) => {
     if (/[\0\r\n]/.test(a)) errors.push(`argv[${i}] contains a control character`);
-    if (INLINE_FLAGS.has(a) && ["node", "python", "python3"].includes(base)) errors.push(`argv[${i}] '${a}' requests inline script text`);
+    if (allow && a.startsWith("-") && !allow.some((re) => re.test(a))) errors.push(`argv[${i}] '${a.slice(0, 40)}' is not an allowed ${base} flag (inline script, preload, permission and inspector switches are refused)`);
+    if (allow && /^data:|^https?:/i.test(a)) errors.push(`argv[${i}] requests inline script text (URL/data module)`);
     if (/\$\(|`|\$\{|%[A-Za-z_]+%/.test(a)) errors.push(`argv[${i}] contains command/environment substitution`);
     if (a.split(/[\\/]/).includes("..")) errors.push(`argv[${i}] contains a path escape`);
   });
@@ -72,11 +79,13 @@ export function validateContract(contract) {
   for (const r of contract.runners) {
     if (runners.has(r.id)) errors.push(`duplicate runner id: ${r.id}`);
     runners.set(r.id, r);
-    const ee = checkExecutable(r.executable);
+    const ee = checkExecutable(r.executable, { isolation: r.isolation });
     if (ee) errors.push(`runner ${r.id}: ${ee}`);
     else errors.push(...checkArgv(r.executable, r.argv).map((e) => `runner ${r.id}: ${e}`));
     if (normalizeRepoPath(r.cwd) === null && r.cwd !== ".") errors.push(`runner ${r.id}: cwd escapes the repository`);
-    if (r.network === "loopback" && !r.networkApproval) errors.push(`runner ${r.id}: network access requires a human-approved contract entry (networkApproval)`);
+    // a loopback service network needs a per-run user-defined network and a human approval the agent cannot write:
+    // neither exists in this candidate, so it is refused rather than mapped to the host network (002 RF-15)
+    if (r.network === "loopback") errors.push(`runner ${r.id}: loopback service networks are not supported by this platform version (BLOCKED, never host networking)`);
     if (r.network && r.isolation !== "container") errors.push(`runner ${r.id}: network settings apply only to the container tier`);
     if (r.isolation === "container" && !/@sha256:[0-9a-f]{64}$/.test(r.image ?? "")) errors.push(`runner ${r.id}: container tier requires an image pinned by digest`);
     if (r.env.some((n) => /(SECRET|TOKEN|PASSWORD|PASSWD|PRIVATE|CREDENTIAL|API_?KEY)/i.test(n))) errors.push(`runner ${r.id}: environment allowlist names a secret-like variable`);

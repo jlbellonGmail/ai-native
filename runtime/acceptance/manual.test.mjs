@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { renderManual, checkParity, renderCommand, traceability, manualRunRecord } from "./manual.mjs";
-import { buildPlan, CONTRACT, SLUG } from "./fixture.mjs";
+import { buildPlan, CONTRACT, SLUG } from "./acceptance.fixture.mjs";
 
 const plan = buildPlan();
 const manual = () => renderManual({ slug: SLUG, plan, contract: CONTRACT });

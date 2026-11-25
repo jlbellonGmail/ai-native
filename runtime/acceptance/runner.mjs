@@ -6,7 +6,7 @@
 import { spawn, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, realpathSync, statSync } from "node:fs";
-import { delimiter, isAbsolute, join, resolve, sep } from "node:path";
+import { delimiter, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { TIER_RANK, checkArgv, checkExecutable } from "./contract.mjs";
 import { normalizeRepoPath } from "./manifest.mjs";
 
@@ -72,7 +72,7 @@ export async function runRunner({ root, runner, outDir, request = {}, minTier = 
   for (const k of Object.keys(request)) {
     if (JSON.stringify(request[k]) !== JSON.stringify(runner[k])) return blocked(`request for undeclared ${k} refused`);
   }
-  const ee = checkExecutable(runner.executable);
+  const ee = checkExecutable(runner.executable, { isolation: runner.isolation });
   if (ee) return blocked(ee);
   const ae = checkArgv(runner.executable, runner.argv);
   if (ae.length) return blocked(ae[0]);
@@ -85,9 +85,17 @@ export async function runRunner({ root, runner, outDir, request = {}, minTier = 
   if (cwdRel === null) return blocked("cwd escapes the repository");
   const cwd = resolve(realRoot, cwdRel);
   if (!existsSync(cwd) || !inside(realRoot, realpathSync(cwd))) return blocked("cwd is missing or escapes the repository (symlink)");
-  const exe = resolveExecutable(runner.executable, realRoot);
-  if (!exe) return blocked(`executable '${runner.executable}' cannot be resolved inside the declared identity`);
-  const exeDigest = sha256(readFileSync(exe));
+  // a container runner's bare executable lives in the digest-pinned image; on the host only fixed identities resolve
+  const inImage = runner.isolation === "container" && !runner.executable.includes("/");
+  const exe = inImage ? null : resolveExecutable(runner.executable, realRoot);
+  if (!inImage && !exe) return blocked(`executable '${runner.executable}' cannot be resolved inside the declared identity`);
+  const exeDigest = inImage ? sha256(String(runner.image)) : sha256(readFileSync(exe));
+  // every repository path the argv names must stay inside the repository and outside the git directory
+  for (const a of runner.argv.filter((x) => !x.startsWith("-") && /[./]/.test(x))) {
+    const p = resolve(cwd, a);
+    if (!inside(realRoot, p) || relative(realRoot, p).split(sep).includes(".git")) return blocked("an argv path escapes the repository or names the git directory");
+    if (existsSync(p) && (!inside(realRoot, realpathSync(p)) || relative(realRoot, realpathSync(p)).split(sep).includes(".git"))) return blocked("an argv path resolves (symlink) outside the repository or into the git directory");
+  }
   mkdirSync(outDir, { recursive: true });
   const realOut = realpathSync(outDir);
   if (inside(realRoot, realOut) && existsSync(join(realRoot, ".git"))) { /* output inside the worktree is allowed but never read as evidence */ }
@@ -116,13 +124,13 @@ export async function runRunner({ root, runner, outDir, request = {}, minTier = 
     const reads = (runner.readPaths ?? []).map((p) => resolve(realRoot, p));
     for (const p of reads) if (!inside(realRoot, p) || p === realRoot || p.split(sep).includes(".git")) return blocked("readPaths must be declared inputs, never the repository root or the git directory");
     command = "docker";
-    const net = runner.network === "loopback" ? "host" : "none";
+    const net = "none"; // loopback service networks are refused by the contract validator; never host networking
     args = ["run", "--rm", "--network", net, "--read-only", "--cap-drop", "ALL", "--security-opt", "no-new-privileges",
       ...reads.flatMap((p) => ["-v", `${p}:/work/${p.slice(realRoot.length + 1).split(sep).join("/")}:ro`]),
       "-v", `${realOut}:/out`, "-w", "/work", ...Object.keys(env).flatMap((n) => ["-e", n]),
       runner.image, runner.executable, ...runner.argv];
     isolated = true;
-    Object.assign(controls, { network: runner.network === "loopback" ? "loopback (human-approved contract entry)" : "none", filesystemRead: reads.sort(), filesystemWrite: [realOut], gitDirExposed: false, image: runner.image });
+    Object.assign(controls, { network: "none", filesystemRead: reads.sort(), filesystemWrite: [realOut], gitDirExposed: false, image: runner.image });
   }
 
   const started = Date.now();
@@ -143,6 +151,9 @@ export async function runRunner({ root, runner, outDir, request = {}, minTier = 
     const timer = setTimeout(() => { timedOut = true; killTree(child); }, runner.timeoutMs);
     const done = (code, error) => {
       clearTimeout(timer);
+      // descendants left behind by a finished runner must not outlive it (POSIX process group; on Windows an orphan
+      // whose parent already exited is not reachable by taskkill /T: residual risk, local ledger is circuit evidence only)
+      if (process.platform !== "win32" && child.pid) { try { process.kill(-child.pid, "SIGKILL"); } catch { /* group gone */ } }
       const base = { executed: true, exitCode: code, stdout: out, stderr: err, durationMs: Date.now() - started, controls, isolated, tier: runner.isolation, executableDigest: exeDigest, envNames: controls.envNames, outDir: realOut };
       if (error) return resolveRun({ ...base, status: "BLOCKED", reasons: [`runner could not start: ${String(error.code ?? error.message).slice(0, 80)}`] });
       if (timedOut) return resolveRun({ ...base, status: "BLOCKED", reasons: [`runner exceeded its ${runner.timeoutMs}ms timeout and was killed`] });

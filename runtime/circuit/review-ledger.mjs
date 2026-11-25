@@ -272,7 +272,9 @@ export function validationOf(project, slug, revision, { acceptance = null } = {}
   // 003 RF-19: a REQUIRED feature validates only with Native Acceptance PASS from the acceptance ledger at this
   // revision; free-text `--command` runs (`node -e 0` included) never count toward acceptance
   if (acceptance && acceptance.status !== "PASS" && acceptance.status !== "NOT_APPLICABLE") {
-    if (result === "PASS") result = "FAIL";
+    // a pending human approval is not a failed validation: the review outcome reports it as NEEDS_HUMAN_DECISION (002 RF-35)
+    const pendingOnly = (acceptance.pending ?? []).length > 0 && (acceptance.reasons ?? []).every((r) => /_PENDING_APPROVAL$/.test(r));
+    if (result === "PASS" && !pendingOnly) result = "FAIL";
     reasons.push(`feature acceptance is ${acceptance.status}: ${(acceptance.reasons ?? []).slice(0, 3).join("; ") || "no runner-written ledger entry for this revision"}`);
   }
   return { result, runs: runs.map(({ command, exitCode, ranAt }) => ({ command, exitCode, ranAt })), keys: runs.map(runKey), reasons };

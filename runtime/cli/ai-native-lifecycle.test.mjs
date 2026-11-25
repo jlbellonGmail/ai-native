@@ -987,7 +987,7 @@ test("DETACH of a legacy repository never deletes a file it cannot prove is ai-n
 import { admitSource, loadUpgradeMatrix } from "../bootstrap/upgrade-matrix.mjs";
 
 const MATRIX = loadUpgradeMatrix();
-const fixtureOf = (tag) => JSON.parse(readFileSync(join(REPO_ROOT, "runtime", "bootstrap", "fixtures", "upgrade-matrix", `${tag}.json`), "utf8"));
+const fixtureOf = (tag) => JSON.parse(readFileSync(join(REPO_ROOT, "evaluation", "fixtures", "upgrade-matrix", `${tag}.json`), "utf8"));
 const T410 = release("v4.1.0");
 
 test("MATRIX: every admitted source has its own real-shape fixture recording tag, lock-schema blob and protocol", () => {
@@ -1025,6 +1025,8 @@ test("MATRIX: v4.0.0, v3.4.1, v3.2.0, unknown, malformed and future sources are 
   for (const tag of ["v4.0.1", "v4.0.2"]) assert.deepEqual(admitSource({ lock: fixtureOf(tag).lock, target: "v4.1.0" }).warnings, []);
   // the matrix speaks only for its target line
   assert.equal(admitSource({ lock: lock("v9.9.1"), target: "v9.9.2" }).applies, false);
+  // a patch inside the v4.1 line is not a crossing into it (independent review F13)
+  assert.deepEqual([admitSource({ lock: lock("v4.1.0"), target: "v4.1.1" }).ok, admitSource({ lock: lock("v4.1.0"), target: "v4.1.1" }).applies], [true, false]);
 });
 
 for (const source of ["v4.0.1", "v4.0.2", "v3.4.2", "v3.4.3"]) {
@@ -1049,6 +1051,7 @@ for (const source of ["v4.0.1", "v4.0.2", "v3.4.2", "v3.4.3"]) {
     assert.match(failed.text, /ROLLED_BACK/);
     assert.deepEqual(state(project), before);
     assert.equal(existsSync(join(project, "acceptance", "legacy-cutoff.json")), false, "the cutoff is rolled back too");
+    assert.equal(existsSync(join(project, "acceptance")), false, "and the directory created for it");
 
     const ok = await upgrade({ projectRoot: project, cacheRoot: cache, bundleFile: bundle, attestationRecord: record(T410.rel, SLUG), offline: true });
     assert.equal(ok.state, "READY", ok.text);

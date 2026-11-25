@@ -80,20 +80,34 @@ export function detectDowngrades(base, cand) {
     }
   } else if (cand.plan) {
     for (const cat of CATEGORIES) if (cand.plan.matrix?.[cat]?.status === "NOT_APPLICABLE") add("NOT_APPLICABLE_DECLARED", cat);
+  } else if (base.plan && !cand.plan) {
+    // deleting the plan removes every case at once (independent review F4)
+    add("PLAN_REMOVED", "acceptance plan removed");
+    for (const k of base.plan.cases ?? []) add("CASE_REMOVED_OR_RENAMED", k.id);
   }
+  if (cand.plan?.__invalid) add("PLAN_INVALID", "candidate acceptance plan is not valid JSON");
 
   // spec acceptance section
   const bs = base.specText ? parseSpecAcceptance(base.specText) : null;
   const cs = cand.specText ? parseSpecAcceptance(cand.specText) : null;
-  if (bs && cs) {
-    const cIds = new Set(cs.criteria.map((c) => c.id));
+  if (bs) {
+    // a removed spec, or a removed acceptance section, removes its criteria
+    const cIds = new Set((cs?.criteria ?? []).map((c) => c.id));
     for (const c of bs.criteria) if (!cIds.has(c.id)) add("AC_REMOVED", c.id);
-    if (cs.notApplicable && !bs.notApplicable) add("NOT_APPLICABLE_DECLARED", "feature");
+    if (cs?.notApplicable && !bs.notApplicable) add("NOT_APPLICABLE_DECLARED", "feature");
   } else if (cs?.notApplicable) add("NOT_APPLICABLE_DECLARED", "feature");
 
   // legacy cutoff additions after the upgrade
   const bSlugs = new Set(base.cutoff?.slugs ?? []);
-  if (base.cutoff) for (const s of cand.cutoff?.slugs ?? []) if (!bSlugs.has(s)) add("LEGACY_CUTOFF_ADDITION", s);
+  if (base.cutoff) {
+    for (const s of cand.cutoff?.slugs ?? []) if (!bSlugs.has(s)) add("LEGACY_CUTOFF_ADDITION", s);
+  } else if (cand.cutoff) {
+    // a cutoff created by this change may only list features that already existed at BASE (the upgrade writer's rule)
+    add("CUTOFF_CREATED", "legacy acceptance cutoff created");
+    const existed = new Set(base.specSlugs ?? []);
+    for (const s of cand.cutoff.slugs ?? []) if (!existed.has(s)) add("LEGACY_CUTOFF_ADDITION", s);
+  }
+  if (cand.cutoff?.__invalid || cand.contract?.__invalid) add("GOVERNANCE_DATA_INVALID", "candidate acceptance governance data is not valid JSON");
 
   const findings = f.sort((a, b) => (a.kind + a.detail < b.kind + b.detail ? -1 : 1));
   return { findings, forcesHumanGate: findings.length > 0, digest: sha256(canonical(findings)) };

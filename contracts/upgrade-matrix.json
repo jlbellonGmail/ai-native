@@ -12,7 +12,7 @@
         "upgrade"
       ],
       "majorCrossing": false,
-      "fixture": "runtime/bootstrap/fixtures/upgrade-matrix/v4.0.1.json"
+      "fixture": "evaluation/fixtures/upgrade-matrix/v4.0.1.json"
     },
     {
       "source": "v4.0.2",
@@ -22,7 +22,7 @@
         "upgrade"
       ],
       "majorCrossing": false,
-      "fixture": "runtime/bootstrap/fixtures/upgrade-matrix/v4.0.2.json"
+      "fixture": "evaluation/fixtures/upgrade-matrix/v4.0.2.json"
     },
     {
       "source": "v3.4.2",
@@ -32,7 +32,7 @@
         "upgrade"
       ],
       "majorCrossing": true,
-      "fixture": "runtime/bootstrap/fixtures/upgrade-matrix/v3.4.2.json"
+      "fixture": "evaluation/fixtures/upgrade-matrix/v3.4.2.json"
     },
     {
       "source": "v3.4.3",
@@ -42,7 +42,7 @@
         "upgrade"
       ],
       "majorCrossing": true,
-      "fixture": "runtime/bootstrap/fixtures/upgrade-matrix/v3.4.3.json"
+      "fixture": "evaluation/fixtures/upgrade-matrix/v3.4.3.json"
     }
   ],
   "rejectedNotes": {
