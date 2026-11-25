@@ -1035,6 +1035,8 @@ for (const source of ["v4.0.1", "v4.0.2", "v3.4.2", "v3.4.3"]) {
     writeFileSync(join(project, "OWNED.md"), "project-owned, never touched\n");
     mkdirSync(join(project, "src"), { recursive: true });
     writeFileSync(join(project, "src", "app.py"), "print('owned')\n");
+    mkdirSync(join(project, "specs", "001-existing"), { recursive: true });
+    writeFileSync(join(project, "specs", "001-existing", "spec.md"), "# existing feature\n");
     git(project, "add", "-A");
     git(project, "-c", "user.email=t@example.invalid", "-c", "user.name=t", "commit", "-qm", "owned files");
     const bundle = join(tmp("bundle"), "b.tar.gz");
@@ -1046,12 +1048,17 @@ for (const source of ["v4.0.1", "v4.0.2", "v3.4.2", "v3.4.3"]) {
     assert.equal(failed.status, "FAIL");
     assert.match(failed.text, /ROLLED_BACK/);
     assert.deepEqual(state(project), before);
+    assert.equal(existsSync(join(project, "acceptance", "legacy-cutoff.json")), false, "the cutoff is rolled back too");
 
     const ok = await upgrade({ projectRoot: project, cacheRoot: cache, bundleFile: bundle, attestationRecord: record(T410.rel, SLUG), offline: true });
     assert.equal(ok.state, "READY", ok.text);
     assert.equal(lockOf(project).platform.version, "v4.1.0");
     assert.equal(readFileSync(join(project, "OWNED.md"), "utf8"), "project-owned, never touched\n");
     assert.equal(readFileSync(join(project, "src", "app.py"), "utf8"), "print('owned')\n");
+    // 003 RF-18: the upgrade records the legacy cutoff of the features that exist now
+    const cutoff = JSON.parse(readFileSync(join(project, "acceptance", "legacy-cutoff.json"), "utf8"));
+    assert.deepEqual(cutoff.slugs, ["001-existing"]);
+    assert.equal(cutoff.from, source);
     if (source.startsWith("v3.")) assert.match(ok.warnings.join(), /MAJOR_CROSSING/);
     else assert.doesNotMatch(ok.warnings.join(), /MAJOR_CROSSING/);
 
