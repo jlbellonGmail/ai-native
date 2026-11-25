@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-native.local/contracts/dependency-manifest.schema.json",
+  "title": "Dependency manifest",
+  "description": "Consumer/project-owned, versioned declaration of modules, their public contracts and explicit dependencies (spec 001). Structural shape only; uniqueness, reference resolution, acyclicity and immutable-reference checks are semantic (runtime/acceptance/manifest.mjs, graph.mjs).",
+  "type": "object",
+  "required": ["schemaVersion", "modules", "dependencies"],
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "modules": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "contracts"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]{0,62}$" },
+          "contracts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["id", "path"],
+              "properties": {
+                "id": { "type": "string", "pattern": "^[a-z][a-z0-9.-]{0,62}$" },
+                "path": { "type": "string", "pattern": "^[A-Za-z0-9_][A-Za-z0-9_./-]{0,250}$" }
+              },
+              "additionalProperties": false
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "dependencies": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["consumer", "provider", "contract"],
+        "properties": {
+          "consumer": { "type": "string", "pattern": "^[a-z][a-z0-9-]{0,62}$" },
+          "provider": { "type": "string", "pattern": "^[a-z][a-z0-9-]{0,62}$" },
+          "contract": { "type": "string", "pattern": "^[a-z][a-z0-9.-]{0,62}$" }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}
