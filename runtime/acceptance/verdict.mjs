@@ -14,6 +14,8 @@ import { validateContract } from "./contract.mjs";
 import { classifyFeature } from "./spec-acceptance.mjs";
 import { parseStructured, evaluateObserved } from "./results-parser.mjs";
 import { consolidate } from "./result.mjs";
+import { buildGraph } from "./graph.mjs";
+import { analyzeImpact, gitRefResolver } from "./impact.mjs";
 
 const MAX_BYTES = 1024 * 1024;
 const MAX_RAW = 8 * 1024 * 1024;
@@ -117,6 +119,25 @@ export function analyze({ repo, base, head, closureDir = null, run = null }) {
     const own = detectDowngrades({ contract: null, cutoff: null, plan: asJson(pb), specText: sb.text ?? null }, { contract: null, cutoff: null, plan: asJson(ph), specText: sh.text ?? null }).findings;
     findings.push(...own.map((f) => ({ ...f, slug })));
   }
+  // 003 RF-2: consumers affected by a declared provider contract change need their own closure, each once
+  const manifest = asJson(read(head, "acceptance/dependency-manifest.json"));
+  if (manifest && !manifest.__invalid) {
+    const g = buildGraph(manifest);
+    const decl = asJson(read(head, "acceptance/contract-changes.json"));
+    if (!g.ok) reasons.push(...g.errors.map((e) => `manifest: ${e}`));
+    else {
+      const impact = analyzeImpact({ graph: g.graph, changedPaths: changed, declarations: decl?.changes ?? [], resolveRef: gitRefResolver(repo) });
+      if (impact.status !== "OK") reasons.push(...impact.errors.map((e) => `impact: ${e}`));
+      else {
+        const consumers = new Set(impact.consumers);
+        for (const s of specSlugs(head)) {
+          const plan = asJson(read(head, `specs/${s}/acceptance/plan.json`));
+          if (plan && !plan.__invalid && consumers.has(plan.moduleId) && !featureSlugs.includes(s)) featureSlugs.push(s);
+        }
+        featureSlugs.sort();
+      }
+    }
+  } else if (manifest?.__invalid) reasons.push("acceptance/dependency-manifest.json is not valid JSON");
   // merge closure: without the CI artifact of this exact head, a changed feature's acceptance is BLOCKED (RF-31)
   const closure = closureDir && existsSync(closureDir)
     ? deriveClosure({ repo, head, slugs: featureSlugs, closureDir, run })

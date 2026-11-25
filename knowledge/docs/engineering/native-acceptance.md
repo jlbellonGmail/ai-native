@@ -77,8 +77,9 @@ A consumer without a validation contract gets `BLOCKED` with an actionable diagn
   yet); only `network: none` runs.
 - `implementAll` runs the stage only when the caller passes `feature`; the Coordinator refuses a Feature without it,
   other direct callers are not guarded.
-- 003 RF-2 (impact selection running each affected consumer once) is implemented as `analyzeImpact` but not wired
-  into a run; 002 RF-17/RF-18 fingerprint environment names and allowlisted values, but no configuration-file
-  digests are declared yet.
+- 003 RF-2: impact selection is wired into the CI closure and the trusted analyzer (declarations in
+  `acceptance/contract-changes.json`; each affected consumer feature runs once; an undeclared public change is
+  BLOCKED). 002 RF-17/RF-18 fingerprint environment names and allowlisted values, but no configuration-file digests
+  are declared yet.
 - Specs 001, 002 and 003 are not in the factory legacy cutoff and have no plan/contract of their own: their own
   acceptance is BLOCKED (001 also lacks `AC-n` lines, MISSING). This is reported, not exempted.
