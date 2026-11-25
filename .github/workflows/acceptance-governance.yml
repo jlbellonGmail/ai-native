@@ -1,0 +1,163 @@
+name: acceptance-governance
+
+# v4.1.0, spec 002 RF-25 / RF-35 (plan "Trusted verdict path"). Triggered by `workflow_run` of CI, which GitHub always
+# runs from the DEFAULT branch's workflow file and commit: the code that judges is main's, never the candidate's.
+#
+#   analyze  read-only token, no secrets, no Environment. Checks out main (persist-credentials: false), fetches the
+#            PR head as Git objects only and runs runtime/acceptance/verdict.mjs, which reads candidate data with
+#            `git cat-file` under size limits; nothing from the candidate is executed, imported or installed.
+#   publish  Environment ai-native-trust (deployment restricted to main by the human), mints the ai-native-trust App
+#            token with checks: write, reads ONLY the verdict JSON artifact and posts `ai-native/acceptance-governance`
+#            on the exact head SHA. NEEDS_HUMAN is never success.
+#   human    Environment ai-native-human-review (required reviewer: the pinned human). Only after that approval does
+#   finalize re-publish success, recording run id, Environment, reviewer and head SHA in the check output.
+#
+# PENDING (human-configured, outside this file): the ruleset making this check required on main and develop, the
+# Environment restrictions, and human/agent identity separation. Until they exist RF-25 is reported BLOCKED; this
+# workflow alone does not satisfy it.
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: acceptance-governance-${{ github.event.workflow_run.head_sha }}
+  cancel-in-progress: true
+
+jobs:
+  analyze:
+    name: analyze
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: github.event.workflow_run.event == 'pull_request'
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      status: ${{ steps.verdict.outputs.status }}
+      head_sha: ${{ steps.verdict.outputs.head_sha }}
+    steps:
+      - name: Checkout the trusted platform revision (default branch)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Resolve the PR head and base from the API (event fields are untrusted input)
+        id: pr
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          [[ "$RUN_HEAD_SHA" =~ ^[0-9a-f]{40}$ ]] || { echo "invalid head sha"; exit 1; }
+          pr=$(gh api "repos/$REPO/commits/$RUN_HEAD_SHA/pulls" --jq '[.[] | select(.state=="open" and .head.sha=="'"$RUN_HEAD_SHA"'")][0]')
+          [ -n "$pr" ] && [ "$pr" != "null" ] || { echo "no open PR for this head"; exit 1; }
+          echo "base_ref=$(jq -r .base.ref <<<"$pr")" >> "$GITHUB_OUTPUT"
+          echo "number=$(jq -r .number <<<"$pr")" >> "$GITHUB_OUTPUT"
+
+      - name: Fetch candidate objects only (never checked out)
+        shell: bash
+        env:
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          BASE_REF: ${{ steps.pr.outputs.base_ref }}
+          NUMBER: ${{ steps.pr.outputs.number }}
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin "+refs/pull/${NUMBER}/head:refs/candidate/head" "+refs/heads/${BASE_REF}:refs/candidate/base"
+          [ "$(git rev-parse refs/candidate/head)" = "$HEAD_SHA" ] || { echo "PR head moved"; exit 1; }
+
+      - name: Analyze (trusted code, candidate as data)
+        id: verdict
+        shell: bash
+        env:
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+          base=$(git merge-base refs/candidate/base "$HEAD_SHA")
+          node runtime/acceptance/verdict.mjs --repo . --base "$base" --head "$HEAD_SHA" --out verdict.json || true
+          echo "status=$(jq -r .status verdict.json)" >> "$GITHUB_OUTPUT"
+          echo "head_sha=$HEAD_SHA" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: acceptance-verdict
+          path: verdict.json
+          retention-days: 30
+
+  publish:
+    name: publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: analyze
+    environment: ai-native-trust
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: acceptance-verdict
+      - name: Mint ai-native-trust installation token
+        id: app
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          app-id: ${{ secrets.TRUST_APP_ID }}
+          private-key: ${{ secrets.TRUST_APP_PRIVATE_KEY }}
+          permission-checks: write
+      - name: Post ai-native/acceptance-governance on the exact head SHA
+        shell: bash
+        env:
+          GH_TOKEN: ${{ steps.app.outputs.token }}
+          HEAD_SHA: ${{ needs.analyze.outputs.head_sha }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          [ "$(jq -r .headSha verdict.json)" = "$HEAD_SHA" ] || { echo "verdict bound to another SHA"; exit 1; }
+          status=$(jq -r .status verdict.json)
+          case "$status" in PASS) conclusion=success;; NEEDS_HUMAN) conclusion=action_required;; *) conclusion=failure;; esac
+          summary=$(jq -c '{status, findings, reasons}' verdict.json | head -c 60000)
+          gh api "repos/$REPO/check-runs" -f name="ai-native/acceptance-governance" -f head_sha="$HEAD_SHA" -f status=completed -f conclusion="$conclusion" -f "output[title]=acceptance governance: $status" -f "output[summary]=$summary"
+
+  human:
+    name: human
+    runs-on: ubuntu-latest
+    timeout-minutes: 1440
+    needs: [analyze, publish]
+    if: needs.analyze.outputs.status == 'NEEDS_HUMAN'
+    environment: ai-native-human-review
+    steps:
+      - run: echo "Environment approval recorded for ${{ needs.analyze.outputs.head_sha }}"
+
+  finalize:
+    name: finalize
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [analyze, human]
+    if: needs.human.result == 'success'
+    environment: ai-native-trust
+    steps:
+      - name: Mint ai-native-trust installation token
+        id: app
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          app-id: ${{ secrets.TRUST_APP_ID }}
+          private-key: ${{ secrets.TRUST_APP_PRIVATE_KEY }}
+          permission-checks: write
+          permission-actions: read
+      - name: Re-read the approval from GitHub and publish it bound to the head SHA
+        shell: bash
+        env:
+          GH_TOKEN: ${{ steps.app.outputs.token }}
+          HEAD_SHA: ${{ needs.analyze.outputs.head_sha }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          approval=$(gh api "repos/$REPO/actions/runs/$RUN_ID/approvals" --jq '[.[] | select(.state=="approved") | select(any(.environments[]; .name=="ai-native-human-review"))][0] | {login: .user.login, id: .user.id, comment}')
+          [ -n "$approval" ] && [ "$approval" != "null" ] || { echo "no Environment approval found"; exit 1; }
+          gh api "repos/$REPO/check-runs" -f name="ai-native/acceptance-governance" -f head_sha="$HEAD_SHA" -f status=completed -f conclusion=success -f "output[title]=acceptance governance: approved by the human Environment gate" -f "output[summary]={\"runId\":$RUN_ID,\"environment\":\"ai-native-human-review\",\"headSha\":\"$HEAD_SHA\",\"approval\":$approval}"

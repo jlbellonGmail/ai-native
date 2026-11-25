@@ -199,6 +199,10 @@ jobs:
         shell: bash
         run: node --test runtime/policy/*.test.mjs
 
+      - name: runtime/acceptance tests (v4.1.0 Native Acceptance, specs 001-003)
+        shell: bash
+        run: node --test runtime/acceptance/*.test.mjs
+
       - name: Policies on the real change (constitution, human gate derived from the diff)
         shell: bash
         run: |
