@@ -22,8 +22,41 @@ export const namesGitDir = (p) => String(p).split(/[\\/]/).some((s) => s.toLower
 // node runner flags are an ALLOWLIST: anything else (inline script, --import/--require preloads, permission or
 // inspector switches, env files) is refused, whatever its spelling (`-pe`, `--eval=...`, `--allow-fs-read=*`)
 const NODE_FLAG_ALLOW = [/^--test$/, /^--test-reporter=(tap|spec|junit|dot)$/, /^--test-name-pattern=[^\0]+$/, /^--test-timeout=\d+$/, /^--test-concurrency=\d+$/, /^--test-isolation=(process|none)$/, /^--no-warnings$/, /^--enable-source-maps$/];
-// python-like interpreters inside a container: only module invocation and harmless switches
-const PY_FLAG_ALLOW = [/^-m$/, /^-B$/, /^-I$/, /^-u$/];
+// python-like interpreters inside a container: harmless switches, then either a repository script or `-m` with a
+// test-runner module only. `-m timeit|runpy|code|...` would run inline text (audit N-57, 002 RF-8).
+const PY_FLAG_ALLOW = [/^-B$/, /^-I$/, /^-u$/];
+const PY_MODULES = new Set(["pytest", "unittest"]);
+// pytest: reporting/selection switches only; plugin loading (-p), ini/config overrides (-o, -c), --pyargs, rootdir
+// and import-mode switches are refused. -k/-m take pytest's own expression language, never Python.
+const PYTEST_FLAG_ALLOW = [/^-q$/, /^-qq$/, /^-v$/, /^-vv$/, /^-x$/, /^-s$/, /^-r[a-zA-Z]+$/, /^--tb=(short|line|no|long|native)$/, /^--strict-markers$/, /^--no-header$/, /^-k$/, /^-m$/, /^--maxfail=\d+$/];
+const UNITTEST_FLAG_ALLOW = [/^-v$/, /^-q$/, /^-f$/, /^-b$/, /^-s$/, /^-p$/, /^-t$/, /^-k$/];
+
+/** argv of a python interpreter or pytest: which tokens are flags of which allowlist. */
+function pythonArgvErrors(base, argv) {
+  const errors = [];
+  const bad = (i, a, who) => errors.push(`argv[${i}] '${a.slice(0, 40)}' is not an allowed ${who} flag (inline script, plugin, preload and config switches are refused)`);
+  let mode = base === "pytest" ? "pytest" : "interp";
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i];
+    if (mode === "interp") {
+      if (a === "-m") {
+        const mod = argv[i + 1];
+        if (!PY_MODULES.has(mod)) { errors.push(`argv[${i + 1}] module '${String(mod).slice(0, 40)}' is not an allowed test-runner module (pytest, unittest)`); return errors; }
+        mode = mod; i++; continue;
+      }
+      if (a.startsWith("-")) { if (!PY_FLAG_ALLOW.some((re) => re.test(a))) bad(i, a, base); continue; }
+      mode = "script"; continue; // a repository script: its own arguments follow
+    }
+    if (mode === "script") continue;
+    const allow = mode === "pytest" ? PYTEST_FLAG_ALLOW : UNITTEST_FLAG_ALLOW;
+    // flags whose NEXT token is their value (data, not a flag); per runner: pytest `-s` is a boolean
+    const takesValue = mode === "pytest" ? /^-(k|m)$/ : /^-(k|p|t|s)$/;
+    if (a.startsWith("-") && !allow.some((re) => re.test(a))) bad(i, a, mode);
+    else if (takesValue.test(a)) i++;
+  }
+  if (mode === "interp") errors.push(`${base} runner has no script or test-runner module`);
+  return errors;
+}
 const SHELLS = new Set(["sh", "bash", "zsh", "cmd", "cmd.exe", "powershell", "pwsh", "powershell.exe", "pwsh.exe", "fish", "dash"]);
 const NOOP_DENYLIST = new Set(["true", "false", ":", "exit", "echo"]);
 
@@ -65,11 +98,13 @@ export function checkExecutable(executable, { isolation = "restricted" } = {}) {
 export function checkArgv(executable, argv) {
   const errors = [];
   const base = executable.split("/").at(-1).toLowerCase();
-  const allow = base === "node" ? NODE_FLAG_ALLOW : /^python(\d(\.\d+)?)?$/.test(base) ? PY_FLAG_ALLOW : null;
+  const isPython = /^python(\d(\.\d+)?)?$/.test(base) || base === "pytest";
+  const allow = base === "node" ? NODE_FLAG_ALLOW : null;
+  if (isPython) errors.push(...pythonArgvErrors(base, argv));
   argv.forEach((a, i) => {
     if (/[\0\r\n]/.test(a)) errors.push(`argv[${i}] contains a control character`);
     if (allow && a.startsWith("-") && !allow.some((re) => re.test(a))) errors.push(`argv[${i}] '${a.slice(0, 40)}' is not an allowed ${base} flag (inline script, preload, permission and inspector switches are refused)`);
-    if (allow && /^data:|^https?:/i.test(a)) errors.push(`argv[${i}] requests inline script text (URL/data module)`);
+    if ((allow || isPython) && /^data:|^https?:/i.test(a)) errors.push(`argv[${i}] requests inline script text (URL/data module)`);
     if (/\$\(|`|\$\{|%[A-Za-z_]+%/.test(a)) errors.push(`argv[${i}] contains command/environment substitution`);
     if (a.split(/[\\/]/).includes("..")) errors.push(`argv[${i}] contains a path escape`);
   });

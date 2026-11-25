@@ -87,3 +87,22 @@ test("independent re-review N2/N3: container bare names are an allowlist; cwd/re
   assert.match(validateContract(contract({ runners: [runner({ cwd: "sub/.GIT/x" })] })).errors.join(), /cwd names the git directory/);
   assert.match(validateContract(contract({ runners: [runner({ executable: "sub/.git/hooks/x" })] })).errors.join(), /inside the git directory/);
 });
+
+test("audit N-57: python -m only runs a test-runner module; pytest and unittest flags are allowlists (002 RF-8)", () => {
+  const img = "reg/x@sha256:" + "d".repeat(64);
+  const errs = (executable, argv) => validateContract(contract({ runners: [runner({ isolation: "container", image: img, executable, argv })] })).errors.join();
+  for (const mod of ["timeit", "runpy", "code", "pdb", "http.server", "pip"]) assert.match(errs("python3", ["-m", mod, "import os"]), /not an allowed test-runner module/, mod);
+  assert.match(errs("python3", ["-m"]), /not an allowed test-runner module/);
+  assert.match(errs("python3", ["-c", "print(1)"]), /not an allowed python3 flag/);
+  assert.match(errs("python3", ["-B"]), /no script or test-runner module/);
+  for (const f of ["-p", "-o", "-c", "--pyargs", "--rootdir=/", "--import-mode=append", "--override-ini=x=y", "--confcutdir=/"]) {
+    assert.match(errs("pytest", [f, "x", "tests/"]), /not an allowed pytest flag/, `pytest ${f}`);
+    assert.match(errs("python3", ["-m", "pytest", f, "x", "tests/"]), /not an allowed pytest flag/, `python -m pytest ${f}`);
+  }
+  // a boolean flag never consumes the next token: `-s -p x` still refuses -p
+  assert.match(errs("pytest", ["-s", "-p", "evil", "tests/"]), /not an allowed pytest flag/);
+  assert.match(errs("python3", ["-m", "unittest", "-c", "x"]), /not an allowed unittest flag/);
+  for (const ok of [["pytest", ["-q", "-x", "-k", "not slow", "--tb=short", "tests/"]], ["python3", ["-I", "-m", "pytest", "-v", "-rA", "tests/"]], ["python3", ["-m", "unittest", "discover", "-s", "tests", "-p", "test_*.py"]], ["python3", ["tests/run.py", "--fast"]]]) {
+    assert.equal(errs(...ok), "", JSON.stringify(ok));
+  }
+});
