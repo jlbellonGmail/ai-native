@@ -57,10 +57,42 @@ test("an undeclared public contract change is BLOCKED, never silently skipped; n
     const r = impactSelection(dir, "main");
     assert.equal(r.slugs.length, 0);
     assert.match(r.blocked.join(), /without a valid declaration/);
+    // deleting the manifest in the candidate never drops the BASE obligation (independent re-review N1)
     rmSync(`${dir}/acceptance/dependency-manifest.json`);
-    assert.deepEqual(impactSelection(dir, "main"), { slugs: [], blocked: [] });
+    assert.match(impactSelection(dir, "main").blocked.join(), /BASE graph: public contract changed without a valid declaration/);
     assert.equal(SLUG.length > 0, true);
   } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("no manifest at BASE nor at the head selects nothing", () => {
+  const dir = makeConsumer();
+  try {
+    git(dir, "branch", "-f", "main", "HEAD");
+    put(dir, "locales/contract.json", '{"v":1}');
+    git(dir, "add", "-A");
+    git(dir, "commit", "-qm", "unrelated");
+    assert.deepEqual(impactSelection(dir, "main"), { slugs: [], blocked: [] });
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("the trusted analyzer keeps BASE obligations when the candidate deletes the manifest or an edge (re-review N1)", async () => {
+  const { analyze } = await import("./verdict.mjs");
+  for (const edit of ["delete", "edge"]) {
+    const dir = repo();
+    try {
+      const base = git(dir, "rev-parse", "HEAD");
+      put(dir, "locales/contract.json", '{"v":5}');
+      if (edit === "delete") rmSync(`${dir}/acceptance/dependency-manifest.json`);
+      else put(dir, "acceptance/dependency-manifest.json", JSON.stringify({ ...MANIFEST, dependencies: [] }));
+      git(dir, "add", "-A");
+      git(dir, "commit", "-qm", `undeclared provider change + manifest ${edit}`);
+      const v = analyze({ repo: dir, base, head: git(dir, "rev-parse", "HEAD") });
+      assert.equal(v.status, "BLOCKED", edit);
+      assert.match(v.reasons.join(), /impact \(BASE graph\): public contract changed without a valid declaration/, edit);
+      const kind = edit === "delete" ? "MANIFEST_REMOVED" : "DEPENDENCY_REMOVED";
+      assert.ok(v.findings.some((f) => f.kind === kind), `${edit}: ${JSON.stringify(v.findings)}`);
+    } finally { rmSync(dir, { recursive: true, force: true }); }
+  }
 });
 
 test("the trusted analyzer requires a closure for every affected consumer feature (003 RF-2 + 002 RF-31)", async () => {
@@ -73,6 +105,7 @@ test("the trusted analyzer requires a closure for every affected consumer featur
     git(dir, "commit", "-qm", "undeclared provider change");
     const v = analyze({ repo: dir, base, head: git(dir, "rev-parse", "HEAD") });
     assert.equal(v.status, "BLOCKED");
-    assert.match(v.reasons.join(), /impact: public contract changed without a valid declaration/);
+    assert.match(v.reasons.join(), /impact \(BASE graph\): public contract changed without a valid declaration/);
+    assert.match(v.reasons.join(), /impact \(head graph\): public contract changed without a valid declaration/);
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });

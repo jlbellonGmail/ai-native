@@ -76,6 +76,15 @@ test("this repository's own workflows conform: secrets only behind pull_request_
     const jobs = text.slice(text.indexOf("\njobs:")).split(/\n(?= {2}[A-Za-z0-9_-]+:\s*$)/m).slice(1);
     for (const job of jobs) {
       if (secretReferences(job).length) assert.match(job, /\n {4}environment: ai-native-trust\s*\n/, `${n}: a job that holds the App key must run in the ai-native-trust Environment`);
+      // independent re-review N7: a key-holding job only ever checks out trusted code (the default branch or the
+      // PR's base SHA), pinned explicitly, without persisted credentials; candidate bytes are fetched as data only
+      if (secretReferences(job).length) {
+        const checkouts = job.split(/\n(?= {6}- )/).filter((s) => /uses: actions\/checkout@/.test(s));
+        for (const c of checkouts) {
+          assert.match(c, /\n {10}ref: \$\{\{ github\.event\.(repository\.default_branch|pull_request\.base\.sha) \}\}[ \t]*(\n|$)/, `${n}: checkout in a key-holding job must pin the default branch or the base SHA`);
+          assert.match(c, /\n {10}persist-credentials: false[ \t]*(\n|$)/, `${n}: checkout in a key-holding job must not persist credentials`);
+        }
+      }
     }
   }
 });

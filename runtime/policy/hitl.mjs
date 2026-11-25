@@ -137,12 +137,17 @@ export function acceptanceFindingsAgainstBase(project, base, changedPaths) {
   const CUTOFF = "acceptance/legacy-cutoff.json";
   const atBase = (p) => git(project, ["show", `${base}:${p}`]);
   const atHead = (p) => (existsSync(join(project, p)) ? readFileSync(join(project, p), "utf8") : null);
-  const relevant = changedPaths.filter((p) => p === CONTRACT || p === CUTOFF || /^specs\/[^/]+\/(spec\.md|acceptance\/plan\.json)$/.test(p));
+  const MANIFEST = "acceptance/dependency-manifest.json";
+  const relevant = changedPaths.filter((p) => p === CONTRACT || p === CUTOFF || p === MANIFEST || /^specs\/[^/]+\/(spec\.md|acceptance\/plan\.json)$/.test(p));
   if (!relevant.length) return [];
   const out = [];
   const baseSpecs = git(project, ["ls-tree", "-d", "--name-only", `${base}:specs`]);
-  const shared = { contract: readJsonText(atBase(CONTRACT)), cutoff: readJsonText(atBase(CUTOFF)), specSlugs: baseSpecs === null ? [] : baseSpecs.split(/\r?\n/).filter(Boolean) };
-  const sharedHead = { contract: readJsonText(atHead(CONTRACT)), cutoff: readJsonText(atHead(CUTOFF)) };
+  const specSlugs = baseSpecs === null ? [] : baseSpecs.split(/\r?\n/).filter(Boolean).map((p) => p.replace(/^specs\//, ""));
+  // features whose acceptance was established at BASE (plan present) may not be moved into a new cutoff
+  const basePlans = git(project, ["ls-tree", "-r", "--name-only", base, "--", "specs"]);
+  const establishedSlugs = (basePlans ?? "").split(/\r?\n/).map((p) => /^specs\/([^/]+)\/acceptance\/plan\.json$/.exec(p)?.[1]).filter(Boolean);
+  const shared = { contract: readJsonText(atBase(CONTRACT)), cutoff: readJsonText(atBase(CUTOFF)), manifest: readJsonText(atBase(MANIFEST)), specSlugs, establishedSlugs };
+  const sharedHead = { contract: readJsonText(atHead(CONTRACT)), cutoff: readJsonText(atHead(CUTOFF)), manifest: readJsonText(atHead(MANIFEST)) };
   const slugs = [...new Set(relevant.map((p) => /^specs\/([^/]+)\//.exec(p)?.[1]).filter(Boolean))].sort();
   const project_wide = detectDowngrades({ ...shared, plan: null, specText: null }, { ...sharedHead, plan: null, specText: null }).findings;
   out.push(...project_wide);

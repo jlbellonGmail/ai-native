@@ -76,3 +76,14 @@ test("result mapping (RF-29) and fail-closed consolidation", () => {
   assert.deepEqual(pend.pending, ["NOT_APPLICABLE_PENDING_APPROVAL"]);
   assert.equal(pend.resultStatus, "ERROR");
 });
+
+test("independent re-review N2/N3: container bare names are an allowlist; cwd/readPaths never name the git directory", () => {
+  const img = "reg/x@sha256:" + "c".repeat(64);
+  const bad = (r) => validateContract(contract({ runners: [runner({ isolation: "container", image: img, ...r })] }));
+  for (const exe of ["busybox", "env", "nodejs", "perl", "ruby", "docker"]) assert.match(bad({ executable: exe, argv: ["x"] }).errors.join(), /not an allowed image identity/, exe);
+  for (const exe of ["node", "python", "python3", "pytest"]) assert.equal(bad({ executable: exe, argv: exe === "node" ? ["--test", "tests/"] : ["tests/"] }).errors.length, 0, exe);
+  assert.match(bad({ executable: "python3", argv: ["-c", "print(1)"] }).errors.join(), /not an allowed python3 flag/);
+  assert.match(validateContract(contract({ runners: [runner({ cwd: ".git" })] })).errors.join(), /cwd names the git directory/);
+  assert.match(validateContract(contract({ runners: [runner({ cwd: "sub/.GIT/x" })] })).errors.join(), /cwd names the git directory/);
+  assert.match(validateContract(contract({ runners: [runner({ executable: "sub/.git/hooks/x" })] })).errors.join(), /inside the git directory/);
+});

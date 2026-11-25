@@ -83,3 +83,44 @@ test("002 RF-31: the closure is derived by trusted code from the CI raw output; 
     rmSync(out, { recursive: true, force: true });
   }
 });
+
+test("independent re-review N5: candidate-changed closure producer, a forged tier or an invalid plan never close acceptance", async () => {
+  const dir = makeConsumer();
+  const out = mkdtempSync(join(tmpdir(), "closure-"));
+  try {
+    const base = git(dir, "rev-parse", "main");
+    const head = commitAll(dir, "feature");
+    await closureRun({ project: dir, base: "main", outDir: out });
+    assert.equal(analyze({ repo: dir, base, head, closureDir: out, run: runOf(head) }).closure.features[0].status, "PASS");
+
+    // the recorded tier is metadata written by the candidate job: it must equal the contract's tier
+    const metaFile = join(out, SLUG, "unit.json");
+    const meta = JSON.parse(readFileSync(metaFile, "utf8"));
+    writeFileSync(metaFile, JSON.stringify({ ...meta, tier: "container" }));
+    const forged = analyze({ repo: dir, base, head, closureDir: out, run: runOf(head) });
+    assert.equal(forged.closure.features[0].status, "BLOCKED");
+    assert.match(JSON.stringify(forged.closure), /recorded isolation tier differs/);
+    writeFileSync(metaFile, JSON.stringify(meta));
+
+    // the plan is re-judged by the analyzer: dropping a criterion the spec declares is BLOCKED with the old artifact
+    const planFile = join(dir, `specs/${SLUG}/acceptance/plan.json`);
+    const plan = JSON.parse(readFileSync(planFile, "utf8"));
+    plan.criteria = plan.criteria.slice(1);
+    put(dir, `specs/${SLUG}/acceptance/plan.json`, JSON.stringify(plan));
+    const badPlan = commitAll(dir, "plan drops a criterion");
+    const judged = analyze({ repo: dir, base, head: badPlan, closureDir: out, run: runOf(badPlan) });
+    assert.equal(judged.status, "BLOCKED");
+    assert.match(JSON.stringify(judged.closure), /plan: /);
+
+    // a candidate that changes the closure producer (ci-closure.mjs or its imports, or ci.yml) cannot close
+    git(dir, "reset", "-q", "--hard", head);
+    put(dir, "runtime/acceptance/ci-closure.mjs", "// candidate producer that writes an all-pass artifact\n");
+    const evil = commitAll(dir, "rewrite the producer");
+    const v = analyze({ repo: dir, base, head: evil, closureDir: out, run: runOf(evil) });
+    assert.equal(v.status, "BLOCKED");
+    assert.match(v.reasons.join(), /closure producer differs from BASE \(runtime\/acceptance\/ci-closure\.mjs/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+    rmSync(out, { recursive: true, force: true });
+  }
+});

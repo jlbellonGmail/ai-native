@@ -82,3 +82,19 @@ test("independent review F4: deleting the plan or the spec, and a cutoff created
   assert.deepEqual(detectDowngrades(b, { ...base(), cutoff: { slugs: ["000-old", "010-new"] } }).findings.filter((f) => f.kind === "LEGACY_CUTOFF_ADDITION").map((f) => f.detail), ["010-new"]);
   assert.ok(kinds(base(), { ...base(), plan: { __invalid: true } }).includes("PLAN_INVALID"));
 });
+
+test("independent re-review N1/N4: manifest weakening and a new cutoff over an established feature are DOWNGRADEs", () => {
+  const M = { schemaVersion: 1, modules: [{ id: "p", contracts: [{ id: "p.api", path: "p/api.json" }] }, { id: "c", contracts: [] }], dependencies: [{ consumer: "c", provider: "p", contract: "p.api" }] };
+  const kinds = (b, c) => detectDowngrades({ manifest: b }, { manifest: c }).findings.map((f) => f.kind);
+  assert.deepEqual(kinds(M, M), []);
+  assert.deepEqual(kinds(null, M), []);
+  assert.deepEqual(kinds(M, null), ["MANIFEST_REMOVED"]);
+  assert.deepEqual(kinds(M, { __invalid: true }), ["GOVERNANCE_DATA_INVALID", "MANIFEST_INVALID"]);
+  assert.deepEqual(kinds(M, { ...M, dependencies: [] }), ["DEPENDENCY_REMOVED"]);
+  assert.ok(kinds(M, { ...M, modules: [{ id: "p", contracts: [] }, { id: "c", contracts: [] }] }).includes("PUBLIC_CONTRACT_REMOVED"));
+  assert.ok(kinds(M, { ...M, modules: [{ id: "p", contracts: [{ id: "p.api", path: "p/other.json" }] }, { id: "c", contracts: [] }] }).includes("PUBLIC_CONTRACT_PATH_CHANGED"));
+  assert.ok(kinds(M, { ...M, modules: [M.modules[0]] }).includes("MODULE_REMOVED"));
+  const cut = detectDowngrades({ cutoff: null, specSlugs: ["001-old", "002-req"], establishedSlugs: ["002-req"] }, { cutoff: { slugs: ["001-old", "002-req"] } }).findings;
+  assert.ok(cut.some((f) => f.kind === "LEGACY_CUTOFF_ADDITION" && f.detail === "002-req"));
+  assert.ok(!cut.some((f) => f.kind === "LEGACY_CUTOFF_ADDITION" && f.detail === "001-old"));
+});

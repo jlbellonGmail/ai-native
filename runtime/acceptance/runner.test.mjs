@@ -168,3 +168,16 @@ test("process-group kill never targets pid 0, 1 or a missing pid", () => {
   assert.equal(groupKillTarget(2), -2);
   assert.equal(groupKillTarget(4242), -4242);
 });
+
+test("independent re-review N3: a bare argv token or cwd can never reach the git directory", async () => {
+  const root = fixture();
+  try {
+    writeFileSync(join(root, ".git", "x"), 'console.log("TAP version 13\nok 1 - c1\n1..1");');
+    const viaCwd = await runRunner({ root, runner: runner({ cwd: ".git", argv: ["x"] }), outDir: out(root) });
+    assert.equal(viaCwd.status, "BLOCKED");
+    assert.equal(viaCwd.executed, false);
+    assert.match(viaCwd.reasons.join(), /cwd names the git directory/);
+    const upper = await runRunner({ root, runner: runner({ cwd: ".GIT", argv: ["x"] }), outDir: out(root) });
+    assert.equal(upper.status, "BLOCKED");
+  } finally { rmSync(root, { recursive: true, force: true }); }
+});

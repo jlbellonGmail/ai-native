@@ -25,8 +25,32 @@ function widenedNonSut(baseList = [], candList = []) {
   return out;
 }
 
+const validManifest = (m) => m && !m.__invalid && Array.isArray(m.modules) && Array.isArray(m.dependencies);
+
+/** BASE vs candidate dependency manifest: every removed module, public contract (or moved path) and edge. */
+export function manifestDowngrades(base, cand) {
+  const out = [];
+  if (!validManifest(base)) return out;
+  if (cand === null || cand === undefined) return [{ kind: "MANIFEST_REMOVED", detail: "dependency manifest removed" }];
+  if (!validManifest(cand)) return [{ kind: "MANIFEST_INVALID", detail: "candidate dependency manifest is not a valid manifest" }];
+  const cm = new Map(cand.modules.map((m) => [m.id, m]));
+  for (const m of base.modules) {
+    const c = cm.get(m.id);
+    if (!c) { out.push({ kind: "MODULE_REMOVED", detail: m.id }); continue; }
+    const cc = new Map((c.contracts ?? []).map((k) => [k.id, k.path]));
+    for (const k of m.contracts ?? []) {
+      if (!cc.has(k.id)) out.push({ kind: "PUBLIC_CONTRACT_REMOVED", detail: `${m.id}/${k.id}` });
+      else if (cc.get(k.id) !== k.path) out.push({ kind: "PUBLIC_CONTRACT_PATH_CHANGED", detail: `${m.id}/${k.id}` });
+    }
+  }
+  const edge = (d) => `${d.consumer}->${d.provider}:${d.contract}`;
+  const ce = new Set(cand.dependencies.map(edge));
+  for (const d of base.dependencies) if (!ce.has(edge(d))) out.push({ kind: "DEPENDENCY_REMOVED", detail: edge(d) });
+  return out;
+}
+
 /**
- * @param base  { contract, plan, specText, cutoff } (any may be null: absent at BASE)
+ * @param base  { contract, plan, specText, cutoff, manifest, specSlugs, establishedSlugs } (any may be null: absent at BASE)
  * @param cand  { contract, plan, specText, cutoff }
  * @returns {{ findings: {kind, detail}[], forcesHumanGate: boolean }}
  */
@@ -103,11 +127,17 @@ export function detectDowngrades(base, cand) {
     for (const s of cand.cutoff?.slugs ?? []) if (!bSlugs.has(s)) add("LEGACY_CUTOFF_ADDITION", s);
   } else if (cand.cutoff) {
     // a cutoff created by this change may only list features that already existed at BASE (the upgrade writer's rule)
+    // and never one whose acceptance was already established at BASE (independent re-review N4)
     add("CUTOFF_CREATED", "legacy acceptance cutoff created");
     const existed = new Set(base.specSlugs ?? []);
-    for (const s of cand.cutoff.slugs ?? []) if (!existed.has(s)) add("LEGACY_CUTOFF_ADDITION", s);
+    const established = new Set(base.establishedSlugs ?? []);
+    for (const s of cand.cutoff.slugs ?? []) if (!existed.has(s) || established.has(s)) add("LEGACY_CUTOFF_ADDITION", s);
   }
-  if (cand.cutoff?.__invalid || cand.contract?.__invalid) add("GOVERNANCE_DATA_INVALID", "candidate acceptance governance data is not valid JSON");
+  if (cand.cutoff?.__invalid || cand.contract?.__invalid || cand.manifest?.__invalid) add("GOVERNANCE_DATA_INVALID", "candidate acceptance governance data is not valid JSON");
+
+  // dependency manifest (003 RF-2): removing modules, public contracts or edges removes cross-feature obligations
+  // (independent re-review N1); only a BASE manifest can be weakened, a new one only adds obligations
+  for (const m of manifestDowngrades(base.manifest, cand.manifest)) add(m.kind, m.detail);
 
   const findings = f.sort((a, b) => (a.kind + a.detail < b.kind + b.detail ? -1 : 1));
   return { findings, forcesHumanGate: findings.length > 0, digest: sha256(canonical(findings)) };

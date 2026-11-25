@@ -14,6 +14,11 @@ export const TIER_RANK = Object.freeze({ restricted: 0, "node-permission": 1, co
 // on the host only `node` has a fixed identity (process.execPath); any other bare name would come from PATH (RF-8).
 // Inside a digest-pinned container image a bare name is the image's own executable.
 const HOST_BARE_EXECUTABLES = new Set(["node"]);
+// inside the image only interpreters whose argv the platform constrains (independent re-review N2): any other bare
+// name (busybox, env, nodejs, ...) can run inline script text and is refused
+const CONTAINER_BARE_EXECUTABLES = new Set(["node", "python", "python3", "pytest"]);
+/** Does a repository-relative path name the git directory (any segment, any case)? */
+export const namesGitDir = (p) => String(p).split(/[\\/]/).some((s) => s.toLowerCase() === ".git");
 // node runner flags are an ALLOWLIST: anything else (inline script, --import/--require preloads, permission or
 // inspector switches, env files) is refused, whatever its spelling (`-pe`, `--eval=...`, `--allow-fs-read=*`)
 const NODE_FLAG_ALLOW = [/^--test$/, /^--test-reporter=(tap|spec|junit|dot)$/, /^--test-name-pattern=[^\0]+$/, /^--test-timeout=\d+$/, /^--test-concurrency=\d+$/, /^--test-isolation=(process|none)$/, /^--no-warnings$/, /^--enable-source-maps$/];
@@ -48,8 +53,12 @@ export const globMatches = (glob, path) => globToRegExp(glob).test(path);
 export function checkExecutable(executable, { isolation = "restricted" } = {}) {
   if (SHELLS.has(executable.toLowerCase()) || SHELLS.has(executable.split("/").at(-1).toLowerCase())) return `runner executable '${executable}' is a shell`;
   if (HOST_BARE_EXECUTABLES.has(executable)) return null;
-  if (!executable.includes("/")) return isolation === "container" ? null : `runner executable '${executable}' is not an allowed host identity (only node, or a repository path)`;
+  if (!executable.includes("/")) {
+    if (isolation !== "container") return `runner executable '${executable}' is not an allowed host identity (only node, or a repository path)`;
+    return CONTAINER_BARE_EXECUTABLES.has(executable) ? null : `runner executable '${executable}' is not an allowed image identity (node, python, python3, pytest)`;
+  }
   if (normalizeRepoPath(executable) === null) return `runner executable '${executable}' escapes the repository`;
+  if (namesGitDir(executable)) return `runner executable '${executable}' is inside the git directory`;
   return null;
 }
 
@@ -83,6 +92,8 @@ export function validateContract(contract) {
     if (ee) errors.push(`runner ${r.id}: ${ee}`);
     else errors.push(...checkArgv(r.executable, r.argv).map((e) => `runner ${r.id}: ${e}`));
     if (normalizeRepoPath(r.cwd) === null && r.cwd !== ".") errors.push(`runner ${r.id}: cwd escapes the repository`);
+    if (namesGitDir(r.cwd)) errors.push(`runner ${r.id}: cwd names the git directory`);
+    for (const p of r.readPaths ?? []) if (namesGitDir(p)) errors.push(`runner ${r.id}: readPaths entry names the git directory`);
     // a loopback service network needs a per-run user-defined network and a human approval the agent cannot write:
     // neither exists in this candidate, so it is refused rather than mapped to the host network (002 RF-15)
     if (r.network === "loopback") errors.push(`runner ${r.id}: loopback service networks are not supported by this platform version (BLOCKED, never host networking)`);

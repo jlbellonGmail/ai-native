@@ -7,7 +7,7 @@ import { spawn, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, realpathSync, statSync } from "node:fs";
 import { delimiter, isAbsolute, join, relative, resolve, sep } from "node:path";
-import { TIER_RANK, checkArgv, checkExecutable } from "./contract.mjs";
+import { TIER_RANK, checkArgv, checkExecutable, namesGitDir } from "./contract.mjs";
 import { normalizeRepoPath } from "./manifest.mjs";
 
 export const MAX_OUTPUT_BYTES = 4 * 1024 * 1024;
@@ -95,18 +95,21 @@ export async function runRunner({ root, runner, outDir, request = {}, minTier = 
   const realRoot = realpathSync(root);
   const cwdRel = runner.cwd === "." ? "." : normalizeRepoPath(runner.cwd);
   if (cwdRel === null) return blocked("cwd escapes the repository");
+  if (namesGitDir(cwdRel)) return blocked("cwd names the git directory");
   const cwd = resolve(realRoot, cwdRel);
   if (!existsSync(cwd) || !inside(realRoot, realpathSync(cwd))) return blocked("cwd is missing or escapes the repository (symlink)");
+  if (namesGitDir(relative(realRoot, realpathSync(cwd)))) return blocked("cwd resolves (symlink) into the git directory");
   // a container runner's bare executable lives in the digest-pinned image; on the host only fixed identities resolve
   const inImage = runner.isolation === "container" && !runner.executable.includes("/");
   const exe = inImage ? null : resolveExecutable(runner.executable, realRoot);
   if (!inImage && !exe) return blocked(`executable '${runner.executable}' cannot be resolved inside the declared identity`);
   const exeDigest = inImage ? sha256(String(runner.image)) : sha256(readFileSync(exe));
-  // every repository path the argv names must stay inside the repository and outside the git directory
-  for (const a of runner.argv.filter((x) => !x.startsWith("-") && /[./]/.test(x))) {
+  // every non-flag argv token is a potential path relative to cwd (a bare `HEAD` included, re-review N3): it must stay
+  // inside the repository and outside the git directory, also after symlink resolution
+  for (const a of runner.argv.filter((x) => !x.startsWith("-"))) {
     const p = resolve(cwd, a);
-    if (!inside(realRoot, p) || relative(realRoot, p).split(sep).includes(".git")) return blocked("an argv path escapes the repository or names the git directory");
-    if (existsSync(p) && (!inside(realRoot, realpathSync(p)) || relative(realRoot, realpathSync(p)).split(sep).includes(".git"))) return blocked("an argv path resolves (symlink) outside the repository or into the git directory");
+    if (/[./\\]/.test(a) && (!inside(realRoot, p) || namesGitDir(relative(realRoot, p)))) return blocked("an argv path escapes the repository or names the git directory");
+    if (existsSync(p) && (!inside(realRoot, realpathSync(p)) || namesGitDir(relative(realRoot, realpathSync(p))))) return blocked("an argv path resolves (symlink) outside the repository or into the git directory");
   }
   mkdirSync(outDir, { recursive: true });
   const realOut = realpathSync(outDir);
