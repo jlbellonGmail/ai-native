@@ -79,7 +79,7 @@ export function validateContract(contract) {
     if (r.network === "loopback" && !r.networkApproval) errors.push(`runner ${r.id}: network access requires a human-approved contract entry (networkApproval)`);
     if (r.network && r.isolation !== "container") errors.push(`runner ${r.id}: network settings apply only to the container tier`);
     if (r.isolation === "container" && !/@sha256:[0-9a-f]{64}$/.test(r.image ?? "")) errors.push(`runner ${r.id}: container tier requires an image pinned by digest`);
-    if (r.env.some((n) => /(SECRET|TOKEN|PASSWORD|PASSWD|PRIVATE|CREDENTIAL|API_?KEY)/.test(n))) errors.push(`runner ${r.id}: environment allowlist names a secret-like variable`);
+    if (r.env.some((n) => /(SECRET|TOKEN|PASSWORD|PASSWD|PRIVATE|CREDENTIAL|API_?KEY)/i.test(n))) errors.push(`runner ${r.id}: environment allowlist names a secret-like variable`);
     for (const p of r.readPaths ?? []) if (normalizeRepoPath(p) === null) errors.push(`runner ${r.id}: readPaths entry escapes the repository`);
   }
   for (const e of nonSutPathErrors(contract.nonSutPaths ?? [])) errors.push(e);
