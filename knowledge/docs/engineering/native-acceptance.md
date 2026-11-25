@@ -63,10 +63,22 @@ A consumer without a validation contract gets `BLOCKED` with an actionable diagn
   human/agent identity separation. Until then the governance verdict is reported `BLOCKED`, never satisfied by the
   candidate-run `ci.yml` derivation, which is early feedback only.
 - CI closure (RF-31): `ci.yml` job `acceptance-closure` re-runs changed features in a fresh checkout and uploads the
-  raw structured output; `verdict.mjs` (`deriveClosure`, run by `analyze` from the default branch) re-parses those
-  bytes against the head's plan and contract, after checking the producing run (workflow path, `pull_request`
-  event, head SHA) from the API. It is effective only once `acceptance-governance.yml` is on the default branch and
-  its check is required (human configuration). The consumer L3 acceptance job is not implemented in this candidate.
+  raw structured output. That job runs the candidate's code, so its metadata (`status`, exit code, tier, digest) is
+  candidate-authored. `verdict.mjs` (`deriveClosure`, run by `analyze` from the default branch) therefore:
+  re-parses the raw bytes against the head's plan and contract; re-judges the plan itself (AC coverage, matrix,
+  dataset digests on Git object bytes); requires the recorded tier to equal the contract's and to meet each case's
+  minimum; checks the producing run (workflow path, `pull_request` event, head SHA) from the API; and reports
+  `BLOCKED` when the closure producer (`ci.yml` plus the transitive imports of `runtime/acceptance/ci-closure.mjs`)
+  differs from BASE, because then the artifact cannot be trusted at all. What it cannot establish: that candidate
+  case code, which runs in the same job and at the `restricted` tier is not isolated, did not tamper with the
+  output directory or the job, and the seeded failure of RF-32 (a history property checked only against the local
+  ledger). It is effective only once
+  `acceptance-governance.yml` is on the default branch and its check is required (human configuration). The
+  consumer L3 acceptance job is not implemented in this candidate.
+- Impact selection uses the BASE dependency graph and the head graph together: deleting the manifest, a module, a
+  public contract or an edge never drops a BASE obligation and is itself a DOWNGRADE (`MANIFEST_REMOVED`,
+  `MODULE_REMOVED`, `PUBLIC_CONTRACT_REMOVED`, `PUBLIC_CONTRACT_PATH_CHANGED`, `DEPENDENCY_REMOVED`). An affected
+  consumer module with no feature plan is `BLOCKED`.
 - The `container` tier needs a container runtime; on a host without one it is `BLOCKED` without fallback.
 - The GI PostgreSQL reference pilot (003 RF-6, RF-14..RF-17) was not executed: it needs a disposable PostgreSQL
   container and no container runtime was available. It is reported `BLOCKED`.
