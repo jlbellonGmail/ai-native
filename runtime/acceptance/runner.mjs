@@ -50,11 +50,23 @@ export function probeTier(tier, { spawnSyncImpl = spawnSync } = {}) {
 /** A case may run only at or above its declared minimum tier (RF-33). */
 export const tierSatisfies = (actual, minimum) => TIER_RANK[actual] >= TIER_RANK[minimum];
 
+/**
+ * POSIX process-group target for a spawned child, or null. kill(2) with pid -1 signals every process the caller may
+ * signal and pid 0 its own group: only a real child pid (> 1) may ever be turned into a negative group target.
+ */
+export function groupKillTarget(pid) {
+  return Number.isInteger(pid) && pid > 1 ? -pid : null;
+}
+
 /** Kill the whole process tree (shell-free children may still spawn their own). */
 function killTree(child) {
   try {
-    if (process.platform === "win32") spawnSync("taskkill", ["/pid", String(child.pid), "/T", "/F"], { windowsHide: true, timeout: 15000 });
-    else { try { process.kill(-child.pid, "SIGKILL"); } catch { child.kill("SIGKILL"); } }
+    if (process.platform === "win32") {
+      if (Number.isInteger(child.pid) && child.pid > 0) spawnSync("taskkill", ["/pid", String(child.pid), "/T", "/F"], { windowsHide: true, timeout: 15000 });
+    } else {
+      const target = groupKillTarget(child.pid);
+      try { if (target === null) throw new Error("no process group"); process.kill(target, "SIGKILL"); } catch { child.kill("SIGKILL"); }
+    }
   } catch { /* already gone */ }
 }
 
@@ -153,7 +165,8 @@ export async function runRunner({ root, runner, outDir, request = {}, minTier = 
       clearTimeout(timer);
       // descendants left behind by a finished runner must not outlive it (POSIX process group; on Windows an orphan
       // whose parent already exited is not reachable by taskkill /T: residual risk, local ledger is circuit evidence only)
-      if (process.platform !== "win32" && child.pid) { try { process.kill(-child.pid, "SIGKILL"); } catch { /* group gone */ } }
+      const group = process.platform !== "win32" ? groupKillTarget(child.pid) : null;
+      if (group !== null) { try { process.kill(group, "SIGKILL"); } catch { /* group gone */ } }
       const base = { executed: true, exitCode: code, stdout: out, stderr: err, durationMs: Date.now() - started, controls, isolated, tier: runner.isolation, executableDigest: exeDigest, envNames: controls.envNames, outDir: realOut };
       if (error) return resolveRun({ ...base, status: "BLOCKED", reasons: [`runner could not start: ${String(error.code ?? error.message).slice(0, 80)}`] });
       if (timedOut) return resolveRun({ ...base, status: "BLOCKED", reasons: [`runner exceeded its ${runner.timeoutMs}ms timeout and was killed`] });

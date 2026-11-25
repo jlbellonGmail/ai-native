@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { runRunner, probeTier, tierSatisfies, describeIsolation, resolveExecutable } from "./runner.mjs";
+import { runRunner, probeTier, tierSatisfies, describeIsolation, resolveExecutable, groupKillTarget } from "./runner.mjs";
 
 function fixture() {
   const root = mkdtempSync(join(tmpdir(), "ai-run-"));
@@ -131,7 +131,15 @@ test("container tier builds a network-none, read-only, git-free invocation", asy
     };
     mkdirSync(join(root, "data"));
     const img = "reg/x@sha256:" + "b".repeat(64);
-    const r = await runRunner({ root, runner: runner({ isolation: "container", image: img, readPaths: ["data"] }), outDir: out(root), probe: () => ({ available: true }), spawnImpl });
+    // the fake child reports pid 1: no signal may reach a real process (kill(-1) would hit every process of the user)
+    const kills = [];
+    const realKill = process.kill;
+    process.kill = (pid, sig) => { kills.push(pid); return true; };
+    let r;
+    try {
+      r = await runRunner({ root, runner: runner({ isolation: "container", image: img, readPaths: ["data"] }), outDir: out(root), probe: () => ({ available: true }), spawnImpl });
+    } finally { process.kill = realKill; }
+    assert.deepEqual(kills, []);
     assert.equal(r.status, "RAN");
     assert.equal(seen.cmd, "docker");
     const j = seen.args.join(" ");
@@ -153,4 +161,10 @@ test("executable resolution is repository-scoped", () => {
     assert.equal(resolveExecutable("t/missing.exe", root), null);
     assert.equal(existsSync(resolveExecutable("t/ok.mjs", root)), true);
   } finally { rmSync(root, { recursive: true, force: true }); }
+});
+
+test("process-group kill never targets pid 0, 1 or a missing pid", () => {
+  for (const pid of [undefined, null, 0, 1, -5, 1.5, "123", NaN]) assert.equal(groupKillTarget(pid), null, String(pid));
+  assert.equal(groupKillTarget(2), -2);
+  assert.equal(groupKillTarget(4242), -4242);
 });
