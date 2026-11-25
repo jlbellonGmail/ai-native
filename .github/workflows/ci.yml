@@ -201,7 +201,8 @@ jobs:
 
       - name: runtime/acceptance tests (v4.1.0 Native Acceptance, specs 001-003)
         shell: bash
-        run: node --test runtime/acceptance/*.test.mjs
+        # bounded: a hung test fails with its own name instead of holding the job until its timeout
+        run: node --test --test-timeout=300000 --test-reporter=spec runtime/acceptance/*.test.mjs
 
       - name: Policies on the real change (constitution, human gate derived from the diff)
         shell: bash
