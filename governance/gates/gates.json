@@ -23,6 +23,8 @@
     "governance/gates/**",
     "governance/rulesets/**",
     "runtime/gates/**",
+    "runtime/acceptance/**",
+    "runtime/policy/hitl.mjs",
     "core/security-policy.json",
     "contracts/**",
     "AGENTS.md",

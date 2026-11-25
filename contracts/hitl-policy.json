@@ -6,7 +6,7 @@
     "medium": { "allowed": ["final-only", "required"], "default": "final-only" },
     "high": { "allowed": ["required"], "default": "required" }
   },
-  "forceRequired": ["controlPlane", "release", "production", "security"],
+  "forceRequired": ["controlPlane", "release", "production", "security", "acceptanceGovernance"],
   "noneRequires": { "autonomy": "full", "explicit": true },
   "externalProtectionWins": true
 }
