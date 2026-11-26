@@ -24,15 +24,33 @@ test("decision: PASS passes; FAIL, BLOCKED, unknown, other SHA and no verdict ne
   }
 });
 
-test("decision: NEEDS_HUMAN needs a consumer-owned human Environment and its approval; none configured is BLOCKED", () => {
+const APPROVED = [{ state: "approved", environments: [{ name: "acceptance-human-review" }], user: { login: "maintainer", id: 9, type: "User" }, comment: "ok" }];
+const human = { environment: "acceptance-human-review", humanResult: "success", approvals: APPROVED, reviewers: ["maintainer"], author: "contributor" };
+
+test("decision: NEEDS_HUMAN needs a recorded approval of the consumer-owned Environment by a pinned human (third review R3)", () => {
   const n = v("NEEDS_HUMAN", { findings: [{ kind: "CONTRACT_CREATED", detail: "validation contract created" }] });
   assert.equal(consumerAcceptanceDecision({ verdict: n, headSha: HEAD }).status, "BLOCKED");
-  assert.equal(consumerAcceptanceDecision({ verdict: n, headSha: HEAD, environment: "acceptance-human-review", humanResult: "skipped" }).status, "NEEDS_HUMAN");
-  assert.equal(consumerAcceptanceDecision({ verdict: n, headSha: HEAD, environment: "acceptance-human-review", humanResult: "failure" }).ok, false);
-  const ok = consumerAcceptanceDecision({ verdict: n, headSha: HEAD, environment: "acceptance-human-review", humanResult: "success" });
+  assert.equal(consumerAcceptanceDecision({ verdict: n, headSha: HEAD, ...human, humanResult: "skipped" }).status, "NEEDS_HUMAN");
+  assert.equal(consumerAcceptanceDecision({ verdict: n, headSha: HEAD, ...human, humanResult: "failure" }).ok, false);
+  const ok = consumerAcceptanceDecision({ verdict: n, headSha: HEAD, ...human });
   assert.equal(ok.ok, true);
   assert.equal(ok.status, "APPROVED");
   assert.match(ok.lines.join("\n"), /CONTRACT_CREATED/);
+  // a job "success" without an approval record (an auto-created Environment with no reviewers) never approves
+  for (const [over, re] of [
+    [{ approvals: [] }, /no approval record/],
+    [{ approvals: null }, /no approval record/],
+    [{ reviewers: [] }, /no pinned human reviewer/],
+    [{ approvals: [{ ...APPROVED[0], user: { login: "someone-else", type: "User" } }] }, /not a pinned reviewer/],
+    [{ approvals: [{ ...APPROVED[0], user: { login: "maintainer", type: "Bot" } }] }, /not a human user/],
+    [{ author: "maintainer" }, /is the PR author/],
+    [{ approvals: [{ ...APPROVED[0], environments: [{ name: "other" }] }] }, /no approval record/],
+    [{ approvals: [{ ...APPROVED[0], state: "rejected" }] }, /no approval record/],
+  ]) {
+    const d = consumerAcceptanceDecision({ verdict: n, headSha: HEAD, ...human, ...over });
+    assert.equal(d.ok, false, JSON.stringify(over));
+    assert.match(d.title, re, JSON.stringify(over));
+  }
 });
 
 function consumerPr({ buggy = false } = {}) {
@@ -78,7 +96,7 @@ test("consumer PR end to end: a seeded defect FAILs, the fix passes the closure,
     // the contract is new in this PR: a governance finding the consumer's human decides
     assert.equal(fixed.verdict.status, "NEEDS_HUMAN");
     assert.equal(consumerAcceptanceDecision({ verdict: fixed.verdict, headSha: fixed.head }).ok, false);
-    assert.equal(consumerAcceptanceDecision({ verdict: fixed.verdict, headSha: fixed.head, environment: "acceptance-human-review", humanResult: "success" }).ok, true);
+    assert.equal(consumerAcceptanceDecision({ verdict: fixed.verdict, headSha: fixed.head, ...human }).ok, true);
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
 

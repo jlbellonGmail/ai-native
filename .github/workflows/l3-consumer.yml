@@ -61,6 +61,11 @@ on:
         required: false
         type: string
         default: ""
+      acceptance-reviewers:
+        description: "Comma-separated logins of the consumer's human reviewers; the Environment approval must come from one of them and not from the PR author. Empty -> NEEDS_HUMAN is BLOCKED."
+        required: false
+        type: string
+        default: ""
 
 permissions:
   contents: read
@@ -345,11 +350,12 @@ jobs:
   acceptance-governance:
     name: acceptance-governance
     needs: [l3, acceptance-analyze, acceptance-human]
-    if: always()
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
       contents: read
+      actions: read
     steps:
       - name: Checkout platform (default branch)
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -376,10 +382,26 @@ jobs:
           name: acceptance-verdict
           path: acceptance-verdict
 
-      - name: Decide (PASS, or NEEDS_HUMAN approved by the consumer-owned Environment; otherwise this check fails)
+      - name: Read this run's Environment approval records (read-only)
+        if: needs.acceptance-human.result == 'success'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          gh api "repos/$REPO/actions/runs/$RUN_ID/approvals" > approvals.json || echo "[]" > approvals.json
+
+      - name: Decide (PASS, or NEEDS_HUMAN approved by a pinned consumer reviewer; otherwise this check fails)
         shell: bash
         env:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           HUMAN: ${{ needs.acceptance-human.result }}
           ENVIRONMENT: ${{ inputs.acceptance-environment }}
-        run: node platform/runtime/consumer/acceptance-gate.mjs --verdict acceptance-verdict/verdict.json --head "$HEAD_SHA" --human "$HUMAN" --environment "$ENVIRONMENT"
+          REVIEWERS: ${{ inputs.acceptance-reviewers }}
+          AUTHOR: ${{ github.event.pull_request.user.login }}
+        run: |
+          set -euo pipefail
+          [ -f approvals.json ] || echo "[]" > approvals.json
+          node platform/runtime/consumer/acceptance-gate.mjs --verdict acceptance-verdict/verdict.json --head "$HEAD_SHA" --human "$HUMAN" --environment "$ENVIRONMENT" --reviewers "$REVIEWERS" --author "$AUTHOR" --approvals approvals.json
