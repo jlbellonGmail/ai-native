@@ -307,7 +307,7 @@ jobs:
           echo "run=$run" >> "$GITHUB_OUTPUT"
           echo "path=$(jq -r .path <<<"$run")" >> "$GITHUB_OUTPUT"
           job_id=$(gh api "repos/$REPO/actions/runs/$RUN_ID/jobs?per_page=100" --jq '[.jobs[] | select(.name | endswith("acceptance-closure"))][0].id // empty')
-          if [ -n "$job_id" ]; then gh api "repos/$REPO/actions/jobs/$job_id/logs" > closure.log || rm -f closure.log; fi
+          if [ -n "$job_id" ]; then gh api --allow-escape-sequences "repos/$REPO/actions/jobs/$job_id/logs" > closure.log || rm -f closure.log; fi
           [ -f closure.log ] && [ "$(wc -c < closure.log)" -le 16777216 ] || { echo "no bounded closure job log"; rm -f closure.log; }
 
       - name: Analyze (trusted platform code, candidate as data)

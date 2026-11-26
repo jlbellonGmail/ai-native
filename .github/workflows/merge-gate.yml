@@ -78,6 +78,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
         run: |
           set -euo pipefail
           mkdir -p closure
@@ -86,7 +88,7 @@ jobs:
           deadline=$(( $(date +%s) + 2700 ))
           run_id=""
           while [ "$(date +%s)" -lt "$deadline" ]; do
-            row=$(gh api "repos/$REPO/actions/workflows/$(basename "$wf")/runs?head_sha=$HEAD_SHA&event=pull_request&per_page=5" --jq '[.workflow_runs[] | select(.head_sha=="'"$HEAD_SHA"'")][0] | {id, status}')
+            row=$(gh api "repos/$REPO/actions/workflows/$(basename "$wf")/runs?head_sha=$HEAD_SHA&event=pull_request&per_page=5" --jq '[.workflow_runs[] | select(.head_sha=="'"$HEAD_SHA"'" and any(.pull_requests[]?; .number == '"$PR"' and .base.ref == "'"$BASE_REF"'"))][0] | {id, status}')
             st=$(jq -r '.status // empty' <<<"$row")
             echo "$(date -u +%H:%M:%S) CI run $(jq -r '.id // "none"' <<<"$row") status=${st:-none}"
             if [ "$st" = "completed" ]; then run_id=$(jq -r .id <<<"$row"); break; fi
@@ -99,7 +101,7 @@ jobs:
           gh run download "$run_id" --repo "$REPO" --name "$name" --dir closure || echo "no closure artifact in run $run_id"
           # the producing job's log: each raw output's digest was anchored there from memory (exactly once per runner)
           job_id=$(gh api "repos/$REPO/actions/runs/$run_id/jobs?per_page=100" --jq '[.jobs[] | select(.name=="acceptance-closure")][0].id // empty')
-          if [ -n "$job_id" ]; then gh api "repos/$REPO/actions/jobs/$job_id/logs" > closure.log || rm -f closure.log; fi
+          if [ -n "$job_id" ]; then gh api --allow-escape-sequences "repos/$REPO/actions/jobs/$job_id/logs" > closure.log || rm -f closure.log; fi
           [ -f closure.log ] && [ "$(wc -c < closure.log)" -le 16777216 ] || { echo "no bounded closure job log"; rm -f closure.log; }
           # bound the data: regular files only, size-limited (the analyzer re-checks every file it reads)
           find closure -type l -delete
@@ -131,7 +133,7 @@ jobs:
     timeout-minutes: 40
     environment: ai-native-trust
     needs: acceptance-analyze
-    if: always() && github.event.pull_request.base.ref == 'main'
+    if: ${{ !cancelled() && github.event.pull_request.base.ref == 'main' }}
     outputs:
       needs_human: ${{ steps.verdict.outputs.needs_human }}
       check_run_id: ${{ steps.verdict.outputs.check_run_id }}

@@ -11,10 +11,22 @@ import { fileURLToPath } from "node:url";
 import { DEFAULT_MANIFEST_PATH, runFeatureAcceptance } from "./feature.mjs";
 import { buildGraph } from "./graph.mjs";
 import { analyzeImpact, gitRefResolver } from "./impact.mjs";
+import { featuresCoveringChanges } from "./evidence.mjs";
 
 export function changedFeatureSlugs(project, base) {
-  const out = execFileSync("git", ["diff", "--name-only", "--no-renames", `${base}...HEAD`], { cwd: project, encoding: "utf8" });
-  return [...new Set(out.split("\n").map((p) => /^specs\/([^/]+)\//.exec(p)?.[1]).filter(Boolean))].sort();
+  const changed = execFileSync("git", ["diff", "--name-only", "--no-renames", `${base}...HEAD`], { cwd: project, encoding: "utf8" }).split("\n").filter(Boolean);
+  const direct = changed.map((p) => /^specs\/([^/]+)\//.exec(p)?.[1]).filter(Boolean);
+  // a code-only change re-runs every feature whose plan (BASE or head) declares a changed path as a case input
+  const mb = execFileSync("git", ["merge-base", base, "HEAD"], { cwd: project, encoding: "utf8" }).trim();
+  const plans = [];
+  for (const rev of [mb, "HEAD"]) {
+    let files = [];
+    try { files = execFileSync("git", ["ls-tree", "-r", "--name-only", rev, "--", "specs"], { cwd: project, encoding: "utf8" }).split("\n").filter((p) => /^specs\/[^/]+\/acceptance\/plan\.json$/.test(p)); } catch { files = []; }
+    for (const f of files) {
+      try { plans.push({ slug: f.split("/")[1], plan: JSON.parse(execFileSync("git", ["show", `${rev}:${f}`], { cwd: project, encoding: "utf8", maxBuffer: 1024 * 1024 })) }); } catch { /* an invalid plan is judged by the run itself */ }
+    }
+  }
+  return [...new Set([...direct, ...featuresCoveringChanges(plans, changed)])].sort();
 }
 
 const readJsonIf = (file) => {

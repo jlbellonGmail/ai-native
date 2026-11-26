@@ -9,7 +9,7 @@ import { closeSync, constants, existsSync, fstatSync, openSync, readFileSync, wr
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { detectDowngrades } from "./downgrade.mjs";
-import { canonical, sha256 } from "./evidence.mjs";
+import { canonical, featuresCoveringChanges, sha256 } from "./evidence.mjs";
 import { TIER_RANK, validateContract } from "./contract.mjs";
 import { validatePlan } from "./plan.mjs";
 import { classifyFeature } from "./spec-acceptance.mjs";
@@ -139,6 +139,7 @@ export function deriveClosure({ repo, head, slugs, closureDir, run, closureLog =
     if (!pv.ok) { features.push({ slug, classification: "REQUIRED", status: "BLOCKED", reasons: pv.errors.slice(0, 10).map((e) => `plan: ${e}`) }); continue; }
     const mandatory = (plan.cases ?? []).filter((c) => c.mandatory);
     const results = [];
+    const tiersOf = [];
     // 002 RF-32 at merge: a seeded-failure run is history the CI closure of one commit cannot verify (the local
     // ledger is circuit evidence only), so every criterion needs a rejection-expecting mandatory case here
     for (const cr of plan.criteria ?? []) {
@@ -163,12 +164,13 @@ export function deriveClosure({ repo, head, slugs, closureDir, run, closureLog =
       const low = mandatory.filter((c) => c.runner === runnerId && !(TIER_RANK[m.tier] >= TIER_RANK[c.minTier ?? "restricted"]));
       for (const c of low) results.push({ id: c.id, status: "BLOCKED", reason: `runner tier ${m.tier} is below the case minimum ${c.minTier}` });
       if (low.length) { for (const id of ids.filter((x) => !low.some((c) => c.id === x))) results.push({ id, status: "BLOCKED", reason: "a sibling case of this runner is below its minimum tier" }); continue; }
+      tiersOf.push(`${runnerId}:${m.tier}`);
       const parsed = parseStructured(runner.format, raw);
       const ev = evaluateObserved({ expectedIds: ids, observed: parsed.cases, parseErrors: parsed.errors, minObserved: contract.minObservedCases, exitCode: Number.isInteger(m.exitCode) ? m.exitCode : 1 });
       for (const id of ids) results.push({ id, status: ev.perCase[id] ?? ev.status, reason: ev.reasons[0] });
     }
     const c = consolidate(results);
-    features.push({ slug, classification: "REQUIRED", status: c.status, reasons: c.reasons.slice(0, 10) });
+    features.push({ slug, classification: "REQUIRED", status: c.status, reasons: c.reasons.slice(0, 10), tiers: tiersOf });
   }
   const worst = features.some((f) => f.status === "FAIL") ? "FAIL" : features.some((f) => f.status !== "PASS" && f.status !== "NOT_APPLICABLE") ? "BLOCKED" : "PASS";
   return { status: reasons.length ? "BLOCKED" : worst, reasons, features, runId: run.id, runAttempt: run.attempt ?? null };
@@ -195,6 +197,10 @@ export function analyze({ repo, base, head, closureDir = null, run = null, closu
   for (const p of [CONTRACT, CUTOFF, MANIFEST]) if (read(head, p).tooLarge) reasons.push(`${p} exceeds the size bound`);
   const b0 = { ...shared(base), establishedSlugs: established(base) };
   const h0 = shared(head);
+  // a code-only change still closes every feature whose plan (BASE or head) declares a changed path as a case input
+  const plansAt = (sha) => established(sha).map((s) => ({ slug: s, plan: asJson(read(sha, `specs/${s}/acceptance/plan.json`)) })).filter((x) => x.plan && !x.plan.__invalid);
+  for (const s of featuresCoveringChanges([...plansAt(base), ...plansAt(head)], changed)) if (!featureSlugs.includes(s)) featureSlugs.push(s);
+  featureSlugs.sort();
   if (h0.contract?.__invalid || h0.cutoff?.__invalid) reasons.push("candidate acceptance governance data is not valid JSON");
   findings.push(...detectDowngrades({ ...b0, plan: null, specText: null }, { ...h0, plan: null, specText: null }).findings);
   for (const slug of slugs) {
@@ -247,7 +253,14 @@ export function analyze({ repo, base, head, closureDir = null, run = null, closu
   let status;
   if (reasons.length || closure.status === "BLOCKED") status = "BLOCKED";
   else if (closure.status === "FAIL") status = "FAIL";
-  else status = findings.length ? "NEEDS_HUMAN" : "PASS";
+  else {
+    // review finding 5: a merge closure that did not run in the container tier shared the CI job with other
+    // candidate code (restricted is labelled not isolated); it may close only through the human decision
+    for (const f of closure.features ?? []) {
+      for (const t of f.tiers ?? []) if (!t.endsWith(":container")) findings.push({ kind: "CLOSURE_NOT_ISOLATED", slug: f.slug, detail: `${t.split(":")[0]} ran at tier ${t.split(":")[1]} (not isolated) in the CI closure` });
+    }
+    status = findings.length ? "NEEDS_HUMAN" : "PASS";
+  }
   return { schemaVersion: 1, headSha: head, baseSha: base, status, findings, reasons: [...reasons, ...closure.reasons], closure, digest: sha256(canonical({ findings, closure: closure.features })) };
 }
 

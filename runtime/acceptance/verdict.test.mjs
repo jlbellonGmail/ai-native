@@ -36,13 +36,17 @@ test("analyze reads the candidate as Git objects; a candidate that rewrites the 
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
 
-test("no governance change and no feature change is PASS; malformed SHAs and invalid candidate data are BLOCKED", () => {
+test("a change outside every plan's inputs is PASS; touching a declared input needs the closure; malformed SHAs and invalid data are BLOCKED", () => {
   const dir = makeConsumer();
   try {
     const base = commitAll(dir, "base feature");
-    put(dir, "src/slugify.mjs", `${readFileSync(join(dir, "src/slugify.mjs"), "utf8")}// refactor\n`);
-    const head = commitAll(dir, "refactor");
+    put(dir, "tools/unrelated.mjs", "export const x = 1;\n");
+    const head = commitAll(dir, "unrelated tooling");
     assert.equal(analyze({ repo: dir, base, head }).status, "PASS");
+    // review finding 2: refactoring the feature's code (an input of its cases) is never PASS without a closure
+    put(dir, "src/slugify.mjs", `${readFileSync(join(dir, "src/slugify.mjs"), "utf8")}// refactor\n`);
+    const refactor = commitAll(dir, "refactor");
+    assert.equal(analyze({ repo: dir, base, head: refactor }).status, "BLOCKED");
     assert.equal(analyze({ repo: dir, base: "main", head }).status, "BLOCKED");
     put(dir, "acceptance/validation-contract.json", "{ not json");
     const bad = commitAll(dir, "broken contract");
@@ -69,6 +73,8 @@ test("002 RF-31: the closure is derived by trusted code from the CI raw output; 
     assert.equal(ok.closure.features[0].status, "PASS", JSON.stringify(ok.closure));
     // a new contract is a governance finding: the human still decides, the closure itself passed
     assert.equal(ok.status, "NEEDS_HUMAN");
+    // review finding 5: a closure that did not run in the container tier is a human finding, never a silent PASS
+    assert.ok(ok.findings.some((f) => f.kind === "CLOSURE_NOT_ISOLATED" && f.slug === SLUG), JSON.stringify(ok.findings));
 
     // another workflow, another event or another SHA is never the producing run
     for (const run of [runOf(fixedHead, { path: ".github/workflows/evil.yml" }), runOf(fixedHead, { event: "push" }), runOf(head)]) {
@@ -174,6 +180,30 @@ test("candidate code next to the closure: outputs must be anchored exactly once 
     const { createHash } = await import("node:crypto");
     writeFileSync(metaFile, JSON.stringify({ ...meta, outputDigest: `sha256:${createHash("sha256").update(`${fake}# tampered\n`).digest("hex")}` }));
     assert.match(JSON.stringify(at(log)), /not anchored exactly once/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+    rmSync(out, { recursive: true, force: true });
+  }
+});
+
+test("review finding: a code-only change re-closes every feature whose plan declares the path; never PASS without evidence", async () => {
+  const dir = makeConsumer();
+  const out = mkdtempSync(join(tmpdir(), "closure-"));
+  try {
+    commitAll(dir, "feature");
+    git(dir, "branch", "-f", "main", "HEAD");
+    const base = git(dir, "rev-parse", "main");
+    // break only the product code: no file under specs/ changes
+    put(dir, "src/slugify.mjs", `${readFileSync(join(dir, "src/slugify.mjs"), "utf8").replace("toLowerCase()", "toUpperCase()")}`);
+    const head = commitAll(dir, "code-only change");
+    const noArtifact = analyze({ repo: dir, base, head });
+    assert.equal(noArtifact.status, "BLOCKED");
+    assert.match(noArtifact.reasons.join(), /no CI closure artifact/);
+    const log = await closeLog(dir, out);
+    const v = analyze({ repo: dir, base, head, closureDir: out, closureLog: log, run: runOf(head) });
+    assert.equal(v.closure.features[0].slug, SLUG);
+    assert.equal(v.closure.features[0].status, "FAIL");
+    assert.equal(v.status, "FAIL");
   } finally {
     rmSync(dir, { recursive: true, force: true });
     rmSync(out, { recursive: true, force: true });

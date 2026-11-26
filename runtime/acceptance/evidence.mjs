@@ -109,6 +109,30 @@ export function reusableForUnaffected(entry, currentFingerprint, { affected }) {
 }
 
 /** RF-30/RF-34: every changed feature path must be a case input, or in the validated non-SUT class. */
+/** Is `path` one of `sutPaths` (file, directory prefix or glob)? */
+export function coveredBy(sutPaths, path) {
+  return (sutPaths ?? []).some((g) => {
+    if (typeof g !== "string" || !g) return false;
+    if (globToRegExp(g.endsWith("/") ? `${g}**` : g).test(path)) return true;
+    return !/[*?]/.test(g) && path.startsWith(g.endsWith("/") ? g : `${g}/`);
+  });
+}
+
+/**
+ * Features whose acceptance a change touches although it edits no file under `specs/<slug>/` (review finding:
+ * a code-only change selected nothing and passed): every plan, at BASE or at the head, whose cases declare a
+ * changed path among their inputs. BASE plans count so a candidate cannot dodge selection by editing its plan.
+ * @param plans [{ slug, plan }] (both revisions; duplicates allowed)
+ */
+export function featuresCoveringChanges(plans, changedPaths) {
+  const out = new Set();
+  for (const { slug, plan } of plans) {
+    const sut = (Array.isArray(plan?.cases) ? plan.cases : []).flatMap((k) => (Array.isArray(k?.sutPaths) ? k.sutPaths : []));
+    if (changedPaths.some((p) => coveredBy(sut, p))) out.add(slug);
+  }
+  return [...out].sort();
+}
+
 export function uncoveredPaths({ changedPaths, cases, contract, ledgerPaths = [] }) {
   const patterns = cases.flatMap((c) => c.sutPaths).map((g) => globToRegExp(g.endsWith("/") ? `${g}**` : g));
   const dirPrefixes = cases.flatMap((c) => c.sutPaths).filter((p) => !/[*?]/.test(p)).map((p) => (p.endsWith("/") ? p : `${p}/`));
