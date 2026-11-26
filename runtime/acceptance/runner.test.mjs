@@ -219,3 +219,21 @@ test("POSIX: a grandchild left behind by a runner that exited is killed with its
     assert.equal(await goneWithin(pid, 10000), true, `orphan ${pid} outlived the runner`);
   } finally { rmSync(root, { recursive: true, force: true }); rmSync(o, { recursive: true, force: true }); }
 });
+
+test("a declared result file is the structured output; the process stdout stays a log; a missing file is BLOCKED", async () => {
+  const root = fixture();
+  const o = out(root);
+  try {
+    writeFileSync(join(root, "t/res.mjs"), 'import {writeFileSync} from "node:fs";console.log("noise that is not TAP");writeFileSync(process.argv[2],"TAP version 13\\nok 1 - c1\\n1..1\\n");');
+    const r = await runRunner({ root, runner: runner({ argv: ["t/res.mjs", "{resultFile}"], resultFile: "result.tap" }), outDir: o });
+    assert.equal(r.status, "RAN", JSON.stringify(r.reasons));
+    assert.equal(r.stdout, "TAP version 13\nok 1 - c1\n1..1\n");
+    assert.match(r.log, /noise that is not TAP/);
+    // the token resolves inside the runner-owned output directory, never inside the repository
+    assert.equal(existsSync(join(root, "{resultFile}")), false);
+    writeFileSync(join(root, "t/nores.mjs"), 'console.log("TAP version 13\\nok 1 - c1\\n1..1");');
+    const m = await runRunner({ root, runner: runner({ argv: ["t/nores.mjs", "{resultFile}"], resultFile: "result.tap" }), outDir: out(root) });
+    assert.equal(m.status, "BLOCKED");
+    assert.match(m.reasons[0], /no readable structured result file/);
+  } finally { rmSync(root, { recursive: true, force: true }); rmSync(o, { recursive: true, force: true }); }
+});

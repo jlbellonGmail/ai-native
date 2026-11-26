@@ -31,8 +31,8 @@ const PY_FLAG_ALLOW = [/^-B$/, /^-I$/, /^-u$/];
 const PY_MODULES = new Set(["pytest", "unittest"]);
 // pytest: reporting/selection switches only; plugin loading (-p), ini/config overrides (-o, -c), --pyargs, rootdir
 // and import-mode switches are refused. -k/-m take pytest's own expression language, never Python.
-// --junitxml only to the runner's own stdout (the structured result the platform parses), never to a file path
-const PYTEST_FLAG_ALLOW = [/^-q$/, /^-qq$/, /^-v$/, /^-vv$/, /^-x$/, /^-s$/, /^-r[a-zA-Z]+$/, /^--tb=(short|line|no|long|native)$/, /^--strict-markers$/, /^--no-header$/, /^-k$/, /^-m$/, /^--maxfail=\d+$/, /^--junitxml=\/dev\/stdout$/];
+// --junitxml only to the runner-owned result file (the `{resultFile}` token), never to a path the runner chooses
+const PYTEST_FLAG_ALLOW = [/^-q$/, /^-qq$/, /^-v$/, /^-vv$/, /^-x$/, /^-s$/, /^-r[a-zA-Z]+$/, /^--tb=(short|line|no|long|native)$/, /^--strict-markers$/, /^--no-header$/, /^-k$/, /^-m$/, /^--maxfail=\d+$/, /^--junitxml=\{resultFile\}$/];
 const UNITTEST_FLAG_ALLOW = [/^-v$/, /^-q$/, /^-f$/, /^-b$/, /^-s$/, /^-p$/, /^-t$/, /^-k$/];
 
 /** argv of a python interpreter or pytest: which tokens are flags of which allowlist. */
@@ -146,6 +146,9 @@ export function validateContract(contract) {
       if (normalizeRepoPath(p) === null || namesGitDir(p)) errors.push(`runner ${r.id}: configFiles entry escapes the repository or names the git directory`);
       else if (SECRET_FILE.test(p)) errors.push(`runner ${r.id}: configFiles entry ${p} is secret-like and cannot be fingerprinted without exposing it (BLOCKED)`);
     }
+    // the result file is a plain name inside the runner-owned output directory; the token is used only with it
+    if (r.argv.some((x) => x.includes("{resultFile}")) && !r.resultFile) errors.push(`runner ${r.id}: argv uses {resultFile} but no resultFile is declared`);
+    if (r.resultFile && !r.argv.some((x) => x.includes("{resultFile}"))) errors.push(`runner ${r.id}: resultFile is declared but no argv token writes it`);
     for (const n of r.envValues ?? []) {
       if (!r.env.includes(n)) errors.push(`runner ${r.id}: envValues entry ${n} is not in the environment allowlist`);
       if (SECRET_ENV.test(n)) errors.push(`runner ${r.id}: envValues entry ${n} is secret-like: its value is never fingerprinted`);

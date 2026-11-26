@@ -117,8 +117,12 @@ test("002 RF-17: configuration files must be non-secret repository files; env va
   assert.match(bad({ env: ["PATH", "DB_PASSWORD"], envValues: ["DB_PASSWORD"] }), /secret-like/);
 });
 
-test("pytest may write JUnit only to its own stdout", () => {
-  const errs = (argv) => validateContract(contract({ runners: [runner({ executable: "venv/bin/python", argv, format: "junit" })] })).errors.join();
-  assert.equal(errs(["-m", "pytest", "-q", "--junitxml=/dev/stdout", "tests/pilot/"]), "");
-  for (const f of ["--junitxml=report.xml", "--junitxml=/tmp/x.xml", "--junit-xml=/dev/stdout"]) assert.match(errs(["-m", "pytest", f, "tests/"]), /not an allowed pytest flag/, f);
+test("pytest may write JUnit only to the runner-owned result file", () => {
+  const errs = (argv, over = {}) => validateContract(contract({ runners: [runner({ executable: "venv/bin/python", argv, format: "junit", resultFile: "junit.xml", ...over })] })).errors.join();
+  assert.equal(errs(["-m", "pytest", "-q", "--junitxml={resultFile}", "tests/pilot/"]), "");
+  for (const f of ["--junitxml=report.xml", "--junitxml=/tmp/x.xml", "--junitxml=/dev/stdout", "--junit-xml={resultFile}"]) assert.match(errs(["-m", "pytest", f, "tests/"]), /not an allowed pytest flag/, f);
+  const { resultFile: _omit, ...noResult } = runner({ executable: "venv/bin/python", argv: ["-m", "pytest", "--junitxml={resultFile}", "tests/"], format: "junit" });
+  assert.match(validateContract(contract({ runners: [noResult] })).errors.join(), /no resultFile is declared/);
+  assert.match(errs(["-m", "pytest", "tests/"]), /no argv token writes it/);
+  assert.match(errs(["-m", "pytest", "--junitxml={resultFile}", "tests/"], { resultFile: "../x.xml" }), /schema/);
 });

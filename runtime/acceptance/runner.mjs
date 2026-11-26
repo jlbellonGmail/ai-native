@@ -5,7 +5,7 @@
 // the command starts; an unavailable tier is BLOCKED, never downgraded.
 import { spawn, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync, realpathSync, statSync } from "node:fs";
+import { closeSync, constants, existsSync, fstatSync, mkdirSync, openSync, readFileSync, realpathSync, statSync } from "node:fs";
 import { delimiter, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { TIER_RANK, checkArgv, checkExecutable, namesGitDir } from "./contract.mjs";
 import { normalizeRepoPath } from "./manifest.mjs";
@@ -121,7 +121,10 @@ export async function runRunner({ root, runner, outDir, request = {}, minTier = 
   env.ACCEPTANCE_OUT_DIR = realOut;
 
   let command = exe;
-  let args = [...runner.argv];
+  // `{resultFile}`: the one platform token, the runner-owned structured result file (never inside the repository)
+  const RESULT_TOKEN = "{resultFile}";
+  const hostResult = runner.resultFile ? join(realOut, runner.resultFile) : null;
+  let args = runner.argv.map((x) => (hostResult ? x.replaceAll(RESULT_TOKEN, hostResult) : x));
   const controls = { shell: false, argvFixed: true, envNames: Object.keys(env).sort(), osBaselineEnvAddedByHost: process.platform === "win32", timeoutMs: runner.timeoutMs, outputBoundBytes: MAX_OUTPUT_BYTES };
   let isolated = false;
   if (runner.isolation === "node-permission") {
@@ -143,7 +146,7 @@ export async function runRunner({ root, runner, outDir, request = {}, minTier = 
     args = ["run", "--rm", "--network", net, "--read-only", "--cap-drop", "ALL", "--security-opt", "no-new-privileges",
       ...reads.flatMap((p) => ["-v", `${p}:/work/${p.slice(realRoot.length + 1).split(sep).join("/")}:ro`]),
       "-v", `${realOut}:/out`, "-w", "/work", ...Object.keys(env).flatMap((n) => ["-e", n]),
-      runner.image, runner.executable, ...runner.argv];
+      runner.image, runner.executable, ...runner.argv.map((x) => (runner.resultFile ? x.replaceAll(RESULT_TOKEN, `/out/${runner.resultFile}`) : x))];
     isolated = true;
     Object.assign(controls, { network: "none", filesystemRead: reads.sort(), filesystemWrite: [realOut], gitDirExposed: false, image: runner.image });
   }
@@ -174,11 +177,28 @@ export async function runRunner({ root, runner, outDir, request = {}, minTier = 
       if (error) return resolveRun({ ...base, status: "BLOCKED", reasons: [`runner could not start: ${String(error.code ?? error.message).slice(0, 80)}`] });
       if (timedOut) return resolveRun({ ...base, status: "BLOCKED", reasons: [`runner exceeded its ${runner.timeoutMs}ms timeout and was killed`] });
       if (overflow) return resolveRun({ ...base, status: "BLOCKED", reasons: ["runner output exceeded the capture bound and was killed"] });
+      if (hostResult) {
+        // the structured result is the declared file; the process's own stdout stays a log
+        const structured = readResult(hostResult);
+        if (structured === null) return resolveRun({ ...base, status: "BLOCKED", reasons: ["runner wrote no readable structured result file (or it exceeded the capture bound)"] });
+        return resolveRun({ ...base, stdout: structured, log: out, status: "RAN", reasons: [] });
+      }
       resolveRun({ ...base, status: "RAN", reasons: [] });
     };
     child.on("error", (e) => done(null, e));
     child.on("close", (code) => done(code, null));
   });
+}
+
+/** One descriptor, regular file, bounded, never through a symlink. */
+function readResult(file) {
+  let fd;
+  try { fd = openSync(file, constants.O_RDONLY | (constants.O_NOFOLLOW ?? 0)); } catch { return null; }
+  try {
+    const st = fstatSync(fd);
+    if (!st.isFile() || st.size > MAX_OUTPUT_BYTES) return null;
+    return readFileSync(fd, "utf8");
+  } catch { return null; } finally { closeSync(fd); }
 }
 
 /** Evidence labels only the controls the tier really enforced (RF-15). */

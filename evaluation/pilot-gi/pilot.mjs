@@ -59,7 +59,7 @@ export function overlayContract() {
     schemaVersion: 1,
     minObservedCases: CASES.length,
     runners: [{
-      id: "pilot-pg", executable: "venv/bin/python", argv: ["-m", "pytest", "-q", "--junitxml=/dev/stdout", "tests/pilot/"], cwd: ".", format: "junit",
+      id: "pilot-pg", executable: "venv/bin/python", argv: ["-m", "pytest", "-q", "--junitxml={resultFile}", "tests/pilot/"], cwd: ".", format: "junit", resultFile: "junit.xml",
       timeoutMs: 1800000, isolation: "restricted",
       env: ["PATH", "HOME", "DOCKER_HOST", "TESTCONTAINERS_RYUK_DISABLED", "PYTHONDONTWRITEBYTECODE"],
       envValues: ["TESTCONTAINERS_RYUK_DISABLED", "PYTHONDONTWRITEBYTECODE"],
