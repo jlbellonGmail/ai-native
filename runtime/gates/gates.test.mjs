@@ -6,7 +6,11 @@ import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { requiredApprovals, evaluateApprovals } from "./governance-modes.mjs";
-import { evaluateMergeGate, evaluateRequiredChecks } from "./merge-gate.mjs";
+import { evaluateMergeGate as evaluateMergeGateRaw, evaluateRequiredChecks, evaluateAcceptance, approvalEvidence, readVerdict } from "./merge-gate.mjs";
+// v4.1.0: the trusted config requires an acceptance verdict; tests about the required-check logic pass an explicit
+// PASS verdict for the PR head (tests below cover the acceptance decision itself, including a missing verdict)
+const passVerdict = (sha) => ({ schemaVersion: 1, headSha: sha, status: "PASS", reasons: [], findings: [], digest: "d" });
+const evaluateMergeGate = (o) => evaluateMergeGateRaw({ acceptance: evaluateAcceptance(passVerdict(o.pr.headSha), { headSha: o.pr.headSha }), ...o });
 import { evaluatePostMerge } from "./post-merge.mjs";
 import { checkWorkflow, checkWorkflows, scanSecrets } from "./supply-chain.mjs";
 import { checkProportionality, gatesForLevel } from "./proportional.mjs";
@@ -373,4 +377,86 @@ test("D7: the merge-gate workflow only finalizes after the human-review Environm
   assert.match(y, /finalize:[\s\S]*?needs: \[merge-gate, human-review\][\s\S]*?needs\.human-review\.result == 'success'/);
   assert.match(y.slice(y.indexOf("finalize:")), /HUMAN_REVIEWED: "true"[\s\S]*?EXPECTED_HEAD_SHA: \$\{\{ github\.event\.pull_request\.head\.sha \}\}/);
   assert.equal((y.match(/environment: ai-native-trust/g) ?? []).length, 2);
+});
+
+// ---- v4.1.0 acceptance governance through the existing merge-gate publisher (002 RF-25/RF-31/RF-35) ----
+const goodFor = (sha) => config.requiredChecks.map((c) => ({ name: c.name, status: "completed", conclusion: "success", appSlug: c.appSlug }));
+const v = (status, over = {}) => ({ schemaVersion: 1, headSha: HEAD, status, reasons: status === "PASS" ? [] : [`${status} reason`], findings: status === "NEEDS_HUMAN" ? [{ kind: "CONTRACT_CREATED", detail: "validation contract created" }] : [], digest: "abc", ...over });
+
+test("acceptance: the trusted config requires a verdict; none, another SHA, unknown status, FAIL or BLOCKED never pass", () => {
+  assert.equal(config.acceptanceGovernance.required, true);
+  const missing = evaluateMergeGateRaw({ config, pr, reviews: [], checkRuns: goodFor(HEAD) });
+  assert.equal(missing.conclusion, "failure");
+  assert.ok(missing.findings.some((f) => f.code === "ACCEPTANCE_BLOCKED"));
+  for (const [verdict, code] of [[null, "ACCEPTANCE_BLOCKED"], [v("PASS", { headSha: "f".repeat(40) }), "ACCEPTANCE_BLOCKED"], [v("MAYBE"), "ACCEPTANCE_BLOCKED"], [v("PASS", { schemaVersion: 2 }), "ACCEPTANCE_BLOCKED"], [v("FAIL"), "ACCEPTANCE_FAIL"], [v("BLOCKED"), "ACCEPTANCE_BLOCKED"]]) {
+    const r = evaluateMergeGateRaw({ config, pr, reviews: [], checkRuns: goodFor(HEAD), acceptance: evaluateAcceptance(verdict, { headSha: HEAD }) });
+    assert.equal(r.conclusion, "failure", JSON.stringify(verdict));
+    assert.equal(r.needsHuman, false);
+    assert.ok(r.findings.some((f) => f.code === code), JSON.stringify(r.findings));
+  }
+  const ok = evaluateMergeGateRaw({ config, pr, reviews: [], checkRuns: goodFor(HEAD), acceptance: evaluateAcceptance(v("PASS"), { headSha: HEAD }) });
+  assert.equal(ok.conclusion, "success");
+});
+
+test("acceptance: NEEDS_HUMAN waits for the Environment approval of a pinned human merger, bound to the head SHA", () => {
+  const pending = evaluateMergeGateRaw({ config, pr, reviews: [], checkRuns: goodFor(HEAD), acceptance: evaluateAcceptance(v("NEEDS_HUMAN"), { headSha: HEAD }) });
+  assert.equal(pending.needsHuman, true);
+  assert.equal(pending.conclusion, "failure");
+  const a = evaluateAcceptance(v("NEEDS_HUMAN"), { headSha: HEAD });
+  assert.equal(a.check.pending, true);
+  const approvals = [{ state: "approved", environments: [{ name: "ai-native-human-review" }], user: { login: config.governance.humanMergers[0], id: 7 }, comment: "ok" }];
+  const ev = approvalEvidence({ approvals, humanMergers: config.governance.humanMergers, runId: 42, headSha: HEAD, findingsDigest: "abc", approvedAt: "2026-11-26T10:00:00Z" });
+  assert.equal(ev.ok, true);
+  assert.deepEqual(ev.record.reviewer, { login: config.governance.humanMergers[0], id: 7 });
+  const approved = evaluateAcceptance(v("NEEDS_HUMAN"), { headSha: HEAD, humanReviewed: true, approval: ev });
+  assert.deepEqual(approved.findings, []);
+  assert.match(approved.check.summary, /"findingsDigest":"abc"/);
+  assert.equal(evaluateMergeGateRaw({ config, pr, reviews: [], checkRuns: goodFor(HEAD), humanReviewed: true, expectedHeadSha: HEAD, acceptance: approved }).conclusion, "success");
+  // an approval by anyone else (an agent, the App, another Environment) never clears it
+  for (const bad of [[{ ...approvals[0], user: { login: "ai-native-worker[bot]", id: 1 } }], [{ ...approvals[0], environments: [{ name: "ai-native-trust" }] }], [{ ...approvals[0], state: "rejected" }], []]) {
+    const e = approvalEvidence({ approvals: bad, humanMergers: config.governance.humanMergers, runId: 42, headSha: HEAD, findingsDigest: "abc" });
+    assert.equal(e.ok, false);
+    const r = evaluateAcceptance(v("NEEDS_HUMAN"), { headSha: HEAD, humanReviewed: true, approval: e });
+    assert.ok(r.findings.some((f) => f.code === "ACCEPTANCE_BLOCKED"));
+  }
+  // a human review never turns FAIL or BLOCKED into a pass
+  assert.ok(evaluateAcceptance(v("FAIL"), { headSha: HEAD, humanReviewed: true, approval: ev }).findings.length > 0);
+  assert.ok(evaluateAcceptance(v("BLOCKED"), { headSha: HEAD, humanReviewed: true, approval: ev }).findings.length > 0);
+});
+
+test("acceptance: the verdict file is read bounded and never through a symlink", async () => {
+  const { mkdtempSync, writeFileSync, symlinkSync, rmSync } = await import("node:fs");
+  const { tmpdir } = await import("node:os");
+  const { join } = await import("node:path");
+  const d = mkdtempSync(join(tmpdir(), "verdict-"));
+  try {
+    writeFileSync(join(d, "v.json"), JSON.stringify(v("PASS")));
+    assert.equal(readVerdict(join(d, "v.json")).status, "PASS");
+    assert.equal(readVerdict(join(d, "missing.json")), null);
+    writeFileSync(join(d, "big.json"), "x".repeat(1024 * 1024 + 1));
+    assert.equal(readVerdict(join(d, "big.json")), null);
+    writeFileSync(join(d, "bad.json"), "{ nope");
+    assert.equal(readVerdict(join(d, "bad.json")), null);
+    if (process.platform !== "win32") {
+      symlinkSync(join(d, "v.json"), join(d, "link.json"));
+      assert.equal(readVerdict(join(d, "link.json")), null);
+    }
+  } finally { rmSync(d, { recursive: true, force: true }); }
+});
+
+test("acceptance workflow boundary: acceptance-analyze holds no secret and no Environment; holders read only the verdict", () => {
+  const wf = read(".github/workflows/merge-gate.yml");
+  const jobs = Object.fromEntries(wf.slice(wf.indexOf("\njobs:")).split(/\n(?= {2}[A-Za-z0-9_-]+:\s*$)/m).slice(1).map((j) => [j.trim().split(":")[0], j]));
+  const analyze = jobs["acceptance-analyze"];
+  assert.ok(analyze, "acceptance-analyze job exists");
+  assert.doesNotMatch(analyze, /secrets\./i);
+  assert.doesNotMatch(analyze, /\n {4}environment:/);
+  assert.match(analyze, /ref: \$\{\{ github\.event\.pull_request\.base\.sha \}\}/);
+  assert.match(analyze, /runtime\/acceptance\/verdict\.mjs/);
+  for (const holder of ["merge-gate", "finalize"]) {
+    const j = jobs[holder];
+    assert.match(j, /name: acceptance-verdict/);
+    assert.match(j, /ACCEPTANCE_VERDICT: acceptance-verdict\/verdict\.json/);
+    assert.doesNotMatch(j, /refs\/pull|refs\/candidate|gh run download|verdict\.mjs/, `${holder} must not read candidate data`);
+  }
 });

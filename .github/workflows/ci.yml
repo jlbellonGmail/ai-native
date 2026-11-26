@@ -294,7 +294,7 @@ jobs:
 
   # 002 RF-31: re-run the mandatory acceptance cases of every changed feature in a fresh checkout of the evaluated
   # commit, with no credentials and a read-only token, and keep each runner's RAW structured output as an artifact.
-  # This job runs candidate code, so it never decides: the trusted `analyze` job of acceptance-governance.yml
+  # This job runs candidate code, so it never decides: the trusted `acceptance-analyze` job of merge-gate.yml
   # (default branch code) derives the result from these bytes and binds it to this run id and head SHA.
   acceptance-closure:
     name: acceptance-closure

@@ -20,7 +20,7 @@ test("analyze reads the candidate as Git objects; a candidate that rewrites the 
     put(dir, `specs/${SLUG}/acceptance/plan.json`, JSON.stringify(plan));
     put(dir, "runtime/acceptance/downgrade.mjs", "export const detectDowngrades = () => ({ findings: [] });\n");
     put(dir, "runtime/policy/hitl.mjs", "export const x = 1;\n");
-    put(dir, ".github/workflows/acceptance-governance.yml", "on: push\n");
+    put(dir, ".github/workflows/merge-gate.yml", "on: push\n");
     const head = commitAll(dir, "silent downgrade");
     const v = analyze({ repo: dir, base, head });
     assert.ok(v.findings.some((f) => f.kind === "MANDATORY_LOWERED"));

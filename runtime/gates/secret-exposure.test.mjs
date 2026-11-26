@@ -66,10 +66,9 @@ test("this repository's own workflows conform: secrets only behind pull_request_
     assert.deepEqual(checkSecretExposure(n, text), [], n);
     if (secretReferences(text).length) withSecrets.push(n);
   }
-  // v4.1.0 (spec 002 plan, "Trusted verdict path"): acceptance-governance.yml publishes its verdict with the same
-  // trust App. Widening the holders is a control-plane change the human approves in the PR; the boundary itself is
-  // kept below for every holder: each job that names a secret runs in the Environment restricted to main.
-  assert.deepEqual(withSecrets.sort(), ["acceptance-governance.yml", "merge-gate.yml", "trust-gate.yml"], "exactly the gate workflows hold the App credentials");
+  // v4.1.0: acceptance governance REUSES the merge-gate publisher (no third holder); the boundary below is kept for
+  // every holder: each job that names a secret runs in the Environment restricted to main.
+  assert.deepEqual(withSecrets.sort(), ["merge-gate.yml", "trust-gate.yml"], "exactly the two gate workflows hold the App credentials");
   for (const n of withSecrets) {
     const text = readFileSync(new URL(n, dir), "utf8");
     // split into jobs (2-space indented keys under `jobs:`) and require the Environment wherever a secret appears

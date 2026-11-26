@@ -10,7 +10,14 @@
     "checkName": "ai-native/merge-gate",
     "callerWorkflow": ".github/workflows/merge-gate.yml"
   },
-  "reservedCheckNames": ["ai-native/trust-gate", "ai-native/merge-gate"],
+  "acceptanceGovernance": {
+    "description": "v4.1.0 (spec 002 RF-25/RF-31/RF-35): the trusted acceptance verdict is part of the merge-gate decision. Produced by the merge-gate.yml job acceptance-analyze (BASE code, no secrets, candidate read as Git objects, CI closure artifact of the registered workflow); published by the existing trust App holder; NEEDS_HUMAN resolves only through the ai-native-human-review Environment approval by a governance.humanMergers login.",
+    "required": true,
+    "checkName": "ai-native/acceptance-governance",
+    "closureWorkflow": ".github/workflows/ci.yml",
+    "closureArtifact": "acceptance-closure"
+  },
+  "reservedCheckNames": ["ai-native/trust-gate", "ai-native/merge-gate", "ai-native/acceptance-governance"],
   "requiredChecks": [
     { "name": "validators (ubuntu-latest)", "appSlug": "github-actions" },
     { "name": "validators (windows-latest)", "appSlug": "github-actions" },

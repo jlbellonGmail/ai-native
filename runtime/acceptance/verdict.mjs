@@ -1,4 +1,4 @@
-// `analyze` step of the trusted acceptance-governance verdict path (spec 002 RF-25, RF-31; plan "Trusted verdict path").
+// `acceptance-analyze` job of merge-gate.yml: the trusted acceptance verdict path (spec 002 RF-25, RF-31; plan "Trusted verdict path").
 // Runs from the TRUSTED platform checkout (main) and reads the candidate ONLY as Git objects of the exact head SHA:
 // size-bounded, parsed as JSON/Markdown, never executed, imported, installed or checked out. It holds no secret and
 // writes one schema-checked verdict JSON; a separate `publish` job (not here) posts it under the trust App identity.
