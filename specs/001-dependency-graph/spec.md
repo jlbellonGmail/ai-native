@@ -96,8 +96,8 @@ The same criteria, labelled for Native Acceptance (v4.1.0 candidate; no new
 obligation is added):
 
 - AC-1 (RF-1, RF-4, RF-6): valid Locales -> Regions -> Countries sample
-  manifests resolve reproducibly; identical inputs produce identical
-  graph/topological output.
+  manifests resolve reproducibly; no LLM classification is used, and identical
+  inputs produce identical graph/topological output.
 - AC-2 (RF-2, RF-3): unknown references, duplicates, cycles and contract
   mismatches fail closed.
 - AC-3 (RF-5, RF-7, RF-8, RF-10, RF-11): valid public change declarations

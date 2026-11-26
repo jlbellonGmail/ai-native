@@ -9,11 +9,12 @@ import { validatePlan, sha256File, CATEGORIES } from "../../runtime/acceptance/p
 import { parseStructured, evaluateObserved } from "../../runtime/acceptance/results-parser.mjs";
 import { consolidate, toResultStatus, isBlocking } from "../../runtime/acceptance/result.mjs";
 import { runRunner, tierSatisfies, describeIsolation } from "../../runtime/acceptance/runner.mjs";
-import { appendEvidence, readLedger, ledgerDir, uncoveredPaths } from "../../runtime/acceptance/evidence.mjs";
-import { detectDowngrades } from "../../runtime/acceptance/downgrade.mjs";
+import { appendEvidence, readLedger, ledgerDir, uncoveredPaths, inputFingerprint } from "../../runtime/acceptance/evidence.mjs";
+import { detectDowngrades, governanceVerdict } from "../../runtime/acceptance/downgrade.mjs";
+import { buildGraph } from "../../runtime/acceptance/graph.mjs";
 import { renderManual, checkParity } from "../../runtime/acceptance/manual.mjs";
 import { parseSpecAcceptance } from "../../runtime/acceptance/spec-acceptance.mjs";
-import { runFeatureAcceptance, featureAcceptanceStatus } from "../../runtime/acceptance/feature.mjs";
+import { runFeatureAcceptance, featureAcceptanceStatus, crossObligations } from "../../runtime/acceptance/feature.mjs";
 import { analyze, CLOSURE_WORKFLOW } from "../../runtime/acceptance/verdict.mjs";
 import { closureRun } from "../../runtime/acceptance/ci-closure.mjs";
 import { makeConsumer, buildPlan, CONTRACT, SPEC, SLUG, git } from "../../runtime/acceptance/acceptance.fixture.mjs";
@@ -206,6 +207,76 @@ await runCases([
       const r = await runFeatureAcceptance(dir, SLUG, { base: "main" });
       assert.equal(r.status, "BLOCKED");
       assert.deepEqual(r.pending, ["NOT_APPLICABLE_PENDING_APPROVAL"]);
+    } finally { rmSync(dir, { recursive: true, force: true }); }
+  }],
+  // third review R6: wider coverage of AC-0, AC-3, AC-4 and AC-11
+  ["A-26", () => {
+    // RF-17/RF-18: a secret-like environment dependency or an unreadable configuration input is BLOCKED
+    const base = { scenarioId: "s", runnerDigest: "r", caseDigest: "c", executableDigest: "e", argv: [], executionKind: "agent", environment: {} };
+    const secret = inputFingerprint({ ...base, envDeclared: ["DB_PASSWORD"], envValues: { DB_PASSWORD: "hunter2" } });
+    assert.equal(secret.status, "BLOCKED");
+    assert.ok(!JSON.stringify(secret).includes("hunter2"));
+    assert.equal(inputFingerprint({ ...base, configDigests: { "app.toml": null } }).status, "BLOCKED");
+    const a = inputFingerprint({ ...base, configDigests: { "app.toml": "a".repeat(64) } });
+    const b = inputFingerprint({ ...base, configDigests: { "app.toml": "b".repeat(64) } });
+    assert.notEqual(a.fingerprint, b.fingerprint);
+  }],
+  ["A-27", () => {
+    // RF-12/RF-13: every dependency edge needs a consumer-owned mandatory case; a provider-owned one never counts
+    const { graph } = buildGraph({ schemaVersion: 1, modules: [{ id: "locales", contracts: [{ id: "locales.db", path: "locales/schema.sql" }] }, { id: "regions", contracts: [] }], dependencies: [{ consumer: "regions", provider: "locales", contract: "locales.db" }] });
+    const kase = (consumer) => ({ id: `x-${consumer}`, mandatory: true, cross: { consumer, provider: "locales", contract: "locales.db" } });
+    assert.equal(crossObligations(graph, { moduleId: "regions", cases: [kase("regions")] }).status, "OK");
+    assert.equal(crossObligations(graph, { moduleId: "regions", cases: [] }).status, "BLOCKED");
+    assert.equal(crossObligations(graph, { moduleId: "regions", cases: [kase("locales")] }).status, "BLOCKED");
+  }],
+  ["A-28", () => withRootAsync(async (root, out) => {
+    // AC-0: a runner past its timeout is killed and BLOCKED, never a pass
+    writeFileSync(join(root, "t/hang.mjs"), "setInterval(() => {}, 1000);");
+    const r = await runRunner({ root, runner: { ...RUNNER, argv: ["t/hang.mjs"], timeoutMs: 800 }, outDir: out });
+    assert.equal(r.status, "BLOCKED");
+    assert.match(r.reasons[0], /timeout/);
+  })],
+  ["A-29", () => {
+    // AC-3: an observed failing case is FAIL; an unknown observed id is BLOCKED
+    const failing = parseStructured("tap13", "TAP version 13\nok 1 - c1\nnot ok 2 - c2\n1..2\n");
+    assert.equal(evaluateObserved({ expectedIds: ["c1", "c2"], observed: failing.cases, parseErrors: failing.errors, minObserved: 1, exitCode: 1 }).status, "FAIL");
+    const unknown = parseStructured("tap13", "TAP version 13\nok 1 - c1\nok 2 - surprise\n1..2\n");
+    assert.equal(evaluateObserved({ expectedIds: ["c1"], observed: unknown.cases, parseErrors: unknown.errors, minObserved: 1, exitCode: 0 }).status, "BLOCKED");
+  }],
+  ["A-30", () => {
+    // AC-4: a candidate that rewrites the detector still gets the trusted verdict; a missing or other-SHA verdict is BLOCKED
+    const dir = makeConsumer();
+    try {
+      const base = commitAll(dir, "feature");
+      const plan = JSON.parse(readFileSync(join(dir, `specs/${SLUG}/acceptance/plan.json`), "utf8"));
+      plan.cases[0].mandatory = false;
+      writeFileSync(join(dir, `specs/${SLUG}/acceptance/plan.json`), JSON.stringify(plan));
+      mkdirSync(join(dir, "runtime/acceptance"), { recursive: true });
+      writeFileSync(join(dir, "runtime/acceptance/downgrade.mjs"), "export const detectDowngrades = () => ({ findings: [] });\n");
+      const head = commitAll(dir, "silent downgrade plus a rewritten detector");
+      const v = analyze({ repo: dir, base, head });
+      assert.ok(v.findings.some((f) => f.kind === "MANDATORY_LOWERED"));
+      assert.equal(governanceVerdict({ findings: v.findings }).status, "BLOCKED");
+      assert.equal(governanceVerdict({ findings: [], trusted: { authenticated: true, headSha: "a".repeat(40), expectedHeadSha: "b".repeat(40), verdictJson: { status: "PASS" } } }).status, "BLOCKED");
+    } finally { rmSync(dir, { recursive: true, force: true }); }
+  }],
+  ["A-31", async () => {
+    // AC-11: an approval binds the justification digest; changing the justification returns the item to pending
+    const dir = makeConsumer({ naCategories: ["persistence"] });
+    try {
+      const r = await runFeatureAcceptance(dir, SLUG, { base: "main" });
+      const digest = r.items[0].justificationDigest;
+      const approvals = (it) => it.justificationDigest === digest;
+      assert.equal(featureAcceptanceStatus(dir, SLUG, { base: "main", approvals }).status, "PASS");
+      const planFile = join(dir, `specs/${SLUG}/acceptance/plan.json`);
+      const plan = JSON.parse(readFileSync(planFile, "utf8"));
+      plan.matrix.persistence.justification = "a different justification for the same category";
+      writeFileSync(planFile, JSON.stringify(plan, null, 2));
+      const after = featureAcceptanceStatus(dir, SLUG, { base: "main", approvals });
+      // the old approval no longer clears it (pending again) and the revision moved (STALE): never PASS
+      assert.notEqual(after.status, "PASS");
+      assert.equal(after.blocking, true);
+      assert.deepEqual(after.pending, ["NOT_APPLICABLE_PENDING_APPROVAL"]);
     } finally { rmSync(dir, { recursive: true, force: true }); }
   }],
   ["A-25", async () => {

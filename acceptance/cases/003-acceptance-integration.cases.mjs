@@ -1,5 +1,6 @@
 // Acceptance cases of spec 003 (acceptance integration). Plan: specs/003-acceptance-integration/acceptance/plan.json.
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -158,6 +159,15 @@ await runCases([
     // a mislabelled case is caught
     assert.ok(pilot.labelErrors({ cases: [{ ...plan.cases[0], executionKind: "simulated" }] }).length > 0);
     assert.match(pilot.PG_IMAGE, /^postgres:16-alpine@sha256:[0-9a-f]{64}$/);
+  }],
+  // third review R6: AC-5 preservation, rollback and idempotence for every admitted source, through the real upgrade
+  // engine (the lifecycle suite's per-source tests, run here and read from their TAP output)
+  ["I-16", () => {
+    const r = spawnSync(process.execPath, ["--test", "--test-reporter=tap", "--test-name-pattern=v4\\.1\\.0: owned files preserved|v4\\.0\\.0 -> v4\\.1\\.0 is rejected", "runtime/cli/ai-native-lifecycle.test.mjs"], { cwd: ROOT, encoding: "utf8", timeout: 600000, maxBuffer: 32 * 1024 * 1024 });
+    assert.equal(r.status, 0, String(r.stdout).slice(-800));
+    for (const source of ["v4.0.1", "v4.0.2", "v3.4.2", "v3.4.3"]) assert.match(r.stdout, new RegExp(`^ok \\d+ - UPGRADE ${source.replaceAll(".", "\\.")} -> v4\\.1\\.0: owned files preserved, drift kept and reported, failure rolls back, second run idempotent`, "m"), source);
+    assert.match(r.stdout, /^ok \d+ - UPGRADE v4\.0\.0 -> v4\.1\.0 is rejected before any file, index or cache write/m);
+    assert.doesNotMatch(r.stdout, /^not ok /m);
   }],
   ["I-14", () => {
     const o = deriveReviewOutcome({ implementation: "PASS", validation: "PASS", independentReview: null, capability: { independentReview: "unavailable", reasons: ["no attested reviewer runtime"] }, acceptance: "PASS" });

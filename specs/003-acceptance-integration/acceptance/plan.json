@@ -543,6 +543,37 @@
       "limitations": "disposable fixtures (temporary directories and git repositories); no network, no external service",
       "restore": "each case removes its temporary directories",
       "executionKind": "simulated"
+    },
+    {
+      "id": "I-16",
+      "ac": [
+        "AC-5"
+      ],
+      "category": "persistence",
+      "runner": "spec-003",
+      "sutPaths": [
+        "runtime/",
+        "contracts/",
+        "core/commands/",
+        ".github/workflows/",
+        "governance/gates/",
+        "evaluation/",
+        "knowledge/sdd/templates/",
+        "profiles/",
+        "acceptance/cases/",
+        "AGENTS.md",
+        "specs/001-dependency-graph/acceptance/plan.json",
+        "specs/002-native-acceptance/acceptance/plan.json"
+      ],
+      "expected": "pass",
+      "mandatory": true,
+      "minTier": "restricted",
+      "why": "every admitted source preserves owned files, keeps drift, rolls back on failure and is idempotent",
+      "realSystemUse": "exercised by the factory and by every adopted consumer through the same platform modules",
+      "intentionalErrors": "none",
+      "limitations": "disposable fixtures (temporary directories and git repositories); no network, no external service",
+      "restore": "each case removes its temporary directories",
+      "executionKind": "simulated"
     }
   ]
 }
