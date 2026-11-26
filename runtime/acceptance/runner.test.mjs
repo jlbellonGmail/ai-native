@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync, existsSync } from "node:fs";
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync, existsSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { runRunner, probeTier, tierSatisfies, describeIsolation, resolveExecutable, groupKillTarget } from "./runner.mjs";
@@ -180,4 +180,42 @@ test("independent re-review N3: a bare argv token or cwd can never reach the git
     const upper = await runRunner({ root, runner: runner({ cwd: ".GIT", argv: ["x"] }), outDir: out(root) });
     assert.equal(upper.status, "BLOCKED");
   } finally { rmSync(root, { recursive: true, force: true }); }
+});
+
+// descendants: a grandchild started by the runner must not outlive it (bounded waits, no real kill outside the tree)
+const alive = (pid) => { try { process.kill(pid, 0); return true; } catch (e) { return e.code === "EPERM"; } };
+async function goneWithin(pid, ms) {
+  const end = Date.now() + ms;
+  while (Date.now() < end) { if (!alive(pid)) return true; await new Promise((r) => setTimeout(r, 100)); }
+  return !alive(pid);
+}
+const GRANDCHILD = (exitParent) => `import {spawn} from "node:child_process";import {writeFileSync} from "node:fs";
+const g=spawn(process.execPath,["-e","setInterval(()=>{},1000)"],{stdio:"ignore"});
+writeFileSync(process.env.ACCEPTANCE_OUT_DIR+"/grandchild.pid",String(g.pid));
+${exitParent ? "console.log(\"TAP version 13\nok 1 - c1\n1..1\");process.exit(0);" : "setInterval(()=>{},1000);"}`;
+
+test("timeout kills the whole tree: the grandchild does not survive the runner (Linux and Windows)", async () => {
+  const root = fixture();
+  const o = out(root);
+  try {
+    writeFileSync(join(root, "t/tree.mjs"), GRANDCHILD(false));
+    const r = await runRunner({ root, runner: runner({ argv: ["t/tree.mjs"], timeoutMs: 3000 }), outDir: o });
+    assert.equal(r.status, "BLOCKED");
+    assert.match(r.reasons[0], /timeout/);
+    const pid = Number(readFileSync(join(o, "grandchild.pid"), "utf8"));
+    assert.ok(Number.isInteger(pid) && pid > 1);
+    assert.equal(await goneWithin(pid, 10000), true, `grandchild ${pid} still alive after the timeout kill`);
+  } finally { rmSync(root, { recursive: true, force: true }); rmSync(o, { recursive: true, force: true }); }
+});
+
+test("POSIX: a grandchild left behind by a runner that exited is killed with its process group", { skip: process.platform === "win32" && "Windows: an orphan whose parent exited is not reachable by taskkill /T (documented residual)" }, async () => {
+  const root = fixture();
+  const o = out(root);
+  try {
+    writeFileSync(join(root, "t/orphan.mjs"), GRANDCHILD(true));
+    const r = await runRunner({ root, runner: runner({ argv: ["t/orphan.mjs"], timeoutMs: 15000 }), outDir: o });
+    assert.equal(r.status, "RAN");
+    const pid = Number(readFileSync(join(o, "grandchild.pid"), "utf8"));
+    assert.equal(await goneWithin(pid, 10000), true, `orphan ${pid} outlived the runner`);
+  } finally { rmSync(root, { recursive: true, force: true }); rmSync(o, { recursive: true, force: true }); }
 });
