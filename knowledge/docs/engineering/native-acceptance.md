@@ -20,7 +20,9 @@ Specs: `specs/001-dependency-graph`, `specs/002-native-acceptance`, `specs/003-a
 | Evidence | `runtime/acceptance/evidence.mjs` | input fingerprint, hash-chained ledger in `<git-common-dir>/ai-native/acceptance/<slug>/ledger.jsonl` |
 | Feature stage | `runtime/acceptance/feature.mjs` | platform-owned run + status read back from the ledger only |
 | Downgrade detector | `runtime/acceptance/downgrade.mjs`, `runtime/policy/hitl.mjs` | BASE vs candidate data diff; forces `human_gate: required` |
-| Trusted verdict | `runtime/acceptance/verdict.mjs`, `.github/workflows/acceptance-governance.yml` | candidate read as Git objects, verdict posted by the trust App (pending human configuration) |
+| Trusted verdict | `runtime/acceptance/verdict.mjs`, `.github/workflows/merge-gate.yml` (`acceptance-analyze`), `runtime/gates/merge-gate.mjs` | candidate read as Git objects by a secret-free job; the existing trust-App publisher folds the verdict into the merge decision |
+| Consumer L3 acceptance | `.github/workflows/l3-consumer.yml`, `runtime/consumer/acceptance-gate.mjs` | closure, analysis and decision jobs from the consumer's BASE-lock platform; consumer-owned human Environment |
+| GI reference pilot | `.github/workflows/acceptance-pilot.yml`, `evaluation/pilot-gi/` | disposable pinned copy of gi-common-reference, real PostgreSQL, two runs |
 | CI closure | `runtime/acceptance/ci-closure.mjs`, `ci.yml` job `acceptance-closure` | raw runner output of the evaluated commit; the trusted analyzer derives the result |
 | Manual and traceability | `runtime/acceptance/manual.mjs`, `knowledge/sdd/templates/acceptance-manual-template.md` | manual rendered from plan + contract, parity check, traceability report |
 | Upgrade matrix | `contracts/upgrade-matrix.json`, `runtime/bootstrap/upgrade-matrix.mjs` | exact admitted sources for the v4.1 line; legacy cutoff writer |
@@ -56,42 +58,68 @@ The upgrade to the v4.1 line admits exactly v4.0.1, v4.0.2, v3.4.2 and v3.4.3 (v
 rejects any other source before writing, records the legacy cutoff, and rolls back byte for byte on failure.
 A consumer without a validation contract gets `BLOCKED` with an actionable diagnostic; nothing is created silently.
 
+## Trusted verdict path (002 RF-25, RF-31, RF-35)
+
+- **Factory.** `merge-gate.yml` (pull_request_target to `main`, BASE code) runs `acceptance-analyze`: read-only
+  token, no secret, no Environment; the PR head is fetched as Git objects only; it waits (bounded) for the
+  registered `ci.yml` pull_request run of the exact head SHA, downloads its raw `acceptance-closure` artifact and
+  the closure job's log as data, and runs `runtime/acceptance/verdict.mjs`. The existing trust-App holders
+  (`merge-gate`, `finalize`) read ONLY that verdict JSON (bounded, no symlink, schema and head SHA checked), fold
+  it into the merge decision (`governance/gates/gates.json` `acceptanceGovernance.required`) and publish
+  `ai-native/acceptance-governance`. No third key holder exists. `NEEDS_HUMAN` clears only with the
+  `ai-native-human-review` Environment approval of that run by a `governance.humanMergers` login, recorded with
+  run id, reviewer, time, head SHA and findings digest; `FAIL` and `BLOCKED` never clear.
+- **Consumers.** The reusable `l3-consumer.yml`, from the platform commit pinned by the consumer's BASE lock, runs
+  `acceptance-closure` (its own job, fresh head checkout), `acceptance-analyze` (no product test, candidate as Git
+  objects), `acceptance-human` (consumer-owned Environment, input `acceptance-environment`) and
+  `acceptance-governance` (`runtime/consumer/acceptance-gate.mjs`). The consumer requires
+  `l3 / acceptance-governance`; without an Environment, `NEEDS_HUMAN` is BLOCKED. A PR that edits the consumer's
+  caller workflow changes the closure producer and is BLOCKED (the platform cannot stop that edit, it reports it).
+- **Closure derivation.** The analyzer re-parses the raw bytes against the head's plan and contract, re-judges the
+  plan (AC coverage, matrix, dataset bytes), requires the recorded tier to equal the contract's and meet every
+  case minimum, requires every criterion to have a rejection-expecting mandatory case (RF-32 at merge: a
+  seeded-failure history is not verifiable from one commit's closure), checks the producing run (workflow path,
+  `pull_request`, head SHA) and is BLOCKED when the producer (`ci.yml` plus the imports of `ci-closure.mjs`, or the
+  consumer's caller workflow) differs from BASE.
+- **Candidate code next to the closure.** Each runner's output digest is written to the producing job's log from
+  memory before anything reaches disk (`ACCEPTANCE_RAW_DIGEST`); the analyzer requires exactly one matching anchor
+  per runner, so another process of the job rewriting the artifact or writing to the log yields BLOCKED, never
+  PASS. A runner's process group is killed when it exits (POSIX), and the tree on timeout (both OSes).
+- **Impact.** The BASE dependency graph and the head graph are analysed together: deleting the manifest, a module,
+  a public contract or an edge never drops a BASE obligation and is itself a DOWNGRADE; an affected consumer
+  module with no plan is BLOCKED.
+- **Configuration (002 RF-17/RF-18).** A runner declares `configFiles` (non-secret repository files, fingerprinted
+  by content and counted as inputs) and `envValues` (allowlisted non-secret names whose values are fingerprinted).
+  Secret-like files or names are refused; an unreadable one is BLOCKED; dropping one is `CONFIG_INPUT_REMOVED`.
+
+## Own acceptance of specs 001-003 and the GI pilot
+
+- `acceptance/validation-contract.json` and `specs/00{1,2,3}-*/acceptance/plan.json` with the cases in
+  `acceptance/cases/` (TAP, named by case ID, exercising the real modules). Their inputs are the platform tree, so
+  any platform change makes their evidence STALE.
+- The GI PostgreSQL reference pilot (003 RF-6, RF-14 to RF-17) runs in `acceptance-pilot.yml` on a disposable clone
+  of `gi-common-reference` at a pinned SHA with the remote removed; the overlay (`evaluation/pilot-gi/`) is
+  committed only inside the copy. PostgreSQL comes from a pinned `postgres:16-alpine` digest through GI's own
+  testcontainers fixtures; the platform stage runs twice and must PASS identically. Evidence classes: real
+  PostgreSQL integration, simulated (`test_sim_*`), API in-process through FastAPI TestClient; nothing is labelled
+  HTTP-socket end-to-end. Its result is recorded in `governance/execution/current/V4.1.0-PILOT-EVIDENCE.md`.
+
 ## Limits of this candidate (honest state)
 
-- The trusted verdict path (002 RF-25/RF-31/RF-35) depends on human configuration that does not exist yet: the
-  `develop` ruleset, `ai-native/acceptance-governance` as a required check, the Environment restrictions and
-  human/agent identity separation. Until then the governance verdict is reported `BLOCKED`, never satisfied by the
-  candidate-run `ci.yml` derivation, which is early feedback only.
-- CI closure (RF-31): `ci.yml` job `acceptance-closure` re-runs changed features in a fresh checkout and uploads the
-  raw structured output. That job runs the candidate's code, so its metadata (`status`, exit code, tier, digest) is
-  candidate-authored. `verdict.mjs` (`deriveClosure`, run by `analyze` from the default branch) therefore:
-  re-parses the raw bytes against the head's plan and contract; re-judges the plan itself (AC coverage, matrix,
-  dataset digests on Git object bytes); requires the recorded tier to equal the contract's and to meet each case's
-  minimum; checks the producing run (workflow path, `pull_request` event, head SHA) from the API; and reports
-  `BLOCKED` when the closure producer (`ci.yml` plus the transitive imports of `runtime/acceptance/ci-closure.mjs`)
-  differs from BASE, because then the artifact cannot be trusted at all. What it cannot establish: that candidate
-  case code, which runs in the same job and at the `restricted` tier is not isolated, did not tamper with the
-  output directory or the job, and the seeded failure of RF-32 (a history property checked only against the local
-  ledger). It is effective only once
-  `acceptance-governance.yml` is on the default branch and its check is required (human configuration). The
-  consumer L3 acceptance job is not implemented in this candidate.
-- Impact selection uses the BASE dependency graph and the head graph together: deleting the manifest, a module, a
-  public contract or an edge never drops a BASE obligation and is itself a DOWNGRADE (`MANIFEST_REMOVED`,
-  `MODULE_REMOVED`, `PUBLIC_CONTRACT_REMOVED`, `PUBLIC_CONTRACT_PATH_CHANGED`, `DEPENDENCY_REMOVED`). An affected
-  consumer module with no feature plan is `BLOCKED`.
-- The `container` tier needs a container runtime; on a host without one it is `BLOCKED` without fallback.
-- The GI PostgreSQL reference pilot (003 RF-6, RF-14..RF-17) was not executed: it needs a disposable PostgreSQL
-  container and no container runtime was available. It is reported `BLOCKED`.
-- The local acceptance ledger is a hash chain without a key: anything running with the developer's OS rights (the
-  agent, or a process left behind by a `restricted` runner) can append a chain-valid entry. It is circuit evidence
-  only; merge closure reads the CI closure derived by the trusted analyzer (see above), never this ledger.
-- `loopback` service networks for the `container` tier are refused (no per-run network and no agent-proof approval
-  yet); only `network: none` runs.
-- `implementAll` runs the stage only when the caller passes `feature`; the Coordinator refuses a Feature without it,
-  other direct callers are not guarded.
-- 003 RF-2: impact selection is wired into the CI closure and the trusted analyzer (declarations in
-  `acceptance/contract-changes.json`; each affected consumer feature runs once; an undeclared public change is
-  BLOCKED). 002 RF-17/RF-18 fingerprint environment names and allowlisted values, but no configuration-file digests
-  are declared yet.
-- Specs 001, 002 and 003 are not in the factory legacy cutoff and have no plan/contract of their own: their own
-  acceptance is BLOCKED (001 also lacks `AC-n` lines, MISSING). This is reported, not exempted.
+- Human configuration outside the repository is still required: the `ai-native-human-review` Environment with the
+  human as only required reviewer, `ai-native-trust` restricted to `main`, the `main` ruleset requiring
+  `ai-native/merge-gate` from the trust App, and human/agent identity separation (U0). The acceptance verdict only
+  binds where `merge-gate.yml` runs: PRs to `main` (the release PR); PRs to `develop` get the candidate-run
+  `ci.yml` closure as early feedback only.
+- A consumer must make `l3 / acceptance-governance` required and own a human Environment; otherwise its acceptance
+  governance is not enforced (BLOCKED without the Environment, unenforced without the required check).
+- A case's own code decides its own result: the platform verifies that the declared cases ran, were observed,
+  can fail (a rejection-expecting case per criterion) and were not swapped, but it cannot prove that a test
+  asserts what its name says. That remains the review's job.
+- `restricted` is labelled not isolated; `node-permission` only where the runtime supports it; `container` needs a
+  container runtime and is BLOCKED without one (no fallback). `loopback` service networks are refused.
+- The local acceptance ledger is a keyless hash chain: anything with the developer's OS rights can append a
+  chain-valid entry. It is circuit evidence for `implement-all` and the review packet only; merge closure never
+  reads it.
+- On Windows an orphan whose parent already exited is not reachable by `taskkill /T` (POSIX kills the group).
+- `implementAll` runs the stage only when the caller passes `feature`; the Coordinator refuses a Feature without it.
