@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { rmSync } from "node:fs";
+import { join } from "node:path";
 import { featureAcceptanceStatus, runFeatureAcceptance } from "./feature.mjs";
 import { makeConsumer, put, SLUG, GOOD_SRC, CONTRACT, buildPlan, SPEC } from "./acceptance.fixture.mjs";
 
@@ -179,4 +180,33 @@ test("independent review F9: a seededFailure claim without a recorded FAIL in th
     assert.equal(r.status, "BLOCKED");
     assert.ok(r.cases.some((c) => c.id === "seeded-failure:AC-2" && c.status === "BLOCKED"), JSON.stringify(r.cases));
   } finally { done(dir); }
+});
+
+test("002 RF-17/RF-18: declared configuration files and allowed env values are fingerprinted; unreadable config is BLOCKED", async () => {
+  const contract = { ...CONTRACT, runners: [{ ...CONTRACT.runners[0], configFiles: ["acceptance/runner-config.json"], env: [...CONTRACT.runners[0].env, "ACCEPTANCE_LOCALE"], envValues: ["ACCEPTANCE_LOCALE"] }] };
+  const dir = makeConsumer({ contract });
+  const saved = process.env.ACCEPTANCE_LOCALE;
+  try {
+    process.env.ACCEPTANCE_LOCALE = "es-AR";
+    put(dir, "acceptance/runner-config.json", '{"mode":"strict"}');
+    const ran = await runFeatureAcceptance(dir, SLUG, opts);
+    assert.equal(ran.status, "PASS", JSON.stringify(ran.reasons));
+    // a configuration change makes the evidence stale (never silently reused)
+    put(dir, "acceptance/runner-config.json", '{"mode":"lenient"}');
+    assert.equal(featureAcceptanceStatus(dir, SLUG, opts).status, "STALE");
+    put(dir, "acceptance/runner-config.json", '{"mode":"strict"}');
+    assert.equal(featureAcceptanceStatus(dir, SLUG, opts).status, "PASS");
+    // so does a change of an allowed non-secret env value
+    process.env.ACCEPTANCE_LOCALE = "en-US";
+    assert.equal(featureAcceptanceStatus(dir, SLUG, opts).status, "STALE");
+    process.env.ACCEPTANCE_LOCALE = "es-AR";
+    // an unreadable critical configuration input is BLOCKED, not fresh and not PASS
+    rmSync(join(dir, "acceptance/runner-config.json"));
+    const missing = featureAcceptanceStatus(dir, SLUG, opts);
+    assert.equal(missing.status, "BLOCKED");
+    assert.match(JSON.stringify(missing), /critical configuration acceptance\/runner-config.json cannot be read/);
+  } finally {
+    if (saved === undefined) delete process.env.ACCEPTANCE_LOCALE; else process.env.ACCEPTANCE_LOCALE = saved;
+    done(dir);
+  }
 });

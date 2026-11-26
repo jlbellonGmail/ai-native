@@ -76,6 +76,9 @@ export function detectDowngrades(base, cand) {
       if (c.timeoutMs > b.timeoutMs) add("TIMEOUT_LONGER", id);
       if ((c.env ?? []).some((n) => !(b.env ?? []).includes(n))) add("ENV_ALLOWLIST_WIDENED", id);
       if ((b.network ?? "none") === "none" && (c.network ?? "none") !== "none") add("NETWORK_WIDENED", id);
+      // RF-17/RF-18: dropping a fingerprinted configuration input lets evidence survive a config change
+      for (const cf of b.configFiles ?? []) if (!(c.configFiles ?? []).includes(cf)) add("CONFIG_INPUT_REMOVED", `${id}:${cf}`);
+      for (const n of b.envValues ?? []) if (!(c.envValues ?? []).includes(n)) add("CONFIG_INPUT_REMOVED", `${id}:env:${n}`);
     }
     if (cand.contract.minObservedCases < base.contract.minObservedCases) add("COVERAGE_MINIMUM_LOWERED", `${base.contract.minObservedCases} -> ${cand.contract.minObservedCases}`);
     for (const g of widenedNonSut(base.contract.nonSutPaths, cand.contract.nonSutPaths)) add("NON_SUT_CLASS_WIDENED", g);

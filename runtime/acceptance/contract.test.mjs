@@ -106,3 +106,13 @@ test("audit N-57: python -m only runs a test-runner module; pytest and unittest 
     assert.equal(errs(...ok), "", JSON.stringify(ok));
   }
 });
+
+test("002 RF-17: configuration files must be non-secret repository files; env values only for allowlisted non-secret names", () => {
+  const bad = (r) => validateContract(contract({ runners: [runner(r)] })).errors.join();
+  assert.equal(bad({ configFiles: ["package.json", "config/app.toml"], env: ["PATH", "TZ"], envValues: ["TZ"] }), "");
+  for (const f of [".env", "config/.env.local", "certs/server.key", "deploy/secrets.json", ".npmrc", "keys/id_rsa"]) assert.match(bad({ configFiles: [f] }), /secret-like/, f);
+  assert.match(bad({ configFiles: [".git/config"] }), /git directory/);
+  assert.match(bad({ configFiles: ["../outside.json"] }), /schema|escapes/);
+  assert.match(bad({ envValues: ["TZ"] }), /not in the environment allowlist/);
+  assert.match(bad({ env: ["PATH", "DB_PASSWORD"], envValues: ["DB_PASSWORD"] }), /secret-like/);
+});

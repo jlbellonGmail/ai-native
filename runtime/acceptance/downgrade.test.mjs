@@ -98,3 +98,11 @@ test("independent re-review N1/N4: manifest weakening and a new cutoff over an e
   assert.ok(cut.some((f) => f.kind === "LEGACY_CUTOFF_ADDITION" && f.detail === "002-req"));
   assert.ok(!cut.some((f) => f.kind === "LEGACY_CUTOFF_ADDITION" && f.detail === "001-old"));
 });
+
+test("002 RF-17/RF-18: dropping a fingerprinted configuration input is a DOWNGRADE", () => {
+  const r = { ...CONTRACT.runners[0], configFiles: ["package.json"], env: ["TZ"], envValues: ["TZ"] };
+  const base = { contract: { ...CONTRACT, runners: [r] } };
+  const cand = { contract: { ...CONTRACT, runners: [{ ...r, configFiles: [], envValues: [] }] } };
+  const kinds = detectDowngrades(base, cand).findings.filter((f) => f.kind === "CONFIG_INPUT_REMOVED").map((f) => f.detail).sort();
+  assert.deepEqual(kinds, ["unit:env:TZ", "unit:package.json"]);
+});

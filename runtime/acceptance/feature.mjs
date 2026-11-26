@@ -66,9 +66,9 @@ function digestPath(root, rel) {
 export function runnerInputPaths(project, runner) {
   if (!runner) return [];
   const cwd = runner.cwd === "." ? "" : `${runner.cwd.replace(/\/$/, "")}/`;
-  return runner.argv
+  return [...new Set([...runner.argv
     .filter((a) => !a.startsWith("-") && /[./]/.test(a))
-    .map((a) => `${cwd}${a}`.replace(/^\.\//, ""))
+    .map((a) => `${cwd}${a}`.replace(/^\.\//, "")), ...(runner.configFiles ?? [])])]
     .filter((p) => { try { return statSync(join(project, p)).isFile() || statSync(join(project, p)).isDirectory(); } catch { return false; } })
     .sort();
 }
@@ -152,6 +152,10 @@ function caseFingerprint(project, p, k) {
     executionKind: k.executionKind ?? "agent",
     environment: environmentIdentity(),
     envDeclared: runner?.env ?? [],
+    // RF-17: only values the contract explicitly allows (non-secret names, checked by the contract validator)
+    envValues: Object.fromEntries((runner?.envValues ?? []).filter((n) => process.env[n] !== undefined).map((n) => [n, process.env[n]])),
+    // RF-17/RF-18: declared configuration files by content; an unreadable one makes the fingerprint BLOCKED
+    configDigests: Object.fromEntries((runner?.configFiles ?? []).map((c) => [c, digestPath(project, c)])),
     manifestDigest: p.graph ? sha256(p.graph.serialize()) : null,
   });
 }

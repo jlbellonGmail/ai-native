@@ -17,6 +17,9 @@ const HOST_BARE_EXECUTABLES = new Set(["node"]);
 // inside the image only interpreters whose argv the platform constrains (independent re-review N2): any other bare
 // name (busybox, env, nodejs, ...) can run inline script text and is refused
 const CONTAINER_BARE_EXECUTABLES = new Set(["node", "python", "python3", "pytest"]);
+const SECRET_ENV = /(SECRET|TOKEN|PASSWORD|PASSWD|PRIVATE|CREDENTIAL|API_?KEY)/i;
+// configuration files that conventionally hold secrets (env files, keys, credential stores)
+const SECRET_FILE = /(^|\/)(\.env(\.[^/]*)?|[^/]*\.(pem|key|p12|pfx|jks|keystore)|[^/]*(secret|credential|password|token)[^/]*|\.npmrc|\.pypirc|\.netrc|id_(rsa|ed25519|ecdsa)[^/]*)$/i;
 /** Does a repository-relative path name the git directory (any segment, any case)? */
 export const namesGitDir = (p) => String(p).split(/[\\/]/).some((s) => s.toLowerCase() === ".git");
 // node runner flags are an ALLOWLIST: anything else (inline script, --import/--require preloads, permission or
@@ -136,6 +139,16 @@ export function validateContract(contract) {
     if (r.isolation === "container" && !/@sha256:[0-9a-f]{64}$/.test(r.image ?? "")) errors.push(`runner ${r.id}: container tier requires an image pinned by digest`);
     if (r.env.some((n) => /(SECRET|TOKEN|PASSWORD|PASSWD|PRIVATE|CREDENTIAL|API_?KEY)/i.test(n))) errors.push(`runner ${r.id}: environment allowlist names a secret-like variable`);
     for (const p of r.readPaths ?? []) if (normalizeRepoPath(p) === null) errors.push(`runner ${r.id}: readPaths entry escapes the repository`);
+    // 002 RF-17/RF-18: configuration inputs are non-secret repository files whose bytes are fingerprinted; a file
+    // that holds secrets cannot be fingerprinted without exposing or recoverably hashing it, so it is refused
+    for (const p of r.configFiles ?? []) {
+      if (normalizeRepoPath(p) === null || namesGitDir(p)) errors.push(`runner ${r.id}: configFiles entry escapes the repository or names the git directory`);
+      else if (SECRET_FILE.test(p)) errors.push(`runner ${r.id}: configFiles entry ${p} is secret-like and cannot be fingerprinted without exposing it (BLOCKED)`);
+    }
+    for (const n of r.envValues ?? []) {
+      if (!r.env.includes(n)) errors.push(`runner ${r.id}: envValues entry ${n} is not in the environment allowlist`);
+      if (SECRET_ENV.test(n)) errors.push(`runner ${r.id}: envValues entry ${n} is secret-like: its value is never fingerprinted`);
+    }
   }
   for (const e of nonSutPathErrors(contract.nonSutPaths ?? [])) errors.push(e);
   return { ok: errors.length === 0, errors: [...new Set(errors)].sort(), runners };
