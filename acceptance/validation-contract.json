@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "minObservedCases": 1,
+  "runners": [
+    {
+      "id": "spec-001",
+      "executable": "node",
+      "argv": [
+        "acceptance/cases/001-dependency-graph.cases.mjs"
+      ],
+      "cwd": ".",
+      "format": "tap13",
+      "timeoutMs": 900000,
+      "isolation": "restricted",
+      "env": [
+        "PATH",
+        "PATHEXT",
+        "SystemRoot",
+        "ComSpec",
+        "TEMP",
+        "TMP",
+        "TMPDIR",
+        "HOME",
+        "USERPROFILE"
+      ],
+      "configFiles": [
+        "package.json"
+      ]
+    },
+    {
+      "id": "spec-002",
+      "executable": "node",
+      "argv": [
+        "acceptance/cases/002-native-acceptance.cases.mjs"
+      ],
+      "cwd": ".",
+      "format": "tap13",
+      "timeoutMs": 900000,
+      "isolation": "restricted",
+      "env": [
+        "PATH",
+        "PATHEXT",
+        "SystemRoot",
+        "ComSpec",
+        "TEMP",
+        "TMP",
+        "TMPDIR",
+        "HOME",
+        "USERPROFILE"
+      ],
+      "configFiles": [
+        "package.json"
+      ]
+    },
+    {
+      "id": "spec-003",
+      "executable": "node",
+      "argv": [
+        "acceptance/cases/003-acceptance-integration.cases.mjs"
+      ],
+      "cwd": ".",
+      "format": "tap13",
+      "timeoutMs": 900000,
+      "isolation": "restricted",
+      "env": [
+        "PATH",
+        "PATHEXT",
+        "SystemRoot",
+        "ComSpec",
+        "TEMP",
+        "TMP",
+        "TMPDIR",
+        "HOME",
+        "USERPROFILE"
+      ],
+      "configFiles": [
+        "package.json"
+      ]
+    }
+  ],
+  "nonSutPaths": [
+    "specs/**/*.md",
+    "governance/execution/**",
+    "governance/security/**",
+    "knowledge/docs/**",
+    "docs/**",
+    "README.md"
+  ]
+}
