@@ -1,0 +1,91 @@
+name: acceptance-pilot
+
+# v4.1.0 GI reference pilot (spec 003 RF-6, RF-14 to RF-17; T5). Native Acceptance is applied to a DISPOSABLE
+# copy of gi-common-reference at a pinned SHA (public repository, cloned read-only, origin removed so it can never
+# push); the overlay feature (evaluation/pilot-gi/overlay) is committed only inside that copy. Real PostgreSQL comes
+# from the pinned postgres:16-alpine digest through GI's own testcontainers fixtures. The platform's acceptance stage
+# runs twice; evidence classes are labelled (real integration, simulated, in-process API; no socket E2E).
+# No secret, read-only token, no Environment.
+
+on:
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - "runtime/acceptance/**"
+      - "evaluation/pilot-gi/**"
+      - ".github/workflows/acceptance-pilot.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: acceptance-pilot-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gi-pilot:
+    name: gi-pilot (PostgreSQL)
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      GI_REPO: jlbellonGmail/gi-common-reference
+      GI_SHA: cd0a82a096f882b0fa9d83a8564cae07cb74d616
+      PG_IMAGE: postgres:16-alpine@sha256:f2f98726820d0342055351c6e9d36e705f5bfffb3dd53ff556325114b08afb6d
+    steps:
+      - name: Checkout the platform under test
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24"
+
+      - name: Setup Python (GI requires 3.12)
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.12"
+
+      - name: Disposable copy of GI at the pinned SHA (no remote, never pushed)
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --no-tags --quiet "https://github.com/$GI_REPO" "$RUNNER_TEMP/gi"
+          git -C "$RUNNER_TEMP/gi" checkout --quiet --detach "$GI_SHA"
+          [ "$(git -C "$RUNNER_TEMP/gi" rev-parse HEAD)" = "$GI_SHA" ]
+          git -C "$RUNNER_TEMP/gi" remote remove origin
+          # the venv lives in the copy (the runner executes a repository path) and is never part of the change
+          echo "venv/" >> "$RUNNER_TEMP/gi/.git/info/exclude"
+
+      - name: Pinned PostgreSQL image, tagged locally for the GI fixtures
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker pull --quiet "$PG_IMAGE"
+          docker tag "$PG_IMAGE" postgres:16-alpine
+
+      - name: GI environment from its own constraints
+        shell: bash
+        working-directory: ${{ runner.temp }}/gi
+        run: |
+          set -euo pipefail
+          python -m venv --copies venv
+          venv/bin/python -m pip install --quiet --disable-pip-version-check -c constraints.txt -e ".[dev]"
+
+      - name: Pilot (platform acceptance stage, two independent real PostgreSQL runs)
+        shell: bash
+        env:
+          TESTCONTAINERS_RYUK_DISABLED: "true"
+          PYTHONDONTWRITEBYTECODE: "1"
+        run: node evaluation/pilot-gi/run-pilot.mjs --gi "$RUNNER_TEMP/gi" --sha "$GI_SHA" --image "$PG_IMAGE" --out "$RUNNER_TEMP/pilot-evidence.json"
+
+      - name: Upload the pilot evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: gi-pilot-evidence
+          path: ${{ runner.temp }}/pilot-evidence.json
+          if-no-files-found: warn
+          retention-days: 90

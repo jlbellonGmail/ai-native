@@ -31,7 +31,8 @@ const PY_FLAG_ALLOW = [/^-B$/, /^-I$/, /^-u$/];
 const PY_MODULES = new Set(["pytest", "unittest"]);
 // pytest: reporting/selection switches only; plugin loading (-p), ini/config overrides (-o, -c), --pyargs, rootdir
 // and import-mode switches are refused. -k/-m take pytest's own expression language, never Python.
-const PYTEST_FLAG_ALLOW = [/^-q$/, /^-qq$/, /^-v$/, /^-vv$/, /^-x$/, /^-s$/, /^-r[a-zA-Z]+$/, /^--tb=(short|line|no|long|native)$/, /^--strict-markers$/, /^--no-header$/, /^-k$/, /^-m$/, /^--maxfail=\d+$/];
+// --junitxml only to the runner's own stdout (the structured result the platform parses), never to a file path
+const PYTEST_FLAG_ALLOW = [/^-q$/, /^-qq$/, /^-v$/, /^-vv$/, /^-x$/, /^-s$/, /^-r[a-zA-Z]+$/, /^--tb=(short|line|no|long|native)$/, /^--strict-markers$/, /^--no-header$/, /^-k$/, /^-m$/, /^--maxfail=\d+$/, /^--junitxml=\/dev\/stdout$/];
 const UNITTEST_FLAG_ALLOW = [/^-v$/, /^-q$/, /^-f$/, /^-b$/, /^-s$/, /^-p$/, /^-t$/, /^-k$/];
 
 /** argv of a python interpreter or pytest: which tokens are flags of which allowlist. */
