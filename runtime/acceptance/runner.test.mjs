@@ -109,10 +109,13 @@ test("unavailable tier or a run below the case minimum is BLOCKED before spawn, 
     assert.equal(spawned, false);
     assert.equal(tierSatisfies("container", "restricted"), true);
     assert.equal(tierSatisfies("restricted", "container"), false);
-    // real host without a docker daemon: the probe itself blocks
-    if (!probeTier("container").available) {
-      const real = await runRunner({ root, runner: runner({ isolation: "container", image: "x@sha256:" + "a".repeat(64) }), outDir: out(root) });
+    // real host without a docker daemon: the real probe blocks. Probed ONCE and that result is the one the runner
+    // sees (a daemon that answers the second probe but not the first made a double probe flaky on Windows CI)
+    const realProbe = probeTier("container");
+    if (!realProbe.available) {
+      const real = await runRunner({ root, runner: runner({ isolation: "container", image: "x@sha256:" + "a".repeat(64) }), outDir: out(root), probe: () => realProbe, spawnImpl });
       assert.equal(real.status, "BLOCKED");
+      assert.equal(spawned, false);
     }
   } finally { rmSync(root, { recursive: true, force: true }); }
 });

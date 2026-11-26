@@ -14,7 +14,7 @@ on:
       - "runtime/acceptance/**"
       - "evaluation/pilot-gi/**"
       - ".github/workflows/acceptance-pilot.yml"
-  workflow_dispatch:
+  # no workflow_dispatch: the set of dispatchable workflows is explicit and reviewed (plan-approval-receipt test)
 
 permissions:
   contents: read
