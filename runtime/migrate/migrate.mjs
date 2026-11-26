@@ -40,6 +40,8 @@ export const CALLER = ".github/workflows/ai-native.yml";
 export class MigrateError extends Error {}
 /** The check the v3 caller (`CALLER`, job `l3`) reports from the reusable `l3-consumer.yml` job; consistency is tested. */
 export const L3_CHECK = "l3 / l3-consumer";
+/** v4.1.0: the consumer acceptance governance check of the same caller (to be required by the consumer's ruleset). */
+export const ACCEPTANCE_CHECK = "l3 / acceptance-governance";
 const lockSchema = JSON.parse(readFileSync(join(PLATFORM_ROOT, "contracts", "lock.schema.json"), "utf8"));
 
 /** Never touched, whatever their classification (plan SS18: "Conserva runs/, .audit/, ROADMAP.md y STATUS.md"). */
@@ -85,8 +87,10 @@ permissions:
 
 jobs:
   l3:
+    # actions: read lets the reusable acceptance-analyze job read this run and its closure job log (read-only)
     permissions:
       contents: read
+      actions: read
     uses: ${slug}/.github/workflows/l3-consumer.yml@${commit}
 `;
 }

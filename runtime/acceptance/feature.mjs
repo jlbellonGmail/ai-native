@@ -242,7 +242,9 @@ const isGovernanceArtifact = (p, slug) =>
 /** Platform-owned execution: runs every contract runner used by the plan, writes ledger entries. Then reads status back. */
 // `rawDir`: where the CI closure job keeps each runner's raw structured output (002 RF-31); the trusted analyzer
 // derives the result from those bytes, never from this process's own conclusion.
-export async function runFeatureAcceptance(project, slug, { base, approvals = () => false, legacySlugs, run = runRunner, rawDir = null } = {}) {
+// `onRaw`: called with the digest of each runner's raw output computed IN MEMORY, before anything is written to disk
+// (the CI closure anchors it in the job log, which no later process of the job can rewrite).
+export async function runFeatureAcceptance(project, slug, { base, approvals = () => false, legacySlugs, run = runRunner, rawDir = null, onRaw = null } = {}) {
   const { cls } = load(project, slug, { legacySlugs });
   if (cls.kind !== "REQUIRED") return featureAcceptanceStatus(project, slug, { base, approvals, legacySlugs });
   const p = prepare(project, slug, cls, { base });
@@ -258,6 +260,7 @@ export async function runFeatureAcceptance(project, slug, { base, approvals = ()
     // runner-owned output, outside the repository and the git common dir (002 RF-9)
     const outDir = mkdtempSync(join(tmpdir(), `ai-acc-${runnerId}-`));
     const r = await run({ root: project, runner, outDir, minTier });
+    if (onRaw) onRaw({ runnerId, outputDigest: r.stdout ? `sha256:${sha256(r.stdout)}` : null, status: r.status });
     if (rawDir) {
       mkdirSync(rawDir, { recursive: true });
       writeFileSync(join(rawDir, `${runnerId}.out`), r.stdout ?? "");

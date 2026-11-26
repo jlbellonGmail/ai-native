@@ -53,8 +53,8 @@ const objectId = (repo, sha, path) => {
 // the code that PRODUCES the closure artifact: the CI workflow plus the transitive relative imports of the closure
 // entry point, read from Git objects of one revision (never executed)
 export const CLOSURE_ENTRY = "runtime/acceptance/ci-closure.mjs";
-export function producerSurface(repo, rev) {
-  const seen = new Set([CLOSURE_WORKFLOW]);
+export function producerSurface(repo, rev, closureWorkflow = CLOSURE_WORKFLOW) {
+  const seen = new Set([closureWorkflow]);
   const queue = [CLOSURE_ENTRY];
   while (queue.length && seen.size < 500) {
     const f = queue.shift();
@@ -75,8 +75,8 @@ export function producerSurface(repo, rev) {
  * BASE (the protected branch the PR targets), the artifact's metadata is candidate-authored and cannot close the
  * feature: BLOCKED for a human, never PASS.
  */
-export function producerChanges(repo, base, head) {
-  const paths = [...new Set([...producerSurface(repo, base), ...producerSurface(repo, head)])].sort();
+export function producerChanges(repo, base, head, closureWorkflow = CLOSURE_WORKFLOW) {
+  const paths = [...new Set([...producerSurface(repo, base, closureWorkflow), ...producerSurface(repo, head, closureWorkflow)])].sort();
   return paths.filter((p) => objectId(repo, base, p) !== objectId(repo, head, p));
 }
 
@@ -98,9 +98,28 @@ const readBounded = (file, max) => {
  * structured output the CI job produced, matched against the candidate plan and contract read as Git objects.
  * `run` = the producing run as read from the GitHub API by the workflow: { path, event, headSha, id, attempt }.
  */
-export function deriveClosure({ repo, head, slugs, closureDir, run }) {
+/**
+ * Anchors: `ACCEPTANCE_RAW_DIGEST {slug, runnerId, digest}` lines the producer wrote to the job log from memory.
+ * Exactly one per (slug, runner): a missing, duplicated or conflicting anchor (another process of the job writing
+ * to the log or to the artifact) is BLOCKED, never PASS.
+ */
+export function parseAnchors(logText) {
+  const map = new Map();
+  for (const m of String(logText ?? "").matchAll(/ACCEPTANCE_RAW_DIGEST (\{[^\r\n]{0,400}\})/g)) {
+    let a;
+    try { a = JSON.parse(m[1]); } catch { continue; }
+    if (typeof a?.slug !== "string" || typeof a?.runnerId !== "string") continue;
+    const k = `${a.slug}/${a.runnerId}`;
+    map.set(k, [...(map.get(k) ?? []), a.digest ?? null]);
+  }
+  return map;
+}
+
+export function deriveClosure({ repo, head, slugs, closureDir, run, closureLog = null, closureWorkflow = CLOSURE_WORKFLOW }) {
   const reasons = [];
-  if (!run || run.path !== CLOSURE_WORKFLOW || run.event !== "pull_request" || run.headSha !== head) {
+  if (closureLog === null) return { status: "BLOCKED", reasons: ["no producing-job log to anchor the raw outputs"], features: [] };
+  const anchors = parseAnchors(closureLog);
+  if (!run || run.path !== closureWorkflow || run.event !== "pull_request" || run.headSha !== head) {
     return { status: "BLOCKED", reasons: ["the producing run is not the registered CI workflow for this pull_request head SHA"], features: [] };
   }
   const read = (p) => gitBlob(repo, head, p);
@@ -136,6 +155,8 @@ export function deriveClosure({ repo, head, slugs, closureDir, run }) {
       try { m = meta === null ? null : JSON.parse(meta); } catch { m = null; }
       if (!runner || m === null || raw === null) { for (const id of ids) results.push({ id, status: "BLOCKED", reason: "no raw structured output for this runner in the CI artifact" }); continue; }
       if (m.outputDigest !== (raw ? `sha256:${sha256(raw)}` : null)) { for (const id of ids) results.push({ id, status: "BLOCKED", reason: "raw output does not match its recorded digest" }); continue; }
+      const an = anchors.get(`${slug}/${runnerId}`) ?? [];
+      if (an.length !== 1 || an[0] !== m.outputDigest) { for (const id of ids) results.push({ id, status: "BLOCKED", reason: `raw output is not anchored exactly once in the producing job log (${an.length} anchor(s))` }); continue; }
       if (m.status !== "RAN") { for (const id of ids) results.push({ id, status: "BLOCKED", reason: `runner did not run: ${(m.reasons ?? [])[0] ?? m.status}` }); continue; }
       // the recorded tier must be the contract's, and at or above every case's minimum (RF-33)
       if (m.tier !== runner.isolation) { for (const id of ids) results.push({ id, status: "BLOCKED", reason: "recorded isolation tier differs from the validation contract" }); continue; }
@@ -154,7 +175,7 @@ export function deriveClosure({ repo, head, slugs, closureDir, run }) {
 }
 
 /** @returns verdict { schemaVersion, headSha, baseSha, status: PASS|NEEDS_HUMAN|BLOCKED|FAIL, findings, reasons, closure } */
-export function analyze({ repo, base, head, closureDir = null, run = null }) {
+export function analyze({ repo, base, head, closureDir = null, run = null, closureLog = null, closureWorkflow = CLOSURE_WORKFLOW }) {
   const reasons = [];
   if (!SHA.test(String(base)) || !SHA.test(String(head))) return { schemaVersion: 1, headSha: head ?? null, baseSha: base ?? null, status: "BLOCKED", findings: [], reasons: ["base and head must be full commit SHAs"] };
   const changed = execFileSync("git", ["diff", "--name-only", "--no-renames", base, head], { cwd: repo, encoding: "utf8" }).split("\n").filter(Boolean);
@@ -214,13 +235,13 @@ export function analyze({ repo, base, head, closureDir = null, run = null }) {
     featureSlugs.sort();
   }
   // merge closure: without the CI artifact of this exact head, a changed feature's acceptance is BLOCKED (RF-31)
-  const producer = featureSlugs.length ? producerChanges(repo, base, head) : [];
+  const producer = featureSlugs.length ? producerChanges(repo, base, head, closureWorkflow) : [];
   let closure;
   if (producer.length) {
     closure = { status: "BLOCKED", reasons: [`the closure producer differs from BASE (${producer.slice(0, 5).join(", ")}${producer.length > 5 ? ", ..." : ""}): its artifact is candidate-authored and cannot close acceptance; a human decides`], features: [] };
   } else {
     closure = closureDir && existsSync(closureDir)
-      ? deriveClosure({ repo, head, slugs: featureSlugs, closureDir, run })
+      ? deriveClosure({ repo, head, slugs: featureSlugs, closureDir, run, closureLog, closureWorkflow })
       : { status: featureSlugs.length ? "BLOCKED" : "PASS", reasons: featureSlugs.length ? ["no CI closure artifact for this head SHA"] : [], features: [] };
   }
   let status;
@@ -235,7 +256,9 @@ if (process.argv[1] && resolve(fileURLToPath(import.meta.url)) === resolve(proce
   const v = (n) => { const i = a.indexOf(n); return i >= 0 ? a[i + 1] : undefined; };
   let run = null;
   try { run = v("--run") ? JSON.parse(v("--run")) : null; } catch { run = null; }
-  const verdict = analyze({ repo: resolve(v("--repo") ?? "."), base: v("--base"), head: v("--head"), closureDir: v("--closure") ? resolve(v("--closure")) : null, run });
+  const closureLog = v("--closure-log") ? readBounded(resolve(v("--closure-log")), 16 * 1024 * 1024) : null;
+  const closureWorkflow = v("--closure-workflow") ?? CLOSURE_WORKFLOW;
+  const verdict = analyze({ repo: resolve(v("--repo") ?? "."), base: v("--base"), head: v("--head"), closureDir: v("--closure") ? resolve(v("--closure")) : null, run, closureLog, closureWorkflow });
   const text = `${JSON.stringify(verdict, null, 2)}\n`;
   if (v("--out")) writeFileSync(v("--out"), text); else process.stdout.write(text);
   process.exit(verdict.status === "BLOCKED" ? 1 : 0);

@@ -65,24 +65,31 @@ export function impactSelection(project, base) {
   return { slugs: slugs.sort(), blocked, consumers: [...consumers].sort() };
 }
 
-export async function closureRun({ project, base, outDir }) {
+export const ANCHOR = "ACCEPTANCE_RAW_DIGEST";
+/** One job-log line per runner output, written synchronously the moment the digest is known. */
+export const anchorLine = ({ slug, runnerId, outputDigest }) => `${ANCHOR} ${JSON.stringify({ slug, runnerId, digest: outputDigest })}`;
+
+export async function closureRun({ project, base, outDir, log = (line) => process.stdout.write(`${line}
+`) }) {
+  const anchors = [];
+  const anchor = (x) => { const line = anchorLine(x); anchors.push(line); log(line); };
   const head = execFileSync("git", ["rev-parse", "HEAD"], { cwd: project, encoding: "utf8" }).trim();
   const features = [];
   const impact = impactSelection(project, base);
   // changed features plus affected consumers, each run once
   const selected = [...new Set([...changedFeatureSlugs(project, base), ...impact.slugs])].sort();
   for (const slug of selected) {
-    const st = await runFeatureAcceptance(project, slug, { base, rawDir: join(outDir, slug) });
+    const st = await runFeatureAcceptance(project, slug, { base, rawDir: join(outDir, slug), onRaw: (x) => anchor({ slug, ...x }) });
     features.push({ slug, classification: st.classification, localStatus: st.status });
   }
   mkdirSync(outDir, { recursive: true });
   writeFileSync(join(outDir, "closure.json"), `${JSON.stringify({ schemaVersion: 1, headSha: head, base, features, impact }, null, 2)}\n`);
-  return { headSha: head, features, impact, selected };
+  return { headSha: head, features, impact, selected, anchors };
 }
 
 if (process.argv[1] && resolve(fileURLToPath(import.meta.url)) === resolve(process.argv[1])) {
   const a = process.argv.slice(2);
   const v = (n) => { const i = a.indexOf(n); return i >= 0 ? a[i + 1] : undefined; };
-  const r = await closureRun({ project: process.cwd(), base: v("--base"), outDir: resolve(v("--out") ?? "acceptance-closure") });
+  const r = await closureRun({ project: resolve(v("--project") ?? "."), base: v("--base"), outDir: resolve(v("--out") ?? "acceptance-closure") });
   for (const f of r.features) console.log(`${f.slug}: ${f.classification} ${f.localStatus} (local view; the trusted analyzer decides)`);
 }

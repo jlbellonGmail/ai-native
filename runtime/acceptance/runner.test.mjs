@@ -172,7 +172,7 @@ test("process-group kill never targets pid 0, 1 or a missing pid", () => {
 test("independent re-review N3: a bare argv token or cwd can never reach the git directory", async () => {
   const root = fixture();
   try {
-    writeFileSync(join(root, ".git", "x"), 'console.log("TAP version 13\nok 1 - c1\n1..1");');
+    writeFileSync(join(root, ".git", "x"), 'console.log("TAP version 13\\nok 1 - c1\\n1..1");');
     const viaCwd = await runRunner({ root, runner: runner({ cwd: ".git", argv: ["x"] }), outDir: out(root) });
     assert.equal(viaCwd.status, "BLOCKED");
     assert.equal(viaCwd.executed, false);
@@ -192,7 +192,7 @@ async function goneWithin(pid, ms) {
 const GRANDCHILD = (exitParent) => `import {spawn} from "node:child_process";import {writeFileSync} from "node:fs";
 const g=spawn(process.execPath,["-e","setInterval(()=>{},1000)"],{stdio:"ignore"});
 writeFileSync(process.env.ACCEPTANCE_OUT_DIR+"/grandchild.pid",String(g.pid));
-${exitParent ? "console.log(\"TAP version 13\nok 1 - c1\n1..1\");process.exit(0);" : "setInterval(()=>{},1000);"}`;
+${exitParent ? "console.log(\"TAP version 13\\nok 1 - c1\\n1..1\");process.exit(0);" : "setInterval(()=>{},1000);"}`;
 
 test("timeout kills the whole tree: the grandchild does not survive the runner (Linux and Windows)", async () => {
   const root = fixture();
