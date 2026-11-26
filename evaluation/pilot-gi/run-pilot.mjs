@@ -6,7 +6,7 @@
 // pilot passes only if both runs PASS with identical per-case results and the evidence classes are honest.
 //
 // node evaluation/pilot-gi/run-pilot.mjs --gi <copy> --sha <pinned sha> --image <pinned image> --out <evidence.json>
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { appendFileSync, existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { runFeatureAcceptance } from "../../runtime/acceptance/feature.mjs";
@@ -57,6 +57,16 @@ for (const n of [1, 2]) {
   log(`run ${n}: ACCEPTANCE ${r.status}`);
   for (const c of runs.at(-1).cases) console.log(`  ${c.status.padEnd(8)} ${c.id}`);
   for (const reason of runs.at(-1).reasons) console.log(`  reason: ${reason}`);
+  if (r.status === "BLOCKED" && n === 1) diagnose();
+}
+
+/** Diagnostic only (never evidence): the same command outside the governed runner, output tails printed. */
+function diagnose() {
+  const runner = contract.runners[0];
+  const env = Object.fromEntries(runner.env.filter((k) => process.env[k] !== undefined).map((k) => [k, process.env[k]]));
+  const d = spawnSync(join(gi, runner.executable), runner.argv, { cwd: gi, env, encoding: "utf8", timeout: 600000, maxBuffer: 64 * 1024 * 1024 });
+  console.log(`DIAGNOSTIC (not evidence): exit ${d.status} signal ${d.signal} error ${d.error?.code ?? "none"}`);
+  console.log(`--- stdout tail\n${String(d.stdout ?? "").slice(-3000)}\n--- stderr tail\n${String(d.stderr ?? "").slice(-3000)}\n---`);
 }
 const same = JSON.stringify(runs[0].cases) === JSON.stringify(runs[1].cases) && runs[0].revision === runs[1].revision;
 let imageDigest = null;
