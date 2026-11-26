@@ -5,7 +5,7 @@
 //
 // node runtime/acceptance/verdict.mjs --repo <dir> --base <sha> --head <sha> [--closure <artifact dir>] [--run <json>] --out <file>
 import { execFileSync } from "node:child_process";
-import { closeSync, existsSync, fstatSync, openSync, readFileSync, writeFileSync } from "node:fs";
+import { closeSync, constants, existsSync, fstatSync, openSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { detectDowngrades } from "./downgrade.mjs";
@@ -84,7 +84,8 @@ const asJson = (b) => (b.text === undefined ? null : (() => { try { return JSON.
 // one descriptor: the file that is size-checked is the file that is read (no check-then-read race)
 const readBounded = (file, max) => {
   let fd;
-  try { fd = openSync(file, "r"); } catch { return null; }
+  // never follow a symlink planted in a downloaded artifact (O_NOFOLLOW where the OS has it)
+  try { fd = openSync(file, constants.O_RDONLY | (constants.O_NOFOLLOW ?? 0)); } catch { return null; }
   try {
     const st = fstatSync(fd);
     if (!st.isFile() || st.size > max) return null;
@@ -119,6 +120,13 @@ export function deriveClosure({ repo, head, slugs, closureDir, run }) {
     if (!pv.ok) { features.push({ slug, classification: "REQUIRED", status: "BLOCKED", reasons: pv.errors.slice(0, 10).map((e) => `plan: ${e}`) }); continue; }
     const mandatory = (plan.cases ?? []).filter((c) => c.mandatory);
     const results = [];
+    // 002 RF-32 at merge: a seeded-failure run is history the CI closure of one commit cannot verify (the local
+    // ledger is circuit evidence only), so every criterion needs a rejection-expecting mandatory case here
+    for (const cr of plan.criteria ?? []) {
+      if (!mandatory.some((k) => k.ac.includes(cr.id) && k.expected === "reject")) {
+        results.push({ id: `seeded-failure:${cr.id}`, status: "BLOCKED", reason: `RF-32: ${cr.id} has no rejection-expecting mandatory case; a seeded-failure run is not verifiable at merge` });
+      }
+    }
     for (const runnerId of [...new Set(mandatory.map((c) => c.runner))].sort()) {
       const ids = mandatory.filter((c) => c.runner === runnerId).map((c) => c.id);
       const runner = vc.runners.get(runnerId);

@@ -124,3 +124,25 @@ test("independent re-review N5: candidate-changed closure producer, a forged tie
     rmSync(out, { recursive: true, force: true });
   }
 });
+
+test("002 RF-32 at merge: a criterion with only passing cases is BLOCKED by the trusted closure (seeded-failure history is not verifiable)", async () => {
+  const dir = makeConsumer();
+  const out = mkdtempSync(join(tmpdir(), "closure-"));
+  try {
+    const base = git(dir, "rev-parse", "main");
+    // AC-2's rejection cases now claim a seeded-failure run instead: valid locally, not at merge
+    const planFile = join(dir, `specs/${SLUG}/acceptance/plan.json`);
+    const plan = JSON.parse(readFileSync(planFile, "utf8"));
+    for (const k of plan.cases) if (k.ac.includes("AC-2")) { k.expected = "pass"; k.seededFailure = { note: "run recorded locally" }; }
+    put(dir, `specs/${SLUG}/acceptance/plan.json`, JSON.stringify(plan));
+    const head = commitAll(dir, "AC-2 without a rejection-expecting case");
+    await closureRun({ project: dir, base: "main", outDir: out });
+    const v = analyze({ repo: dir, base, head, closureDir: out, run: runOf(head) });
+    assert.equal(v.closure.features[0].status, "BLOCKED");
+    assert.match(JSON.stringify(v.closure), /RF-32: AC-2 has no rejection-expecting mandatory case/);
+    assert.doesNotMatch(JSON.stringify(v.closure), /RF-32: AC-1/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+    rmSync(out, { recursive: true, force: true });
+  }
+});
