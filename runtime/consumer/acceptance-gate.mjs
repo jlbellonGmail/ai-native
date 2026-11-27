@@ -25,7 +25,8 @@ export function humanApproval({ approvals, environment, reviewers = [], author =
   const hit = list.find((a) => a?.state === "approved" && (a.environments ?? []).some((e) => e?.name === environment));
   if (!hit) return { ok: false, reason: `no approval record of Environment ${environment} in this run (an Environment without required reviewers approves nothing)` };
   const login = hit.user?.login;
-  if (hit.user?.type && hit.user.type !== "User") return { ok: false, reason: `approver ${login} is not a human user` };
+  // fail closed: a record without a user type is not proven human (fourth review)
+  if (hit.user?.type !== "User") return { ok: false, reason: `approver ${login} is not a proven human user (type ${hit.user?.type ?? "missing"})` };
   if (!pinned.includes(login)) return { ok: false, reason: `approver ${login} is not a pinned reviewer` };
   if (author && login === author) return { ok: false, reason: `approver ${login} is the PR author` };
   return { ok: true, record: { environment, reviewer: login, id: hit.user?.id ?? null, comment: String(hit.comment ?? "").slice(0, 200) } };
