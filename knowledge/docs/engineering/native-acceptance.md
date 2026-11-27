@@ -137,12 +137,19 @@ A consumer without a validation contract gets `BLOCKED` with an actionable diagn
 - **Bootstrap.** `merge-gate.yml` runs on `pull_request_target`, i.e. the BASE copy of the workflow. The v4.1.0
   release PR itself is therefore judged by the v4.0.2 merge-gate (no acceptance verdict), and once v4.1.0 is on
   `main`, a PR that changes the closure producer (`ci.yml`, `ci-closure.mjs` and its imports) carries
-  `CLOSURE_PRODUCER_CHANGED` and needs the human Environment approval. The first PR the acceptance verdict binds is a PR to `main` opened after v4.1.0 is
-  merged there. The acceptance verdict only binds where `merge-gate.yml` runs: PRs to `main`. RF-25 asks for it on every protected target
+  `CLOSURE_PRODUCER_CHANGED` and needs the human Environment approval. From the merge commit on, every PR event to `main` (opened,
+  synchronize, reopened, ready_for_review) runs the v4.1.0 gate, including PRs opened before the merge once they
+  are updated (strict required checks). The acceptance verdict only binds where `merge-gate.yml` runs: PRs to `main`. RF-25 asks for it on every protected target
   branch; for `develop` it is BLOCKED (no trusted verdict is posted there; the `ci.yml` closure is early feedback
   only), pending a human decision to run the gate on `develop` too.
 - A consumer must make `l3 / acceptance-governance` required and own a human Environment; otherwise its acceptance
   governance is not enforced (BLOCKED without the Environment, unenforced without the required check).
+  The Environment and the reviewer logins are inputs of the consumer's caller workflow at the PR head: a PR that
+  edits its own caller also chooses who can approve its `CLOSURE_PRODUCER_CHANGED` or other findings (fifth review
+  R5-4). That approval is only as independent as the consumer's mandatory human review of `.github/**` (RF-25).
+- A PR to `main` that deletes a REQUIRED feature (its spec or plan) is BLOCKED with no human path (`verdict.mjs`,
+  deriveClosure); so is a full revert of v4.1.0, which also removes the `acceptance-closure` job. Recovery is a
+  forward fix that keeps specs 001-003, the contract, the plans and the closure job (fifth review R5-1, R5-7).
 - A case's own code decides its own result: the platform verifies that the declared cases ran, were observed,
   can fail (a rejection-expecting case per criterion) and were not swapped, but it cannot prove that a test
   asserts what its name says. That remains the review's job.
