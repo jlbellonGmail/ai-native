@@ -15,7 +15,7 @@ put("acceptance/validation-contract.json", {
     runner("spec-002", "acceptance/cases/002-native-acceptance.cases.mjs"),
     runner("spec-003", "acceptance/cases/003-acceptance-integration.cases.mjs"),
   ],
-  nonSutPaths: ["specs/**/*.md", "governance/execution/**", "governance/security/**", "knowledge/docs/**", "docs/**", "README.md"],
+  nonSutPaths: ["specs/**/*.md", "governance/execution/**", "governance/security/**", "governance/versioning/*.md", "knowledge/docs/**", "docs/**", "README.md"],
 });
 
 // every case imports the platform, so its inputs are the platform tree (conservative: any change makes it STALE)

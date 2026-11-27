@@ -47,3 +47,13 @@ Workflows que referencian `TRUST_APP_*` (test `runtime/gates/secret-exposure.tes
 ## Historia (superseded): pasos que se pidieron al maintainer en 2026-10-03
 
 Rotar la clave de `ai-native-trust`, cargarla como secreto del Environment, borrar los secretos del repositorio y añadir `environment: ai-native-trust` a `trust-gate.yml` y `merge-gate.yml`. Todo ejecutado (ver "Estado vigente"); queda solo la revocación de claves antiguas. La ventana de exposición existió desde el merge de la PR #31 hasta la corrección de `merge-gate.yml`; no hay evidencia de abuso, pero no se puede descartar.
+
+### Triage de code scanning en `l3-consumer.yml` (v4.1.0, PR #190)
+
+* `actions/code-injection` (#57): corregido; el SHA se pasa por `env`, no se interpola en el script (igual en
+  `merge-gate.yml` `human-review`).
+* `actions/untrusted-checkout` (#58-#61): por diseño y sin privilegio. `acceptance-closure` hace checkout del head
+  del PR para ejecutar sus casos (como el job `l3` existente); `acceptance-analyze` y `acceptance-governance` hacen
+  checkout solo de la plataforma (rama por defecto, commit verificado en su historia). Ningún job del workflow
+  reutilizable tiene secretos ni Environment privilegiado; el token es `contents: read` / `actions: read`. El
+  descarte de las alertas en GitHub es una acción remota que queda para el humano.

@@ -345,7 +345,9 @@ jobs:
     environment: ${{ inputs.acceptance-environment }}
     steps:
       - name: Human approval of the acceptance governance findings for this head SHA
-        run: echo "Approved through the consumer-owned Environment for ${{ github.event.pull_request.head.sha }}"
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: echo "Approved through the consumer-owned Environment for $HEAD_SHA"
 
   acceptance-governance:
     name: acceptance-governance

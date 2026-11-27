@@ -82,6 +82,7 @@
     "specs/**/*.md",
     "governance/execution/**",
     "governance/security/**",
+    "governance/versioning/*.md",
     "knowledge/docs/**",
     "docs/**",
     "README.md"

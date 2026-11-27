@@ -101,7 +101,7 @@ test("consumer PR end to end: a seeded defect FAILs, the fix passes the closure,
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
 
-test("consumer PR that edits its own caller workflow: the closure producer differs from BASE, BLOCKED", async () => {
+test("consumer PR that edits its own caller workflow: CLOSURE_PRODUCER_CHANGED, never PASS; only a pinned human clears it", async () => {
   const dir = consumerPr();
   try {
     const base = git(dir, "rev-parse", "main");
@@ -109,9 +109,10 @@ test("consumer PR that edits its own caller workflow: the closure producer diffe
     git(dir, "add", "-A");
     git(dir, "commit", "-qm", "edit the caller");
     const { head, verdict } = await l3(dir, base);
-    assert.equal(verdict.status, "BLOCKED");
-    assert.match(verdict.reasons.join(), /closure producer differs from BASE \(\.github\/workflows\/l3\.yml/);
+    assert.equal(verdict.status, "NEEDS_HUMAN");
+    assert.ok(verdict.findings.some((f) => f.kind === "CLOSURE_PRODUCER_CHANGED" && /^\.github\/workflows\/l3\.yml differs from BASE/.test(f.detail)), JSON.stringify(verdict.findings));
     assert.equal(consumerAcceptanceDecision({ verdict, headSha: head, environment: "acceptance-human-review", humanResult: "success" }).ok, false);
+    assert.equal(consumerAcceptanceDecision({ verdict, headSha: head, ...human }).ok, true);
     assert.equal(readFileSync(join(dir, CALLER), "utf8").includes("candidate edit"), true);
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });

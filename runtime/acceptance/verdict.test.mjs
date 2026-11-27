@@ -125,8 +125,10 @@ test("independent re-review N5: candidate-changed closure producer, a forged tie
     put(dir, "runtime/acceptance/ci-closure.mjs", "// candidate producer that writes an all-pass artifact\n");
     const evil = commitAll(dir, "rewrite the producer");
     const v = analyze({ repo: dir, base, head: evil, closureDir: out, closureLog: logC, run: runOf(evil) });
-    assert.equal(v.status, "BLOCKED");
-    assert.match(v.reasons.join(), /closure producer differs from BASE \(runtime\/acceptance\/ci-closure\.mjs/);
+    // audit N-58: never PASS, and a human path exists (NEEDS_HUMAN), instead of a BLOCKED nobody can clear
+    assert.notEqual(v.status, "PASS");
+    assert.equal(v.status, "NEEDS_HUMAN");
+    assert.ok(v.findings.some((f) => f.kind === "CLOSURE_PRODUCER_CHANGED" && /^runtime\/acceptance\/ci-closure\.mjs differs from BASE/.test(f.detail)), JSON.stringify(v.findings));
   } finally {
     rmSync(dir, { recursive: true, force: true });
     rmSync(out, { recursive: true, force: true });

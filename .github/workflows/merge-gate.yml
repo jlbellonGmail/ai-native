@@ -187,7 +187,9 @@ jobs:
     environment: ai-native-human-review
     steps:
       - name: Human approval recorded for this head SHA
-        run: echo "Approved by the Environment required reviewer for ${{ github.event.pull_request.head.sha }}"
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: echo "Approved by the Environment required reviewer for $HEAD_SHA"
 
   finalize:
     name: merge-gate-finalize
