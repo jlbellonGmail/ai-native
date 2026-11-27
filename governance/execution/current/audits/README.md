@@ -10,3 +10,4 @@ STALE for any later one; `.audit/reports/` receives only the audit of the final 
 | `AUDIT-PLATFORM-fdb8a3e.md` | `fdb8a3e` | 85.75 | below the PLATFORM tolerance (G3) |
 | `AUDIT-PLATFORM-e3bc9d0.md` | `e3bc9d0` | 88.00 | APTO CON CORRECCIONES (tolerance edge, G3) |
 | `AUDIT-PLATFORM-4417d96.md` | `4417d96` | 88.50 | APTO CON CORRECCIONES (no gate) |
+| `AUDIT-PLATFORM-99cc334.md` | `99cc334` (release head) | 88.25 | APTO CON CORRECCIONES (no gate); MAJOR N-58 fixed afterwards in `ad0286a`, not re-audited |
