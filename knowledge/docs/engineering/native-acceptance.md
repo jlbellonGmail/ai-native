@@ -85,8 +85,10 @@ A consumer without a validation contract gets `BLOCKED` with an actionable diagn
   case minimum, requires every criterion to have a mandatory case labelled rejection-expecting (RF-32 at merge: a
   seeded-failure history is not verifiable from one commit's closure; the label is checked, whether the case
   really can fail is the review's job), checks the producing run (workflow path,
-  `pull_request`, head SHA) and is BLOCKED when the producer (`ci.yml` plus the imports of `ci-closure.mjs`, or the
-  consumer's caller workflow) differs from BASE.
+  `pull_request`, head SHA). When the producer (`ci.yml` plus the imports of `ci-closure.mjs`, or the consumer's
+  caller workflow) differs from BASE, the artifact was produced by candidate code: the closure is still derived
+  (FAIL stays FAIL, missing or unanchored output stays BLOCKED) and each changed producer file is the governance
+  finding `CLOSURE_PRODUCER_CHANGED`, so a PASS can only close through the human Environment approval.
 - **Candidate code next to the closure.** Each runner's output digest is written to the producing job's log from
   memory before anything reaches disk (`ACCEPTANCE_RAW_DIGEST`); the analyzer requires exactly one matching anchor
   per runner, so a process rewriting the artifact after a runner finished, or writing to the log, yields BLOCKED.
@@ -127,8 +129,8 @@ A consumer without a validation contract gets `BLOCKED` with an actionable diagn
   `ai-native/merge-gate` from the trust App, and human/agent identity separation (U0).
 - **Bootstrap.** `merge-gate.yml` runs on `pull_request_target`, i.e. the BASE copy of the workflow. The v4.1.0
   release PR itself is therefore judged by the v4.0.2 merge-gate (no acceptance verdict), and once v4.1.0 is on
-  `main`, a PR that changes the closure producer (`ci.yml`, `ci-closure.mjs` and its imports) is BLOCKED by design
-  until a human decides it. The first PR the acceptance verdict binds is a PR to `main` opened after v4.1.0 is
+  `main`, a PR that changes the closure producer (`ci.yml`, `ci-closure.mjs` and its imports) carries
+  `CLOSURE_PRODUCER_CHANGED` and needs the human Environment approval. The first PR the acceptance verdict binds is a PR to `main` opened after v4.1.0 is
   merged there. The acceptance verdict only binds where `merge-gate.yml` runs: PRs to `main`. RF-25 asks for it on every protected target
   branch; for `develop` it is BLOCKED (no trusted verdict is posted there; the `ci.yml` closure is early feedback
   only), pending a human decision to run the gate on `develop` too.

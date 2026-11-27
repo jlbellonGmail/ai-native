@@ -242,14 +242,14 @@ export function analyze({ repo, base, head, closureDir = null, run = null, closu
   }
   // merge closure: without the CI artifact of this exact head, a changed feature's acceptance is BLOCKED (RF-31)
   const producer = featureSlugs.length ? producerChanges(repo, base, head, closureWorkflow) : [];
-  let closure;
-  if (producer.length) {
-    closure = { status: "BLOCKED", reasons: [`the closure producer differs from BASE (${producer.slice(0, 5).join(", ")}${producer.length > 5 ? ", ..." : ""}): its artifact is candidate-authored and cannot close acceptance; a human decides`], features: [] };
-  } else {
-    closure = closureDir && existsSync(closureDir)
-      ? deriveClosure({ repo, head, slugs: featureSlugs, closureDir, run, closureLog, closureWorkflow })
-      : { status: featureSlugs.length ? "BLOCKED" : "PASS", reasons: featureSlugs.length ? ["no CI closure artifact for this head SHA"] : [], features: [] };
-  }
+  // audit N-58: a candidate that changes the closure producer (ci.yml, ci-closure.mjs and its imports, or the
+  // consumer's caller workflow) produced its own artifact. The closure is still derived (a FAIL stays FAIL, a missing
+  // or unanchored output stays BLOCKED), but its PASS can never close silently: it is the governance finding
+  // CLOSURE_PRODUCER_CHANGED, which only the human Environment approval clears. BLOCKED here had no human path.
+  for (const p of producer) findings.push({ kind: "CLOSURE_PRODUCER_CHANGED", detail: `${p} differs from BASE: the closure artifact was produced by candidate code` });
+  const closure = closureDir && existsSync(closureDir)
+    ? deriveClosure({ repo, head, slugs: featureSlugs, closureDir, run, closureLog, closureWorkflow })
+    : { status: featureSlugs.length ? "BLOCKED" : "PASS", reasons: featureSlugs.length ? ["no CI closure artifact for this head SHA"] : [], features: [] };
   let status;
   if (reasons.length || closure.status === "BLOCKED") status = "BLOCKED";
   else if (closure.status === "FAIL") status = "FAIL";
