@@ -52,8 +52,23 @@ Rotar la clave de `ai-native-trust`, cargarla como secreto del Environment, borr
 
 * `actions/code-injection` (#57): corregido; el SHA se pasa por `env`, no se interpola en el script (igual en
   `merge-gate.yml` `human-review`).
-* `actions/untrusted-checkout` (#58-#61): por diseño y sin privilegio. `acceptance-closure` hace checkout del head
-  del PR para ejecutar sus casos (como el job `l3` existente); `acceptance-analyze` y `acceptance-governance` hacen
-  checkout solo de la plataforma (rama por defecto, commit verificado en su historia). Ningún job del workflow
-  reutilizable tiene secretos ni Environment privilegiado; el token es `contents: read` / `actions: read`. El
-  descarte de las alertas en GitHub es una acción remota que queda para el humano.
+* `actions/untrusted-checkout` (#58-#61): por diseño y sin privilegio. Ningún job del workflow reutilizable tiene
+  secretos ni un Environment privilegiado. `acceptance-human` usa el Environment del consumidor, pero solo para la
+  aprobación y sin checkout. El token es `contents: read` / `actions: read`, con `persist-credentials: false`. El
+  descarte en GitHub es una acción remota que queda para el humano. Justificación por alerta, con las líneas de
+  `a97cc98`:
+  * **#58** (`l3-consumer.yml:201`, job `acceptance-closure`, checkout del head del PR). Es intencional: RF-31
+    exige que el cierre se produzca ejecutando los casos sobre el commit evaluado, como el job `l3` existente
+    (#27 en `main`). El job no publica nada con privilegio. Su artefacto lo lee `acceptance-analyze` como dato
+    acotado (digest más ancla única en el log del job), y un productor cambiado da `CLOSURE_PRODUCER_CHANGED`
+    (humano). Descarte recomendado: *won't fix*.
+  * **#59** (`:209`, mismo job, checkout de la plataforma). No es código del PR: es el repositorio `platform-repo`
+    en su rama por defecto, fijado luego al commit de confianza verificado como ancestro (`merge-base
+    --is-ancestor`). Descarte recomendado: *false positive*.
+  * **#60** (`:261`, job `acceptance-analyze`, checkout de la plataforma). Igual que #59. El candidato no se
+    ejecuta, se lee como objetos Git y artefacto. Descarte recomendado: *false positive*.
+  * **#61** (`:362`, job `acceptance-governance`, checkout de la plataforma). Igual que #59. Solo decide sobre el
+    veredicto y el registro de aprobación. Descarte recomendado: *false positive*.
+  * **Límite común, ya documentado:** un PR que reescribe su propio workflow llamador puede cambiar
+    `platform-repo`. Eso queda bajo la revisión humana obligatoria de `.github/**` del consumidor (RF-25) y no lo
+    resuelve el descarte.
