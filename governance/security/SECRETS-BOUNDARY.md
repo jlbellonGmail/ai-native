@@ -61,7 +61,9 @@ Rotar la clave de `ai-native-trust`, cargarla como secreto del Environment, borr
     exige que el cierre se produzca ejecutando los casos sobre el commit evaluado, como el job `l3` existente
     (#27 en `main`). El job no publica nada con privilegio. Su artefacto lo lee `acceptance-analyze` como dato
     acotado (digest más ancla única en el log del job), y un productor cambiado da `CLOSURE_PRODUCER_CHANGED`
-    (humano). Descarte recomendado: *won't fix*.
+    (humano). En un consumidor, ese humano lo fijan los inputs `acceptance-environment`/`acceptance-reviewers`
+    del caller en el head del PR, el mismo que el candidato puede editar. Por eso depende de la revisión
+    obligatoria de `.github/**` del consumidor (quinta revisión, R5-4). Descarte recomendado: *won't fix*.
   * **#59** (`:209`, mismo job, checkout de la plataforma). No es código del PR: es el repositorio `platform-repo`
     en su rama por defecto, fijado luego al commit de confianza verificado como ancestro (`merge-base
     --is-ancestor`). Descarte recomendado: *false positive*.

@@ -65,6 +65,16 @@ test("002 RF-31: the closure is derived by trusted code from the CI raw output; 
     assert.equal(failed.closure.features[0].status, "FAIL");
     assert.equal(failed.status, "FAIL");
 
+    // audit N-58 (fifth review R5-8): a changed producer is a human finding, never a way out of FAIL or BLOCKED
+    put(dir, "runtime/acceptance/ci-closure.mjs", "// candidate producer next to a failing feature\n");
+    const evilFail = commitAll(dir, "producer changed next to a failing feature");
+    const vf = analyze({ repo: dir, base, head: evilFail, closureDir: out, closureLog: logA, run: runOf(evilFail) });
+    assert.equal(vf.status, "FAIL", JSON.stringify(vf.closure));
+    assert.ok(vf.findings.some((f) => f.kind === "CLOSURE_PRODUCER_CHANGED"), JSON.stringify(vf.findings));
+    const vb = analyze({ repo: dir, base, head: evilFail, closureDir: out, closureLog: null, run: runOf(evilFail) });
+    assert.equal(vb.status, "BLOCKED", "without the producing job's log the closure stays BLOCKED");
+    git(dir, "reset", "-q", "--hard", head);
+
     put(dir, "src/slugify.mjs", GOOD_SRC);
     const fixedHead = commitAll(dir, "fix");
     const out2 = mkdtempSync(join(tmpdir(), "closure-"));
