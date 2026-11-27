@@ -124,8 +124,12 @@ A consumer without a validation contract gets `BLOCKED` with an actionable diagn
 
 - Human configuration outside the repository is still required: the `ai-native-human-review` Environment with the
   human as only required reviewer, `ai-native-trust` restricted to `main`, the `main` ruleset requiring
-  `ai-native/merge-gate` from the trust App, and human/agent identity separation (U0). The acceptance verdict only
-  binds where `merge-gate.yml` runs: PRs to `main` (the release PR). RF-25 asks for it on every protected target
+  `ai-native/merge-gate` from the trust App, and human/agent identity separation (U0).
+- **Bootstrap.** `merge-gate.yml` runs on `pull_request_target`, i.e. the BASE copy of the workflow. The v4.1.0
+  release PR itself is therefore judged by the v4.0.2 merge-gate (no acceptance verdict), and once v4.1.0 is on
+  `main`, a PR that changes the closure producer (`ci.yml`, `ci-closure.mjs` and its imports) is BLOCKED by design
+  until a human decides it. The first PR the acceptance verdict binds is a PR to `main` opened after v4.1.0 is
+  merged there. The acceptance verdict only binds where `merge-gate.yml` runs: PRs to `main`. RF-25 asks for it on every protected target
   branch; for `develop` it is BLOCKED (no trusted verdict is posted there; the `ci.yml` closure is early feedback
   only), pending a human decision to run the gate on `develop` too.
 - A consumer must make `l3 / acceptance-governance` required and own a human Environment; otherwise its acceptance
@@ -139,4 +143,6 @@ A consumer without a validation contract gets `BLOCKED` with an actionable diagn
   chain-valid entry. It is circuit evidence for `implement-all` and the review packet only; merge closure never
   reads it.
 - On Windows an orphan whose parent already exited is not reachable by `taskkill /T` (POSIX kills the group).
+- Fork PRs: GitHub leaves `pull_requests` empty on workflow runs from forks, so `acceptance-analyze` finds no CI
+  run of the PR, waits its full bound (45 min) and reports BLOCKED (fail closed, at an availability cost).
 - `implementAll` runs the stage only when the caller passes `feature`; the Coordinator refuses a Feature without it.

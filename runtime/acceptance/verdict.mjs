@@ -198,8 +198,8 @@ export function analyze({ repo, base, head, closureDir = null, run = null, closu
   const b0 = { ...shared(base), establishedSlugs: established(base) };
   const h0 = shared(head);
   // a code-only change still closes every feature whose plan (BASE or head) declares a changed path as a case input
-  const plansAt = (sha) => established(sha).map((s) => ({ slug: s, plan: asJson(read(sha, `specs/${s}/acceptance/plan.json`)) })).filter((x) => x.plan && !x.plan.__invalid);
-  for (const s of featuresCoveringChanges([...plansAt(base), ...plansAt(head)], changed)) if (!featureSlugs.includes(s)) featureSlugs.push(s);
+  const plansAt = (sha, contract) => established(sha).map((s) => ({ slug: s, plan: asJson(read(sha, `specs/${s}/acceptance/plan.json`)), contract: contract && !contract.__invalid ? contract : null })).filter((x) => x.plan && !x.plan.__invalid);
+  for (const s of featuresCoveringChanges([...plansAt(base, b0.contract), ...plansAt(head, h0.contract)], changed)) if (!featureSlugs.includes(s)) featureSlugs.push(s);
   featureSlugs.sort();
   if (h0.contract?.__invalid || h0.cutoff?.__invalid) reasons.push("candidate acceptance governance data is not valid JSON");
   findings.push(...detectDowngrades({ ...b0, plan: null, specText: null }, { ...h0, plan: null, specText: null }).findings);

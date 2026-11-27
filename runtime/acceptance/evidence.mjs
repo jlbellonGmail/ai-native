@@ -126,11 +126,29 @@ export function coveredBy(sutPaths, path) {
  */
 export function featuresCoveringChanges(plans, changedPaths) {
   const out = new Set();
-  for (const { slug, plan } of plans) {
-    const sut = (Array.isArray(plan?.cases) ? plan.cases : []).flatMap((k) => (Array.isArray(k?.sutPaths) ? k.sutPaths : []));
+  for (const { slug, plan, contract } of plans) {
+    const sut = planInputs(plan, contract);
     if (changedPaths.some((p) => coveredBy(sut, p))) out.add(slug);
   }
   return [...out].sort();
+}
+
+/**
+ * Every repository input of a plan's cases: their SUT paths plus, for the runners they use, the argv paths (the
+ * test scripts) and the declared configuration files (fourth review: a rewritten test script or a changed config
+ * file must re-select the feature, as they already count as case inputs for the fingerprint).
+ */
+export function planInputs(plan, contract) {
+  const cases = Array.isArray(plan?.cases) ? plan.cases : [];
+  const inputs = cases.flatMap((k) => (Array.isArray(k?.sutPaths) ? k.sutPaths : []));
+  const used = new Set(cases.map((k) => k?.runner));
+  for (const r of Array.isArray(contract?.runners) ? contract.runners : []) {
+    if (!used.has(r?.id)) continue;
+    const cwd = typeof r.cwd === "string" && r.cwd !== "." ? `${r.cwd.replace(/\/$/, "")}/` : "";
+    for (const a of Array.isArray(r.argv) ? r.argv : []) if (typeof a === "string" && !a.startsWith("-") && /[./]/.test(a) && !a.includes("{resultFile}")) inputs.push(`${cwd}${a}`.replace(/^\.\//, ""));
+    for (const c of Array.isArray(r.configFiles) ? r.configFiles : []) if (typeof c === "string") inputs.push(c);
+  }
+  return inputs;
 }
 
 export function uncoveredPaths({ changedPaths, cases, contract, ledgerPaths = [] }) {

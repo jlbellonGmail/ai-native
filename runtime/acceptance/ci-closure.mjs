@@ -22,8 +22,10 @@ export function changedFeatureSlugs(project, base) {
   for (const rev of [mb, "HEAD"]) {
     let files = [];
     try { files = execFileSync("git", ["ls-tree", "-r", "--name-only", rev, "--", "specs"], { cwd: project, encoding: "utf8" }).split("\n").filter((p) => /^specs\/[^/]+\/acceptance\/plan\.json$/.test(p)); } catch { files = []; }
+    let contract = null;
+    try { contract = JSON.parse(execFileSync("git", ["show", `${rev}:acceptance/validation-contract.json`], { cwd: project, encoding: "utf8", maxBuffer: 1024 * 1024, stdio: ["ignore", "pipe", "ignore"] })); } catch { contract = null; }
     for (const f of files) {
-      try { plans.push({ slug: f.split("/")[1], plan: JSON.parse(execFileSync("git", ["show", `${rev}:${f}`], { cwd: project, encoding: "utf8", maxBuffer: 1024 * 1024 })) }); } catch { /* an invalid plan is judged by the run itself */ }
+      try { plans.push({ slug: f.split("/")[1], contract, plan: JSON.parse(execFileSync("git", ["show", `${rev}:${f}`], { cwd: project, encoding: "utf8", maxBuffer: 1024 * 1024 })) }); } catch { /* an invalid plan is judged by the run itself */ }
     }
   }
   return [...new Set([...direct, ...featuresCoveringChanges(plans, changed)])].sort();

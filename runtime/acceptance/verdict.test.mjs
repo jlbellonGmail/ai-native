@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { analyze, CLOSURE_WORKFLOW } from "./verdict.mjs";
 import { closureRun } from "./ci-closure.mjs";
-import { makeConsumer, git, put, SLUG, GOOD_SRC } from "./acceptance.fixture.mjs";
+import { makeConsumer, git, put, SLUG, GOOD_SRC, CONTRACT } from "./acceptance.fixture.mjs";
 
 const commitAll = (dir, msg) => { git(dir, "add", "-A"); git(dir, "commit", "-qm", msg); return git(dir, "rev-parse", "HEAD"); };
 const runOf = (head, over = {}) => ({ path: CLOSURE_WORKFLOW, event: "pull_request", headSha: head, id: 1, attempt: 1, ...over });
@@ -208,4 +208,25 @@ test("review finding: a code-only change re-closes every feature whose plan decl
     rmSync(dir, { recursive: true, force: true });
     rmSync(out, { recursive: true, force: true });
   }
+});
+
+test("fourth review: a rewritten test script or a changed configuration file re-selects the feature (runner inputs)", () => {
+  const contract = { ...CONTRACT, runners: [{ ...CONTRACT.runners[0], configFiles: ["package.json"] }] };
+  const dir = makeConsumer({ contract });
+  try {
+    put(dir, "package.json", '{"name":"c"}');
+    commitAll(dir, "feature");
+    git(dir, "branch", "-f", "main", "HEAD");
+    const base = git(dir, "rev-parse", "main");
+    // every case prints ok: only the test script changes
+    put(dir, "tests/slugify.acceptance.mjs", 'console.log("TAP version 13\nok 1 - slug-basic\n1..1");\n');
+    const head = commitAll(dir, "rewrite the test script");
+    const v = analyze({ repo: dir, base, head });
+    assert.equal(v.status, "BLOCKED");
+    assert.match(v.reasons.join(), /no CI closure artifact/);
+    git(dir, "reset", "-q", "--hard", base);
+    put(dir, "package.json", '{"name":"c","type":"module"}');
+    const cfg = commitAll(dir, "configuration only");
+    assert.equal(analyze({ repo: dir, base, head: cfg }).status, "BLOCKED");
+  } finally { rmSync(dir, { recursive: true, force: true }); }
 });
