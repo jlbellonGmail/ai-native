@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-native.local/contracts/upgrade-matrix.schema.json",
+  "title": "Upgrade compatibility matrix",
+  "description": "Exact source releases an upgrade to appliesFrom or later admits (spec 003 RF-4, RF-8..RF-10), derived from inspected release tags; never a version-prefix range.",
+  "type": "object",
+  "required": ["schemaVersion", "appliesFrom", "lockSchemaBlob", "bootstrapProtocol", "admitted"],
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "appliesFrom": { "type": "string", "pattern": "^v[0-9]+[.][0-9]+[.][0-9]+$" },
+    "lockSchemaBlob": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "bootstrapProtocol": { "type": "integer", "minimum": 1 },
+    "admitted": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["source", "lockSchemaBlob", "bootstrapProtocol", "capabilities", "majorCrossing", "fixture"],
+        "properties": {
+          "source": { "type": "string", "pattern": "^v[0-9]+[.][0-9]+[.][0-9]+$" },
+          "lockSchemaBlob": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+          "bootstrapProtocol": { "type": "integer", "minimum": 1 },
+          "capabilities": { "type": "array", "items": { "type": "string" } },
+          "majorCrossing": { "type": "boolean" },
+          "fixture": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "rejectedNotes": { "type": "object" }
+  },
+  "additionalProperties": false
+}

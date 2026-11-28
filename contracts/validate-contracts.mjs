@@ -42,6 +42,7 @@ const DATA_FILES = [
   { data: "sdd-workflow.json", schema: "sdd-workflow.schema.json" },
   { data: "hitl-policy.json", schema: "hitl-policy.schema.json" },
   { data: "constitution-extension.json", schema: "constitution-extension.schema.json" },
+  { data: "upgrade-matrix.json", schema: "upgrade-matrix.schema.json" },
   { data: "../knowledge/sdd/KNOWLEDGE.json", schema: "knowledge-package.schema.json" },
 ];
 for (const { data, schema } of DATA_FILES) {

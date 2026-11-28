@@ -17,7 +17,7 @@
         "high": { "$ref": "#/$defs/risk" }
       }
     },
-    "forceRequired": { "type": "array", "items": { "enum": ["controlPlane", "release", "production", "security"] } },
+    "forceRequired": { "type": "array", "items": { "enum": ["controlPlane", "release", "production", "security", "acceptanceGovernance"] } },
     "noneRequires": {
       "type": "object",
       "required": ["autonomy", "explicit"],

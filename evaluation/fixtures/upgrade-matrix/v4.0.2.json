@@ -1,0 +1,22 @@
+{
+  "source": "v4.0.2",
+  "tagCommit": "d08531e149e11100200400206da55436694e8ea7",
+  "observed": {
+    "lockSchemaBlob": "d67779957b93b8ec6c788c8612aba412422bc7be",
+    "bootstrapProtocol": 1,
+    "upgradeEngine": true,
+    "cliVersion": "v4.0.2"
+  },
+  "lock": {
+    "schemaVersion": 1,
+    "platform": {
+      "repo": "jlbellonGmail/ai-native",
+      "version": "v4.0.2",
+      "commit": "d08531e149e11100200400206da55436694e8ea7",
+      "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    "profiles": [
+      "factory"
+    ]
+  }
+}

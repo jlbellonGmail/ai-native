@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "appliesFrom": "v4.1.0",
+  "lockSchemaBlob": "d67779957b93b8ec6c788c8612aba412422bc7be",
+  "bootstrapProtocol": 1,
+  "admitted": [
+    {
+      "source": "v4.0.1",
+      "lockSchemaBlob": "d67779957b93b8ec6c788c8612aba412422bc7be",
+      "bootstrapProtocol": 1,
+      "capabilities": [
+        "upgrade"
+      ],
+      "majorCrossing": false,
+      "fixture": "evaluation/fixtures/upgrade-matrix/v4.0.1.json"
+    },
+    {
+      "source": "v4.0.2",
+      "lockSchemaBlob": "d67779957b93b8ec6c788c8612aba412422bc7be",
+      "bootstrapProtocol": 1,
+      "capabilities": [
+        "upgrade"
+      ],
+      "majorCrossing": false,
+      "fixture": "evaluation/fixtures/upgrade-matrix/v4.0.2.json"
+    },
+    {
+      "source": "v3.4.2",
+      "lockSchemaBlob": "d67779957b93b8ec6c788c8612aba412422bc7be",
+      "bootstrapProtocol": 1,
+      "capabilities": [
+        "upgrade"
+      ],
+      "majorCrossing": true,
+      "fixture": "evaluation/fixtures/upgrade-matrix/v3.4.2.json"
+    },
+    {
+      "source": "v3.4.3",
+      "lockSchemaBlob": "d67779957b93b8ec6c788c8612aba412422bc7be",
+      "bootstrapProtocol": 1,
+      "capabilities": [
+        "upgrade"
+      ],
+      "majorCrossing": true,
+      "fixture": "evaluation/fixtures/upgrade-matrix/v3.4.3.json"
+    }
+  ],
+  "rejectedNotes": {
+    "v3.0.0-v3.2.0": "no complete inspected lock/protocol/upgrade family (v3.2.0 has a lock schema but no upgrade engine)",
+    "v3.3.0-v3.4.1": "same observed family, not admitted in the initial v4.1 scope (needs fixtures and approval)",
+    "v4.0.0": "consumed tag without a release",
+    "scope": "applies to targets of the v4.1 line (v4.1.0 and later v4.1.x patches); a later line declares its own matrix"
+  }
+}

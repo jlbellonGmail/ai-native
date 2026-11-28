@@ -13,6 +13,14 @@ name: merge-gate
 # Environment `ai-native-human-review` (required reviewer). Only after that approval does
 # `finalize` re-evaluate with HUMAN_REVIEWED=true and publish the verdict. Credentials are meant to live in
 # the Environment `ai-native-trust` (restricted to main); see governance/security/SECRETS-BOUNDARY.md for the current state.
+#
+# v4.1.0 (spec 002 RF-25/RF-31/RF-35): acceptance governance reuses THIS publisher instead of a new key holder.
+#   acceptance-analyze  BASE code, read-only token, NO secret, NO Environment. Reads the candidate only as Git
+#                       objects, waits (bounded) for the registered CI workflow run of the exact head SHA, downloads
+#                       its raw acceptance-closure artifact as data and runs runtime/acceptance/verdict.mjs.
+#   merge-gate/finalize the existing holders read ONLY that verdict JSON (schema- and SHA-checked), fold it into the
+#                       merge decision and publish `ai-native/acceptance-governance`. NEEDS_HUMAN resolves only via
+#                       the `ai-native-human-review` Environment approval of a governance.humanMergers login.
 
 on:
   pull_request_target:
@@ -23,21 +31,113 @@ permissions:
   contents: read
   pull-requests: read
   checks: read
+  actions: read
 
 concurrency:
   group: merge-gate-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
+  acceptance-analyze:
+    name: acceptance-analyze
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    if: github.event.pull_request.base.ref == 'main'
+    permissions:
+      contents: read
+      pull-requests: read
+      actions: read
+    steps:
+      - name: Checkout BASE (trusted code and config)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Fetch the PR head as Git objects only (never checked out, built or executed)
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          [[ "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]] || { echo "invalid head sha"; exit 1; }
+          AUTH="$(printf 'x-access-token:%s' "${GH_TOKEN}" | base64 -w0)"
+          for attempt in 1 2 3 4 5 6; do
+            if git -c "http.extraheader=AUTHORIZATION: basic ${AUTH}" fetch --no-tags origin "+refs/pull/${PR}/head:refs/candidate/head"; then break; fi
+            sleep $((attempt * 5))
+          done
+          [ "$(git rev-parse refs/candidate/head)" = "$HEAD_SHA" ] || { echo "PR head moved: stale run"; exit 1; }
+
+      - name: Wait (bounded) for the registered CI run of this head, verify it, download its closure as data
+        id: run
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: |
+          set -euo pipefail
+          mkdir -p closure
+          wf=$(jq -r .acceptanceGovernance.closureWorkflow governance/gates/gates.json)
+          name=$(jq -r .acceptanceGovernance.closureArtifact governance/gates/gates.json)
+          deadline=$(( $(date +%s) + 2700 ))
+          run_id=""
+          while [ "$(date +%s)" -lt "$deadline" ]; do
+            row=$(gh api "repos/$REPO/actions/workflows/$(basename "$wf")/runs?head_sha=$HEAD_SHA&event=pull_request&per_page=5" --jq '[.workflow_runs[] | select(.head_sha=="'"$HEAD_SHA"'" and any(.pull_requests[]?; .number == '"$PR"' and .base.ref == "'"$BASE_REF"'"))][0] | {id, status}')
+            st=$(jq -r '.status // empty' <<<"$row")
+            echo "$(date -u +%H:%M:%S) CI run $(jq -r '.id // "none"' <<<"$row") status=${st:-none}"
+            if [ "$st" = "completed" ]; then run_id=$(jq -r .id <<<"$row"); break; fi
+            sleep 30
+          done
+          if [ -z "$run_id" ]; then echo "run={}" >> "$GITHUB_OUTPUT"; echo "no completed CI run for $HEAD_SHA within the bound"; exit 0; fi
+          # re-read from the API: workflow path, event, head SHA and attempt are checked by the analyzer
+          run=$(gh api "repos/$REPO/actions/runs/$run_id" --jq '{path, event, headSha: .head_sha, id, attempt: .run_attempt}')
+          echo "run=$run" >> "$GITHUB_OUTPUT"
+          gh run download "$run_id" --repo "$REPO" --name "$name" --dir closure || echo "no closure artifact in run $run_id"
+          # the producing job's log: each raw output's digest was anchored there from memory (exactly once per runner)
+          job_id=$(gh api "repos/$REPO/actions/runs/$run_id/jobs?per_page=100" --jq '[.jobs[] | select(.name=="acceptance-closure")][0].id // empty')
+          if [ -n "$job_id" ]; then gh api --allow-escape-sequences "repos/$REPO/actions/jobs/$job_id/logs" > closure.log || rm -f closure.log; fi
+          [ -f closure.log ] && [ "$(wc -c < closure.log)" -le 16777216 ] || { echo "no bounded closure job log"; rm -f closure.log; }
+          # bound the data: regular files only, size-limited (the analyzer re-checks every file it reads)
+          find closure -type l -delete
+          [ "$(du -sk closure | cut -f1)" -le 65536 ] || { echo "closure artifact too large"; rm -rf closure; mkdir closure; }
+
+      - name: Analyze (trusted BASE code, candidate as data)
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          RUN_JSON: ${{ steps.run.outputs.run }}
+        run: |
+          set -euo pipefail
+          base=$(git merge-base "$BASE_SHA" "$HEAD_SHA")
+          log_arg=(); [ -f closure.log ] && log_arg=(--closure-log closure.log)
+          node runtime/acceptance/verdict.mjs --repo . --base "$base" --head "$HEAD_SHA" --closure closure --run "$RUN_JSON" "${log_arg[@]}" --out verdict.json || rc=$?; echo "analyzer exit ${rc:-0}: a non-PASS verdict is carried in verdict.json and decided by merge-gate"
+          jq -e '.schemaVersion == 1 and .headSha == env.HEAD_SHA' verdict.json >/dev/null || { echo '{"schemaVersion":1,"headSha":null,"status":"BLOCKED","reasons":["analyzer produced no verdict"],"findings":[]}' > verdict.json; }
+          jq -r '"acceptance verdict: \(.status)", (.reasons[]? | "- \(.)")' verdict.json
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: acceptance-verdict
+          path: verdict.json
+          retention-days: 30
+
   merge-gate:
     name: merge-gate-job
     runs-on: ubuntu-latest
     timeout-minutes: 40
     environment: ai-native-trust
-    if: github.event.pull_request.base.ref == 'main'
+    needs: acceptance-analyze
+    if: ${{ !cancelled() && github.event.pull_request.base.ref == 'main' }}
     outputs:
       needs_human: ${{ steps.verdict.outputs.needs_human }}
       check_run_id: ${{ steps.verdict.outputs.check_run_id }}
+      acceptance_check_run_id: ${{ steps.verdict.outputs.acceptance_check_run_id }}
     steps:
       - name: Checkout BASE (trusted code and config)
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -45,6 +145,13 @@ jobs:
           ref: ${{ github.event.pull_request.base.sha }}
           fetch-depth: 1
           persist-credentials: false
+
+      # the ONLY input from the analyze job: one JSON file of this same run (never candidate data)
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        continue-on-error: true
+        with:
+          name: acceptance-verdict
+          path: acceptance-verdict
 
       - name: Mint ai-native-trust installation token
         id: app
@@ -67,6 +174,7 @@ jobs:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           GITHUB_REPOSITORY: ${{ github.repository }}
+          ACCEPTANCE_VERDICT: acceptance-verdict/verdict.json
           WAIT_SECONDS: "1800"
         run: node runtime/gates/merge-gate.mjs
 
@@ -79,7 +187,9 @@ jobs:
     environment: ai-native-human-review
     steps:
       - name: Human approval recorded for this head SHA
-        run: echo "Approved by the Environment required reviewer for ${{ github.event.pull_request.head.sha }}"
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: echo "Approved by the Environment required reviewer for $HEAD_SHA"
 
   finalize:
     name: merge-gate-finalize
@@ -95,6 +205,12 @@ jobs:
           ref: ${{ github.event.pull_request.base.sha }}
           fetch-depth: 1
           persist-credentials: false
+
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        continue-on-error: true
+        with:
+          name: acceptance-verdict
+          path: acceptance-verdict
 
       - name: Mint ai-native-trust installation token
         id: app
@@ -112,11 +228,13 @@ jobs:
         env:
           HUMAN_REVIEWED: "true"
           CHECK_RUN_ID: ${{ needs.merge-gate.outputs.check_run_id }}
+          ACCEPTANCE_CHECK_RUN_ID: ${{ needs.merge-gate.outputs.acceptance_check_run_id }}
           EXPECTED_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           GH_TOKEN: ${{ github.token }}
           POST_TOKEN: ${{ steps.app.outputs.token }}
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           GITHUB_REPOSITORY: ${{ github.repository }}
+          ACCEPTANCE_VERDICT: acceptance-verdict/verdict.json
           WAIT_SECONDS: "1800"
         run: node runtime/gates/merge-gate.mjs

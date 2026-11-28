@@ -1,0 +1,126 @@
+# Plan — acceptance integration and compatibility
+
+## Strategy
+
+Wire the acceptance phase into the existing SDD command bodies and a new
+feature-level stage of `implement-all` (after the task loop, before the review
+loop), add an `acceptance` subcommand to the existing
+`sdd` dispatcher (`runtime/circuit/sdd-cli.mjs`), then integrate its result into
+`deriveReviewOutcome`, the review packet and HITL without adding a slash
+command; the only branch-protection change is the `develop` ruleset and
+required checks that 002 RF-25 and the unblock plan need, applied by a human. Reuse the upgrade transaction and
+review ledger. Run the GI pilot from an isolated source copy with its source SHA
+explicitly recorded, never in its parent factory Git identity.
+
+## Inspected compatibility matrix
+
+The matrix below is derived from local annotated tags, not documentation claims.
+Re-checked 2026-11-23 at tags `v4.0.1`, `v4.0.2`, `v3.4.2` and `v3.4.3`:
+`contracts/lock.schema.json` blob `d67779957b93…`, `contracts/bootstrap-protocol.json`
+protocol `1` and `runtime/bootstrap/upgrade.mjs` present in all four. For
+`v3.3.0` through `v3.4.3`, `contracts/lock.schema.json` has blob
+`d67779957b93…`, `contracts/bootstrap-protocol.json` declares protocol `1`, and
+the release tree has `runtime/bootstrap/upgrade.mjs`. `v3.4.2` and `v3.4.3` each
+declare CLI protocol `1` with `adopt`, `upgrade`, `detach` capabilities. Releases
+`v3.0.0` through `v3.2.0` do not provide the complete inspected
+lock/protocol/upgrade family; specifically, v3.2.0 has a lock schema but no
+upgrade engine.
+
+| Source releases | Observed family | v4 admission | Fixture / behavior |
+|---|---|---|---|
+| `v3.0.0`–`v3.2.0` | No complete inspected lock/protocol/upgrade family; v3.2.0 has a lock schema but no upgrade engine | Rejected | Representative real release-shape absence fixtures; reject before writes. |
+| `v3.3.0`–`v3.4.1` | Lock schema blob `d67779957b93…`, protocol 1, upgrade engine present | Not admitted in initial v4 scope | One real-shape fixture per distinct observed protocol/lock family; reject by matrix before writes until a later approved expansion. |
+| `v4.0.1`, `v4.0.2` | Current line; protocol 1, includes `upgrade`; `v4.0.1` -> `v4.0.2` upgrade verified READY at release | Admitted (primary path) | Individual fixtures from the published bundles; preservation, rollback and idempotence. `v4.0.0` is a consumed tag without release and is rejected. |
+| `v3.4.2` | Same observed lock family; CLI `v3.4.2`, protocol 1, includes `upgrade` | Admitted (MAJOR crossing reported) | Individual fixture generated from v3.4.2 lock/protocol artifacts; preservation, failure rollback and second-run idempotence. |
+| `v3.4.3` | Same observed lock family; CLI `v3.4.3`, protocol 1, includes `upgrade` | Admitted (MAJOR crossing reported) | Individual fixture generated from v3.4.3 lock/protocol artifacts; preservation, failure rollback and second-run idempotence. |
+| Unknown/future/malformed | Not in an exact matrix row | Rejected | Negative fixtures assert no filesystem, index or cache mutation. |
+
+The equal schema/protocol family does not itself imply admission. v4.1.0
+explicitly admits exactly the four fixture-backed releases above;
+expanding to `v3.3.0`–`v3.4.1` requires fixtures and approval, not an implicit
+range check.
+
+## Requirements coverage
+
+| Requirement | Change and discarded alternative |
+|---|---|
+| RF-1, RF-18 | Update `core/commands/{sdd-spec,sdd-tasks,sdd-implement-all,sdd-validate}.md` bodies and their projections; add `sdd acceptance` to `sdd-cli.mjs`; add the level-`full` error next to the v4.0.2 warnings in `sdd-workflow.mjs`. Discard a new `/acceptance` slash command (G1: no separate request) and a standalone script. |
+| RF-19 | Change points: `implement-all.mjs` gains a feature-level acceptance stage after the task loop and before the review loop that imports and calls the 002 runner directly and then re-reads the acceptance ledger; it is not part of the injected `agents` object, so a test double or agent cannot supply its result (the per-task `accept(task)` is unchanged and never counts as feature acceptance); tests inject a stub returning PASS and assert BLOCKED without a ledger entry; `review-ledger.mjs` `validationOf` and `review status` require acceptance PASS from the acceptance ledger for REQUIRED features and ignore free-text `--command` runs for acceptance; `independent-review.mjs` `deriveReviewOutcome` takes acceptance status as an explicit input. Discard advisory acceptance results. |
+| RF-20 | Extend the existing review-ledger packet; discard a second review channel. |
+| RF-21 | Disposable consumer from the candidate bundle via `ai-native init`, a small product with a seeded defect, a normal `/sdd-*` feature with criteria, then the fix; plus scripted bypass attempts. Evidence kept under `governance/execution/current/`. Discard proving the circuit by instructing the agent to run tests. |
+| RF-2, RF-3 | Reuse graph/runner selection and existing gates; discard unconditional all-consumer runs and a second governance system. |
+| RF-4, RF-8, RF-9, RF-10, RF-11, RF-12, RF-13 | Add matrix validation before the current verified-bundle upgrade transaction. Use individual v4.0.1, v4.0.2, v3.4.2 and v3.4.3 fixtures, project-owned sentinels, managed drift, Git/index snapshots, injected failures and second-run comparison. Discard version-prefix admission, overwriting consumer-owned files, broad filesystem snapshots and running upgrade in this factory. |
+| RF-22 | `ai-native rollback` (`runtime/bootstrap/install.mjs` `rollback`) writes the lock through `canonical()`, whose key list omits the schema fields `productDir` and `governance` (audit F-006). Make `canonical()` emit the keys in `contracts/lock.schema.json` order (`schemaVersion`, `platform`, `profiles`, `productDir`, `governance`, `mcpProfiles`, `packs`, `overrides`); `init()` and `migrate` never set the two fields, so their output stays byte-identical. Regression test in `runtime/bootstrap/bootstrap.test.mjs`, plus own-acceptance cases for AC-7 (one positive persistence case, one rejection case). Discard copying unknown keys (the schema rejects them first in `readLock`) and a rollback-specific serializer. |
+| RF-5 | Targeted docs/versioning candidate handoff; discard release/tag publication. |
+| RF-6, RF-14, RF-15, RF-16, RF-17 | Disposable GI copy, pinned source and PostgreSQL fixture. Model Regions -> Locales as same-database SQL/FK consumption; verify persistence/public reads, `locale_id`, valid/invalid references and repeat runs. Mark mocks/in-process separately from real PostgreSQL integration and from socket E2E. Discard an invented Regions HTTP client and `gi_dev.py` because its exit code is not a gate. |
+| RF-7 | Existing review ledger plus Claude attester; discard self-review or an OpenCode subagent as approval. |
+
+## Probable files after approval
+
+Command bodies, dispatcher/adapters and tests; `runtime/consumer/l3.mjs` and the consumer CI template for the acceptance closure job (002 RF-31); the legacy cutoff record and its upgrade writer; an upgrade matrix
+contract/validator; release-derived test fixtures; upgrade tests; and targeted
+docs/versioning. The consumer L3 and factory CI acceptance closure jobs are
+required by 002 RF-31; other gate changes only if existing composition requires
+them. Every `.github/**`, `contracts/**` or governance-gate edit is control
+plane and remains human-gated.
+
+## Activation rule and backward compatibility
+
+The upgrade records a legacy cutoff (feature slugs present at upgrade time) in
+the consumer's governance state. Legacy features keep v4.0.2 behavior. Any other
+feature is REQUIRED or explicitly NOT_APPLICABLE; neither is BLOCKED at closure
+and review at every level (RF-18), while `sdd validate --level normal` only
+warns, as in v4.0.2. Level `full` and closure enforce
+RF-18/RF-19. The upgrade does not create a validation contract silently: a
+consumer without one gets acceptance `BLOCKED` with an actionable diagnostic
+and a generated proposal the human reviews.
+
+## Migration, rollout and rollback
+
+Generate hermetic fixtures from the published v4.0.1 and v4.0.2 release
+bundles and from the tagged v3.4.2 and v3.4.3 lock/protocol artifacts, one per
+source version, never relabelling one fixture; each fixture records its source
+tag and the observed lock-schema blob and protocol so the matrix is re-checkable.
+Before/after compare project-owned sentinels, managed drift, Git status/index and
+collision reports. Force failures after every write boundary through existing or
+new test seams; assert `ROLLED_BACK` byte identity or explicit
+`ROLLBACK_INCOMPLETE` paths. Apply the same verified v4 bundle twice and compare
+manifests/projections byte-for-byte. Matrix rejection tests snapshot filesystem,
+index and cache before invocation and prove no mutation.
+
+For RF-22, `ai-native rollback` is exercised with the existing bootstrap test
+seams: sync v1, then sync v2, then rollback, on a lock carrying `productDir` and
+`governance.allowNone`. Assert that the restored lock deep-equals the pre-rollback
+lock except `platform.version`, `platform.commit` and `platform.digest`, and that it
+validates against the schema. The regression test must fail against the unfixed
+`canonical()`. An invalid lock is refused with its bytes and the cache state
+unchanged.
+
+Build the GI pilot only after implementation-plan approval; use the
+`postgres:16-alpine` digest recorded in `V4-AUDIT.md` and classify
+ASGI/PostgreSQL correctly as real integration. Delete only pilot resources
+created by the run. Revert an additive factory change through Git if rejected.
+
+Pilot test matrix (all commands and exact test IDs to be verified from the pinned
+consumer copy before execution):
+
+| Behavior | Setup/assertion | Evidence class |
+|---|---|---|
+| Locales persistence/read | Incorporate the deterministic locale snapshot into disposable PostgreSQL; read persisted locales through supported public interface. | Real PostgreSQL integration; API via ASGI is in-process, not socket E2E. |
+| Regions persistence/read | Incorporate Regions/Subregions with required locales already persisted; read rows and response fields. | Real PostgreSQL integration. |
+| FK integrity | Inspect/enforce actual schema FK from region locale reference to locale identity; valid insert succeeds, invalid/missing locale insert or incorporation fails without partial data. | Real PostgreSQL integration. |
+| `locale_id` resolution | Query region/localized response by the locale UUID; assert returned identity and locale-specific values match seeded row. | Real PostgreSQL integration. |
+| Valid/invalid references | Existing IDs succeed; nonexistent UUID is rejected distinctly and leaves database state unchanged. | Real PostgreSQL integration. |
+| Repeatability | Run the exact same tests twice against a freshly reset deterministic fixture each time; compare normalized outputs and row counts. | Two independent real PostgreSQL runs. |
+| Mock/fake boundaries | Identify tests using fake repositories/errors; retain only as supplementary behavior tests, never as database/FK proof. | Simulated. |
+
+Do not claim network HTTP E2E for FastAPI `TestClient`; only a test against an
+explicitly started loopback socket can receive that label. The current GI source
+inspection found Regions depends on Locales by PostgreSQL/FK, not HTTP.
+
+## Risks
+
+This crosses contracts/runtime/adapters and may affect control-plane gates. A
+v3 consumer upgrade PR is judged initially from its trusted BASE platform, so it
+cannot claim that the new v4 gate protected that same PR. Merge/release remains
+human-only.

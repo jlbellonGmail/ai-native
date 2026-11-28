@@ -1,0 +1,647 @@
+{
+  "schemaVersion": 1,
+  "slug": "003-acceptance-integration",
+  "criteria": [
+    {
+      "id": "AC-1",
+      "requirements": [
+        "RF-1",
+        "RF-18"
+      ]
+    },
+    {
+      "id": "AC-2",
+      "requirements": [
+        "RF-3",
+        "RF-19"
+      ]
+    },
+    {
+      "id": "AC-3",
+      "requirements": [
+        "RF-20"
+      ]
+    },
+    {
+      "id": "AC-4",
+      "requirements": [
+        "RF-21"
+      ]
+    },
+    {
+      "id": "AC-5",
+      "requirements": [
+        "RF-4",
+        "RF-8",
+        "RF-9",
+        "RF-10",
+        "RF-11",
+        "RF-12",
+        "RF-13"
+      ]
+    },
+    {
+      "id": "AC-6",
+      "requirements": [
+        "RF-2",
+        "RF-5",
+        "RF-6",
+        "RF-7",
+        "RF-14",
+        "RF-15",
+        "RF-16",
+        "RF-17"
+      ]
+    },
+    {
+      "id": "AC-7",
+      "requirements": [
+        "RF-22"
+      ]
+    }
+  ],
+  "matrix": {
+    "positive": {
+      "status": "APPLICABLE"
+    },
+    "negative": {
+      "status": "APPLICABLE"
+    },
+    "boundary": {
+      "status": "APPLICABLE"
+    },
+    "integration": {
+      "status": "APPLICABLE"
+    },
+    "contract": {
+      "status": "APPLICABLE"
+    },
+    "persistence": {
+      "status": "APPLICABLE"
+    },
+    "cross-cutting": {
+      "status": "APPLICABLE"
+    }
+  },
+  "datasets": [],
+  "cases": [
+    {
+      "id": "I-01",
+      "ac": [
+        "AC-1"
+      ],
+      "category": "positive",
+      "runner": "spec-003",
+      "sutPaths": [
+        "runtime/",
+        "contracts/",
+        "core/commands/",
+        ".github/workflows/",
+        "governance/gates/",
+        "evaluation/",
+        "knowledge/sdd/templates/",
+        "profiles/",
+        "acceptance/cases/",
+        "AGENTS.md",
+        "specs/001-dependency-graph/acceptance/plan.json",
+        "specs/002-native-acceptance/acceptance/plan.json"
+      ],
+      "expected": "pass",
+      "mandatory": true,
+      "minTier": "restricted",
+      "why": "the acceptance phase is in the existing SDD command bodies; no new slash command",
+      "realSystemUse": "exercised by the factory and by every adopted consumer through the same platform modules",
+      "intentionalErrors": "none",
+      "limitations": "disposable fixtures (temporary directories and git repositories); no network, no external service",
+      "restore": "each case removes its temporary directories",
+      "executionKind": "simulated"
+    },
+    {
+      "id": "I-02",
+      "ac": [
+        "AC-1"
+      ],
+      "category": "negative",
+      "runner": "spec-003",
+      "sutPaths": [
+        "runtime/",
+        "contracts/",
+        "core/commands/",
+        ".github/workflows/",
+        "governance/gates/",
+        "evaluation/",
+        "knowledge/sdd/templates/",
+        "profiles/",
+        "acceptance/cases/",
+        "AGENTS.md",
+        "specs/001-dependency-graph/acceptance/plan.json",
+        "specs/002-native-acceptance/acceptance/plan.json"
+      ],
+      "expected": "reject",
+      "mandatory": true,
+      "minTier": "restricted",
+      "why": "a feature with neither criteria nor N/A is MISSING and blocks; N/A is pending; legacy keeps v4.0.2",
+      "realSystemUse": "exercised by the factory and by every adopted consumer through the same platform modules",
+      "intentionalErrors": "the input is invalid or tampered on purpose",
+      "limitations": "disposable fixtures (temporary directories and git repositories); no network, no external service",
+      "restore": "each case removes its temporary directories",
+      "executionKind": "simulated"
+    },
+    {
+      "id": "I-03",
+      "ac": [
+        "AC-2"
+      ],
+      "category": "negative",
+      "runner": "spec-003",
+      "sutPaths": [
+        "runtime/",
+        "contracts/",
+        "core/commands/",
+        ".github/workflows/",
+        "governance/gates/",
+        "evaluation/",
+        "knowledge/sdd/templates/",
+        "profiles/",
+        "acceptance/cases/",
+        "AGENTS.md",
+        "specs/001-dependency-graph/acceptance/plan.json",
+        "specs/002-native-acceptance/acceptance/plan.json"
+      ],
+      "expected": "reject",
+      "mandatory": true,
+      "minTier": "restricted",
+      "why": "FAIL, BLOCKED, STALE and NOT_RUN acceptance are never APPROVED",
+      "realSystemUse": "exercised by the factory and by every adopted consumer through the same platform modules",
+      "intentionalErrors": "the input is invalid or tampered on purpose",
+      "limitations": "disposable fixtures (temporary directories and git repositories); no network, no external service",
+      "restore": "each case removes its temporary directories",
+      "executionKind": "simulated"
+    },
+    {
+      "id": "I-04",
+      "ac": [
+        "AC-2"
+      ],
+      "category": "contract",
+      "runner": "spec-003",
+      "sutPaths": [
+        "runtime/",
+        "contracts/",
+        "core/commands/",
+        ".github/workflows/",
+        "governance/gates/",
+        "evaluation/",
+        "knowledge/sdd/templates/",
+        "profiles/",
+        "acceptance/cases/",
+        "AGENTS.md",
+        "specs/001-dependency-graph/acceptance/plan.json",
+        "specs/002-native-acceptance/acceptance/plan.json"
+      ],
+      "expected": "reject",
+      "mandatory": true,
+      "minTier": "restricted",
+      "why": "without a runner-written ledger entry the status is NOT_RUN and blocks",
+      "realSystemUse": "exercised by the factory and by every adopted consumer through the same platform modules",
+      "intentionalErrors": "the input is invalid or tampered on purpose",
+      "limitations": "disposable fixtures (temporary directories and git repositories); no network, no external service",
+      "restore": "each case removes its temporary directories",
+      "executionKind": "simulated"
+    },
+    {
+      "id": "I-05",
+      "ac": [
+        "AC-2"
+      ],
+      "category": "persistence",
+      "runner": "spec-003",
+      "sutPaths": [
+        "runtime/",
+        "contracts/",
+        "core/commands/",
+        ".github/workflows/",
+        "governance/gates/",
+        "evaluation/",
+        "knowledge/sdd/templates/",
+        "profiles/",
+        "acceptance/cases/",
+        "AGENTS.md",
+        "specs/001-dependency-graph/acceptance/plan.json",
+        "specs/002-native-acceptance/acceptance/plan.json"
+      ],
+      "expected": "pass",
+      "mandatory": true,
+      "minTier": "restricted",
+      "why": "fixing the defect and re-running restores PASS",
+      "realSystemUse": "exercised by the factory and by every adopted consumer through the same platform modules",
+      "intentionalErrors": "none",
+      "limitations": "disposable fixtures (temporary directories and git repositories); no network, no external service",
+      "restore": "each case removes its temporary directories",
+      "executionKind": "simulated"
+    },
+    {
+      "id": "I-06",
+      "ac": [
+        "AC-3"
+      ],
+      "category": "integration",
+      "runner": "spec-003",
+      "sutPaths": [
+        "runtime/",
+        "contracts/",
+        "core/commands/",
+        ".github/workflows/",
+        "governance/gates/",
+        "evaluation/",
+        "knowledge/sdd/templates/",
+        "profiles/",
+        "acceptance/cases/",
+        "AGENTS.md",
+        "specs/001-dependency-graph/acceptance/plan.json",
+        "specs/002-native-acceptance/acceptance/plan.json"
+      ],
+      "expected": "pass",
+      "mandatory": true,
+      "minTier": "restricted",
+      "why": "the review packet carries the acceptance section bound to the revision",
+      "realSystemUse": "exercised by the factory and by every adopted consumer through the same platform modules",
+      "intentionalErrors": "none",
+      "limitations": "disposable fixtures (temporary directories and git repositories); no network, no external service",
+      "restore": "each case removes its temporary directories",
+      "executionKind": "simulated"
+    },
+    {
+      "id": "I-07",
+      "ac": [
+        "AC-3"
+      ],
+      "category": "negative",
+      "runner": "spec-003",
+      "sutPaths": [
+        "runtime/",
+        "contracts/",
+        "core/commands/",
+        ".github/workflows/",
+        "governance/gates/",
+        "evaluation/",
+        "knowledge/sdd/templates/",
+        "profiles/",
+        "acceptance/cases/",
+        "AGENTS.md",
+        "specs/001-dependency-graph/acceptance/plan.json",
+        "specs/002-native-acceptance/acceptance/plan.json"
+      ],
+      "expected": "reject",
+      "mandatory": true,
+      "minTier": "restricted",
+      "why": "a pending item is in the packet and the review is not approvable",
+      "realSystemUse": "exercised by the factory and by every adopted consumer through the same platform modules",
+      "intentionalErrors": "the input is invalid or tampered on purpose",
+      "limitations": "disposable fixtures (temporary directories and git repositories); no network, no external service",
+      "restore": "each case removes its temporary directories",
+      "executionKind": "simulated"
+    },
+    {
+      "id": "I-08",
+      "ac": [
+        "AC-4"
+      ],
+      "category": "integration",
+      "runner": "spec-003",
+      "sutPaths": [
+        "runtime/",
+        "contracts/",
+        "core/commands/",
+        ".github/workflows/",
+        "governance/gates/",
+        "evaluation/",
+        "knowledge/sdd/templates/",
+        "profiles/",
+        "acceptance/cases/",
+        "AGENTS.md",
+        "specs/001-dependency-graph/acceptance/plan.json",
+        "specs/002-native-acceptance/acceptance/plan.json"
+      ],
+      "expected": "reject",
+      "mandatory": true,
+      "minTier": "restricted",
+      "why": "a seeded real defect is detected as FAIL on a disposable consumer",
+      "realSystemUse": "exercised by the factory and by every adopted consumer through the same platform modules",
+      "intentionalErrors": "the input is invalid or tampered on purpose",
+      "limitations": "disposable fixtures (temporary directories and git repositories); no network, no external service",
+      "restore": "each case removes its temporary directories",
+      "executionKind": "simulated"
+    },
+    {
+      "id": "I-09",
+      "ac": [
+        "AC-4"
+      ],
+      "category": "negative",
+      "runner": "spec-003",
+      "sutPaths": [
+        "runtime/",
+        "contracts/",
+        "core/commands/",
+        ".github/workflows/",
+        "governance/gates/",
+        "evaluation/",
+        "knowledge/sdd/templates/",
+        "profiles/",
+        "acceptance/cases/",
+        "AGENTS.md",
+        "specs/001-dependency-graph/acceptance/plan.json",
+        "specs/002-native-acceptance/acceptance/plan.json"
+      ],
+      "expected": "reject",
+      "mandatory": true,
+      "minTier": "restricted",
+      "why": "a silent DOWNGRADE is a finding and a trivial runner is refused",
+      "realSystemUse": "exercised by the factory and by every adopted consumer through the same platform modules",
+      "intentionalErrors": "the input is invalid or tampered on purpose",
+      "limitations": "disposable fixtures (temporary directories and git repositories); no network, no external service",
+      "restore": "each case removes its temporary directories",
+      "executionKind": "simulated"
+    },
+    {
+      "id": "I-10",
+      "ac": [
+        "AC-5"
+      ],
+      "category": "boundary",
+      "runner": "spec-003",
+      "sutPaths": [
+        "runtime/",
+        "contracts/",
+        "core/commands/",
+        ".github/workflows/",
+        "governance/gates/",
+        "evaluation/",
+        "knowledge/sdd/templates/",
+        "profiles/",
+        "acceptance/cases/",
+        "AGENTS.md",
+        "specs/001-dependency-graph/acceptance/plan.json",
+        "specs/002-native-acceptance/acceptance/plan.json"
+      ],
+      "expected": "pass",
+      "mandatory": true,
+      "minTier": "restricted",
+      "why": "exactly the four inspected releases are admitted; v3.4.x reports the MAJOR crossing",
+      "realSystemUse": "exercised by the factory and by every adopted consumer through the same platform modules",
+      "intentionalErrors": "none",
+      "limitations": "disposable fixtures (temporary directories and git repositories); no network, no external service",
+      "restore": "each case removes its temporary directories",
+      "executionKind": "simulated"
+    },
+    {
+      "id": "I-11",
+      "ac": [
+        "AC-5"
+      ],
+      "category": "boundary",
+      "runner": "spec-003",
+      "sutPaths": [
+        "runtime/",
+        "contracts/",
+        "core/commands/",
+        ".github/workflows/",
+        "governance/gates/",
+        "evaluation/",
+        "knowledge/sdd/templates/",
+        "profiles/",
+        "acceptance/cases/",
+        "AGENTS.md",
+        "specs/001-dependency-graph/acceptance/plan.json",
+        "specs/002-native-acceptance/acceptance/plan.json"
+      ],
+      "expected": "reject",
+      "mandatory": true,
+      "minTier": "restricted",
+      "why": "v4.0.0, v3.4.1, absent and malformed sources are rejected",
+      "realSystemUse": "exercised by the factory and by every adopted consumer through the same platform modules",
+      "intentionalErrors": "the input is invalid or tampered on purpose",
+      "limitations": "disposable fixtures (temporary directories and git repositories); no network, no external service",
+      "restore": "each case removes its temporary directories",
+      "executionKind": "simulated"
+    },
+    {
+      "id": "I-12",
+      "ac": [
+        "AC-6"
+      ],
+      "category": "cross-cutting",
+      "runner": "spec-003",
+      "sutPaths": [
+        "runtime/",
+        "contracts/",
+        "core/commands/",
+        ".github/workflows/",
+        "governance/gates/",
+        "evaluation/",
+        "knowledge/sdd/templates/",
+        "profiles/",
+        "acceptance/cases/",
+        "AGENTS.md",
+        "specs/001-dependency-graph/acceptance/plan.json",
+        "specs/002-native-acceptance/acceptance/plan.json"
+      ],
+      "expected": "pass",
+      "mandatory": true,
+      "minTier": "restricted",
+      "why": "impact selection runs each affected consumer feature once",
+      "realSystemUse": "exercised by the factory and by every adopted consumer through the same platform modules",
+      "intentionalErrors": "none",
+      "limitations": "disposable fixtures (temporary directories and git repositories); no network, no external service",
+      "restore": "each case removes its temporary directories",
+      "executionKind": "simulated"
+    },
+    {
+      "id": "I-13",
+      "ac": [
+        "AC-6"
+      ],
+      "category": "cross-cutting",
+      "runner": "spec-003",
+      "sutPaths": [
+        "runtime/",
+        "contracts/",
+        "core/commands/",
+        ".github/workflows/",
+        "governance/gates/",
+        "evaluation/",
+        "knowledge/sdd/templates/",
+        "profiles/",
+        "acceptance/cases/",
+        "AGENTS.md",
+        "specs/001-dependency-graph/acceptance/plan.json",
+        "specs/002-native-acceptance/acceptance/plan.json"
+      ],
+      "expected": "reject",
+      "mandatory": true,
+      "minTier": "restricted",
+      "why": "an undeclared provider contract change is BLOCKED",
+      "realSystemUse": "exercised by the factory and by every adopted consumer through the same platform modules",
+      "intentionalErrors": "the input is invalid or tampered on purpose",
+      "limitations": "disposable fixtures (temporary directories and git repositories); no network, no external service",
+      "restore": "each case removes its temporary directories",
+      "executionKind": "simulated"
+    },
+    {
+      "id": "I-14",
+      "ac": [
+        "AC-6"
+      ],
+      "category": "contract",
+      "runner": "spec-003",
+      "sutPaths": [
+        "runtime/",
+        "contracts/",
+        "core/commands/",
+        ".github/workflows/",
+        "governance/gates/",
+        "evaluation/",
+        "knowledge/sdd/templates/",
+        "profiles/",
+        "acceptance/cases/",
+        "AGENTS.md",
+        "specs/001-dependency-graph/acceptance/plan.json",
+        "specs/002-native-acceptance/acceptance/plan.json"
+      ],
+      "expected": "reject",
+      "mandatory": true,
+      "minTier": "restricted",
+      "why": "without an attested reviewer the final review is REVIEW_PENDING",
+      "realSystemUse": "exercised by the factory and by every adopted consumer through the same platform modules",
+      "intentionalErrors": "the input is invalid or tampered on purpose",
+      "limitations": "disposable fixtures (temporary directories and git repositories); no network, no external service",
+      "restore": "each case removes its temporary directories",
+      "executionKind": "simulated"
+    },
+    {
+      "id": "I-15",
+      "ac": [
+        "AC-6"
+      ],
+      "category": "integration",
+      "runner": "spec-003",
+      "sutPaths": [
+        "runtime/",
+        "contracts/",
+        "core/commands/",
+        ".github/workflows/",
+        "governance/gates/",
+        "evaluation/",
+        "knowledge/sdd/templates/",
+        "profiles/",
+        "acceptance/cases/",
+        "AGENTS.md",
+        "specs/001-dependency-graph/acceptance/plan.json",
+        "specs/002-native-acceptance/acceptance/plan.json"
+      ],
+      "expected": "pass",
+      "mandatory": true,
+      "minTier": "restricted",
+      "why": "the GI pilot definition run by CI is valid, honestly labelled and matches its tests",
+      "realSystemUse": "exercised by the factory and by every adopted consumer through the same platform modules",
+      "intentionalErrors": "none",
+      "limitations": "disposable fixtures (temporary directories and git repositories); no network, no external service",
+      "restore": "each case removes its temporary directories",
+      "executionKind": "simulated"
+    },
+    {
+      "id": "I-16",
+      "ac": [
+        "AC-5"
+      ],
+      "category": "persistence",
+      "runner": "spec-003",
+      "sutPaths": [
+        "runtime/",
+        "contracts/",
+        "core/commands/",
+        ".github/workflows/",
+        "governance/gates/",
+        "evaluation/",
+        "knowledge/sdd/templates/",
+        "profiles/",
+        "acceptance/cases/",
+        "AGENTS.md",
+        "specs/001-dependency-graph/acceptance/plan.json",
+        "specs/002-native-acceptance/acceptance/plan.json"
+      ],
+      "expected": "pass",
+      "mandatory": true,
+      "minTier": "restricted",
+      "why": "every admitted source preserves owned files, keeps drift, rolls back on failure and is idempotent",
+      "realSystemUse": "exercised by the factory and by every adopted consumer through the same platform modules",
+      "intentionalErrors": "none",
+      "limitations": "disposable fixtures (temporary directories and git repositories); no network, no external service",
+      "restore": "each case removes its temporary directories",
+      "executionKind": "simulated"
+    },
+    {
+      "id": "I-17",
+      "ac": [
+        "AC-7"
+      ],
+      "category": "persistence",
+      "runner": "spec-003",
+      "sutPaths": [
+        "runtime/",
+        "contracts/",
+        "core/commands/",
+        ".github/workflows/",
+        "governance/gates/",
+        "evaluation/",
+        "knowledge/sdd/templates/",
+        "profiles/",
+        "acceptance/cases/",
+        "AGENTS.md",
+        "specs/001-dependency-graph/acceptance/plan.json",
+        "specs/002-native-acceptance/acceptance/plan.json"
+      ],
+      "expected": "pass",
+      "mandatory": true,
+      "minTier": "restricted",
+      "why": "rollback after an upgrade keeps productDir, governance and every non-platform lock field; the lock stays schema-valid",
+      "realSystemUse": "exercised by the factory and by every adopted consumer through the same platform modules",
+      "intentionalErrors": "none",
+      "limitations": "disposable fixtures (temporary directories and git repositories); no network, no external service",
+      "restore": "each case removes its temporary directories",
+      "executionKind": "simulated"
+    },
+    {
+      "id": "I-18",
+      "ac": [
+        "AC-7"
+      ],
+      "category": "negative",
+      "runner": "spec-003",
+      "sutPaths": [
+        "runtime/",
+        "contracts/",
+        "core/commands/",
+        ".github/workflows/",
+        "governance/gates/",
+        "evaluation/",
+        "knowledge/sdd/templates/",
+        "profiles/",
+        "acceptance/cases/",
+        "AGENTS.md",
+        "specs/001-dependency-graph/acceptance/plan.json",
+        "specs/002-native-acceptance/acceptance/plan.json"
+      ],
+      "expected": "reject",
+      "mandatory": true,
+      "minTier": "restricted",
+      "why": "rollback of a lock outside the schema is refused with the lock bytes and the cache state unchanged",
+      "realSystemUse": "exercised by the factory and by every adopted consumer through the same platform modules",
+      "intentionalErrors": "the input is invalid or tampered on purpose",
+      "limitations": "disposable fixtures (temporary directories and git repositories); no network, no external service",
+      "restore": "each case removes its temporary directories",
+      "executionKind": "simulated"
+    }
+  ]
+}

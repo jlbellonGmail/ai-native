@@ -1,0 +1,128 @@
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { validateContract, nonSutPathErrors, nonSutPlanErrors, inNonSutClass } from "./contract.mjs";
+import { consolidate, toResultStatus, isBlocking } from "./result.mjs";
+
+const runner = (over = {}) => ({ id: "unit", executable: "node", argv: ["--test", "tests/"], cwd: ".", format: "node-test", timeoutMs: 60000, isolation: "restricted", env: ["PATH"], ...over });
+const contract = (over = {}) => ({ schemaVersion: 1, minObservedCases: 1, runners: [runner()], ...over });
+
+test("a well formed contract validates; no command strings exist", () => {
+  assert.equal(validateContract(contract()).ok, true);
+  assert.equal(validateContract(contract({ runners: [{ ...runner(), command: "npm test" }] })).ok, false);
+});
+
+test("shell, inline script, substitution and path escape are rejected", () => {
+  const bad = (r) => validateContract(contract({ runners: [runner(r)] }));
+  assert.match(bad({ executable: "bash", argv: ["-c", "x"] }).errors.join(), /not an allowed identity|is a shell/);
+  assert.match(bad({ executable: "powershell.exe" }).errors.join(), /shell/);
+  assert.match(bad({ argv: ["-e", "0"] }).errors.join(), /inline script/);
+  assert.match(bad({ argv: ["--eval", "0"] }).errors.join(), /inline script/);
+  assert.match(bad({ argv: ["$(whoami)"] }).errors.join(), /substitution/);
+  assert.match(bad({ argv: ["../outside"] }).errors.join(), /path escape/);
+  assert.match(bad({ executable: "$NODE" }).errors.join(), /schema/);
+  assert.match(bad({ cwd: "../x" }).errors.join(), /schema|escapes/);
+  assert.match(bad({ env: ["API_TOKEN"] }).errors.join(), /secret-like/);
+  // independent review F1/F5/F11: every spelling of inline code, preloads and permission switches is refused
+  for (const a of ["--eval=console.log(1)", "-pe", "--print=1", "--import=data:text/javascript,1", "-r", "--require=./x.cjs", "--allow-fs-read=*", "--allow-child-process", "--allow-addons", "--inspect", "--env-file=.env", "--experimental-loader=x", "--input-type=module"]) {
+    assert.ok(bad({ argv: [a, "tests/x.mjs"] }).errors.length > 0, a);
+  }
+  assert.equal(bad({ argv: ["--test", "--test-reporter=tap", "tests/x.mjs"] }).errors.length, 0);
+  assert.match(bad({ executable: "python" }).errors.join(), /not an allowed host identity/);
+  assert.match(bad({ executable: "pytest" }).errors.join(), /not an allowed host identity/);
+  assert.match(bad({ executable: "tools/sh" }).errors.join(), /is a shell/);
+});
+
+test("network and container rules", () => {
+  const img = "reg/x@sha256:" + "a".repeat(64);
+  assert.match(validateContract(contract({ runners: [runner({ isolation: "container", image: "x:latest" })] })).errors.join(), /pinned by digest/);
+  assert.equal(validateContract(contract({ runners: [runner({ isolation: "container", image: img })] })).ok, true);
+  // loopback is refused outright: never mapped to host networking, never cleared by an agent-written field
+  assert.match(validateContract(contract({ runners: [runner({ isolation: "container", image: img, network: "loopback", networkApproval: "REVIEW-1" })] })).errors.join(), /not supported.*never host networking/);
+  assert.match(validateContract(contract({ runners: [runner({ network: "none" })] })).errors.join(), /container tier/);
+  assert.match(validateContract(contract({ runners: [runner(), runner()] })).errors.join(), /duplicate runner id/);
+});
+
+test("non-SUT class: wildcards, source roots and control-plane are rejected (RF-34)", () => {
+  for (const g of ["**", "*", "src/**", "runtime/**", ".github/**", "governance/**", "governance/gates/gates.json", "knowledge/**", "knowledge/sdd/templates/x.md", "contracts/**", "a/b.md"]) {
+    assert.ok(nonSutPathErrors([g]).length > 0, `should reject ${g}`);
+  }
+  for (const g of ["docs/**", "specs/001/**/notes.md", "README.md", "governance/execution/**"]) assert.deepEqual(nonSutPathErrors([g]), [], g);
+  const c = contract({ nonSutPaths: ["docs/**"] });
+  assert.equal(inNonSutClass(c, "docs/guide/a.md"), true);
+  assert.equal(inNonSutClass(c, "src/a.py"), false);
+});
+
+test("non-SUT class may not swallow SUT inputs, datasets, plans or the contract", () => {
+  const plan = { cases: [{ sutPaths: ["docs/api/openapi.json"] }], datasets: [{ path: "specs/f/acceptance/data.json" }] };
+  assert.match(nonSutPlanErrors({ contract: contract({ nonSutPaths: ["docs/**"] }), plan }).join(), /docs\/api\/openapi\.json/);
+  assert.match(nonSutPlanErrors({ contract: contract({ nonSutPaths: ["specs/**"] }), plan }).join(), /plan|specs\/f/);
+  assert.deepEqual(nonSutPlanErrors({ contract: contract({ nonSutPaths: ["docs/guide/**"] }), plan }), []);
+});
+
+test("result mapping (RF-29) and fail-closed consolidation", () => {
+  assert.deepEqual(["PASS", "FAIL", "BLOCKED", "STALE", "NOT_RUN", "NOT_APPLICABLE", "bogus"].map(toResultStatus), ["PASS", "FAIL", "ERROR", "ERROR", "ERROR", "NOT_APPLICABLE", "ERROR"]);
+  for (const s of ["BLOCKED", "STALE", "NOT_RUN", "FAIL"]) assert.equal(isBlocking(s), true);
+  assert.equal(isBlocking("PASS"), false);
+  assert.equal(consolidate([]).status, "BLOCKED");
+  assert.equal(consolidate([{ id: "a", status: "PASS" }]).status, "PASS");
+  assert.equal(consolidate([{ id: "a", status: "PASS" }, { id: "b", status: "STALE" }]).status, "STALE");
+  assert.equal(consolidate([{ id: "a", status: "PASS" }, { id: "b", status: "NOT_RUN" }]).status, "NOT_RUN");
+  assert.equal(consolidate([{ id: "a", status: "BLOCKED" }, { id: "b", status: "FAIL" }]).status, "FAIL");
+  assert.equal(consolidate([{ id: "a", status: "PASS" }, { id: "b", status: "NOT_APPLICABLE" }]).status, "PASS");
+  assert.equal(consolidate([{ id: "a", status: "NOT_APPLICABLE" }]).status, "BLOCKED");
+  assert.equal(consolidate([{ id: "a", status: "weird" }]).status, "BLOCKED");
+  const pend = consolidate([{ id: "a", status: "PASS" }], { pending: ["NOT_APPLICABLE_PENDING_APPROVAL"] });
+  assert.equal(pend.status, "BLOCKED");
+  assert.deepEqual(pend.pending, ["NOT_APPLICABLE_PENDING_APPROVAL"]);
+  assert.equal(pend.resultStatus, "ERROR");
+});
+
+test("independent re-review N2/N3: container bare names are an allowlist; cwd/readPaths never name the git directory", () => {
+  const img = "reg/x@sha256:" + "c".repeat(64);
+  const bad = (r) => validateContract(contract({ runners: [runner({ isolation: "container", image: img, ...r })] }));
+  for (const exe of ["busybox", "env", "nodejs", "perl", "ruby", "docker"]) assert.match(bad({ executable: exe, argv: ["x"] }).errors.join(), /not an allowed image identity/, exe);
+  for (const exe of ["node", "python", "python3", "pytest"]) assert.equal(bad({ executable: exe, argv: exe === "node" ? ["--test", "tests/"] : ["tests/"] }).errors.length, 0, exe);
+  assert.match(bad({ executable: "python3", argv: ["-c", "print(1)"] }).errors.join(), /not an allowed python3 flag/);
+  assert.match(validateContract(contract({ runners: [runner({ cwd: ".git" })] })).errors.join(), /cwd names the git directory/);
+  assert.match(validateContract(contract({ runners: [runner({ cwd: "sub/.GIT/x" })] })).errors.join(), /cwd names the git directory/);
+  assert.match(validateContract(contract({ runners: [runner({ executable: "sub/.git/hooks/x" })] })).errors.join(), /inside the git directory/);
+});
+
+test("audit N-57: python -m only runs a test-runner module; pytest and unittest flags are allowlists (002 RF-8)", () => {
+  const img = "reg/x@sha256:" + "d".repeat(64);
+  const errs = (executable, argv) => validateContract(contract({ runners: [runner({ isolation: "container", image: img, executable, argv })] })).errors.join();
+  for (const mod of ["timeit", "runpy", "code", "pdb", "http.server", "pip"]) assert.match(errs("python3", ["-m", mod, "import os"]), /not an allowed test-runner module/, mod);
+  assert.match(errs("python3", ["-m"]), /not an allowed test-runner module/);
+  assert.match(errs("python3", ["-c", "print(1)"]), /not an allowed python3 flag/);
+  assert.match(errs("python3", ["-B"]), /no script or test-runner module/);
+  for (const f of ["-p", "-o", "-c", "--pyargs", "--rootdir=/", "--import-mode=append", "--override-ini=x=y", "--confcutdir=/"]) {
+    assert.match(errs("pytest", [f, "x", "tests/"]), /not an allowed pytest flag/, `pytest ${f}`);
+    assert.match(errs("python3", ["-m", "pytest", f, "x", "tests/"]), /not an allowed pytest flag/, `python -m pytest ${f}`);
+  }
+  // a boolean flag never consumes the next token: `-s -p x` still refuses -p
+  assert.match(errs("pytest", ["-s", "-p", "evil", "tests/"]), /not an allowed pytest flag/);
+  assert.match(errs("python3", ["-m", "unittest", "-c", "x"]), /not an allowed unittest flag/);
+  for (const ok of [["pytest", ["-q", "-x", "-k", "not slow", "--tb=short", "tests/"]], ["python3", ["-I", "-m", "pytest", "-v", "-rA", "tests/"]], ["python3", ["-m", "unittest", "discover", "-s", "tests", "-p", "test_*.py"]], ["python3", ["tests/run.py", "--fast"]]]) {
+    assert.equal(errs(...ok), "", JSON.stringify(ok));
+  }
+});
+
+test("002 RF-17: configuration files must be non-secret repository files; env values only for allowlisted non-secret names", () => {
+  const bad = (r) => validateContract(contract({ runners: [runner(r)] })).errors.join();
+  assert.equal(bad({ configFiles: ["package.json", "config/app.toml"], env: ["PATH", "TZ"], envValues: ["TZ"] }), "");
+  for (const f of [".env", "config/.env.local", "certs/server.key", "deploy/secrets.json", ".npmrc", "keys/id_rsa"]) assert.match(bad({ configFiles: [f] }), /secret-like/, f);
+  assert.match(bad({ configFiles: [".git/config"] }), /git directory/);
+  assert.match(bad({ configFiles: ["../outside.json"] }), /schema|escapes/);
+  assert.match(bad({ envValues: ["TZ"] }), /not in the environment allowlist/);
+  assert.match(bad({ env: ["PATH", "DB_PASSWORD"], envValues: ["DB_PASSWORD"] }), /secret-like/);
+});
+
+test("pytest may write JUnit only to the runner-owned result file", () => {
+  const errs = (argv, over = {}) => validateContract(contract({ runners: [runner({ executable: "venv/bin/python", argv, format: "junit", resultFile: "junit.xml", ...over })] })).errors.join();
+  assert.equal(errs(["-m", "pytest", "-q", "--junitxml={resultFile}", "tests/pilot/"]), "");
+  for (const f of ["--junitxml=report.xml", "--junitxml=/tmp/x.xml", "--junitxml=/dev/stdout", "--junit-xml={resultFile}"]) assert.match(errs(["-m", "pytest", f, "tests/"]), /not an allowed pytest flag/, f);
+  const { resultFile: _omit, ...noResult } = runner({ executable: "venv/bin/python", argv: ["-m", "pytest", "--junitxml={resultFile}", "tests/"], format: "junit" });
+  assert.match(validateContract(contract({ runners: [noResult] })).errors.join(), /no resultFile is declared/);
+  assert.match(errs(["-m", "pytest", "tests/"]), /no argv token writes it/);
+  assert.match(errs(["-m", "pytest", "--junitxml={resultFile}", "tests/"], { resultFile: "../x.xml" }), /schema/);
+});

@@ -45,7 +45,7 @@ audit/       audit method and profiles (engine in runtime/audit/)
 scripts/     repository utility scripts
 ```
 
-Control plane (forces a neutral trust-gate and human review, see `governance/gates/gates.json`): `.github/**`, `governance/gates/**`, `governance/rulesets/**`, `runtime/gates/**`, `core/security-policy.json`, `contracts/**`, `AGENTS.md`, `CLAUDE.md`. The agent never merges PRs with the owner credentials (`governance/security/HITL-MERGE-POLICY.md`).
+Control plane (forces a neutral trust-gate and human review, see `governance/gates/gates.json`): `.github/**`, `governance/gates/**`, `governance/rulesets/**`, `runtime/gates/**`, `runtime/acceptance/**`, `runtime/policy/hitl.mjs`, `core/security-policy.json`, `contracts/**`, `AGENTS.md`, `CLAUDE.md`. The agent never merges PRs with the owner credentials (`governance/security/HITL-MERGE-POLICY.md`).
 
 The factory is not a generated project. Rules for generated projects live in the project template and are copied into each project. Changing the factory `AGENTS.md` does not change the generated-project template, and the reverse. If a task affects generated-project behavior, verify the template and generator path, not only the factory files. A generated project is self-contained: it must not need the factory workspace to understand its own rules.
 

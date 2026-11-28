@@ -9,10 +9,11 @@ import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { assess } from "../circuit/assess.mjs";
 import { classifyPaths, loadGateConfig } from "../gates/control-plane.mjs";
+import { detectDowngrades } from "../acceptance/downgrade.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const PLATFORM_ROOT = join(here, "..", "..");
-const KNOWN = new Set(["risk", "humanGate", "autonomy", "controlPlane", "release", "production", "security"]);
+const KNOWN = new Set(["risk", "humanGate", "autonomy", "controlPlane", "release", "production", "security", "acceptanceGovernance"]);
 export const ENVIRONMENTS = ["development", "release", "production"];
 
 export const loadHitlPolicy = (root = PLATFORM_ROOT) => JSON.parse(readFileSync(join(root, "contracts", "hitl-policy.json"), "utf8"));
@@ -54,7 +55,7 @@ export function assertHumanGate(unit, policy) {
  *          environment?:string, allowNone?:boolean}} input
  * No changed paths means the change cannot be assessed: risk is `medium` (never `none`, never silently low).
  */
-export function deriveHumanGate({ changedPaths = [], declared = {}, controlPlanePatterns = [], environment = "development", allowNone = false }, policy = loadHitlPolicy()) {
+export function deriveHumanGate({ changedPaths = [], declared = {}, controlPlanePatterns = [], environment = "development", allowNone = false, acceptanceFindings = [] }, policy = loadHitlPolicy()) {
   if (!ENVIRONMENTS.includes(environment)) return { ok: false, gate: "required", risk: "high", reasons: [`unknown environment: ${environment}`] };
   const assessed = changedPaths.length ? assess(changedPaths) : null;
   const risk = assessed ? assessed.risk.toLowerCase() : "medium";
@@ -64,13 +65,17 @@ export function deriveHumanGate({ changedPaths = [], declared = {}, controlPlane
     release: environment === "release",
     production: environment === "production",
     security: Boolean(assessed?.signals.some((s) => s.code === "sensitive-or-data")),
+    ...(acceptanceFindings.length ? { acceptanceGovernance: true } : {}),
   };
   if (declared.humanGate !== undefined) facts.humanGate = declared.humanGate;
   if (declared.autonomy !== undefined) facts.autonomy = declared.autonomy;
   if (facts.humanGate === "none" && !allowNone) {
     return { ok: false, gate: "required", risk, reasons: ["human_gate none is not allowed by this repository's policy (opt in with governance.allowNone in ai-native.lock.json on the base branch)"] };
   }
-  return { ...resolveHumanGate(facts, policy), risk };
+  const resolved = resolveHumanGate(facts, policy);
+  // every acceptance governance finding is listed (review packet / evidence), 002 RF-25
+  if (acceptanceFindings.length) resolved.reasons = [...resolved.reasons, ...acceptanceFindings.map((f) => `acceptance governance: ${f.kind} ${f.detail}`)];
+  return { ...resolved, risk, ...(acceptanceFindings.length ? { acceptanceFindings } : {}) };
 }
 
 const DECLARATION = (key) => new RegExp(`^[ \\t>*-]*${key}:[ \\t]*([A-Za-z-]+)`, "im");
@@ -94,7 +99,7 @@ function git(cwd, args) {
  * (or the default) is evaluated against facts derived from the whole change. No spec = one anonymous unit, defaults only.
  * @returns {{ok:boolean, units:{unit:string, ok:boolean, gate:string, risk:string, reasons:string[]}[]}}
  */
-export function checkHumanGate({ project, changedPaths, base = null, allowNone = false, environment = "development", controlPlanePatterns = null, requireGateConfig = false, policy = loadHitlPolicy() }) {
+export function checkHumanGate({ project, changedPaths, base = null, allowNone = false, environment = "development", controlPlanePatterns = null, requireGateConfig = false, policy = loadHitlPolicy(), acceptanceFindings = null }) {
   let patterns = controlPlanePatterns;
   if (patterns === null) {
     try {
@@ -110,8 +115,49 @@ export function checkHumanGate({ project, changedPaths, base = null, allowNone =
   const specs = changedPaths.filter((p) => /^specs\/[^/]+\/spec\.md$/.test(p));
   const declared = specs.map((p) => ({ unit: p, declaration: existsSync(join(project, p)) ? readDeclaration(readFileSync(join(project, p), "utf8")) : {} }));
   if (!declared.length) declared.push({ unit: "(change)", declaration: {} });
-  const units = declared.map(({ unit, declaration }) => ({ unit, ...deriveHumanGate({ changedPaths, declared: declaration, controlPlanePatterns: patterns, environment, allowNone }, policy) }));
+  const findings = acceptanceFindings ?? (base ? acceptanceFindingsAgainstBase(project, base, changedPaths) : []);
+  const units = declared.map(({ unit, declaration }) => ({ unit, ...deriveHumanGate({ changedPaths, declared: declaration, controlPlanePatterns: patterns, environment, allowNone, acceptanceFindings: findingsFor(unit, findings) }, policy) }));
   return { ok: units.every((u) => u.ok), units };
+}
+
+/** Findings that concern a unit: its own feature's, plus project-wide (contract, cutoff) findings. */
+const findingsFor = (unit, findings) => findings.filter((f) => !f.slug || unit === "(change)" || unit === `specs/${f.slug}/spec.md`);
+
+const readJsonText = (t) => {
+  if (t === null || t === undefined) return null;
+  try { return JSON.parse(t); } catch { return { __invalid: true }; }
+};
+
+/**
+ * 002 RF-25 early feedback: BASE vs candidate acceptance governance data, read as data (git show / file read),
+ * never executed. This runs candidate-branch platform code in ci.yml and is NOT the trusted verdict.
+ */
+export function acceptanceFindingsAgainstBase(project, base, changedPaths) {
+  const CONTRACT = "acceptance/validation-contract.json";
+  const CUTOFF = "acceptance/legacy-cutoff.json";
+  const atBase = (p) => git(project, ["show", `${base}:${p}`]);
+  const atHead = (p) => (existsSync(join(project, p)) ? readFileSync(join(project, p), "utf8") : null);
+  const MANIFEST = "acceptance/dependency-manifest.json";
+  const relevant = changedPaths.filter((p) => p === CONTRACT || p === CUTOFF || p === MANIFEST || /^specs\/[^/]+\/(spec\.md|acceptance\/plan\.json)$/.test(p));
+  if (!relevant.length) return [];
+  const out = [];
+  const baseSpecs = git(project, ["ls-tree", "-d", "--name-only", `${base}:specs`]);
+  const specSlugs = baseSpecs === null ? [] : baseSpecs.split(/\r?\n/).filter(Boolean).map((p) => p.replace(/^specs\//, ""));
+  // features whose acceptance was established at BASE (plan present) may not be moved into a new cutoff
+  const basePlans = git(project, ["ls-tree", "-r", "--name-only", base, "--", "specs"]);
+  const establishedSlugs = (basePlans ?? "").split(/\r?\n/).map((p) => /^specs\/([^/]+)\/acceptance\/plan\.json$/.exec(p)?.[1]).filter(Boolean);
+  const shared = { contract: readJsonText(atBase(CONTRACT)), cutoff: readJsonText(atBase(CUTOFF)), manifest: readJsonText(atBase(MANIFEST)), specSlugs, establishedSlugs };
+  const sharedHead = { contract: readJsonText(atHead(CONTRACT)), cutoff: readJsonText(atHead(CUTOFF)), manifest: readJsonText(atHead(MANIFEST)) };
+  const slugs = [...new Set(relevant.map((p) => /^specs\/([^/]+)\//.exec(p)?.[1]).filter(Boolean))].sort();
+  const project_wide = detectDowngrades({ ...shared, plan: null, specText: null }, { ...sharedHead, plan: null, specText: null }).findings;
+  out.push(...project_wide);
+  for (const slug of slugs) {
+    const b = { ...shared, plan: readJsonText(atBase(`specs/${slug}/acceptance/plan.json`)), specText: atBase(`specs/${slug}/spec.md`) };
+    const c = { ...sharedHead, plan: readJsonText(atHead(`specs/${slug}/acceptance/plan.json`)), specText: atHead(`specs/${slug}/spec.md`) };
+    const own = detectDowngrades({ ...b, contract: b.contract, cutoff: null }, { ...c, cutoff: null }).findings.filter((f) => !project_wide.some((g) => g.kind === f.kind && g.detail === f.detail));
+    out.push(...own.map((f) => ({ ...f, slug })));
+  }
+  return out;
 }
 
 /** Repo policy comes from the pinned profile, never from the project's own files. */

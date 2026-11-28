@@ -199,6 +199,11 @@ jobs:
         shell: bash
         run: node --test runtime/policy/*.test.mjs
 
+      - name: runtime/acceptance tests (v4.1.0 Native Acceptance, specs 001-003)
+        shell: bash
+        # bounded: a hung test fails with its own name instead of holding the job until its timeout
+        run: node --test --test-timeout=300000 --test-reporter=spec runtime/acceptance/*.test.mjs
+
       - name: Policies on the real change (constitution, human gate derived from the diff)
         shell: bash
         run: |
@@ -286,3 +291,39 @@ jobs:
       - name: L1 evaluation suite against the real circuit code (M4.6)
         shell: bash
         run: node runtime/evals/cli.mjs l1
+
+  # 002 RF-31: re-run the mandatory acceptance cases of every changed feature in a fresh checkout of the evaluated
+  # commit, with no credentials and a read-only token, and keep each runner's RAW structured output as an artifact.
+  # This job runs candidate code, so it never decides: the trusted `acceptance-analyze` job of merge-gate.yml
+  # (default branch code) derives the result from these bytes and binds it to this run id and head SHA.
+  acceptance-closure:
+    name: acceptance-closure
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout the evaluated commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Setup Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24"
+      - name: Re-run changed features' acceptance (raw output only)
+        shell: bash
+        env:
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: |
+          git fetch --no-tags origin "+refs/heads/${BASE_REF}:refs/remotes/origin/${BASE_REF}"
+          node runtime/acceptance/ci-closure.mjs --base "origin/${BASE_REF}" --out acceptance-closure
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: acceptance-closure
+          path: acceptance-closure/
+          retention-days: 30
+          if-no-files-found: error

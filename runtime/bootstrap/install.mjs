@@ -43,7 +43,8 @@ export function readLock(projectRoot) {
 }
 
 export function canonical(lock) {
-  const order = ["schemaVersion", "platform", "profiles", "mcpProfiles", "packs", "overrides"];
+  // contracts/lock.schema.json order; every schema field is kept (spec 003 RF-22, audit F-006)
+  const order = ["schemaVersion", "platform", "profiles", "productDir", "governance", "mcpProfiles", "packs", "overrides"];
   const p = lock.platform;
   const out = {};
   for (const key of order) {

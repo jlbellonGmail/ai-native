@@ -1,0 +1,244 @@
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { analyze, CLOSURE_WORKFLOW } from "./verdict.mjs";
+import { closureRun } from "./ci-closure.mjs";
+import { makeConsumer, git, put, SLUG, GOOD_SRC, CONTRACT } from "./acceptance.fixture.mjs";
+
+const commitAll = (dir, msg) => { git(dir, "add", "-A"); git(dir, "commit", "-qm", msg); return git(dir, "rev-parse", "HEAD"); };
+const runOf = (head, over = {}) => ({ path: CLOSURE_WORKFLOW, event: "pull_request", headSha: head, id: 1, attempt: 1, ...over });
+// the producer's job-log anchors (one line per runner output, digest computed in memory)
+const closeLog = async (dir, out) => (await closureRun({ project: dir, base: "main", outDir: out, log: () => {} })).anchors.join("\n");
+
+test("analyze reads the candidate as Git objects; a candidate that rewrites the detector still gets the trusted verdict", () => {
+  const dir = makeConsumer();
+  try {
+    const base = commitAll(dir, "feature with acceptance");
+    // candidate: weaken the plan AND ship a "detector" that would always pass if it were executed
+    const plan = JSON.parse(readFileSync(join(dir, `specs/${SLUG}/acceptance/plan.json`), "utf8"));
+    plan.cases[0].mandatory = false;
+    put(dir, `specs/${SLUG}/acceptance/plan.json`, JSON.stringify(plan));
+    put(dir, "runtime/acceptance/downgrade.mjs", "export const detectDowngrades = () => ({ findings: [] });\n");
+    put(dir, "runtime/policy/hitl.mjs", "export const x = 1;\n");
+    put(dir, ".github/workflows/merge-gate.yml", "on: push\n");
+    const head = commitAll(dir, "silent downgrade");
+    const v = analyze({ repo: dir, base, head });
+    assert.ok(v.findings.some((f) => f.kind === "MANDATORY_LOWERED"));
+    assert.equal(v.headSha, head);
+    // a changed feature without the CI closure artifact of this head is never PASS (002 RF-31)
+    assert.equal(v.status, "BLOCKED");
+    assert.match(v.reasons.join(), /no CI closure artifact/);
+    // the working tree is irrelevant: only the head SHA's objects are read
+    put(dir, `specs/${SLUG}/acceptance/plan.json`, "{ broken");
+    assert.ok(analyze({ repo: dir, base, head }).findings.some((f) => f.kind === "MANDATORY_LOWERED"));
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("a change outside every plan's inputs is PASS; touching a declared input needs the closure; malformed SHAs and invalid data are BLOCKED", () => {
+  const dir = makeConsumer();
+  try {
+    const base = commitAll(dir, "base feature");
+    put(dir, "tools/unrelated.mjs", "export const x = 1;\n");
+    const head = commitAll(dir, "unrelated tooling");
+    assert.equal(analyze({ repo: dir, base, head }).status, "PASS");
+    // review finding 2: refactoring the feature's code (an input of its cases) is never PASS without a closure
+    put(dir, "src/slugify.mjs", `${readFileSync(join(dir, "src/slugify.mjs"), "utf8")}// refactor\n`);
+    const refactor = commitAll(dir, "refactor");
+    assert.equal(analyze({ repo: dir, base, head: refactor }).status, "BLOCKED");
+    assert.equal(analyze({ repo: dir, base: "main", head }).status, "BLOCKED");
+    put(dir, "acceptance/validation-contract.json", "{ not json");
+    const bad = commitAll(dir, "broken contract");
+    assert.equal(analyze({ repo: dir, base, head: bad }).status, "BLOCKED");
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("002 RF-31: the closure is derived by trusted code from the CI raw output; FAIL, tampering and a foreign run never pass", async () => {
+  const dir = makeConsumer({ buggy: true });
+  const out = mkdtempSync(join(tmpdir(), "closure-"));
+  try {
+    const base = git(dir, "rev-parse", "main");
+    const head = commitAll(dir, "feature with a seeded defect");
+    const logA = await closeLog(dir, out);
+    const failed = analyze({ repo: dir, base, head, closureDir: out, closureLog: logA, run: runOf(head) });
+    assert.equal(failed.closure.features[0].status, "FAIL");
+    assert.equal(failed.status, "FAIL");
+
+    // audit N-58 (fifth review R5-8): a changed producer is a human finding, never a way out of FAIL or BLOCKED
+    put(dir, "runtime/acceptance/ci-closure.mjs", "// candidate producer next to a failing feature\n");
+    const evilFail = commitAll(dir, "producer changed next to a failing feature");
+    const vf = analyze({ repo: dir, base, head: evilFail, closureDir: out, closureLog: logA, run: runOf(evilFail) });
+    assert.equal(vf.status, "FAIL", JSON.stringify(vf.closure));
+    assert.ok(vf.findings.some((f) => f.kind === "CLOSURE_PRODUCER_CHANGED"), JSON.stringify(vf.findings));
+    const vb = analyze({ repo: dir, base, head: evilFail, closureDir: out, closureLog: null, run: runOf(evilFail) });
+    assert.equal(vb.status, "BLOCKED", "without the producing job's log the closure stays BLOCKED");
+    git(dir, "reset", "-q", "--hard", head);
+
+    put(dir, "src/slugify.mjs", GOOD_SRC);
+    const fixedHead = commitAll(dir, "fix");
+    const out2 = mkdtempSync(join(tmpdir(), "closure-"));
+    const logB = await closeLog(dir, out2);
+    const ok = analyze({ repo: dir, base, head: fixedHead, closureDir: out2, closureLog: logB, run: runOf(fixedHead) });
+    assert.equal(ok.closure.features[0].status, "PASS", JSON.stringify(ok.closure));
+    // a new contract is a governance finding: the human still decides, the closure itself passed
+    assert.equal(ok.status, "NEEDS_HUMAN");
+    // review finding 5: a closure that did not run in the container tier is a human finding, never a silent PASS
+    assert.ok(ok.findings.some((f) => f.kind === "CLOSURE_NOT_ISOLATED" && f.slug === SLUG), JSON.stringify(ok.findings));
+
+    // another workflow, another event or another SHA is never the producing run
+    for (const run of [runOf(fixedHead, { path: ".github/workflows/evil.yml" }), runOf(fixedHead, { event: "push" }), runOf(head)]) {
+      assert.equal(analyze({ repo: dir, base, head: fixedHead, closureDir: out2, closureLog: logB, run }).status, "BLOCKED");
+    }
+    // raw output edited after the run (digest mismatch) or a forged all-ok TAP with the wrong digest: BLOCKED
+    const rawFile = join(out2, SLUG, "unit.out");
+    writeFileSync(rawFile, readFileSync(rawFile, "utf8").replace("not ok", "ok"));
+    writeFileSync(rawFile, `${readFileSync(rawFile, "utf8")}\n`);
+    assert.equal(analyze({ repo: dir, base, head: fixedHead, closureDir: out2, closureLog: logB, run: runOf(fixedHead) }).status, "BLOCKED");
+    rmSync(out2, { recursive: true, force: true });
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+    rmSync(out, { recursive: true, force: true });
+  }
+});
+
+test("independent re-review N5: candidate-changed closure producer, a forged tier or an invalid plan never close acceptance", async () => {
+  const dir = makeConsumer();
+  const out = mkdtempSync(join(tmpdir(), "closure-"));
+  try {
+    const base = git(dir, "rev-parse", "main");
+    const head = commitAll(dir, "feature");
+    const logC = await closeLog(dir, out);
+    assert.equal(analyze({ repo: dir, base, head, closureDir: out, closureLog: logC, run: runOf(head) }).closure.features[0].status, "PASS");
+
+    // the recorded tier is metadata written by the candidate job: it must equal the contract's tier
+    const metaFile = join(out, SLUG, "unit.json");
+    const meta = JSON.parse(readFileSync(metaFile, "utf8"));
+    writeFileSync(metaFile, JSON.stringify({ ...meta, tier: "container" }));
+    const forged = analyze({ repo: dir, base, head, closureDir: out, closureLog: logC, run: runOf(head) });
+    assert.equal(forged.closure.features[0].status, "BLOCKED");
+    assert.match(JSON.stringify(forged.closure), /recorded isolation tier differs/);
+    writeFileSync(metaFile, JSON.stringify(meta));
+
+    // the plan is re-judged by the analyzer: dropping a criterion the spec declares is BLOCKED with the old artifact
+    const planFile = join(dir, `specs/${SLUG}/acceptance/plan.json`);
+    const plan = JSON.parse(readFileSync(planFile, "utf8"));
+    plan.criteria = plan.criteria.slice(1);
+    put(dir, `specs/${SLUG}/acceptance/plan.json`, JSON.stringify(plan));
+    const badPlan = commitAll(dir, "plan drops a criterion");
+    const judged = analyze({ repo: dir, base, head: badPlan, closureDir: out, closureLog: logC, run: runOf(badPlan) });
+    assert.equal(judged.status, "BLOCKED");
+    assert.match(JSON.stringify(judged.closure), /plan: /);
+
+    // a candidate that changes the closure producer (ci-closure.mjs or its imports, or ci.yml) cannot close
+    git(dir, "reset", "-q", "--hard", head);
+    put(dir, "runtime/acceptance/ci-closure.mjs", "// candidate producer that writes an all-pass artifact\n");
+    const evil = commitAll(dir, "rewrite the producer");
+    const v = analyze({ repo: dir, base, head: evil, closureDir: out, closureLog: logC, run: runOf(evil) });
+    // audit N-58: never PASS, and a human path exists (NEEDS_HUMAN), instead of a BLOCKED nobody can clear
+    assert.notEqual(v.status, "PASS");
+    assert.equal(v.status, "NEEDS_HUMAN");
+    assert.ok(v.findings.some((f) => f.kind === "CLOSURE_PRODUCER_CHANGED" && /^runtime\/acceptance\/ci-closure\.mjs differs from BASE/.test(f.detail)), JSON.stringify(v.findings));
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+    rmSync(out, { recursive: true, force: true });
+  }
+});
+
+test("002 RF-32 at merge: a criterion with only passing cases is BLOCKED by the trusted closure (seeded-failure history is not verifiable)", async () => {
+  const dir = makeConsumer();
+  const out = mkdtempSync(join(tmpdir(), "closure-"));
+  try {
+    const base = git(dir, "rev-parse", "main");
+    // AC-2's rejection cases now claim a seeded-failure run instead: valid locally, not at merge
+    const planFile = join(dir, `specs/${SLUG}/acceptance/plan.json`);
+    const plan = JSON.parse(readFileSync(planFile, "utf8"));
+    for (const k of plan.cases) if (k.ac.includes("AC-2")) { k.expected = "pass"; k.seededFailure = { note: "run recorded locally" }; }
+    put(dir, `specs/${SLUG}/acceptance/plan.json`, JSON.stringify(plan));
+    const head = commitAll(dir, "AC-2 without a rejection-expecting case");
+    const logD = await closeLog(dir, out);
+    const v = analyze({ repo: dir, base, head, closureDir: out, closureLog: logD, run: runOf(head) });
+    assert.equal(v.closure.features[0].status, "BLOCKED");
+    assert.match(JSON.stringify(v.closure), /RF-32: AC-2 has no rejection-expecting mandatory case/);
+    assert.doesNotMatch(JSON.stringify(v.closure), /RF-32: AC-1/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+    rmSync(out, { recursive: true, force: true });
+  }
+});
+
+test("candidate code next to the closure: outputs must be anchored exactly once in the producing job log", async () => {
+  const dir = makeConsumer();
+  const out = mkdtempSync(join(tmpdir(), "closure-"));
+  try {
+    const base = git(dir, "rev-parse", "main");
+    const head = commitAll(dir, "feature");
+    const log = await closeLog(dir, out);
+    assert.match(log, /^ACCEPTANCE_RAW_DIGEST \{"slug":".+","runnerId":"unit","digest":"sha256:[0-9a-f]{64}"\}$/m);
+    const at = (closureLog) => analyze({ repo: dir, base, head, closureDir: out, closureLog, run: runOf(head) }).closure;
+    assert.equal(at(log).features[0].status, "PASS");
+    // no log, no anchor, a duplicated anchor (another process writing to the job log) or a conflicting one: BLOCKED
+    assert.equal(at(null).status, "BLOCKED");
+    assert.match(JSON.stringify(at("")), /not anchored exactly once in the producing job log \(0 anchor/);
+    assert.match(JSON.stringify(at(`${log}\n${log}`)), /\(2 anchor/);
+    const forged = log.replace(/sha256:[0-9a-f]{64}/, `sha256:${"0".repeat(64)}`);
+    assert.match(JSON.stringify(at(`${forged}\n${log}`)), /\(2 anchor/);
+    // a later process rewrites the artifact consistently (raw + metadata digest): the in-memory anchor still differs
+    const rawFile = join(out, SLUG, "unit.out");
+    const metaFile = join(out, SLUG, "unit.json");
+    const fake = readFileSync(rawFile, "utf8").replace(/^not ok/gm, "ok");
+    writeFileSync(rawFile, `${fake}# tampered\n`);
+    const meta = JSON.parse(readFileSync(metaFile, "utf8"));
+    const { createHash } = await import("node:crypto");
+    writeFileSync(metaFile, JSON.stringify({ ...meta, outputDigest: `sha256:${createHash("sha256").update(`${fake}# tampered\n`).digest("hex")}` }));
+    assert.match(JSON.stringify(at(log)), /not anchored exactly once/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+    rmSync(out, { recursive: true, force: true });
+  }
+});
+
+test("review finding: a code-only change re-closes every feature whose plan declares the path; never PASS without evidence", async () => {
+  const dir = makeConsumer();
+  const out = mkdtempSync(join(tmpdir(), "closure-"));
+  try {
+    commitAll(dir, "feature");
+    git(dir, "branch", "-f", "main", "HEAD");
+    const base = git(dir, "rev-parse", "main");
+    // break only the product code: no file under specs/ changes
+    put(dir, "src/slugify.mjs", `${readFileSync(join(dir, "src/slugify.mjs"), "utf8").replace("toLowerCase()", "toUpperCase()")}`);
+    const head = commitAll(dir, "code-only change");
+    const noArtifact = analyze({ repo: dir, base, head });
+    assert.equal(noArtifact.status, "BLOCKED");
+    assert.match(noArtifact.reasons.join(), /no CI closure artifact/);
+    const log = await closeLog(dir, out);
+    const v = analyze({ repo: dir, base, head, closureDir: out, closureLog: log, run: runOf(head) });
+    assert.equal(v.closure.features[0].slug, SLUG);
+    assert.equal(v.closure.features[0].status, "FAIL");
+    assert.equal(v.status, "FAIL");
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+    rmSync(out, { recursive: true, force: true });
+  }
+});
+
+test("fourth review: a rewritten test script or a changed configuration file re-selects the feature (runner inputs)", () => {
+  const contract = { ...CONTRACT, runners: [{ ...CONTRACT.runners[0], configFiles: ["package.json"] }] };
+  const dir = makeConsumer({ contract });
+  try {
+    put(dir, "package.json", '{"name":"c"}');
+    commitAll(dir, "feature");
+    git(dir, "branch", "-f", "main", "HEAD");
+    const base = git(dir, "rev-parse", "main");
+    // every case prints ok: only the test script changes
+    put(dir, "tests/slugify.acceptance.mjs", 'console.log("TAP version 13\nok 1 - slug-basic\n1..1");\n');
+    const head = commitAll(dir, "rewrite the test script");
+    const v = analyze({ repo: dir, base, head });
+    assert.equal(v.status, "BLOCKED");
+    assert.match(v.reasons.join(), /no CI closure artifact/);
+    git(dir, "reset", "-q", "--hard", base);
+    put(dir, "package.json", '{"name":"c","type":"module"}');
+    const cfg = commitAll(dir, "configuration only");
+    assert.equal(analyze({ repo: dir, base, head: cfg }).status, "BLOCKED");
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});

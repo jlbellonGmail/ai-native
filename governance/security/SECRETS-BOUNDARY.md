@@ -31,6 +31,8 @@ gate. La única defensa preventiva es **no entregar el secreto a esas ejecucione
 | `TRUST_APP_ID`, `TRUST_APP_PRIVATE_KEY` | **Solo** Environment `ai-native-trust`, restringido a `main` | únicamente un job que corre en `main` con `environment: ai-native-trust` |
 | `WORKER_APP_ID`, `WORKER_APP_PRIVATE_KEY` | **En ningún secreto de GitHub** (eliminados del repositorio el 2026-10-04) | nadie desde Actions; la clave la custodia el maintainer fuera de GitHub |
 
+Workflows que referencian `TRUST_APP_*` (test `runtime/gates/secret-exposure.test.mjs`): `trust-gate.yml` y `merge-gate.yml`, exactamente dos. La candidata v4.1.0 (PR #190) **no agrega un tercer poseedor**: el veredicto de aceptación lo produce el job `acceptance-analyze` de `merge-gate.yml` (código de BASE, sin secretos, sin Environment, candidato como objetos Git) y lo publican los jobs ya existentes `merge-gate`/`finalize`, que leen solo ese JSON. El test exige que todo job que nombre un secreto declare `environment: ai-native-trust` y haga checkout solo de la rama por defecto o del SHA de BASE, sin credenciales persistidas; y que `acceptance-analyze` no nombre secretos ni Environment.
+
 * Los secretos de repositorio están **vacíos** (`gh api repos/<repo>/actions/secrets` devuelve `[]`). Un workflow empujado a una rama ya no puede leer ninguna clave de App: el riesgo H1 queda cerrado para `ai-native-trust` y para `ai-native-worker`.
 * `ai-native-trust`: keypair validado localmente contra `GET /app` (HTTP 200, `slug=ai-native-trust`, `id=5170488`). Tres ejecuciones reales de `trust-gate`/`merge-gate` con el Environment (la tercera ya sin fallback de repositorio): `create-github-app-token` PASS y los checks `ai-native/trust-gate` y `ai-native/merge-gate` emitidos por la App 5170488.
 * Causa del 401 `A JSON web token could not be decoded` que apareció al pasar a Environment Secrets: la **carga** de los secretos, no el gate ni el workflow. La recarga byte-safe (`gh secret set TRUST_APP_PRIVATE_KEY --env ai-native-trust < archivo.pem` y `printf '%s' <ID> | gh secret set TRUST_APP_ID --env ai-native-trust`) lo resolvió. No cargar el PEM mediante una tubería de PowerShell.
@@ -45,3 +47,30 @@ gate. La única defensa preventiva es **no entregar el secreto a esas ejecucione
 ## Historia (superseded): pasos que se pidieron al maintainer en 2026-10-03
 
 Rotar la clave de `ai-native-trust`, cargarla como secreto del Environment, borrar los secretos del repositorio y añadir `environment: ai-native-trust` a `trust-gate.yml` y `merge-gate.yml`. Todo ejecutado (ver "Estado vigente"); queda solo la revocación de claves antiguas. La ventana de exposición existió desde el merge de la PR #31 hasta la corrección de `merge-gate.yml`; no hay evidencia de abuso, pero no se puede descartar.
+
+### Triage de code scanning en `l3-consumer.yml` (v4.1.0, PR #190)
+
+* `actions/code-injection` (#57): corregido; el SHA se pasa por `env`, no se interpola en el script (igual en
+  `merge-gate.yml` `human-review`).
+* `actions/untrusted-checkout` (#58-#61): por diseño y sin privilegio. Ningún job del workflow reutilizable tiene
+  secretos ni un Environment privilegiado. `acceptance-human` usa el Environment del consumidor, pero solo para la
+  aprobación y sin checkout. El token es `contents: read` / `actions: read`, con `persist-credentials: false`. El
+  descarte en GitHub es una acción remota que queda para el humano. Justificación por alerta, con las líneas de
+  `a97cc98`:
+  * **#58** (`l3-consumer.yml:201`, job `acceptance-closure`, checkout del head del PR). Es intencional: RF-31
+    exige que el cierre se produzca ejecutando los casos sobre el commit evaluado, como el job `l3` existente
+    (#27 en `main`). El job no publica nada con privilegio. Su artefacto lo lee `acceptance-analyze` como dato
+    acotado (digest más ancla única en el log del job), y un productor cambiado da `CLOSURE_PRODUCER_CHANGED`
+    (humano). En un consumidor, ese humano lo fijan los inputs `acceptance-environment`/`acceptance-reviewers`
+    del caller en el head del PR, el mismo que el candidato puede editar. Por eso depende de la revisión
+    obligatoria de `.github/**` del consumidor (quinta revisión, R5-4). Descarte recomendado: *won't fix*.
+  * **#59** (`:209`, mismo job, checkout de la plataforma). No es código del PR: es el repositorio `platform-repo`
+    en su rama por defecto, fijado luego al commit de confianza verificado como ancestro (`merge-base
+    --is-ancestor`). Descarte recomendado: *false positive*.
+  * **#60** (`:261`, job `acceptance-analyze`, checkout de la plataforma). Igual que #59. El candidato no se
+    ejecuta, se lee como objetos Git y artefacto. Descarte recomendado: *false positive*.
+  * **#61** (`:362`, job `acceptance-governance`, checkout de la plataforma). Igual que #59. Solo decide sobre el
+    veredicto y el registro de aprobación. Descarte recomendado: *false positive*.
+  * **Límite común, ya documentado:** un PR que reescribe su propio workflow llamador puede cambiar
+    `platform-repo`. Eso queda bajo la revisión humana obligatoria de `.github/**` del consumidor (RF-25) y no lo
+    resuelve el descarte.

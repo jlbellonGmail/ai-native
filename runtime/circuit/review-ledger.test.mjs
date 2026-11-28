@@ -35,6 +35,8 @@ function consumer() {
   g(project, "init", "-q", "-b", "develop");
   for (const [k, v] of [["user.name", "t"], ["user.email", "t@example.com"], ["core.autocrlf", "false"], ["commit.gpgsign", "false"]]) g(project, "config", k, v);
   put(project, "docs/guide.md", "base\n");
+  // v4.1.0: this review-mechanics fixture is a legacy feature (v4.0.2 behavior); Native Acceptance has its own tests
+  put(project, "acceptance/legacy-cutoff.json", JSON.stringify({ schemaVersion: 1, slugs: [SLUG] }));
   g(project, "add", "-A");
   g(project, "commit", "-q", "-m", "base");
   g(project, "checkout", "-q", "-b", "feature/001-locales");

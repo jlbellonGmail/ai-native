@@ -42,7 +42,8 @@ export function phasesFor(workUnit, level) {
 
 // `policy` = { declared, environment, allowNone, controlPlanePatterns }: facts for the human gate. Risk is never taken
 // from it: it is derived from signals.changedPaths and, after the work, from agents.verify.changedPaths().
-export async function runCoordinator({ goal, signals = {}, agents, workflow = loadWorkflow(), policy = {}, capability = null, runtimes = loadRuntimeCapabilities() }) {
+// `feature` = { project, slug, base }: the spec folder of a Feature; implementAll runs its Native Acceptance stage (003 RF-19).
+export async function runCoordinator({ goal, signals = {}, agents, workflow = loadWorkflow(), policy = {}, capability = null, runtimes = loadRuntimeCapabilities(), feature = null }) {
   const problems = validateWorkflow(workflow);
   if (problems.length) return { status: "BLOCKED", reason: `invalid workflow contract: ${problems[0]}`, log: [] };
 
@@ -75,9 +76,13 @@ export async function runCoordinator({ goal, signals = {}, agents, workflow = lo
       artifacts.push(produced.artifact);
     }
     if (gate.gate === "required") return { status: "AWAITING_HUMAN_APPROVAL", reason: "human_gate required: a human approves the plan before implementation", gate, classification, log };
+    // a Feature has a spec folder: without it the mandatory acceptance stage cannot run, so the run cannot complete
+    if (phases[0] !== "implement" && !(feature?.project && feature?.slug && feature?.base)) {
+      return { status: "BLOCKED", reason: "feature acceptance stage needs the feature folder: { project, slug, base }", classification, log };
+    }
     hand("implementer", "implement");
     const tasks = phases[0] === "implement" ? [{ id: "T1", title: goal, state: "pending", requirements: [], doneWhen: "acceptance met" }] : parseTasks(await agents.planner.readTasks());
-    const run = await implementAll({ tasks, level, workflow, humanGate: gate, capability, runtimes, ...agents.implementer, ...agents.verify, review: agents.reviewer?.review, fix: agents.implementer.fix });
+    const run = await implementAll({ tasks, level, workflow, humanGate: gate, capability, runtimes, ...agents.implementer, ...agents.verify, review: agents.reviewer?.review, fix: agents.implementer.fix, feature: phases[0] === "implement" ? null : feature });
     log.push({ phase: "implement", status: run.status, completed: run.completed, review: run.outcome?.finalReviewStatus });
     // without an independent approval the work unit is never ready, and the human gate stays required
     if (run.status !== "DONE") return { status: run.status, classification, run, outcome: run.outcome, ...(run.outcome ? { gate: { ...gate, gate: run.outcome.humanGate } } : {}), log };

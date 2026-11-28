@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-native.local/contracts/acceptance-validation-contract.schema.json",
+  "title": "Acceptance validation contract",
+  "description": "Project-owned, versioned list of authorized acceptance runners (spec 002 RF-8, RF-23). No command string is accepted: only a fixed executable identity, an argument vector and a working-directory root. Semantic rules (executable identity, argv safety, non-SUT path class) are enforced by runtime/acceptance/contract.mjs.",
+  "type": "object",
+  "required": ["schemaVersion", "runners", "minObservedCases"],
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "minObservedCases": { "type": "integer", "minimum": 1 },
+    "runners": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "executable", "argv", "cwd", "format", "timeoutMs", "isolation", "env"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]{0,62}$" },
+          "executable": { "type": "string", "pattern": "^[A-Za-z0-9_][A-Za-z0-9_./-]{0,200}$" },
+          "argv": { "type": "array", "items": { "type": "string" } },
+          "cwd": { "type": "string", "pattern": "^[A-Za-z0-9_.][A-Za-z0-9_./-]{0,200}$" },
+          "format": { "type": "string", "enum": ["tap13", "junit", "node-test"] },
+          "timeoutMs": { "type": "integer", "minimum": 1, "maximum": 3600000 },
+          "isolation": { "type": "string", "enum": ["restricted", "node-permission", "container"] },
+          "env": { "type": "array", "items": { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]{0,63}$" } },
+          "network": { "type": "string", "enum": ["none", "loopback"] },
+          "networkApproval": { "type": "string" },
+          "image": { "type": "string" },
+          "readPaths": { "type": "array", "items": { "type": "string" } },
+          "configFiles": { "type": "array", "items": { "type": "string", "pattern": "^[A-Za-z0-9_.][A-Za-z0-9_./-]{0,200}$" } },
+          "envValues": { "type": "array", "items": { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]{0,63}$" } },
+          "resultFile": { "type": "string", "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.-]{0,60}$" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "nonSutPaths": { "type": "array", "items": { "type": "string" } }
+  },
+  "additionalProperties": false
+}

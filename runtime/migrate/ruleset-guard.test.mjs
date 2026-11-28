@@ -8,7 +8,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseJobs, parseTriggers, contextsOfJob, checkRulesetImpact, requiredChecksFrom, fetchRequiredChecks, CODES } from "./ruleset-guard.mjs";
-import { callerWorkflow, L3_CHECK, originRepo, resolveRequiredChecks } from "./migrate.mjs";
+import { callerWorkflow, L3_CHECK, ACCEPTANCE_CHECK, originRepo, resolveRequiredChecks } from "./migrate.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, "..", "..");
@@ -91,12 +91,19 @@ test("fetchRequiredChecks: reads rules, tolerates 'no classic protection', and F
   assert.match(fetchRequiredChecks({ repo: "../etc", branch: "main" }).error, /invalid consumer repo/);
 });
 
-test("L3_CHECK is exactly what the generated caller and the reusable l3-consumer.yml report", () => {
+test("L3_CHECK and ACCEPTANCE_CHECK are exactly what the generated caller and the reusable l3-consumer.yml report", () => {
   const callerJobs = parseJobs(caller.text);
   assert.equal(callerJobs.length, 1);
   const reusable = parseJobs(readFileSync(join(root, ".github", "workflows", "l3-consumer.yml"), "utf8"));
-  assert.equal(reusable.length, 1);
-  assert.equal(L3_CHECK, `${callerJobs[0].id} / ${reusable[0].name ?? reusable[0].id}`);
+  // v4.1.0: the reusable workflow also runs the acceptance jobs; the L3 check is still its `l3` job
+  const l3 = reusable.find((j) => j.id === "l3");
+  const acc = reusable.find((j) => j.id === "acceptance-governance");
+  assert.ok(l3 && acc);
+  assert.equal(L3_CHECK, `${callerJobs[0].id} / ${l3.name ?? l3.id}`);
+  assert.equal(ACCEPTANCE_CHECK, `${callerJobs[0].id} / ${acc.name ?? acc.id}`);
+  assert.deepEqual(reusable.map((j) => j.id).sort(), ["acceptance-analyze", "acceptance-closure", "acceptance-governance", "acceptance-human", "l3"]);
+  // the generated caller grants the read-only permissions the acceptance jobs need, nothing more
+  assert.match(caller.text, /permissions:\n {6}contents: read\n {6}actions: read\n/);
 });
 
 test("resolveRequiredChecks: file, skip and 'no source' (fail closed), independent of the cwd", () => {

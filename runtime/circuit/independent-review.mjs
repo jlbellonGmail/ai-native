@@ -100,6 +100,8 @@ export function isReviewStale(review, currentRevision) {
   return !reviewed || !currentRevision || reviewed !== currentRevision;
 }
 
+const ACCEPTANCE_OK = new Set(["PASS", "NOT_APPLICABLE"]);
+
 const verdictOf = (review) => String(review?.verdict ?? "").toUpperCase();
 
 /**
@@ -110,7 +112,9 @@ const verdictOf = (review) => String(review?.verdict ?? "").toUpperCase();
  * revision withdraws an approval, whatever came first. `validationReviewed` says
  * whether the approving Reviewer was shown the validation runs that count now.
  */
-export function deriveReviewOutcome({ implementation, validation = "NOT_RUN", validationReviewed = true, selfReview = null, independentReview = null, otherReviews = [], capability, currentRevision = null, builderInvocationId = null, policyGate = "required", runtimes = loadRuntimeCapabilities() }) {
+// `acceptance`: the feature's Native Acceptance status (runtime/acceptance/feature.mjs, read from the runner-written ledger);
+// NOT_APPLICABLE for a Task flow or a legacy feature. `acceptancePending`: the only obstacle is a pending N/A or DOWNGRADE approval.
+export function deriveReviewOutcome({ implementation, validation = "NOT_RUN", validationReviewed = true, selfReview = null, independentReview = null, otherReviews = [], capability, currentRevision = null, builderInvocationId = null, policyGate = "required", runtimes = loadRuntimeCapabilities(), acceptance = "NOT_APPLICABLE", acceptancePending = false }) {
   const reasons = [];
   // a self-review never approves; it is reported for what it found, and as STALE once the change moved after it
   const selfStale = Boolean(selfReview && currentRevision && isReviewStale(selfReview, currentRevision));
@@ -147,15 +151,18 @@ export function deriveReviewOutcome({ implementation, validation = "NOT_RUN", va
   else if (adverse) finalReviewStatus = adverse;
   else if (independent !== "PASS") finalReviewStatus = "REVIEW_PENDING";
   else if (validation !== "PASS") finalReviewStatus = "CHANGES_REQUESTED";
+  // 002 RF-35 / 003 RF-19: acceptance not PASS is never approvable; a pending human approval is a human decision
+  else if (!ACCEPTANCE_OK.has(acceptance)) finalReviewStatus = acceptancePending ? "NEEDS_HUMAN_DECISION" : "CHANGES_REQUESTED";
   // the Reviewer approved what it was shown: validation runs it never saw are not part of that approval
   else if (!validationReviewed) finalReviewStatus = "REVIEW_PENDING";
   else finalReviewStatus = "APPROVED";
   if (adverse && independent === "PASS") reasons.push(`a later ${adverse} review of this revision withdraws the approval: fix, validate and review the new revision`);
-  if (finalReviewStatus === "CHANGES_REQUESTED" && independent === "PASS" && !adverse) reasons.push(`validation is ${validation}`);
+  if (finalReviewStatus === "CHANGES_REQUESTED" && independent === "PASS" && !adverse && validation !== "PASS") reasons.push(`validation is ${validation}`);
+  if (!ACCEPTANCE_OK.has(acceptance)) reasons.push(acceptancePending ? `acceptance is ${acceptance}: a NOT_APPLICABLE or DOWNGRADE item is pending human approval` : `acceptance is ${acceptance}`);
   if (finalReviewStatus === "REVIEW_PENDING" && independent === "PASS" && !validationReviewed) reasons.push("the validation runs changed after the review: the Reviewer never saw them, begin a new review");
 
   const humanGate = finalReviewStatus === "APPROVED" ? policyGate : "required";
-  return { implementation, validation, selfReview: selfResult, independentReview: independent, finalReviewStatus, humanGate, reasons };
+  return { implementation, validation, acceptance, selfReview: selfResult, independentReview: independent, finalReviewStatus, humanGate, reasons };
 }
 
 /** Contradictions the outcome must never contain (e.g. APPROVED without an independent review). */
@@ -166,6 +173,7 @@ export function checkOutcomeCoherence(outcome) {
     if (outcome.independentReview !== "PASS") errors.push(`APPROVED requires an independent review PASS, got ${outcome.independentReview}`);
     if (outcome.validation !== "PASS") errors.push(`APPROVED requires validation PASS, got ${outcome.validation}`);
     if (outcome.implementation !== "PASS") errors.push(`APPROVED requires implementation PASS, got ${outcome.implementation}`);
+    if (outcome.acceptance !== undefined && !ACCEPTANCE_OK.has(outcome.acceptance)) errors.push(`APPROVED requires acceptance PASS or NOT_APPLICABLE, got ${outcome.acceptance}`);
     if (ADVERSE_VERDICTS.includes(outcome.selfReview)) errors.push(`APPROVED contradicts a ${outcome.selfReview} self-review of the same revision`);
     if (!["none", "final-only", "required"].includes(outcome.humanGate)) errors.push(`unknown human gate '${outcome.humanGate}'`);
   } else if (outcome?.humanGate !== "required") {
@@ -179,6 +187,7 @@ export function formatReviewOutcome(outcome) {
   return [
     `IMPLEMENTATION: ${outcome.implementation}`,
     `VALIDATION: ${outcome.validation}`,
+    ...(outcome.acceptance !== undefined && outcome.acceptance !== "NOT_APPLICABLE" ? [`ACCEPTANCE: ${outcome.acceptance}`] : []),
     `SELF_REVIEW: ${outcome.selfReview}`,
     `INDEPENDENT_REVIEW: ${outcome.independentReview}`,
     `FINAL_REVIEW_STATUS: ${outcome.finalReviewStatus}`,

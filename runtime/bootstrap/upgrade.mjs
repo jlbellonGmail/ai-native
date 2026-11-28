@@ -4,7 +4,7 @@
 //   plan   target release -> compatibility (CLI <-> PLATFORM) -> no downgrade -> not revoked
 //   apply  lock (+ the pinned caller workflow) -> managed projections as a minimal delta (edited files are kept, never overwritten) -> sync -> stage
 //   verify status + drift + tracking + doctor; any failure puts back EXACTLY what was there before (proved against `git status` and the index)
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmdirSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { LOCK_FILE, readLock, sync } from "./install.mjs";
 import { sha256, verifyRelease } from "./cache.mjs";
@@ -18,7 +18,16 @@ import { applyUpgrade } from "../migrate/upgrade-delta.mjs";
 import { JOURNAL_PATH, safeJoin } from "../migrate/adopt.mjs";
 import { CALLER_WORKFLOW, planBump } from "../migrate/bump.mjs";
 import { managedPaths } from "../migrate/tracking.mjs";
+import { admitSource } from "./upgrade-matrix.mjs";
 import { ensureInCache, fail, gitSnapshot, readAttestation, renderText, repoFacts, restoreGit, stage, verify, writeAttestation } from "./adopt.mjs";
+
+export const LEGACY_CUTOFF = "acceptance/legacy-cutoff.json";
+/** The feature slugs present at upgrade time keep v4.0.2 acceptance behavior until a human removes them. */
+export function legacyCutoffFor(projectRoot, { from, to }) {
+  const specs = join(projectRoot, "specs");
+  const slugs = existsSync(specs) ? readdirSync(specs, { withFileTypes: true }).filter((d) => d.isDirectory() && existsSync(join(specs, d.name, "spec.md"))).map((d) => d.name).sort() : [];
+  return `${JSON.stringify({ schemaVersion: 1, recordedBy: "ai-native upgrade", from, to, slugs }, null, 2)}\n`;
+}
 
 const slugOf = (repo) => repo.replace(/^github:/, "");
 
@@ -64,6 +73,10 @@ export async function upgrade({ projectRoot, cacheRoot, bundleFile, attestationR
 
   const from = lock.platform.version;
   const base = { version: from, profile: lock.profiles[0], attestation: "PASS" };
+  // 003 RF-8..RF-10: exact admitted source releases only, checked before any file, index or cache write
+  const admission = admitSource({ lock, target: platform.version });
+  if (!admission.ok) return fail(admission.errors, warnings, base);
+  warnings.push(...admission.warnings);
   const order = cmpAny(platform.version, from);
   if (order < 0) return fail([`DOWNGRADE_REFUSED: this repository is pinned to ${from}; ${platform.version} is older. \`ai-native upgrade\` only moves forward`], warnings, base);
   if (order === 0 && digest === lock.platform.digest) {
@@ -94,7 +107,9 @@ export async function upgrade({ projectRoot, cacheRoot, bundleFile, attestationR
   // everything this run may touch is saved first: a failure anywhere restores it byte for byte
   const before = gitSnapshot(projectRoot);
   const saved = new Map();
-  const touched = new Set([LOCK_FILE, JOURNAL_PATH, CALLER_WORKFLOW]);
+  // 003 RF-18: crossing into the acceptance line records the legacy cutoff (feature slugs present now), once
+  const cutoff = admission.applies && !existsSync(join(projectRoot, LEGACY_CUTOFF)) ? legacyCutoffFor(projectRoot, { from, to: platform.version }) : null;
+  const touched = new Set([LOCK_FILE, JOURNAL_PATH, CALLER_WORKFLOW, ...(cutoff ? [LEGACY_CUTOFF] : [])]);
   const withJournal = existsSync(join(projectRoot, JOURNAL_PATH));
   try {
     ensureInCache(cacheRoot, digest, bytes, files);
@@ -104,7 +119,11 @@ export async function upgrade({ projectRoot, cacheRoot, bundleFile, attestationR
     for (const rel of touched) saved.set(rel, existsSync(join(projectRoot, rel)) ? readFileSync(join(projectRoot, rel)) : null);
 
     const next = planBump({ projectRoot, release: { version: platform.version, commit: platform.commit, digest, repo: lock.platform.repo }, callerSha: callerPinFor(projectRoot, lock.platform.repo) ? platform.commit : null });
-    for (const [rel, content] of Object.entries(next.files)) writeFileSync(join(projectRoot, rel), content, "utf8");
+    if (cutoff) next.files[LEGACY_CUTOFF] = cutoff;
+    for (const [rel, content] of Object.entries(next.files)) {
+      mkdirSync(dirname(join(projectRoot, rel)), { recursive: true });
+      writeFileSync(join(projectRoot, rel), content, "utf8");
+    }
     const synced = sync({ projectRoot, cacheRoot, fromFile: bundleFile, revocations });
     if (synced.errors.length) throw new Error(synced.errors.join("; "));
     let delta;
@@ -135,6 +154,8 @@ export async function upgrade({ projectRoot, cacheRoot, bundleFile, attestationR
       if (content === null) rmSync(f, { force: true });
       else { mkdirSync(dirname(f), { recursive: true }); writeFileSync(f, content); }
     }
+    // a directory this run created only for the cutoff goes too (git status cannot see an empty directory)
+    if (cutoff) { try { rmdirSync(dirname(join(projectRoot, LEGACY_CUTOFF))); } catch { /* not empty or not ours */ } }
     const left = restoreGit(projectRoot, before, [...touched]);
     const rolled = left.length ? `ROLLBACK_INCOMPLETE (differs from before: ${left.slice(0, 8).join(", ")})` : "ROLLED_BACK (verified: `git status` and the index are identical to before)";
     return fail([error.message], warnings, { ...base, adoption: rolled });

@@ -61,7 +61,7 @@ test("CASE 2: without subagents the work continues to a self-review, never APPRO
   assert.deepEqual(calls, ["implement:T1", "implement:T2", "suite", "self-review:rev-1"]);
   assert.deepEqual(
     { ...run.outcome, reasons: undefined },
-    { implementation: "PASS", validation: "PASS", selfReview: "PASS", independentReview: "UNAVAILABLE", finalReviewStatus: "REVIEW_PENDING", humanGate: "required", reasons: undefined },
+    { implementation: "PASS", validation: "PASS", acceptance: "NOT_APPLICABLE", selfReview: "PASS", independentReview: "UNAVAILABLE", finalReviewStatus: "REVIEW_PENDING", humanGate: "required", reasons: undefined },
   );
   assert.match(run.outcome.reasons.join(";"), /agent delegation is unavailable/);
   assert.deepEqual(checkOutcomeCoherence(run.outcome), []);
