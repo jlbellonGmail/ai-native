@@ -147,6 +147,24 @@ Every execution has both roles. Builder: minimum context, specify, plan, impleme
 
 ---
 
+## Branches and Worktrees
+
+| Branch | From | PR target | Worktree and purpose |
+|---|---|---|---|
+| `main` | Stable branch | Only `release/*` promotions and `hotfix/*` fixes, through a PR | No development and no direct commits; receives approved releases and hotfixes. |
+| `develop` | Created once from `main` | Receives `feature/*`, `bugfix/*` and syncs from `main` | Integration branch; PR and CI required; no direct pushes. |
+| `feature/*` | `develop` | `develop` | Dedicated worktree per feature; remove it after the merge, only if it is clean. |
+| `bugfix/*` | `develop` | `develop` | Dedicated worktree for a defect found during development. |
+| `release/*` | Approved `develop` SHA | `main` | Dedicated worktree to stabilize, audit and promote a version. |
+| `hotfix/*` | `main` | `main` first; then sync `main` into `develop` | Dedicated worktree for an urgent production fix. |
+
+* Every task is one feature (see Delivery Governance Reference), so documentation, governance and maintenance work also uses `feature/*`.
+* The agent pushes only its own work branches and opens or updates PRs. Merging, approving reviews or Environments, and changing rulesets, protections or secrets are human actions.
+* Never rewrite a published branch: a replacement release branch gets a new name. Never remove a worktree that has uncommitted or unpushed work.
+* Rules, enforcement and exceptions: `governance/development/BRANCHING-AND-WORKTREES.md`.
+
+---
+
 ## Validation Evidence
 
 Reports distinguish `PASS` (run and passed), `FAIL`, `NOT_RUN`, `NOT_APPLICABLE`, `CONTEXTUAL_NON_BLOCKING` (exists, does not block under the applicable policy). Never hide warnings, skipped checks, dirty working trees, failed commands, unpushed commits or unclear governance state.
