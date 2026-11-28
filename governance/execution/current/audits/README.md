@@ -12,3 +12,4 @@ STALE for any later one; `.audit/reports/` receives only the audit of the final 
 | `AUDIT-PLATFORM-4417d96.md` | `4417d96` | 88.50 | APTO CON CORRECCIONES (no gate) |
 | `AUDIT-PLATFORM-99cc334.md` | `99cc334` (release head) | 88.25 | APTO CON CORRECCIONES (no gate); MAJOR N-58 fixed afterwards in `ad0286a`, not re-audited |
 | `AUDIT-PLATFORM-877fb9c.md` | `877fb9c` (release head; report commit `2b41e25` on the preserved `release/v4.1.0`) | 89.75 | APTO CON CORRECCIONES (no gate); 0 MAJOR, 22 MINOR; below 90 by 0.25 |
+| `AUDIT-PLATFORM-47c52a1.md` | `47c52a1` (`release/v4.1.0-r2`) | 89.75 | APTO CON CORRECCIONES (no gate); N-59 closed, N-61 new (fixed afterwards in `bd93068`) |
