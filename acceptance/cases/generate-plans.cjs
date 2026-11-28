@@ -106,6 +106,7 @@ put("specs/003-acceptance-integration/acceptance/plan.json", plan("003-acceptanc
     { id: "AC-1", requirements: ["RF-1", "RF-18"] }, { id: "AC-2", requirements: ["RF-3", "RF-19"] }, { id: "AC-3", requirements: ["RF-20"] }, { id: "AC-4", requirements: ["RF-21"] },
     { id: "AC-5", requirements: ["RF-4", "RF-8", "RF-9", "RF-10", "RF-11", "RF-12", "RF-13"] },
     { id: "AC-6", requirements: ["RF-2", "RF-5", "RF-6", "RF-7", "RF-14", "RF-15", "RF-16", "RF-17"] },
+    { id: "AC-7", requirements: ["RF-22"] },
   ],
   [
     ["I-01", "AC-1", "positive", "pass", "the acceptance phase is in the existing SDD command bodies; no new slash command"],
@@ -124,5 +125,7 @@ put("specs/003-acceptance-integration/acceptance/plan.json", plan("003-acceptanc
     ["I-14", "AC-6", "contract", "reject", "without an attested reviewer the final review is REVIEW_PENDING"],
     ["I-15", "AC-6", "integration", "pass", "the GI pilot definition run by CI is valid, honestly labelled and matches its tests"],
     ["I-16", "AC-5", "persistence", "pass", "every admitted source preserves owned files, keeps drift, rolls back on failure and is idempotent"],
+    ["I-17", "AC-7", "persistence", "pass", "rollback after an upgrade keeps productDir, governance and every non-platform lock field; the lock stays schema-valid"],
+    ["I-18", "AC-7", "negative", "reject", "rollback of a lock outside the schema is refused with the lock bytes and the cache state unchanged"],
   ]));
 console.log("generated");

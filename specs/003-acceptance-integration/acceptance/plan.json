@@ -52,6 +52,12 @@
         "RF-16",
         "RF-17"
       ]
+    },
+    {
+      "id": "AC-7",
+      "requirements": [
+        "RF-22"
+      ]
     }
   ],
   "matrix": {
@@ -571,6 +577,68 @@
       "why": "every admitted source preserves owned files, keeps drift, rolls back on failure and is idempotent",
       "realSystemUse": "exercised by the factory and by every adopted consumer through the same platform modules",
       "intentionalErrors": "none",
+      "limitations": "disposable fixtures (temporary directories and git repositories); no network, no external service",
+      "restore": "each case removes its temporary directories",
+      "executionKind": "simulated"
+    },
+    {
+      "id": "I-17",
+      "ac": [
+        "AC-7"
+      ],
+      "category": "persistence",
+      "runner": "spec-003",
+      "sutPaths": [
+        "runtime/",
+        "contracts/",
+        "core/commands/",
+        ".github/workflows/",
+        "governance/gates/",
+        "evaluation/",
+        "knowledge/sdd/templates/",
+        "profiles/",
+        "acceptance/cases/",
+        "AGENTS.md",
+        "specs/001-dependency-graph/acceptance/plan.json",
+        "specs/002-native-acceptance/acceptance/plan.json"
+      ],
+      "expected": "pass",
+      "mandatory": true,
+      "minTier": "restricted",
+      "why": "rollback after an upgrade keeps productDir, governance and every non-platform lock field; the lock stays schema-valid",
+      "realSystemUse": "exercised by the factory and by every adopted consumer through the same platform modules",
+      "intentionalErrors": "none",
+      "limitations": "disposable fixtures (temporary directories and git repositories); no network, no external service",
+      "restore": "each case removes its temporary directories",
+      "executionKind": "simulated"
+    },
+    {
+      "id": "I-18",
+      "ac": [
+        "AC-7"
+      ],
+      "category": "negative",
+      "runner": "spec-003",
+      "sutPaths": [
+        "runtime/",
+        "contracts/",
+        "core/commands/",
+        ".github/workflows/",
+        "governance/gates/",
+        "evaluation/",
+        "knowledge/sdd/templates/",
+        "profiles/",
+        "acceptance/cases/",
+        "AGENTS.md",
+        "specs/001-dependency-graph/acceptance/plan.json",
+        "specs/002-native-acceptance/acceptance/plan.json"
+      ],
+      "expected": "reject",
+      "mandatory": true,
+      "minTier": "restricted",
+      "why": "rollback of a lock outside the schema is refused with the lock bytes and the cache state unchanged",
+      "realSystemUse": "exercised by the factory and by every adopted consumer through the same platform modules",
+      "intentionalErrors": "the input is invalid or tampered on purpose",
       "limitations": "disposable fixtures (temporary directories and git repositories); no network, no external service",
       "restore": "each case removes its temporary directories",
       "executionKind": "simulated"
