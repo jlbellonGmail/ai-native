@@ -17,6 +17,9 @@ GitHub                     jlbellonGmail = única persona aprobadora
                            App ai-native-plan-approval = identidad técnica del agente (solo solicita)
 ```
 
+La identidad GitHub con la que el agente crea ramas y abre PRs (cuenta de máquina sin rol en el repositorio, PRs desde
+un fork; propuesta del 2026-11-28) está en `AGENT-GITHUB-IDENTITY.md`. No sustituye esta frontera: la necesita.
+
 La frontera es la de Windows: el almacén de credenciales (Credential Manager/DPAPI) y el perfil del humano no son legibles por otro usuario estándar.
 
 ### Pasos (propietario; reversibles)
