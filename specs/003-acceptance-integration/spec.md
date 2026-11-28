@@ -131,6 +131,15 @@ defect, closure blocked by FAIL, PASS after the fix, the rendered manual,
 verifiable evidence, independent review and HITL request; a substituted trivial
 validation (`node -e 0`) and a silent DOWNGRADE attempt shall both be refused.
 
+RF-22. WHEN `ai-native rollback` re-pins a consumer to the previous cached
+release (including after an upgrade to v4.1.0), THE SYSTEM SHALL change only
+`platform.version`, `platform.commit` and `platform.digest` and SHALL preserve
+the value of every other lock field admitted by `contracts/lock.schema.json`
+(`profiles`, `productDir`, `governance`, `mcpProfiles`, `packs`, `overrides`
+and `platform.repo`/`platform.channel`). IF the lock is not valid against that
+schema, THEN rollback SHALL refuse before modifying the lock or the cache state
+and SHALL NOT drop the offending field to make it valid.
+
 ## Non-goals
 
 Do not modify real GI repositories, merge branches, publish a release/tag,
@@ -166,3 +175,8 @@ status are truthful.
   affected consumer once; the docs make no release claim; the GI pilot proves
   the PostgreSQL/FK behaviors with simulated and real evidence separated; the
   final review is attested or REVIEW_PENDING.
+- AC-7 (RF-22): after an upgrade, `ai-native rollback` of a lock carrying
+  `productDir` and `governance` restores the previous release with both fields
+  and every other non-platform field unchanged and a schema-valid lock; a lock
+  with a field outside the schema or an invalid `productDir` is refused with the
+  lock bytes and the cache state unchanged.
