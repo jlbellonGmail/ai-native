@@ -358,9 +358,10 @@ test("RF-22: rollback refuses a lock outside the schema without touching the loc
       const v1 = makeBundle(e.assets, "1.tar", "v4.0.2", COMMIT_A);
       const v2 = makeBundle(e.assets, "2.tar", "v4.1.0", COMMIT_B);
       writeFullLock(e.project, "v4.0.2", COMMIT_A, v1.digest);
-      sync({ projectRoot: e.project, cacheRoot: e.cache, fromFile: v1.file });
+      assert.equal(sync({ projectRoot: e.project, cacheRoot: e.cache, fromFile: v1.file }).status, "PASS", "setup: first sync");
       writeFullLock(e.project, "v4.1.0", COMMIT_B, v2.digest);
-      sync({ projectRoot: e.project, cacheRoot: e.cache, fromFile: v2.file });
+      assert.equal(sync({ projectRoot: e.project, cacheRoot: e.cache, fromFile: v2.file }).changed, true, "setup: second sync");
+      assert.ok(Object.keys(cacheState(e.cache)).length > 0, "setup: a rollback target exists in the cache state");
       const { text } = writeFullLock(e.project, "v4.1.0", COMMIT_B, v2.digest, extra);
       const state = cacheState(e.cache);
       const r = rollback({ projectRoot: e.project, cacheRoot: e.cache });
@@ -378,6 +379,16 @@ test("RF-22: canonical() of a lock without productDir/governance is byte-identic
   assert.equal(canonical(shuffled), `${JSON.stringify(lock, null, 2)}\n`);
   const full = { ...lock, productDir: "services/api", governance: { allowNone: false } };
   assert.deepEqual(Object.keys(JSON.parse(canonical(full))), ["schemaVersion", "platform", "profiles", "productDir", "governance", "mcpProfiles", "packs", "overrides"], "schema key order");
+});
+
+test("RF-22: canonical() keeps every property contracts/lock.schema.json admits, so a new schema field cannot be dropped silently", () => {
+  const schemaDoc = JSON.parse(readFileSync(fileURLToPath(new URL("../../contracts/lock.schema.json", import.meta.url)), "utf8"));
+  const top = Object.keys(schemaDoc.properties);
+  const plat = Object.keys(schemaDoc.properties.platform.properties);
+  const lock = Object.fromEntries(top.map((k) => [k, k === "platform" ? Object.fromEntries(plat.map((p) => [p, `x-${p}`])) : `x-${k}`]));
+  const out = JSON.parse(canonical(lock));
+  assert.deepEqual(Object.keys(out), top, "every top-level schema property, in schema order");
+  assert.deepEqual(Object.keys(out.platform), plat, "every platform schema property, in schema order");
 });
 
 test("RESTART_REQUIRED: a release that changes the bootstrap code is flagged; one that does not is not", () => {
