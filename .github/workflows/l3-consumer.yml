@@ -34,7 +34,10 @@ name: l3-consumer
 #   acceptance-human      only for NEEDS_HUMAN, in the consumer-owned Environment named by `acceptance-environment`
 #                         (required reviewers: the consumer's humans); without it NEEDS_HUMAN is BLOCKED, never PASS;
 #   acceptance-governance the decision (runtime/consumer/acceptance-gate.mjs). The consumer makes THIS job a required
-#                         check; the caller grants `permissions: { contents: read, actions: read }`.
+#                         check; the caller grants `permissions: { contents: read, actions: read }`. It trusts the
+#                         verdict artifact only if its SHA-256 equals acceptance-analyze's `verdict_sha256` output:
+#                         the l3 and acceptance-closure jobs run candidate code in this same run and could upload an
+#                         artifact named acceptance-verdict first.
 # `platform-ref` (optional) overrides the platform commit, ONLY for evidence runs of a platform not yet
 # released; it must still be on the platform's default branch and it is reported as a warning.
 
@@ -257,6 +260,9 @@ jobs:
       actions: read
     outputs:
       status: ${{ steps.verdict.outputs.status }}
+      # artifacts of this run are not trusted by name (candidate code runs in earlier jobs of the same run and can
+      # upload artifacts): acceptance-governance only accepts the verdict whose bytes hash to this job output
+      verdict_sha256: ${{ steps.verdict.outputs.verdict_sha256 }}
     steps:
       - name: Checkout platform (default branch)
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -329,6 +335,7 @@ jobs:
           node platform/runtime/acceptance/verdict.mjs --repo objects --base "$base" --head "$HEAD_SHA" --closure closure --run "$RUN_JSON" --closure-workflow "$CALLER" "${log_arg[@]}" --out verdict.json || rc=$?; echo "analyzer exit ${rc:-0}: a non-PASS verdict is carried in verdict.json and fails acceptance-governance"
           jq -e '.schemaVersion == 1 and .headSha == env.HEAD_SHA' verdict.json >/dev/null || echo '{"schemaVersion":1,"headSha":null,"status":"BLOCKED","reasons":["analyzer produced no verdict"],"findings":[]}' > verdict.json
           echo "status=$(jq -r .status verdict.json)" >> "$GITHUB_OUTPUT"
+          echo "verdict_sha256=$(sha256sum verdict.json | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
           jq -r '"acceptance verdict: \(.status)", (.reasons[]? | "- \(.)")' verdict.json
 
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -399,6 +406,7 @@ jobs:
         shell: bash
         env:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          VERDICT_SHA256: ${{ needs.acceptance-analyze.outputs.verdict_sha256 }}
           HUMAN: ${{ needs.acceptance-human.result }}
           ENVIRONMENT: ${{ inputs.acceptance-environment }}
           REVIEWERS: ${{ inputs.acceptance-reviewers }}
@@ -406,4 +414,4 @@ jobs:
         run: |
           set -euo pipefail
           [ -f approvals.json ] || echo "[]" > approvals.json
-          node platform/runtime/consumer/acceptance-gate.mjs --verdict acceptance-verdict/verdict.json --head "$HEAD_SHA" --human "$HUMAN" --environment "$ENVIRONMENT" --reviewers "$REVIEWERS" --author "$AUTHOR" --approvals approvals.json
+          node platform/runtime/consumer/acceptance-gate.mjs --verdict acceptance-verdict/verdict.json --verdict-sha256 "$VERDICT_SHA256" --head "$HEAD_SHA" --human "$HUMAN" --environment "$ENVIRONMENT" --reviewers "$REVIEWERS" --author "$AUTHOR" --approvals approvals.json

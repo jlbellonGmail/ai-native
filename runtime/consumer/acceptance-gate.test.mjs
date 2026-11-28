@@ -1,14 +1,18 @@
 // Consumer L3 acceptance (spec 002 RF-25/RF-31/RF-35 in consumers; 003 plan "consumer CI acceptance closure job").
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, rmSync, readFileSync } from "node:fs";
+import { mkdtempSync, rmSync, readFileSync, writeFileSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { consumerAcceptanceDecision } from "./acceptance-gate.mjs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { boundVerdict, consumerAcceptanceDecision } from "./acceptance-gate.mjs";
 import { analyze } from "../acceptance/verdict.mjs";
 import { closureRun } from "../acceptance/ci-closure.mjs";
 import { makeConsumer, git, put, SLUG, GOOD_SRC } from "../acceptance/acceptance.fixture.mjs";
 
+const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const HEAD = "a".repeat(40);
 const v = (status, over = {}) => ({ schemaVersion: 1, headSha: HEAD, status, reasons: [], findings: [], ...over });
 // the consumer's caller workflow (its own file, calling the reusable l3-consumer.yml) is the registered producer
@@ -115,4 +119,60 @@ test("consumer PR that edits its own caller workflow: CLOSURE_PRODUCER_CHANGED, 
     assert.equal(consumerAcceptanceDecision({ verdict, headSha: head, ...human }).ok, true);
     assert.equal(readFileSync(join(dir, CALLER), "utf8").includes("candidate edit"), true);
   } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+// CodeQL #58 review: the l3 and acceptance-closure jobs run candidate code in the same run as the decision, so
+// candidate code can upload an artifact named acceptance-verdict before acceptance-analyze does. The decision trusts
+// the artifact only when its bytes hash to the analyze job's output.
+test("decision: a verdict artifact is trusted only if it hashes to the acceptance-analyze output (forged PASS is BLOCKED)", () => {
+  const real = Buffer.from(JSON.stringify(v("FAIL")));
+  const forged = Buffer.from(JSON.stringify(v("PASS")));
+  const digest = createHash("sha256").update(real).digest("hex");
+  const decide = (bytes, sha) => { const b = boundVerdict(bytes, sha); return consumerAcceptanceDecision({ verdict: b.verdict, verdictError: b.error, headSha: HEAD }); };
+  const swapped = decide(forged, digest);
+  assert.equal(swapped.ok, false);
+  assert.equal(swapped.status, "BLOCKED");
+  assert.match(swapped.title, /is not the one the acceptance-analyze job produced/);
+  for (const sha of ["", undefined, "abc", digest.toUpperCase()]) {
+    const d = decide(forged, sha);
+    assert.equal(d.status, "BLOCKED", String(sha));
+    assert.match(d.title, /no verdict digest/);
+  }
+  assert.match(decide(null, digest).title, /no acceptance verdict artifact/);
+  assert.equal(decide(real, digest).status, "FAIL", "the bound verdict decides as before");
+  const pass = Buffer.from(JSON.stringify(v("PASS")));
+  assert.equal(decide(pass, createHash("sha256").update(pass).digest("hex")).ok, true);
+});
+
+test("CLI: a forged verdict file with the analyze digest of another verdict exits 1 BLOCKED; no --verdict-sha256 exits 1", () => {
+  const dir = mkdtempSync(join(tmpdir(), "acc-gate-"));
+  try {
+    const file = join(dir, "verdict.json");
+    const pass = JSON.stringify(v("PASS"));
+    writeFileSync(file, pass);
+    const cli = (extra) => spawnSync(process.execPath, [join(repoRoot, "runtime", "consumer", "acceptance-gate.mjs"), "--verdict", file, "--head", HEAD, ...extra], { encoding: "utf8", env: { ...process.env, GITHUB_STEP_SUMMARY: "" } });
+    const other = createHash("sha256").update(JSON.stringify(v("FAIL"))).digest("hex");
+    for (const extra of [["--verdict-sha256", other], []]) {
+      const r = cli(extra);
+      assert.equal(r.status, 1, r.stdout + r.stderr);
+      assert.match(r.stdout, /ACCEPTANCE_BLOCKED/);
+    }
+    const ok = cli(["--verdict-sha256", createHash("sha256").update(pass).digest("hex")]);
+    assert.equal(ok.status, 0, ok.stdout + ok.stderr);
+    assert.match(ok.stdout, /ACCEPTANCE_PASS/);
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("l3-consumer.yml binds the verdict artifact to the acceptance-analyze digest output", () => {
+  const yml = readFileSync(join(repoRoot, ".github", "workflows", "l3-consumer.yml"), "utf8").replaceAll("\r\n", "\n");
+  const analyze = yml.slice(yml.indexOf("\n  acceptance-analyze:\n"), yml.indexOf("\n  acceptance-human:\n"));
+  const governance = yml.slice(yml.indexOf("\n  acceptance-governance:\n"));
+  assert.match(analyze, /\n      verdict_sha256: \$\{\{ steps\.verdict\.outputs\.verdict_sha256 \}\}\n/);
+  // the digest is taken after the fallback rewrite, i.e. of the exact file that is uploaded
+  const fallback = analyze.indexOf("analyzer produced no verdict");
+  const hashed = analyze.indexOf('echo "verdict_sha256=$(sha256sum verdict.json | cut -d\' \' -f1)" >> "$GITHUB_OUTPUT"');
+  assert.ok(fallback > 0 && hashed > fallback, "verdict_sha256 is computed from the final verdict.json");
+  assert.ok(analyze.indexOf("path: verdict.json") > hashed, "and before it is uploaded");
+  assert.match(governance, /VERDICT_SHA256: \$\{\{ needs\.acceptance-analyze\.outputs\.verdict_sha256 \}\}/);
+  assert.match(governance, /acceptance-gate\.mjs --verdict acceptance-verdict\/verdict\.json --verdict-sha256 "\$VERDICT_SHA256" /);
 });
