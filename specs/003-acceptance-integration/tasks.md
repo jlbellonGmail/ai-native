@@ -12,5 +12,7 @@
   - Done when: repeated real PostgreSQL runs prove Locales/Regions persistence and reads, FK valid/invalid references, `locale_id` resolution and unchanged state after rejection; mocks and in-process ASGI are labelled accurately.
 - [ ] **T6. Prove the circuit end-to-end on an isolated consumer.** RF-21
   - Done when: evidence from a disposable consumer shows the ten required observations and refusal of the trivial-validation and silent-downgrade attempts, with no acceptance-specific prompt.
+- [ ] **T8. Preserve every schema lock field in `ai-native rollback`.** RF-22
+  - Done when: a regression test that fails against the unfixed `canonical()` passes, showing that rollback after an upgrade keeps `productDir`, `governance` and every other non-platform field and yields a schema-valid lock; an invalid lock is refused without changing the lock or the cache state; `init` output is byte-identical; and own-acceptance cases for AC-7 PASS.
 - [ ] **T7. Document and verify release candidate handoff.** RF-5, RF-7
   - Done when: docs, regression, review-ledger status and draft PR accurately distinguish technical readiness from pending HITL.
