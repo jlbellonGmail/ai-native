@@ -172,10 +172,11 @@ await runCases([
   // RF-22 / AC-7 (audit F-006): `ai-native rollback` through the real bootstrap engine (the bootstrap suite's RF-22
   // tests, run here and read from their TAP output)
   ["I-17", () => {
-    const r = spawnSync(process.execPath, ["--test", "--test-reporter=tap", "--test-name-pattern=^RF-22: (rollback after an upgrade keeps|canonical\\(\\) of a lock)", "runtime/bootstrap/bootstrap.test.mjs"], { cwd: ROOT, encoding: "utf8", timeout: 300000, maxBuffer: 32 * 1024 * 1024 });
+    const r = spawnSync(process.execPath, ["--test", "--test-reporter=tap", "--test-name-pattern=^RF-22: (rollback after an upgrade keeps|canonical\\(\\) of a lock|canonical\\(\\) keeps every property)", "runtime/bootstrap/bootstrap.test.mjs"], { cwd: ROOT, encoding: "utf8", timeout: 300000, maxBuffer: 32 * 1024 * 1024 });
     assert.equal(r.status, 0, String(r.stdout).slice(-800));
     assert.match(r.stdout, /^ok \d+ - RF-22: rollback after an upgrade keeps productDir, governance and every non-platform lock field$/m);
     assert.match(r.stdout, /^ok \d+ - RF-22: canonical\(\) of a lock without productDir\/governance is byte-identical to the previous serialization$/m);
+    assert.match(r.stdout, /^ok \d+ - RF-22: canonical\(\) keeps every property contracts\/lock\.schema\.json admits, so a new schema field cannot be dropped silently$/m);
     assert.doesNotMatch(r.stdout, /^not ok /m);
   }],
   ["I-18", () => {
