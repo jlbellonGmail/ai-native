@@ -15,7 +15,7 @@ import {
   sha256, putBlob, getBlob, putRelease, verifyRelease, releaseDir, blobPath, sweepStaging,
   CacheCorruptError,
 } from "./cache.mjs";
-import { sync, rollback, init, doctor, run, readLock, LOCK_FILE } from "./install.mjs";
+import { sync, rollback, init, doctor, run, readLock, validateLock, canonical, LOCK_FILE } from "./install.mjs";
 
 const COMMIT_A = "a".repeat(40);
 const COMMIT_B = "b".repeat(40);
@@ -306,6 +306,78 @@ test("rollback ignores entries under runs/ that are not unit folders (a stray fi
     assert.equal(r.status, "PASS", JSON.stringify(r.errors));
     assert.equal(readLock(e.project).lock.platform.version, "v3.0.0-alpha.1");
   } finally { e.done(); }
+});
+
+// spec 003 RF-22 / AC-7 (audit F-006): rollback writes the lock through canonical(), which used to drop the schema
+// fields productDir and governance.
+function writeFullLock(project, version, commit, digest, extra = {}) {
+  const lock = {
+    schemaVersion: 1,
+    platform: { repo: "github:o/ai-native", version, commit, digest, channel: "stable" },
+    profiles: ["factory"],
+    productDir: "services/api",
+    governance: { allowNone: true },
+    mcpProfiles: ["github"],
+    packs: [],
+    overrides: {},
+    ...extra,
+  };
+  const text = `${JSON.stringify(lock, null, 2)}\n`;
+  writeFileSync(join(project, LOCK_FILE), text);
+  return { lock, text };
+}
+const cacheState = (cache) => {
+  const dir = join(cache, "state");
+  return existsSync(dir) ? Object.fromEntries(readdirSync(dir).sort().map((f) => [f, readFileSync(join(dir, f), "utf8")])) : {};
+};
+
+test("RF-22: rollback after an upgrade keeps productDir, governance and every non-platform lock field", () => {
+  const e = env();
+  try {
+    const v1 = makeBundle(e.assets, "1.tar", "v4.0.2", COMMIT_A);
+    const v2 = makeBundle(e.assets, "2.tar", "v4.1.0", COMMIT_B);
+    writeFullLock(e.project, "v4.0.2", COMMIT_A, v1.digest);
+    assert.equal(sync({ projectRoot: e.project, cacheRoot: e.cache, fromFile: v1.file }).status, "PASS");
+    const { lock: before } = writeFullLock(e.project, "v4.1.0", COMMIT_B, v2.digest);
+    assert.equal(sync({ projectRoot: e.project, cacheRoot: e.cache, fromFile: v2.file }).changed, true);
+    const r = rollback({ projectRoot: e.project, cacheRoot: e.cache });
+    assert.equal(r.status, "PASS", JSON.stringify(r.errors));
+    const after = JSON.parse(readFileSync(join(e.project, LOCK_FILE), "utf8"));
+    assert.deepEqual(validateLock(after), [], "the restored lock is schema-valid");
+    assert.deepEqual(after, { ...before, platform: { ...before.platform, version: "v4.0.2", commit: COMMIT_A, digest: v1.digest } },
+      "only platform.version, platform.commit and platform.digest change");
+    assert.equal(after.productDir, "services/api");
+    assert.deepEqual(after.governance, { allowNone: true });
+  } finally { e.done(); }
+});
+
+test("RF-22: rollback refuses a lock outside the schema without touching the lock or the cache state", () => {
+  for (const extra of [{ notInSchema: 1 }, { productDir: "../escape" }]) {
+    const e = env();
+    try {
+      const v1 = makeBundle(e.assets, "1.tar", "v4.0.2", COMMIT_A);
+      const v2 = makeBundle(e.assets, "2.tar", "v4.1.0", COMMIT_B);
+      writeFullLock(e.project, "v4.0.2", COMMIT_A, v1.digest);
+      sync({ projectRoot: e.project, cacheRoot: e.cache, fromFile: v1.file });
+      writeFullLock(e.project, "v4.1.0", COMMIT_B, v2.digest);
+      sync({ projectRoot: e.project, cacheRoot: e.cache, fromFile: v2.file });
+      const { text } = writeFullLock(e.project, "v4.1.0", COMMIT_B, v2.digest, extra);
+      const state = cacheState(e.cache);
+      const r = rollback({ projectRoot: e.project, cacheRoot: e.cache });
+      assert.equal(r.status, "FAIL", JSON.stringify(extra));
+      assert.match(r.errors[0], /ai-native\.lock\.json/);
+      assert.equal(readFileSync(join(e.project, LOCK_FILE), "utf8"), text, "lock bytes unchanged: the offending field is not dropped");
+      assert.deepEqual(cacheState(e.cache), state, "cache state unchanged");
+    } finally { e.done(); }
+  }
+});
+
+test("RF-22: canonical() of a lock without productDir/governance is byte-identical to the previous serialization", () => {
+  const lock = { schemaVersion: 1, platform: { repo: "github:o/ai-native", version: "v4.1.0", commit: COMMIT_A, digest: `sha256:${"1".repeat(64)}`, channel: "stable" }, profiles: ["factory"], mcpProfiles: [], packs: [], overrides: {} };
+  const shuffled = { overrides: {}, packs: [], mcpProfiles: [], profiles: ["factory"], platform: { channel: "stable", digest: lock.platform.digest, commit: COMMIT_A, version: "v4.1.0", repo: "github:o/ai-native" }, schemaVersion: 1 };
+  assert.equal(canonical(shuffled), `${JSON.stringify(lock, null, 2)}\n`);
+  const full = { ...lock, productDir: "services/api", governance: { allowNone: false } };
+  assert.deepEqual(Object.keys(JSON.parse(canonical(full))), ["schemaVersion", "platform", "profiles", "productDir", "governance", "mcpProfiles", "packs", "overrides"], "schema key order");
 });
 
 test("RESTART_REQUIRED: a release that changes the bootstrap code is flagged; one that does not is not", () => {

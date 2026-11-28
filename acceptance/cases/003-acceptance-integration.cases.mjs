@@ -169,6 +169,21 @@ await runCases([
     assert.match(r.stdout, /^ok \d+ - UPGRADE v4\.0\.0 -> v4\.1\.0 is rejected before any file, index or cache write/m);
     assert.doesNotMatch(r.stdout, /^not ok /m);
   }],
+  // RF-22 / AC-7 (audit F-006): `ai-native rollback` through the real bootstrap engine (the bootstrap suite's RF-22
+  // tests, run here and read from their TAP output)
+  ["I-17", () => {
+    const r = spawnSync(process.execPath, ["--test", "--test-reporter=tap", "--test-name-pattern=^RF-22: (rollback after an upgrade keeps|canonical\\(\\) of a lock)", "runtime/bootstrap/bootstrap.test.mjs"], { cwd: ROOT, encoding: "utf8", timeout: 300000, maxBuffer: 32 * 1024 * 1024 });
+    assert.equal(r.status, 0, String(r.stdout).slice(-800));
+    assert.match(r.stdout, /^ok \d+ - RF-22: rollback after an upgrade keeps productDir, governance and every non-platform lock field$/m);
+    assert.match(r.stdout, /^ok \d+ - RF-22: canonical\(\) of a lock without productDir\/governance is byte-identical to the previous serialization$/m);
+    assert.doesNotMatch(r.stdout, /^not ok /m);
+  }],
+  ["I-18", () => {
+    const r = spawnSync(process.execPath, ["--test", "--test-reporter=tap", "--test-name-pattern=^RF-22: rollback refuses a lock outside the schema", "runtime/bootstrap/bootstrap.test.mjs"], { cwd: ROOT, encoding: "utf8", timeout: 300000, maxBuffer: 32 * 1024 * 1024 });
+    assert.equal(r.status, 0, String(r.stdout).slice(-800));
+    assert.match(r.stdout, /^ok \d+ - RF-22: rollback refuses a lock outside the schema without touching the lock or the cache state$/m);
+    assert.doesNotMatch(r.stdout, /^not ok /m);
+  }],
   ["I-14", () => {
     const o = deriveReviewOutcome({ implementation: "PASS", validation: "PASS", independentReview: null, capability: { independentReview: "unavailable", reasons: ["no attested reviewer runtime"] }, acceptance: "PASS" });
     assert.equal(o.finalReviewStatus, "REVIEW_PENDING");

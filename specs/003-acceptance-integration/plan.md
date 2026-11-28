@@ -50,6 +50,7 @@ range check.
 | RF-21 | Disposable consumer from the candidate bundle via `ai-native init`, a small product with a seeded defect, a normal `/sdd-*` feature with criteria, then the fix; plus scripted bypass attempts. Evidence kept under `governance/execution/current/`. Discard proving the circuit by instructing the agent to run tests. |
 | RF-2, RF-3 | Reuse graph/runner selection and existing gates; discard unconditional all-consumer runs and a second governance system. |
 | RF-4, RF-8, RF-9, RF-10, RF-11, RF-12, RF-13 | Add matrix validation before the current verified-bundle upgrade transaction. Use individual v4.0.1, v4.0.2, v3.4.2 and v3.4.3 fixtures, project-owned sentinels, managed drift, Git/index snapshots, injected failures and second-run comparison. Discard version-prefix admission, overwriting consumer-owned files, broad filesystem snapshots and running upgrade in this factory. |
+| RF-22 | `ai-native rollback` (`runtime/bootstrap/install.mjs` `rollback`) writes the lock through `canonical()`, whose key list omits the schema fields `productDir` and `governance` (audit F-006). Make `canonical()` emit the keys in `contracts/lock.schema.json` order (`schemaVersion`, `platform`, `profiles`, `productDir`, `governance`, `mcpProfiles`, `packs`, `overrides`); `init()` and `migrate` never set the two fields, so their output stays byte-identical. Regression test in `runtime/bootstrap/bootstrap.test.mjs`, plus own-acceptance cases for AC-7 (one positive persistence case, one rejection case). Discard copying unknown keys (the schema rejects them first in `readLock`) and a rollback-specific serializer. |
 | RF-5 | Targeted docs/versioning candidate handoff; discard release/tag publication. |
 | RF-6, RF-14, RF-15, RF-16, RF-17 | Disposable GI copy, pinned source and PostgreSQL fixture. Model Regions -> Locales as same-database SQL/FK consumption; verify persistence/public reads, `locale_id`, valid/invalid references and repeat runs. Mark mocks/in-process separately from real PostgreSQL integration and from socket E2E. Discard an invented Regions HTTP client and `gi_dev.py` because its exit code is not a gate. |
 | RF-7 | Existing review ledger plus Claude attester; discard self-review or an OpenCode subagent as approval. |
@@ -86,6 +87,14 @@ new test seams; assert `ROLLED_BACK` byte identity or explicit
 `ROLLBACK_INCOMPLETE` paths. Apply the same verified v4 bundle twice and compare
 manifests/projections byte-for-byte. Matrix rejection tests snapshot filesystem,
 index and cache before invocation and prove no mutation.
+
+For RF-22, `ai-native rollback` is exercised with the existing bootstrap test
+seams: sync v1, then sync v2, then rollback, on a lock carrying `productDir` and
+`governance.allowNone`. Assert that the restored lock deep-equals the pre-rollback
+lock except `platform.version`, `platform.commit` and `platform.digest`, and that it
+validates against the schema. The regression test must fail against the unfixed
+`canonical()`. An invalid lock is refused with its bytes and the cache state
+unchanged.
 
 Build the GI pilot only after implementation-plan approval; use the
 `postgres:16-alpine` digest recorded in `V4-AUDIT.md` and classify
